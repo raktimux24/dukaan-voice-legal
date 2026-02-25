@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Dukaan Voice</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0D0D12;
+      color: #FAFAF9;
+      line-height: 1.7;
+      padding: 24px;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 24px 0 64px; }
+    .back { color: #FF6B00; text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 24px; }
+    .back:hover { text-decoration: underline; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .effective { color: #6B6B70; font-size: 13px; margin-bottom: 32px; }
+    h2 { font-size: 20px; font-weight: 600; margin-top: 36px; margin-bottom: 12px; color: #FAFAF9; }
+    h3 { font-size: 16px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; color: #FAFAF9; }
+    p, li { color: #C4C4C8; font-size: 15px; }
+    p { margin-bottom: 12px; }
+    ul, ol { padding-left: 24px; margin-bottom: 12px; }
+    li { margin-bottom: 6px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { text-align: left; padding: 10px 12px; border: 1px solid #3A3A42; font-size: 14px; }
+    th { background: #1E1E26; color: #FAFAF9; font-weight: 600; }
+    td { color: #C4C4C8; }
+    .highlight { background: #1E1E26; border: 1px solid #3A3A42; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .highlight p { margin-bottom: 0; }
+    a { color: #FF6B00; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back">&larr; Back</a>
+    <h1>Privacy Policy</h1>
+    <p class="effective">Effective Date: February 23, 2026</p>
+
+    <p>Dukaan Voice ("we", "our", or "the App") is a voice-first collaborative inventory management application designed for Indian retail businesses. This Privacy Policy explains what information we collect, how we use it, who we share it with, and your rights regarding your data.</p>
+
+    <p>By using Dukaan Voice, you agree to the collection and use of information as described in this policy.</p>
+
+    <h2>1. Information We Collect</h2>
+
+    <h3>1.1 Account Information</h3>
+    <p>When you create an account, we collect:</p>
+    <ul>
+      <li><strong>Full name</strong> — provided during sign-up</li>
+      <li><strong>Email address</strong> — used for authentication and account recovery</li>
+      <li><strong>Password</strong> — encrypted and managed by our authentication provider (Clerk)</li>
+    </ul>
+    <p>If you sign in with Google or Apple, we receive your name and email from the OAuth provider. We do not access your Google or Apple account password.</p>
+
+    <h3>1.2 Voice Recordings</h3>
+    <div class="highlight">
+      <p><strong>Important:</strong> Voice recordings are processed in real-time and are <strong>not stored permanently</strong>. Audio is transmitted to our server, processed by Sarvam AI for speech recognition and natural language understanding, and immediately discarded after processing. Only the resulting text transcript is stored in your audit log for your reference.</p>
+    </div>
+    <ul>
+      <li>Audio is recorded on your device (WAV format on iOS, M4A on Android)</li>
+      <li>Recordings are limited to a maximum of 30 seconds</li>
+      <li>Audio is sent to our server as encoded data via a secure connection</li>
+      <li>After processing, the audio data is discarded from server memory</li>
+      <li>Text transcripts are stored in your shop's audit log so you can review past actions</li>
+    </ul>
+
+    <h3>1.3 Inventory & Business Data</h3>
+    <p>When you use the App, we store the business data you create:</p>
+    <ul>
+      <li>Shop information (name, category, preferred language)</li>
+      <li>Product catalog (names, barcodes, categories, units, prices)</li>
+      <li>Stock quantities, batch numbers, purchase dates, expiry dates, supplier names</li>
+      <li>Buy list items and notes</li>
+      <li>Audit logs recording inventory changes (action type, user, timestamp, transcript, confidence score)</li>
+    </ul>
+
+    <h3>1.4 User Preferences</h3>
+    <ul>
+      <li>App language and voice language selection</li>
+      <li>Voice feedback preference (on/off)</li>
+      <li>Display settings (high contrast mode, text size)</li>
+      <li>Default measurement unit</li>
+      <li>Notification preferences</li>
+    </ul>
+
+    <h3>1.5 Shop Membership Data</h3>
+    <ul>
+      <li>Your role in each shop (Owner, Manager, or Helper)</li>
+      <li>Invite codes generated for team collaboration</li>
+      <li>Last active timestamps within shops</li>
+    </ul>
+
+    <h3>1.6 Device & Diagnostic Data</h3>
+    <p>In production builds, we use Sentry for crash reporting. This collects:</p>
+    <ul>
+      <li>Device type, operating system, and app version</li>
+      <li>Crash reports and error stack traces</li>
+      <li>Performance data (sampled at 20% of sessions)</li>
+    </ul>
+    <p>Crash reporting is disabled in development builds and can be minimized by the sampling rate we apply.</p>
+
+    <h2>2. How We Use Your Information</h2>
+    <ul>
+      <li><strong>Provide the service:</strong> Process voice commands, manage inventory, and sync data across your team</li>
+      <li><strong>Authentication:</strong> Verify your identity and manage secure sessions</li>
+      <li><strong>Audit trail:</strong> Maintain a log of inventory changes for accountability and review</li>
+      <li><strong>Improve the service:</strong> Diagnose bugs and crashes through anonymized error reports</li>
+      <li><strong>Communication:</strong> Send essential account-related notifications (e.g., password resets)</li>
+    </ul>
+    <p>We do <strong>not</strong> use your data for advertising, and we do <strong>not</strong> sell your personal information to third parties.</p>
+
+    <h2>3. Third-Party Services</h2>
+    <p>We use the following third-party services to operate the App:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Purpose</th>
+          <th>Data Shared</th>
+          <th>Privacy Policy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Clerk</strong></td>
+          <td>Authentication &amp; session management</td>
+          <td>Email, name, OAuth tokens, session data</td>
+          <td><a href="https://clerk.com/legal/privacy" target="_blank" rel="noopener">clerk.com/legal/privacy</a></td>
+        </tr>
+        <tr>
+          <td><strong>Sarvam AI</strong></td>
+          <td>Voice processing (Speech-to-Text, Natural Language Processing, Text-to-Speech)</td>
+          <td>Audio recordings, transcript text, language code</td>
+          <td><a href="https://www.sarvam.ai/privacy-policy" target="_blank" rel="noopener">sarvam.ai/privacy-policy</a></td>
+        </tr>
+        <tr>
+          <td><strong>Neon</strong></td>
+          <td>Database hosting (PostgreSQL)</td>
+          <td>All persisted application data</td>
+          <td><a href="https://neon.tech/privacy-policy" target="_blank" rel="noopener">neon.tech/privacy-policy</a></td>
+        </tr>
+        <tr>
+          <td><strong>Sentry</strong></td>
+          <td>Error tracking &amp; crash reporting</td>
+          <td>Crash reports, device information (production only)</td>
+          <td><a href="https://sentry.io/privacy/" target="_blank" rel="noopener">sentry.io/privacy</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Each third-party service processes data according to their own privacy policy. We encourage you to review their policies.</p>
+
+    <h2>4. Data Storage & Security</h2>
+    <ul>
+      <li>Application data is stored in a Neon PostgreSQL database with SSL/TLS encryption in transit</li>
+      <li>Authentication tokens are stored on your device using secure storage (iOS Keychain / Android Keystore)</li>
+      <li>API communication uses HTTPS encryption</li>
+      <li>Sensitive endpoints are rate-limited to prevent abuse</li>
+      <li>Passwords are hashed and managed by Clerk — we never store plaintext passwords</li>
+    </ul>
+
+    <h2>5. Data Retention</h2>
+    <ul>
+      <li><strong>Voice audio:</strong> Ephemeral — processed in memory and immediately discarded. Never stored on our servers.</li>
+      <li><strong>Transcripts & audit logs:</strong> Retained as long as your account is active, for your reference.</li>
+      <li><strong>Inventory data:</strong> Retained as long as your account is active.</li>
+      <li><strong>Account data:</strong> Retained until you delete your account.</li>
+      <li><strong>Crash reports:</strong> Retained according to Sentry's data retention policy (typically 90 days).</li>
+    </ul>
+
+    <h2>6. Account Deletion</h2>
+    <p>You can delete your account at any time from <strong>Settings &gt; Delete Account</strong> within the App. When you delete your account:</p>
+    <ul>
+      <li>All shops you own are permanently deleted, including all products, inventory, batches, buy lists, and AI predictions</li>
+      <li>All your audit logs and preferences are permanently deleted</li>
+      <li>Your memberships in other users' shops are removed</li>
+      <li>Your authentication account with Clerk is permanently deleted</li>
+    </ul>
+    <p><strong>This action is irreversible.</strong> Once deleted, your data cannot be recovered.</p>
+
+    <h2>7. Data Sharing Within Shops</h2>
+    <p>Dukaan Voice is a collaborative tool. When you are a member of a shop:</p>
+    <ul>
+      <li>All shop members (Owners, Managers, Helpers) can see the shop's inventory data, product catalog, and audit logs</li>
+      <li>Your name, role, and activity timestamps are visible to other shop members</li>
+      <li>Owners can manage membership and access for their shop</li>
+    </ul>
+    <p>We do not share your data with shops you are not a member of, nor with any unrelated third parties.</p>
+
+    <h2>8. Children's Privacy</h2>
+    <p>Dukaan Voice is not intended for use by children under the age of 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us with personal information, please contact us and we will delete it promptly.</p>
+
+    <h2>9. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li><strong>Access your data:</strong> View your inventory, audit logs, and preferences within the App</li>
+      <li><strong>Delete your data:</strong> Use the account deletion feature in Settings</li>
+      <li><strong>Control preferences:</strong> Modify your language, display, and voice settings at any time</li>
+      <li><strong>Withdraw from shops:</strong> Leave any shop you are a member of</li>
+    </ul>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we do, we will update the "Effective Date" at the top of this page. We encourage you to review this policy periodically. Continued use of the App after changes constitutes acceptance of the updated policy.</p>
+
+    <h2>11. Contact Us</h2>
+    <p>If you have any questions about this Privacy Policy or your data, please contact us at:</p>
+    <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+
+    <p style="margin-top: 48px; color: #4A4A50; font-size: 12px;">&copy; 2026 Dukaan Voice. All rights reserved.</p>
+  </div>
+</body>
+</html>
