@@ -1,73 +1,1847 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dukaan Voice — Legal</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0D0D12;
-      color: #FAFAF9;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      max-width: 480px;
-      width: 100%;
-      padding: 48px 24px;
-      text-align: center;
-    }
-    .logo {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .logo span { color: #FF6B00; }
-    .subtitle {
-      color: #6B6B70;
-      font-size: 14px;
-      margin-bottom: 48px;
-    }
-    .links {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .links a {
-      display: block;
-      padding: 16px 24px;
-      background: #1E1E26;
-      border: 1px solid #3A3A42;
-      border-radius: 12px;
-      color: #FAFAF9;
-      text-decoration: none;
-      font-size: 16px;
-      font-weight: 500;
-      transition: border-color 0.2s;
-    }
-    .links a:hover {
-      border-color: #FF6B00;
-    }
-    .footer {
-      margin-top: 48px;
-      color: #4A4A50;
-      font-size: 12px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samaan-Bol — Voice-First Inventory for Indian Retail</title>
+<meta name="description" content="Manage your shop inventory by simply speaking in your language. Samaan-Bol uses AI to understand Hindi, Bengali, Tamil and 10+ Indian languages. Predictive restocking, smart alerts, and team collaboration — built for Bharat.">
+<meta property="og:title" content="Samaan-Bol — Bol ke sambhalo apna business">
+<meta property="og:description" content="Voice-first AI inventory management for Indian retail shopkeepers. Speak in your language, manage your stock.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ─────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --saffron: #FF6B00;
+  --saffron-dark: #E85D00;
+  --saffron-glow: rgba(255, 107, 0, 0.21);
+  --saffron-tint: rgba(255, 107, 0, 0.08);
+  --bg-deep: #0A0A0F;
+  --bg-card: #15151C;
+  --bg-elevated: #1E1E26;
+  --text-primary: #EAEAE6;
+  --text-secondary: #8A8A90;
+  --text-muted: #5A5A62;
+  --border-dark: #2A2A34;
+  --success: #32D583;
+  --warning: #FFB547;
+  --danger: #E85A4F;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Typography ───────────────────────────────────── */
+h1, h2, h3, h4 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.hindi {
+  font-family: 'Noto Sans Devanagari', 'DM Sans', sans-serif;
+}
+
+/* ── Container ────────────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 48px);
+}
+
+.container--wide {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 48px);
+}
+
+/* ── Navigation ───────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 16px 0;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease;
+}
+
+nav.scrolled {
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.logo-mark svg {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+.logo-text {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.logo-text span {
+  color: var(--saffron);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: var(--text-primary);
+}
+
+.nav-cta {
+  background: var(--saffron);
+  color: var(--bg-deep) !important;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600 !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px var(--saffron-glow);
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* ── Hero ─────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 120px 0 80px;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--saffron-tint);
+  border: 1px solid rgba(255, 107, 0, 0.15);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--saffron);
+  margin-bottom: 28px;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--saffron);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero h1 {
+  font-size: clamp(40px, 5.5vw, 64px);
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.hero h1 .hindi-line {
+  display: block;
+  color: var(--saffron);
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 500;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.hero-sub {
+  font-size: clamp(16px, 1.4vw, 19px);
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin-bottom: 40px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 56px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--saffron);
+  color: var(--bg-deep);
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px var(--saffron-glow);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  text-decoration: none;
+  border: 1px solid var(--border-dark);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--text-muted);
+  background: rgba(255,255,255,0.03);
+}
+
+.hero-stats {
+  display: flex;
+  gap: 40px;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-stat-number {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--text-primary);
+}
+
+.hero-stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Hero phone mockup */
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 600px;
+}
+
+.phone-frame {
+  width: 280px;
+  height: 580px;
+  background: var(--bg-deep);
+  border-radius: 40px;
+  border: 2px solid var(--border-dark);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow:
+    0 40px 80px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.05) inset;
+  transform: perspective(800px) rotateY(-5deg) rotateX(2deg);
+}
+
+/* Dynamic island notch */
+.phone-notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 28px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 5;
+}
+
+.phone-screen {
+  padding: 48px 16px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-deep);
+}
+
+.phone-status-bar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+/* Header row: greeting + bell */
+.phone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.phone-greeting {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.phone-subtext {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+.phone-bell {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.phone-bell-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  background: var(--danger);
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Search bar with mic */
+.phone-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.phone-search-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.phone-search-mic {
+  width: 30px;
+  height: 30px;
+  background: var(--saffron);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(255,107,0,0.35);
+  animation: mic-glow 3s ease infinite;
+}
+
+/* Stats grid — 2x2 */
+.phone-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.phone-stat-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.phone-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 100%;
+  border-radius: 3px 0 0 3px;
+}
+.phone-stat-card--total::before { background: #6366F1; }
+.phone-stat-card--low::before { background: #FFB547; }
+.phone-stat-card--out::before { background: #E85A4F; }
+.phone-stat-card--activity::before { background: #32D583; }
+
+.phone-stat-number {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.phone-stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Product list cards */
+.phone-filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.phone-chip {
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.phone-chip--active {
+  background: rgba(255,107,0,0.12);
+  border-color: var(--saffron);
+  color: var(--saffron);
+}
+
+.phone-product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.phone-product-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.phone-product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-product-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.phone-product-meta {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.phone-product-qty {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.phone-product-qty-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.phone-product-qty-unit {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.phone-product-status {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 3px;
+}
+
+.phone-product-status--low {
+  background: rgba(255,181,71,0.15);
+  color: var(--warning);
+}
+.phone-product-status--ok {
+  background: rgba(50,213,131,0.12);
+  color: var(--success);
+}
+
+/* Floating mic button */
+.phone-fab {
+  position: absolute;
+  bottom: 24px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--saffron);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 28px rgba(255, 107, 0, 0.5);
+  animation: mic-glow 3s ease infinite;
+  z-index: 3;
+}
+
+@keyframes mic-glow {
+  0%, 100% { box-shadow: 0 8px 28px rgba(255, 107, 0, 0.35); }
+  50% { box-shadow: 0 8px 44px rgba(255, 107, 0, 0.6); }
+}
+
+/* Floating alert cards — z-index ABOVE phone */
+.float-card {
+  position: absolute;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dark);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 13px;
+  max-width: 230px;
+  z-index: 10;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.float-card--voice {
+  top: 60px;
+  right: -20px;
+  animation: float-a 6s ease infinite;
+}
+
+.float-card--alert {
+  bottom: 120px;
+  left: -30px;
+  animation: float-b 7s ease infinite;
+}
+
+.float-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.float-card-icon--voice {
+  background: rgba(255, 107, 0, 0.15);
+}
+
+.float-card-icon--alert {
+  background: rgba(255, 181, 71, 0.15);
+}
+
+.float-card p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.float-card strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+@keyframes float-a {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+/* ── Section base ─────────────────────────────────── */
+section {
+  padding: clamp(80px, 10vw, 140px) 0;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--saffron);
+  margin-bottom: 16px;
+}
+
+.section-heading {
+  font-size: clamp(32px, 4vw, 48px);
+  margin-bottom: 16px;
+  max-width: 700px;
+}
+
+.section-sub {
+  font-size: clamp(15px, 1.2vw, 18px);
+  color: var(--text-secondary);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* ── How It Works ─────────────────────────────────── */
+.how-it-works {
+  border-top: 1px solid var(--border-dark);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 64px;
+  background: var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.step {
+  background: var(--bg-card);
+  padding: clamp(32px, 4vw, 56px);
+  position: relative;
+}
+
+.step-number {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(255, 107, 0, 0.08);
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.step h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.step p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.step-example {
+  margin-top: 20px;
+  background: var(--bg-deep);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 14px;
+  border-left: 3px solid var(--saffron);
+}
+
+.step-example .hindi {
+  color: var(--saffron);
+  font-weight: 500;
+}
+
+.step-example .english {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* ── Features ─────────────────────────────────────── */
+.features {
+  border-top: 1px solid var(--border-dark);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 64px;
+  background: var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.feature {
+  background: var(--bg-card);
+  padding: clamp(28px, 3vw, 44px);
+  transition: background 0.3s ease;
+}
+
+.feature:hover {
+  background: var(--bg-elevated);
+}
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+  background: var(--saffron-tint);
+}
+
+.feature h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+.feature p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── AI Intelligence (centrepiece) ────────────────── */
+.ai-section {
+  border-top: 1px solid var(--border-dark);
+  position: relative;
+}
+
+.ai-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ai-header {
+  text-align: left;
+  margin-bottom: 72px;
+}
+
+.ai-header .section-heading {
+  max-width: 800px;
+}
+
+.ai-blocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ai-block {
+  background: var(--bg-card);
+  padding: clamp(32px, 4vw, 52px);
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.ai-block:hover {
+  background: var(--bg-elevated);
+}
+
+.ai-block--wide {
+  grid-column: span 2;
+}
+
+.ai-block-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.ai-block-tag--predict { background: rgba(99, 102, 241, 0.12); color: #818CF8; }
+.ai-block-tag--alert { background: rgba(255, 181, 71, 0.12); color: var(--warning); }
+.ai-block-tag--insight { background: rgba(50, 213, 131, 0.12); color: var(--success); }
+.ai-block-tag--team { background: rgba(255, 107, 0, 0.1); color: var(--saffron); }
+
+.ai-block h3 {
+  font-size: clamp(18px, 1.6vw, 22px);
+  margin-bottom: 12px;
+}
+
+.ai-block p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 480px;
+}
+
+.ai-voice-example {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.voice-bubble {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.voice-bubble-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.voice-bubble-avatar--user {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dark);
+}
+
+.voice-bubble-avatar--ai {
+  background: var(--saffron);
+}
+
+.voice-bubble-content {
+  background: var(--bg-deep);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.voice-bubble-content .hindi {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.voice-bubble-content .translation {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* ── Languages ────────────────────────────────────── */
+.languages-section {
+  border-top: 1px solid var(--border-dark);
+}
+
+.lang-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 48px;
+}
+
+.lang-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.lang-chip:hover {
+  border-color: var(--saffron);
+  background: var(--saffron-tint);
+}
+
+.lang-chip .native {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Comparison ───────────────────────────────────── */
+.comparison {
+  border-top: 1px solid var(--border-dark);
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 64px;
+  background: var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.comparison-col {
+  padding: clamp(32px, 4vw, 56px);
+}
+
+.comparison-col--without {
+  background: var(--bg-card);
+}
+
+.comparison-col--with {
+  background: #14140A;
+}
+
+.comparison-col h3 {
+  font-size: 20px;
+  margin-bottom: 28px;
+}
+
+.comparison-col--with h3 {
+  color: var(--saffron);
+}
+
+.comparison-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comparison-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.comparison-list .icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.comparison-col--without .icon { color: var(--danger); }
+.comparison-col--with .icon { color: var(--success); }
+
+/* ── Testimonials ─────────────────────────────────── */
+.testimonials {
+  border-top: 1px solid var(--border-dark);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 64px;
+  background: var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.testimonial {
+  background: var(--bg-card);
+  padding: clamp(28px, 3vw, 44px);
+}
+
+.testimonial-stars {
+  color: var(--saffron);
+  font-size: 14px;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+
+.testimonial blockquote {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-style: normal;
+}
+
+.testimonial-author {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.testimonial-role {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── CTA ──────────────────────────────────────────── */
+.cta-section {
+  border-top: 1px solid var(--border-dark);
+  text-align: center;
+}
+
+.cta-section .section-heading {
+  margin: 0 auto 12px;
+  max-width: 600px;
+}
+
+.cta-section .section-sub {
+  margin: 0 auto 40px;
+  max-width: 480px;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: 10px;
+  padding: 12px 24px;
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.store-badge:hover {
+  border-color: var(--text-muted);
+  transform: translateY(-2px);
+}
+
+.store-badge-icon {
+  font-size: 24px;
+}
+
+.store-badge-text {
+  text-align: left;
+}
+
+.store-badge-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.store-badge-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Footer ───────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border-dark);
+  padding: 64px 0 40px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+
+.footer-brand p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 16px;
+  max-width: 280px;
+}
+
+.footer-col h4 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.footer-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-col a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.footer-col a:hover {
+  color: var(--text-primary);
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-dark);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.made-in-india {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Scroll Reveal ────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-stats { justify-content: center; }
+  .hero-visual { order: -1; }
+
+  .phone-frame {
+    transform: none;
+    width: 240px;
+    height: 500px;
+  }
+
+  .float-card { display: none; }
+
+  .steps-grid,
+  .features-grid,
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-blocks {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-block--wide {
+    grid-column: span 1;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .mobile-menu-btn { display: block; }
+
+  .hero-stats { flex-direction: column; gap: 16px; align-items: center; }
+
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+}
+</style>
 </head>
 <body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav id="nav">
   <div class="container">
-    <div class="logo">Dukaan <span>Voice</span></div>
-    <p class="subtitle">Voice-first inventory management for Indian retail</p>
-    <div class="links">
-      <a href="privacy-policy.html">Privacy Policy</a>
-      <a href="terms-of-service.html">Terms of Service</a>
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <div class="logo-mark"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="stencil-nav"><rect x="0" y="0" width="100" height="100" fill="white"/><rect x="24" y="18" width="52" height="8" rx="4" fill="black"/><rect x="38" y="18" width="24" height="36" rx="12" fill="black"/><path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/><rect x="46" y="72" width="8" height="10" rx="4" fill="black"/><rect x="36" y="32" width="28" height="4" fill="white"/><rect x="36" y="44" width="28" height="4" fill="white"/></mask></defs><circle cx="50" cy="50" r="50" fill="#ea580c" mask="url(#stencil-nav)"/></svg></div>
+        <div class="logo-text">Samaan<span>Bol</span></div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#ai">AI Intelligence</a></li>
+        <li><a href="#languages">Languages</a></li>
+        <li><a href="#download" class="nav-cta">Download App</a></li>
+      </ul>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
-    <p class="footer">&copy; 2026 Dukaan Voice. All rights reserved.</p>
   </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow">Voice-first inventory for Indian retail</div>
+        <h1>
+          <span class="hindi-line hindi">बोल के सँभालो अपना बिज़नेस</span>
+          Manage your shop<br>with just your voice
+        </h1>
+        <p class="hero-sub">
+          Speak in Hindi, Bengali, Tamil, or any of 10 Indian languages + English.
+          Samaan-Bol's AI understands your command, updates your inventory,
+          and keeps your business running — hands-free.
+        </p>
+        <div class="hero-actions">
+          <a href="#download" class="btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Free
+          </a>
+          <a href="#how" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            See It In Action
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-number">11</div>
+            <div class="hero-stat-label">Languages supported</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-label">Items tracked daily</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-number">2min</div>
+            <div class="hero-stat-label">Setup time</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <!-- Floating cards (z-index 10 — in FRONT of phone) -->
+        <div class="float-card float-card--voice">
+          <div class="float-card-icon float-card-icon--voice">🎙</div>
+          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 kg</p>
+        </div>
+
+        <div class="float-card float-card--alert">
+          <div class="float-card-icon float-card-icon--alert">⚡</div>
+          <p><strong>Low Stock Alert</strong></p>
+          <p style="margin-top:4px; font-size:12px;">Atta may run out in 3 days</p>
+        </div>
+
+        <!-- Phone mockup — mirrors actual app UI -->
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="phone-status-bar">
+              <span>9:41</span>
+              <span style="display:flex; gap:4px; align-items:center;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="17" y="4" width="4" height="16" rx="1"/><rect x="11" y="8" width="4" height="12" rx="1"/><rect x="5" y="12" width="4" height="8" rx="1"/></svg>
+                <svg width="14" height="12" viewBox="0 0 28 14" fill="currentColor"><rect x="0" y="1" width="22" height="12" rx="2" stroke="currentColor" fill="none" stroke-width="1.5"/><rect x="24" y="4.5" width="3" height="5" rx="1"/><rect x="2" y="3" width="14" height="8" rx="1"/></svg>
+              </span>
+            </div>
+
+            <!-- Header: greeting + bell -->
+            <div class="phone-header">
+              <div>
+                <div class="phone-greeting">Good morning! 👋</div>
+                <div class="phone-subtext">Priya General Store</div>
+              </div>
+              <div class="phone-bell">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <div class="phone-bell-badge">3</div>
+              </div>
+            </div>
+
+            <!-- Search bar with mic icon -->
+            <div class="phone-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A4A50" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span class="phone-search-text">Search products...</span>
+              <div class="phone-search-mic">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+              </div>
+            </div>
+
+            <!-- 2x2 Stats grid -->
+            <div class="phone-stats-grid">
+              <div class="phone-stat-card phone-stat-card--total">
+                <div class="phone-stat-number">142</div>
+                <div class="phone-stat-label">Total Items</div>
+              </div>
+              <div class="phone-stat-card phone-stat-card--low">
+                <div class="phone-stat-number" style="color:var(--warning);">8</div>
+                <div class="phone-stat-label">Low Stock</div>
+              </div>
+              <div class="phone-stat-card phone-stat-card--out">
+                <div class="phone-stat-number" style="color:var(--danger);">2</div>
+                <div class="phone-stat-label">Out of Stock</div>
+              </div>
+              <div class="phone-stat-card phone-stat-card--activity">
+                <div class="phone-stat-number" style="color:var(--success);">23</div>
+                <div class="phone-stat-label">Updated Today</div>
+              </div>
+            </div>
+
+            <!-- Filter chips -->
+            <div class="phone-filter-row">
+              <span class="phone-chip phone-chip--active">All</span>
+              <span class="phone-chip">Low Stock</span>
+              <span class="phone-chip">Out</span>
+              <span class="phone-chip">Expiry</span>
+            </div>
+
+            <!-- Product cards -->
+            <div class="phone-product">
+              <div class="phone-product-icon" style="background:rgba(255,181,71,0.12);">🍚</div>
+              <div class="phone-product-info">
+                <div class="phone-product-name">Basmati Rice</div>
+                <div class="phone-product-meta">Grains · Updated 2m ago</div>
+              </div>
+              <div class="phone-product-qty">
+                <div class="phone-product-qty-num">23</div>
+                <div class="phone-product-qty-unit">kg</div>
+              </div>
+            </div>
+
+            <div class="phone-product">
+              <div class="phone-product-icon" style="background:rgba(255,107,0,0.12);">🫒</div>
+              <div class="phone-product-info">
+                <div class="phone-product-name">Aashirvaad Atta</div>
+                <div class="phone-product-meta">Flour · Updated 1h ago</div>
+                <div class="phone-product-status phone-product-status--low">LOW STOCK</div>
+              </div>
+              <div class="phone-product-qty">
+                <div class="phone-product-qty-num" style="color:var(--warning);">3</div>
+                <div class="phone-product-qty-unit">kg</div>
+              </div>
+            </div>
+
+            <div class="phone-product">
+              <div class="phone-product-icon" style="background:rgba(50,213,131,0.1);">🥛</div>
+              <div class="phone-product-info">
+                <div class="phone-product-name">Amul Toned Milk</div>
+                <div class="phone-product-meta">Dairy · Updated 3h ago</div>
+              </div>
+              <div class="phone-product-qty">
+                <div class="phone-product-qty-num">40</div>
+                <div class="phone-product-qty-unit">pkt</div>
+              </div>
+            </div>
+
+          </div>
+          <!-- Floating mic FAB (like the real app) -->
+          <div class="phone-fab">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0D12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-it-works" id="how">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-heading">Three steps. No training needed.</h2>
+      <p class="section-sub">Just speak naturally in your language — the AI handles the rest.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step reveal reveal-delay-1">
+        <div class="step-number">01</div>
+        <h3>Speak your command</h3>
+        <p>Tap the mic and say what you need — add stock, check quantity, create a buy list. In any Indian language.</p>
+        <div class="step-example">
+          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="english">Add 5 kg rice</div>
+        </div>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-number">02</div>
+        <h3>AI understands instantly</h3>
+        <p>Sarvam AI processes your speech, extracts the product, quantity, and action — then matches it to your inventory.</p>
+        <div class="step-example">
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <span style="background:var(--saffron-tint); color:var(--saffron); padding:4px 10px; border-radius:4px; font-size:12px;">Rice → Basmati 🍚</span>
+            <span style="background:rgba(50,213,131,0.1); color:var(--success); padding:4px 10px; border-radius:4px; font-size:12px;">+5 kg</span>
+            <span style="background:rgba(99,102,241,0.1); color:#818CF8; padding:4px 10px; border-radius:4px; font-size:12px;">Add ✓</span>
+          </div>
+        </div>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-number">03</div>
+        <h3>Inventory updated, confirmed</h3>
+        <p>Your stock is updated instantly. You hear a voice confirmation in your language — no screen needed.</p>
+        <div class="step-example">
+          <div class="hindi">"हो गया — बासमती चावल अब 23 किलो है"</div>
+          <div class="english">Done — Basmati rice is now 23 kg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-heading">Everything your shop needs. Nothing it doesn't.</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature reveal reveal-delay-1">
+        <div class="feature-icon">🎙</div>
+        <h3>Voice-First Inventory</h3>
+        <p>Add, remove, or check stock by speaking naturally. No typing, no searching through menus.</p>
+      </div>
+      <div class="feature reveal reveal-delay-2">
+        <div class="feature-icon">🌐</div>
+        <h3>10 Indian Languages + English</h3>
+        <p>Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, Punjabi, and Odia — powered by Sarvam AI.</p>
+      </div>
+      <div class="feature reveal reveal-delay-3">
+        <div class="feature-icon">👥</div>
+        <h3>Team Roles</h3>
+        <p>Owner, Manager, and Helper roles with granular permissions. Everyone on the same page, securely.</p>
+      </div>
+      <div class="feature reveal reveal-delay-1">
+        <div class="feature-icon">📋</div>
+        <h3>Smart Buy Lists</h3>
+        <p>Auto-generated restocking lists based on what's running low. Share to suppliers via WhatsApp.</p>
+      </div>
+      <div class="feature reveal reveal-delay-2">
+        <div class="feature-icon">📊</div>
+        <h3>Activity Audit Log</h3>
+        <p>Every change tracked with who, what, and when. Complete transparency across your team.</p>
+      </div>
+      <div class="feature reveal reveal-delay-3">
+        <div class="feature-icon">📱</div>
+        <h3>Barcode Scanning</h3>
+        <p>Scan products to add or look up instantly. Works with Indian and international barcodes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ AI INTELLIGENCE ═══ -->
+<section class="ai-section" id="ai">
+  <div class="container">
+    <div class="ai-header reveal">
+      <div class="section-label">AI Intelligence</div>
+      <h2 class="section-heading">
+        <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(22px,2.8vw,32px); font-weight:500; margin-bottom:8px;">समझदार AI जो आपके बिज़नेस को समझे</span>
+        Not just tracking — your shop's first digital brain
+      </h2>
+      <p class="section-sub">Samaan-Bol doesn't just record what you tell it. It learns your patterns, predicts your needs, and alerts you before problems happen.</p>
+    </div>
+
+    <div class="ai-blocks">
+      <!-- Predictive Stock -->
+      <div class="ai-block reveal">
+        <div class="ai-block-tag ai-block-tag--predict">⬡ Predictive Stock</div>
+        <h3>Knows what you'll need before you do</h3>
+        <p>The AI learns your selling patterns — daily, weekly, seasonal. It predicts when items will run low and suggests restocking days in advance.</p>
+        <div class="ai-voice-example">
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-content">
+              <div class="hindi">"Aapka atta 3 din mein khatam ho sakta hai — haftey ki bikri ke hisaab se"</div>
+              <div class="translation">Your atta may run out in 3 days — based on weekly sales</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Alerts -->
+      <div class="ai-block reveal">
+        <div class="ai-block-tag ai-block-tag--alert">⚡ Smart Alerts</div>
+        <h3>Alerts that speak your language</h3>
+        <p>Expiry warnings, slow-moving stock detection, and price fluctuation alerts — delivered as voice notifications in your preferred language.</p>
+        <div class="ai-voice-example">
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-content">
+              <div class="hindi">"Parle-G ke 12 packet 5 din mein expire ho rahe hain — discount lagana chahein?"</div>
+              <div class="translation">12 Parle-G packets expiring in 5 days — want to add a discount?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Analytics -->
+      <div class="ai-block reveal">
+        <div class="ai-block-tag ai-block-tag--insight">◉ Voice Analytics</div>
+        <h3>Ask your shop a question — it answers</h3>
+        <p>Ask anything about your business in natural language. The AI responds with spoken answers and on-screen data.</p>
+        <div class="ai-voice-example">
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--user">🗣</div>
+            <div class="voice-bubble-content">
+              <div class="hindi">"Pichle hafte sabse zyada kya bika?"</div>
+              <div class="translation">What sold the most last week?</div>
+            </div>
+          </div>
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-content">
+              <div class="hindi">"Pichle hafte sabse zyada chawal bika — 48 kilo"</div>
+              <div class="translation">Rice sold the most last week — 48 kilos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Intelligence -->
+      <div class="ai-block reveal">
+        <div class="ai-block-tag ai-block-tag--team">◎ Team Intelligence</div>
+        <h3>Know what your team is doing</h3>
+        <p>AI-powered anomaly detection flags unusual inventory changes. Smart summaries show who updated what, and whether corrections were needed.</p>
+        <div class="ai-voice-example">
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-content">
+              <div class="hindi">"Aaj shaam 6 baje 15 kilo cheeni ka stock kam hua — verify karein?"</div>
+              <div class="translation">15 kg sugar stock decreased at 6 PM today — want to verify?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ LANGUAGES ═══ -->
+<section class="languages-section" id="languages">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Built for Bharat</div>
+      <h2 class="section-heading">Your language. Your business. Your way.</h2>
+      <p class="section-sub">Samaan-Bol speaks the way you speak — with full support for native scripts, colloquial terms, and regional product names.</p>
+    </div>
+    <div class="lang-grid reveal">
+      <div class="lang-chip">Hindi <span class="native hindi">हिन्दी</span></div>
+      <div class="lang-chip">Bengali <span class="native">বাংলা</span></div>
+      <div class="lang-chip">Tamil <span class="native">தமிழ்</span></div>
+      <div class="lang-chip">Telugu <span class="native">తెలుగు</span></div>
+      <div class="lang-chip">Marathi <span class="native">मराठी</span></div>
+      <div class="lang-chip">Kannada <span class="native">ಕನ್ನಡ</span></div>
+      <div class="lang-chip">Gujarati <span class="native">ગુજરાતી</span></div>
+      <div class="lang-chip">Malayalam <span class="native">മലയാളം</span></div>
+      <div class="lang-chip">Punjabi <span class="native">ਪੰਜਾਬੀ</span></div>
+      <div class="lang-chip">Odia <span class="native">ଓଡ଼ିଆ</span></div>
+      <div class="lang-chip">English <span class="native">English</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPARISON ═══ -->
+<section class="comparison">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Why Samaan-Bol</div>
+      <h2 class="section-heading">The difference is night and day</h2>
+    </div>
+    <div class="comparison-grid reveal">
+      <div class="comparison-col comparison-col--without">
+        <h3>Without Samaan-Bol</h3>
+        <ul class="comparison-list">
+          <li><span class="icon">✕</span> Manual counting, pen-and-paper registers</li>
+          <li><span class="icon">✕</span> Stockouts discovered when a customer asks</li>
+          <li><span class="icon">✕</span> Guessing how much to reorder</li>
+          <li><span class="icon">✕</span> No idea what's expiring or slow-moving</li>
+          <li><span class="icon">✕</span> Can't track what staff is doing</li>
+          <li><span class="icon">✕</span> Festival prep is last-minute chaos</li>
+        </ul>
+      </div>
+      <div class="comparison-col comparison-col--with">
+        <h3>With Samaan-Bol</h3>
+        <ul class="comparison-list">
+          <li><span class="icon">✓</span> Voice updates — say it and it's done</li>
+          <li><span class="icon">✓</span> Predictive alerts days before stockout</li>
+          <li><span class="icon">✓</span> AI-generated buy lists based on real data</li>
+          <li><span class="icon">✓</span> Expiry and slow-mover detection built in</li>
+          <li><span class="icon">✓</span> Full audit trail with anomaly detection</li>
+          <li><span class="icon">✓</span> Festival forecasting starts 2 weeks early</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="testimonials">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">From Shopkeepers</div>
+      <h2 class="section-heading">Trusted by shopkeepers across India</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <blockquote>Pehle register mein likhna padta tha, ab bas bol deti hoon. Subah se shaam itna time bachta hai ki yakeen nahi hota.</blockquote>
+        <div class="testimonial-author">Meena Sharma</div>
+        <div class="testimonial-role">Kirana Store Owner, Jaipur</div>
+      </div>
+      <div class="testimonial reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <blockquote>Festival ke pehle AI ne khud bataya ki kya kya zyada mangwana chahiye. Diwali ka saamaan time pe aa gaya — pehli baar.</blockquote>
+        <div class="testimonial-author">Arjun Patel</div>
+        <div class="testimonial-role">General Store, Ahmedabad</div>
+      </div>
+      <div class="testimonial reveal reveal-delay-3">
+        <div class="testimonial-stars">★★★★★</div>
+        <blockquote>Bangla mein baat karta hai meri dukaan ka app — eta amar jonno khub bhalo. Amar staff o use korte parche easily.</blockquote>
+        <div class="testimonial-author">Rina Das</div>
+        <div class="testimonial-role">Textile Shop, Kolkata</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section" id="download">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Get Started Free</div>
+      <h2 class="section-heading">
+        <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(20px,2.4vw,28px); font-weight:500; margin-bottom:8px;">आज ही शुरू करें</span>
+        Your shop deserves better than a notebook
+      </h2>
+      <p class="section-sub">Free to start. Set up in 2 minutes. No credit card needed.</p>
+      <div class="cta-actions">
+        <a href="#" class="store-badge">
+          <div class="store-badge-icon">🍎</div>
+          <div class="store-badge-text">
+            <div class="store-badge-label">Download on the</div>
+            <div class="store-badge-name">App Store</div>
+          </div>
+        </a>
+        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+          <div class="store-badge-icon">▶</div>
+          <div class="store-badge-text">
+            <div class="store-badge-label">Get it on</div>
+            <div class="store-badge-name">Google Play</div>
+          </div>
+          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">Coming Soon</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <div class="logo-mark"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="stencil-footer"><rect x="0" y="0" width="100" height="100" fill="white"/><rect x="24" y="18" width="52" height="8" rx="4" fill="black"/><rect x="38" y="18" width="24" height="36" rx="12" fill="black"/><path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/><rect x="46" y="72" width="8" height="10" rx="4" fill="black"/><rect x="36" y="32" width="28" height="4" fill="white"/><rect x="36" y="44" width="28" height="4" fill="white"/></mask></defs><circle cx="50" cy="50" r="50" fill="#ea580c" mask="url(#stencil-footer)"/></svg></div>
+          <div class="logo-text">Samaan<span>Bol</span></div>
+        </a>
+        <p>Voice-first AI inventory management, built for the heart of Indian retail.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#ai">AI Intelligence</a></li>
+          <li><a href="#languages">Languages</a></li>
+          <li><a href="#">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="terms-of-service.html">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Samaan-Bol. All rights reserved.</span>
+      <span class="made-in-india">Made with ♥ in India 🇮🇳</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Scroll-based nav background ──
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+// ── Intersection Observer for reveal animations ──
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ── Smooth scroll for anchor links ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
 </body>
 </html>
