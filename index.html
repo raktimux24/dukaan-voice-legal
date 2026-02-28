@@ -644,6 +644,7 @@ nav.scrolled {
 .float-card-icon {
   display: inline-flex;
   align-items: center;
+  color: var(--saffron);
   justify-content: center;
   width: 28px;
   height: 28px;
@@ -658,6 +659,7 @@ nav.scrolled {
 
 .float-card-icon--alert {
   background: rgba(255, 181, 71, 0.15);
+  color: var(--warning);
 }
 
 .float-card p {
@@ -732,7 +734,7 @@ section {
   font-family: 'DM Sans', sans-serif;
   font-size: 64px;
   font-weight: 700;
-  color: rgba(255, 107, 0, 0.08);
+  color: rgba(255, 107, 0, 0.18);
   line-height: 1;
   margin-bottom: 20px;
 }
@@ -800,9 +802,9 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
   margin-bottom: 20px;
   background: var(--saffron-tint);
+  color: var(--saffron);
 }
 
 .feature h3 {
@@ -1134,7 +1136,12 @@ section {
 }
 
 .store-badge-icon {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-primary);
 }
 
 .store-badge-text {
@@ -1354,13 +1361,13 @@ footer {
       <div class="hero-visual">
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
-          <div class="float-card-icon float-card-icon--voice">🎙</div>
+          <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
           <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 kg</p>
         </div>
 
         <div class="float-card float-card--alert">
-          <div class="float-card-icon float-card-icon--alert">⚡</div>
+          <div class="float-card-icon float-card-icon--alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
           <p><strong>Low Stock Alert</strong></p>
           <p style="margin-top:4px; font-size:12px;">Atta may run out in 3 days</p>
         </div>
@@ -1528,32 +1535,32 @@ footer {
     </div>
     <div class="features-grid">
       <div class="feature reveal reveal-delay-1">
-        <div class="feature-icon">🎙</div>
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
         <h3>Voice-First Inventory</h3>
         <p>Add, remove, or check stock by speaking naturally. No typing, no searching through menus.</p>
       </div>
       <div class="feature reveal reveal-delay-2">
-        <div class="feature-icon">🌐</div>
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
         <h3>10 Indian Languages + English</h3>
         <p>Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, Punjabi, and Odia — powered by Sarvam AI.</p>
       </div>
       <div class="feature reveal reveal-delay-3">
-        <div class="feature-icon">👥</div>
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <h3>Team Roles</h3>
         <p>Owner, Manager, and Helper roles with granular permissions. Everyone on the same page, securely.</p>
       </div>
       <div class="feature reveal reveal-delay-1">
-        <div class="feature-icon">📋</div>
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg></div>
         <h3>Smart Buy Lists</h3>
         <p>Auto-generated restocking lists based on what's running low. Share to suppliers via WhatsApp.</p>
       </div>
       <div class="feature reveal reveal-delay-2">
-        <div class="feature-icon">📊</div>
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
         <h3>Activity Audit Log</h3>
         <p>Every change tracked with who, what, and when. Complete transparency across your team.</p>
       </div>
       <div class="feature reveal reveal-delay-3">
-        <div class="feature-icon">📱</div>
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="16" x2="17" y2="16"/></svg></div>
         <h3>Barcode Scanning</h3>
         <p>Scan products to add or look up instantly. Works with Indian and international barcodes.</p>
       </div>
@@ -1576,7 +1583,7 @@ footer {
     <div class="ai-blocks">
       <!-- Predictive Stock -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--predict">⬡ Predictive Stock</div>
+        <div class="ai-block-tag ai-block-tag--predict"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> Predictive Stock</div>
         <h3>Knows what you'll need before you do</h3>
         <p>The AI learns your selling patterns — daily, weekly, seasonal. It predicts when items will run low and suggests restocking days in advance.</p>
         <div class="ai-voice-example">
@@ -1592,7 +1599,7 @@ footer {
 
       <!-- Smart Alerts -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--alert">⚡ Smart Alerts</div>
+        <div class="ai-block-tag ai-block-tag--alert"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Smart Alerts</div>
         <h3>Alerts that speak your language</h3>
         <p>Expiry warnings, slow-moving stock detection, and price fluctuation alerts — delivered as voice notifications in your preferred language.</p>
         <div class="ai-voice-example">
@@ -1608,7 +1615,7 @@ footer {
 
       <!-- Voice Analytics -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--insight">◉ Voice Analytics</div>
+        <div class="ai-block-tag ai-block-tag--insight"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Voice Analytics</div>
         <h3>Ask your shop a question — it answers</h3>
         <p>Ask anything about your business in natural language. The AI responds with spoken answers and on-screen data.</p>
         <div class="ai-voice-example">
@@ -1631,7 +1638,7 @@ footer {
 
       <!-- Team Intelligence -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--team">◎ Team Intelligence</div>
+        <div class="ai-block-tag ai-block-tag--team"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Team Intelligence</div>
         <h3>Know what your team is doing</h3>
         <p>AI-powered anomaly detection flags unusual inventory changes. Smart summaries show who updated what, and whether corrections were needed.</p>
         <div class="ai-voice-example">
@@ -1711,27 +1718,27 @@ footer {
 <section class="testimonials">
   <div class="container">
     <div class="reveal">
-      <div class="section-label">From Shopkeepers</div>
-      <h2 class="section-heading">Trusted by shopkeepers across India</h2>
+      <div class="section-label">Early Adopters</div>
+      <h2 class="section-heading">Loved by beta testers across India</h2>
     </div>
     <div class="testimonials-grid">
       <div class="testimonial reveal reveal-delay-1">
         <div class="testimonial-stars">★★★★★</div>
-        <blockquote>Pehle register mein likhna padta tha, ab bas bol deti hoon. Subah se shaam itna time bachta hai ki yakeen nahi hota.</blockquote>
+        <blockquote>Beta testing mein try kiya — pehle din se register band. Ab bas bol deti hoon aur sab update ho jaata hai. Itna aasan hoga socha nahi tha.</blockquote>
         <div class="testimonial-author">Meena Sharma</div>
-        <div class="testimonial-role">Kirana Store Owner, Jaipur</div>
+        <div class="testimonial-role">Beta Tester · Kirana Store Owner, Jaipur</div>
       </div>
       <div class="testimonial reveal reveal-delay-2">
         <div class="testimonial-stars">★★★★★</div>
-        <blockquote>Festival ke pehle AI ne khud bataya ki kya kya zyada mangwana chahiye. Diwali ka saamaan time pe aa gaya — pehli baar.</blockquote>
+        <blockquote>January mein beta join kiya tha — Holi ke liye AI ne already bataya ki kya stock badhana hai. Abhi se itna smart hai, sochiye launch ke baad kya hoga.</blockquote>
         <div class="testimonial-author">Arjun Patel</div>
-        <div class="testimonial-role">General Store, Ahmedabad</div>
+        <div class="testimonial-role">Beta Tester · General Store, Ahmedabad</div>
       </div>
       <div class="testimonial reveal reveal-delay-3">
         <div class="testimonial-stars">★★★★★</div>
-        <blockquote>Bangla mein baat karta hai meri dukaan ka app — eta amar jonno khub bhalo. Amar staff o use korte parche easily.</blockquote>
+        <blockquote>Bangla mein bolte hi samajh gaya — beta testing-e dekhlam je amar bhasha te kaj kore. Staff ra o khub easily use korte parchhe.</blockquote>
         <div class="testimonial-author">Rina Das</div>
-        <div class="testimonial-role">Textile Shop, Kolkata</div>
+        <div class="testimonial-role">Beta Tester · Textile Shop, Kolkata</div>
       </div>
     </div>
   </div>
@@ -1749,14 +1756,14 @@ footer {
       <p class="section-sub">Free to start. Set up in 2 minutes. No credit card needed.</p>
       <div class="cta-actions">
         <a href="#" class="store-badge">
-          <div class="store-badge-icon">🍎</div>
+          <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">Download on the</div>
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
         <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
-          <div class="store-badge-icon">▶</div>
+          <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">Get it on</div>
             <div class="store-badge-name">Google Play</div>
