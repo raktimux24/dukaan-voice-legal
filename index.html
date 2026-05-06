@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ── Reset & Base ─────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,6 +30,10 @@
   --success: #32D583;
   --warning: #FFB547;
   --danger: #E85A4F;
+  --saffron-light: #FF8A33;
+  --glow-saffron: 0 0 40px rgba(255, 107, 0, 0.3);
+  --glass-bg: rgba(21, 21, 28, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 html {
@@ -48,14 +52,14 @@ body {
 
 /* ── Typography ───────────────────────────────────── */
 h1, h2, h3, h4 {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 .hindi {
-  font-family: 'Noto Sans Devanagari', 'DM Sans', sans-serif;
+  font-family: 'Noto Sans Devanagari', 'Space Grotesk', sans-serif;
 }
 
 /* ── Container ────────────────────────────────────── */
@@ -117,7 +121,7 @@ nav.scrolled {
 }
 
 .logo-text {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 20px;
   color: var(--text-primary);
@@ -263,7 +267,7 @@ nav.scrolled {
   color: var(--bg-deep);
   padding: 14px 32px;
   border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   font-size: 16px;
   text-decoration: none;
@@ -285,7 +289,7 @@ nav.scrolled {
   color: var(--text-primary);
   padding: 14px 28px;
   border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
   font-size: 16px;
   text-decoration: none;
@@ -309,7 +313,7 @@ nav.scrolled {
 }
 
 .hero-stat-number {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 28px;
   color: var(--text-primary);
@@ -342,7 +346,6 @@ nav.scrolled {
   box-shadow:
     0 40px 80px rgba(0,0,0,0.5),
     0 0 0 1px rgba(255,255,255,0.05) inset;
-  transform: perspective(800px) rotateY(-5deg) rotateX(2deg);
 }
 
 /* Dynamic island notch */
@@ -383,7 +386,7 @@ nav.scrolled {
 }
 
 .phone-greeting {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
@@ -484,7 +487,7 @@ nav.scrolled {
 .phone-stat-card--activity::before { background: #32D583; }
 
 .phone-stat-number {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 22px;
   font-weight: 700;
   line-height: 1;
@@ -564,7 +567,7 @@ nav.scrolled {
 }
 
 .phone-product-qty-num {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 15px;
   font-weight: 700;
 }
@@ -731,7 +734,7 @@ section {
 }
 
 .step-number {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 64px;
   font-weight: 700;
   color: rgba(255, 107, 0, 0.18);
@@ -788,7 +791,8 @@ section {
 .feature {
   background: var(--bg-card);
   padding: clamp(28px, 3vw, 44px);
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
 }
 
 .feature:hover {
@@ -869,6 +873,19 @@ section {
   grid-column: span 2;
 }
 
+.ai-block-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: rgba(26, 26, 34, 0.7);
+  color: var(--saffron);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .ai-block-tag {
   display: inline-flex;
   align-items: center;
@@ -913,24 +930,26 @@ section {
 }
 
 .voice-bubble-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 .voice-bubble-avatar--user {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-dark);
+  background: rgba(26, 26, 34, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
 }
 
 .voice-bubble-avatar--ai {
-  background: var(--saffron);
+  background: rgba(26, 26, 34, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--saffron);
 }
 
 .voice-bubble-content {
@@ -958,33 +977,51 @@ section {
 }
 
 .lang-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
   margin-top: 48px;
+  background: var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .lang-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
   background: var(--bg-card);
-  border: 1px solid var(--border-dark);
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: border-color 0.2s, background 0.2s;
+  padding: 24px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: background 0.3s ease;
+  position: relative;
 }
 
 .lang-chip:hover {
-  border-color: var(--saffron);
-  background: var(--saffron-tint);
+  background: var(--bg-elevated);
 }
 
 .lang-chip .native {
+  font-size: 22px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.lang-chip--featured {
+  grid-column: span 2;
+  padding: 32px;
+}
+
+.lang-chip--featured .native {
+  font-size: 32px;
+  color: var(--saffron);
+  opacity: 0.7;
 }
 
 /* ── Comparison ───────────────────────────────────── */
@@ -995,28 +1032,63 @@ section {
 .comparison-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px;
+  gap: 24px;
   margin-top: 64px;
-  background: var(--border-dark);
-  border-radius: 16px;
-  overflow: hidden;
 }
 
 .comparison-col {
-  padding: clamp(32px, 4vw, 56px);
+  padding: clamp(32px, 4vw, 48px);
+  border-radius: 16px;
+  border: 1px solid var(--border-dark);
+  position: relative;
+  overflow: hidden;
 }
 
 .comparison-col--without {
   background: var(--bg-card);
 }
 
+.comparison-col--without::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 80% 20%, rgba(232, 90, 79, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
 .comparison-col--with {
-  background: #14140A;
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.04) 0%, var(--bg-card) 100%);
+  border-color: rgba(255, 107, 0, 0.2);
+  box-shadow: 0 0 60px rgba(255, 107, 0, 0.05);
+}
+
+.comparison-col--with::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 20% 80%, rgba(255, 107, 0, 0.06) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .comparison-col h3 {
-  font-size: 20px;
+  font-size: 22px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.comparison-col-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
   margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
 }
 
 .comparison-col--with h3 {
@@ -1027,26 +1099,53 @@ section {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .comparison-list li {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
   font-size: 15px;
   color: var(--text-secondary);
   line-height: 1.5;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.comparison-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.comparison-list li:first-child {
+  padding-top: 0;
 }
 
 .comparison-list .icon {
   flex-shrink: 0;
-  font-size: 16px;
-  margin-top: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 1px;
 }
 
-.comparison-col--without .icon { color: var(--danger); }
-.comparison-col--with .icon { color: var(--success); }
+.comparison-col--without .icon {
+  background: rgba(232, 90, 79, 0.12);
+  color: var(--danger);
+}
+
+.comparison-col--with .icon {
+  background: rgba(50, 213, 131, 0.12);
+  color: var(--success);
+}
 
 /* ── Testimonials ─────────────────────────────────── */
 .testimonials {
@@ -1278,6 +1377,13 @@ footer {
     grid-template-columns: 1fr;
   }
 
+  .lang-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lang-chip--featured {
+    grid-column: span 2;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
@@ -1290,12 +1396,415 @@ footer {
 
   .hero-stats { flex-direction: column; gap: 16px; align-items: center; }
 
+  .lang-grid { grid-template-columns: 1fr; }
+  .lang-chip--featured { grid-column: span 1; }
+
   .footer-grid { grid-template-columns: 1fr; }
   .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+}
+
+/* ── Three.js Canvas Background ─────────────── */
+#bgCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.webgl-active .aurora-bg { display: none; }
+
+/* ── Aurora Background (WebGL fallback) ──────── */
+.aurora-bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.aurora-bg::before,
+.aurora-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  animation: aurora-drift 20s ease-in-out infinite alternate;
+}
+
+.aurora-bg::before {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--saffron) 0%, transparent 70%);
+  top: -200px; right: -100px;
+}
+
+.aurora-bg::after {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #6366F1 0%, transparent 70%);
+  bottom: -150px; left: -100px;
+  animation-delay: -10s;
+  animation-duration: 25s;
+}
+
+.aurora-orb {
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.1;
+  background: radial-gradient(circle, var(--success) 0%, transparent 70%);
+  top: 50%; left: 40%;
+  animation: aurora-drift 22s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes aurora-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -40px) scale(1.1); }
+  66% { transform: translate(-20px, 30px) scale(0.95); }
+  100% { transform: translate(10px, -10px) scale(1.05); }
+}
+
+/* ── Noise Grain Overlay ─────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ── Dot Grid on Hero ────────────────────────── */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 70%);
+}
+
+/* ── Gradient Hero Text ──────────────────────── */
+.hero h1 .hero-text-main {
+  display: block;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 50%, var(--saffron) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Word Stagger Reveal ─────────────────────── */
+.hero-text-reveal > .hindi-line {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: text-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero h1 .hero-text-main span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: text-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 50%, var(--saffron) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes text-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scroll Progress Bar ─────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--saffron), var(--saffron-light));
+  z-index: 101;
+  width: 0%;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.4);
+  transition: width 0.1s linear;
+}
+
+/* ── Animated Gradient Borders on Cards ──────── */
+.feature::before,
+.ai-block::before,
+.step::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 40%, rgba(255, 107, 0, 0.3) 50%, transparent 60%);
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.feature:hover::before,
+.ai-block:hover::before {
+  opacity: 1;
+  animation: border-shimmer 3s linear infinite;
+}
+
+@keyframes border-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* ── Button Shine Effect ─────────────────────── */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--saffron), var(--saffron-light), var(--saffron));
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: skewX(-20deg);
+  animation: btn-shine 4s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes btn-shine {
+  0%, 100% { left: -100%; }
+  50% { left: 150%; }
+}
+
+/* ── Card Hover Glow ─────────────────────────── */
+.feature:hover,
+.ai-block:hover,
+.testimonial:hover {
+  box-shadow: 0 0 40px rgba(255, 107, 0, 0.06), 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.testimonial {
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.testimonial:hover {
+  background: var(--bg-elevated);
+}
+
+/* ── Phone Mockup 3D Enhancement ─────────────── */
+.phone-frame {
+  transform: perspective(1200px) rotateY(-8deg) rotateX(3deg);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.phone-frame:hover {
+  transform: perspective(1200px) rotateY(-2deg) rotateX(1deg) scale(1.02);
+}
+
+/* ── Ambient Glow Behind Phone ───────────────── */
+.hero-visual::before {
+  content: '';
+  position: absolute;
+  width: 350px; height: 500px;
+  background: radial-gradient(ellipse, rgba(255, 107, 0, 0.12) 0%, rgba(99, 102, 241, 0.06) 40%, transparent 70%);
+  filter: blur(60px);
+  z-index: 0;
+  animation: phone-glow-pulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes phone-glow-pulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ── Language Text Cycling ───────────────────── */
+.hero-rotate {
+  display: inline-flex;
+  position: relative;
+  height: 1.4em;
+  overflow: hidden;
+  vertical-align: baseline;
+  color: var(--saffron);
+  min-width: 80px;
+  font-weight: 600;
+}
+
+.hero-rotate-word {
+  display: block;
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  white-space: nowrap;
+}
+
+.hero-rotate-word.active {
+  opacity: 1;
+  transform: translateY(0);
+  position: relative;
+}
+
+/* ── Bento Grid for Features ─────────────────── */
+.feature--hero {
+  grid-column: span 2;
+  padding: clamp(36px, 4vw, 60px);
+}
+
+.feature--hero h3 {
+  font-size: clamp(20px, 2vw, 26px);
+}
+
+/* Last feature fills remaining columns in row */
+.features-grid > .feature:last-child {
+  grid-column: -1 / 1;
+}
+
+@media (max-width: 1024px) {
+  .feature--hero,
+  .features-grid > .feature:last-child {
+    grid-column: span 1;
+  }
+  .phone-frame {
+    transform: none;
+  }
+  .phone-frame:hover {
+    transform: none;
+  }
+}
+
+/* ── Floating Decorative Orbs ────────────────── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.orb--saffron {
+  width: 300px; height: 300px;
+  background: rgba(255, 107, 0, 0.06);
+  animation: orb-float 15s ease-in-out infinite;
+}
+
+.orb--indigo {
+  width: 250px; height: 250px;
+  background: rgba(99, 102, 241, 0.05);
+  animation: orb-float 18s ease-in-out infinite reverse;
+}
+
+.orb--green {
+  width: 200px; height: 200px;
+  background: rgba(50, 213, 131, 0.04);
+  animation: orb-float 20s ease-in-out infinite;
+}
+
+@keyframes orb-float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(50px, -30px); }
+  50% { transform: translate(-30px, 50px); }
+  75% { transform: translate(40px, 20px); }
+}
+
+/* ── Gradient Section Dividers ───────────────── */
+.how-it-works,
+.features,
+.ai-section,
+.languages-section,
+.comparison,
+.testimonials,
+.cta-section {
+  border-top: none;
+  position: relative;
+}
+
+.how-it-works::before,
+.features::before,
+.languages-section::before,
+.comparison::before,
+.testimonials::before,
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: clamp(20px, 5vw, 48px);
+  right: clamp(20px, 5vw, 48px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-dark), rgba(255, 107, 0, 0.2), var(--border-dark), transparent);
+}
+
+/* ── Additional Reveal Delays ────────────────── */
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* ── Bigger Typographic Scale ────────────────── */
+.hero h1 {
+  font-size: clamp(44px, 6vw, 72px);
+}
+
+.section-heading {
+  font-size: clamp(36px, 4.5vw, 56px);
+}
+
+.section-label {
+  letter-spacing: 0.2em;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.hero-stat-number {
+  font-size: 36px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Reduced Motion ──────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .aurora-bg::before, .aurora-bg::after, .aurora-orb { animation: none; opacity: 0.1; }
+  .scroll-progress { transition: none; }
+  .reveal { opacity: 1; transform: none; }
+  .hero-text-reveal > .hindi-line,
+  .hero h1 .hero-text-main span { opacity: 1; transform: none; animation: none; }
 }
 </style>
 </head>
 <body>
+
+<!-- Three.js background canvas -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- Aurora ambient background (WebGL fallback) -->
+<div class="aurora-bg"><div class="aurora-orb"></div></div>
+
+<!-- Scroll progress indicator -->
+<div class="scroll-progress" id="scrollProgress"></div>
 
 <!-- ═══ NAVIGATION ═══ -->
 <nav id="nav">
@@ -1310,7 +1819,7 @@ footer {
         <li><a href="#features">Features</a></li>
         <li><a href="#ai">AI Intelligence</a></li>
         <li><a href="#languages">Languages</a></li>
-        <li><a href="#download" class="nav-cta">Download App</a></li>
+        <li><a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="nav-cta">Download App</a></li>
       </ul>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
@@ -1323,12 +1832,12 @@ footer {
     <div class="hero-grid">
       <div>
         <div class="hero-eyebrow">Voice-first inventory for Indian retail</div>
-        <h1>
+        <h1 class="hero-text-reveal">
           <span class="hindi-line hindi">बोल के सँभालो अपना बिज़नेस</span>
-          Manage your shop<br>with just your voice
+          <span class="hero-text-main">Manage your shop<br>with just your voice</span>
         </h1>
         <p class="hero-sub">
-          Speak in Hindi, Bengali, Tamil, or any of 10 Indian languages + English.
+          Speak in <span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">English</span></span>, or any of 10 Indian languages.
           Samaan-Bol's AI understands your command, updates your inventory,
           and keeps your business running — hands-free.
         </p>
@@ -1527,17 +2036,18 @@ footer {
 </section>
 
 <!-- ═══ FEATURES ═══ -->
-<section class="features" id="features">
+<section class="features" id="features" style="position:relative; overflow:hidden;">
+  <div class="orb orb--saffron" style="top: -100px; right: -150px;"></div>
   <div class="container">
     <div class="reveal">
       <div class="section-label">Features</div>
       <h2 class="section-heading">Everything your shop needs. Nothing it doesn't.</h2>
     </div>
     <div class="features-grid">
-      <div class="feature reveal reveal-delay-1">
+      <div class="feature feature--hero reveal reveal-delay-1">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
         <h3>Voice-First Inventory</h3>
-        <p>Add, remove, or check stock by speaking naturally. No typing, no searching through menus.</p>
+        <p>Add, remove, or check stock by speaking naturally. No typing, no searching through menus. Just speak in your language and the AI handles the rest — from understanding your command to updating your stock in real time.</p>
       </div>
       <div class="feature reveal reveal-delay-2">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
@@ -1569,7 +2079,9 @@ footer {
 </section>
 
 <!-- ═══ AI INTELLIGENCE ═══ -->
-<section class="ai-section" id="ai">
+<section class="ai-section" id="ai" style="overflow:hidden;">
+  <div class="orb orb--indigo" style="bottom: -100px; left: -100px;"></div>
+  <div class="orb orb--green" style="top: 200px; right: -80px;"></div>
   <div class="container">
     <div class="ai-header reveal">
       <div class="section-label">AI Intelligence</div>
@@ -1583,12 +2095,13 @@ footer {
     <div class="ai-blocks">
       <!-- Predictive Stock -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--predict"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> Predictive Stock</div>
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--predict">Predictive Stock</div>
         <h3>Knows what you'll need before you do</h3>
         <p>The AI learns your selling patterns — daily, weekly, seasonal. It predicts when items will run low and suggests restocking days in advance.</p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
             <div class="voice-bubble-content">
               <div class="hindi">"Aapka atta 3 din mein khatam ho sakta hai — haftey ki bikri ke hisaab se"</div>
               <div class="translation">Your atta may run out in 3 days — based on weekly sales</div>
@@ -1599,12 +2112,13 @@ footer {
 
       <!-- Smart Alerts -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--alert"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Smart Alerts</div>
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--alert">Smart Alerts</div>
         <h3>Alerts that speak your language</h3>
         <p>Expiry warnings, slow-moving stock detection, and price fluctuation alerts — delivered as voice notifications in your preferred language.</p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
             <div class="voice-bubble-content">
               <div class="hindi">"Parle-G ke 12 packet 5 din mein expire ho rahe hain — discount lagana chahein?"</div>
               <div class="translation">12 Parle-G packets expiring in 5 days — want to add a discount?</div>
@@ -1615,19 +2129,20 @@ footer {
 
       <!-- Voice Analytics -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--insight"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Voice Analytics</div>
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--insight">Voice Analytics</div>
         <h3>Ask your shop a question — it answers</h3>
         <p>Ask anything about your business in natural language. The AI responds with spoken answers and on-screen data.</p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--user">🗣</div>
+            <div class="voice-bubble-avatar voice-bubble-avatar--user"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
             <div class="voice-bubble-content">
               <div class="hindi">"Pichle hafte sabse zyada kya bika?"</div>
               <div class="translation">What sold the most last week?</div>
             </div>
           </div>
           <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
             <div class="voice-bubble-content">
               <div class="hindi">"Pichle hafte sabse zyada chawal bika — 48 kilo"</div>
               <div class="translation">Rice sold the most last week — 48 kilos</div>
@@ -1638,12 +2153,13 @@ footer {
 
       <!-- Team Intelligence -->
       <div class="ai-block reveal">
-        <div class="ai-block-tag ai-block-tag--team"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Team Intelligence</div>
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--team">Team Intelligence</div>
         <h3>Know what your team is doing</h3>
         <p>AI-powered anomaly detection flags unusual inventory changes. Smart summaries show who updated what, and whether corrections were needed.</p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai">🤖</div>
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
             <div class="voice-bubble-content">
               <div class="hindi">"Aaj shaam 6 baje 15 kilo cheeni ka stock kam hua — verify karein?"</div>
               <div class="translation">15 kg sugar stock decreased at 6 PM today — want to verify?</div>
@@ -1665,7 +2181,7 @@ footer {
       <p class="section-sub">Samaan-Bol speaks the way you speak — with full support for native scripts, colloquial terms, and regional product names.</p>
     </div>
     <div class="lang-grid reveal">
-      <div class="lang-chip">Hindi <span class="native hindi">हिन्दी</span></div>
+      <div class="lang-chip lang-chip--featured">Hindi <span class="native hindi">हिन्दी</span></div>
       <div class="lang-chip">Bengali <span class="native">বাংলা</span></div>
       <div class="lang-chip">Tamil <span class="native">தமிழ்</span></div>
       <div class="lang-chip">Telugu <span class="native">తెలుగు</span></div>
@@ -1690,6 +2206,7 @@ footer {
     <div class="comparison-grid reveal">
       <div class="comparison-col comparison-col--without">
         <h3>Without Samaan-Bol</h3>
+        <p class="comparison-col-subtitle">The old way of managing stock</p>
         <ul class="comparison-list">
           <li><span class="icon">✕</span> Manual counting, pen-and-paper registers</li>
           <li><span class="icon">✕</span> Stockouts discovered when a customer asks</li>
@@ -1701,6 +2218,7 @@ footer {
       </div>
       <div class="comparison-col comparison-col--with">
         <h3>With Samaan-Bol</h3>
+        <p class="comparison-col-subtitle">AI-powered, voice-first, effortless</p>
         <ul class="comparison-list">
           <li><span class="icon">✓</span> Voice updates — say it and it's done</li>
           <li><span class="icon">✓</span> Predictive alerts days before stockout</li>
@@ -1755,7 +2273,7 @@ footer {
       </h2>
       <p class="section-sub">Free to start. Set up in 2 minutes. No credit card needed.</p>
       <div class="cta-actions">
-        <a href="#" class="store-badge">
+        <a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">Download on the</div>
@@ -1820,11 +2338,319 @@ footer {
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// ── Scroll-based nav background ──
+// ── Three.js Background Effects ──
+(function() {
+  'use strict';
+
+  var canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
+
+  // Detect capabilities
+  var isMobile = /Mobi|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Check WebGL support
+  try {
+    var testCtx = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!testCtx) return;
+  } catch(e) { return; }
+
+  document.body.classList.add('webgl-active');
+
+  // ── Renderer ──
+  var renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: false,
+    alpha: true,
+    powerPreference: 'low-power'
+  });
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  // ── Scene + Camera ──
+  var scene = new THREE.Scene();
+  var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+  // ── Simplex noise (compact 2D) for gradient shader ──
+  var noiseGLSL = [
+    'vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}',
+    'vec2 mod289(vec2 x){return x-floor(x*(1.0/289.0))*289.0;}',
+    'vec3 permute(vec3 x){return mod289(((x*34.0)+1.0)*x);}',
+    'float snoise(vec2 v){',
+    '  const vec4 C=vec4(0.211324865405187,0.366025403784439,-0.577350269189626,0.024390243902439);',
+    '  vec2 i=floor(v+dot(v,C.yy));',
+    '  vec2 x0=v-i+dot(i,C.xx);',
+    '  vec2 i1;i1=(x0.x>x0.y)?vec2(1.0,0.0):vec2(0.0,1.0);',
+    '  vec4 x12=x0.xyxy+C.xxzz;x12.xy-=i1;',
+    '  i=mod289(i);',
+    '  vec3 p=permute(permute(i.y+vec3(0.0,i1.y,1.0))+i.x+vec3(0.0,i1.x,1.0));',
+    '  vec3 m=max(0.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.0);',
+    '  m=m*m;m=m*m;',
+    '  vec3 x=2.0*fract(p*C.www)-1.0;',
+    '  vec3 h=abs(x)-0.5;',
+    '  vec3 ox=floor(x+0.5);',
+    '  vec3 a0=x-ox;',
+    '  m*=1.79284291400159-0.85373472095314*(a0*a0+h*h);',
+    '  vec3 g;',
+    '  g.x=a0.x*x0.x+h.x*x0.y;',
+    '  g.yz=a0.yz*x12.xz+h.yz*x12.yw;',
+    '  return 130.0*dot(m,g);',
+    '}'
+  ].join('\n');
+
+  // ── Gradient Mesh Shader ──
+  var gradientVert = 'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.0);}';
+
+  var gradientFrag = [
+    'precision mediump float;',
+    'uniform float uTime;',
+    'uniform vec2 uMouse;',
+    'uniform float uScroll;',
+    'uniform vec2 uResolution;',
+    'varying vec2 vUv;',
+    noiseGLSL,
+    'void main(){',
+    '  vec2 uv=vUv;',
+    '  float aspect=uResolution.x/uResolution.y;',
+    '  vec2 p=vec2(uv.x*aspect,uv.y);',
+    '',
+    '  float t=uTime*0.15;',
+    '  float scroll=uScroll;',
+    '',
+    '  // Blob centers drift over time + scroll parallax',
+    '  vec2 c1=vec2(0.65*aspect+sin(t*0.7)*0.3, 0.75+cos(t*0.5)*0.2 - scroll*0.4);',
+    '  vec2 c2=vec2(0.3*aspect+cos(t*0.6)*0.25, 0.25+sin(t*0.8)*0.2 - scroll*0.2);',
+    '  vec2 c3=vec2(0.5*aspect+sin(t*0.9)*0.2, 0.5+cos(t*0.4)*0.25 - scroll*0.3);',
+    '',
+    '  // Mouse attraction on blob 1 (saffron)',
+    '  vec2 mouse=vec2(uMouse.x*aspect, uMouse.y);',
+    '  c1+=( mouse - c1)*0.12;',
+    '',
+    '  // Noise distortion on blob edges',
+    '  float n1=snoise(p*1.5+t*0.3)*0.15;',
+    '  float n2=snoise(p*1.8-t*0.25)*0.12;',
+    '  float n3=snoise(p*1.2+t*0.35)*0.13;',
+    '',
+    '  // Soft blobs with noise-distorted radii',
+    '  float d1=length(p-c1);',
+    '  float d2=length(p-c2);',
+    '  float d3=length(p-c3);',
+    '',
+    '  float b1=smoothstep(0.6+n1, 0.0, d1);',
+    '  float b2=smoothstep(0.5+n2, 0.0, d2);',
+    '  float b3=smoothstep(0.45+n3, 0.0, d3);',
+    '',
+    '  // Scroll-driven intensity zones',
+    '  float saffronBoost=1.0 - smoothstep(0.0, 0.3, scroll) + smoothstep(0.8, 1.0, scroll)*0.7;',
+    '  float indigoBoost=smoothstep(0.15, 0.4, scroll)*(1.0-smoothstep(0.6, 0.8, scroll));',
+    '  float greenBoost=smoothstep(0.4, 0.6, scroll)*(1.0-smoothstep(0.7, 0.9, scroll));',
+    '',
+    '  // Colors',
+    '  vec3 saffron=vec3(1.0, 0.42, 0.0);',
+    '  vec3 indigo=vec3(0.388, 0.4, 0.945);',
+    '  vec3 green=vec3(0.196, 0.827, 0.514);',
+    '  vec3 bg=vec3(0.039, 0.039, 0.059);',
+    '',
+    '  vec3 col=bg;',
+    '  col+=saffron * b1 * 0.16 * (0.7 + saffronBoost*0.5);',
+    '  col+=indigo * b2 * 0.12 * (0.5 + indigoBoost*0.7);',
+    '  col+=green * b3 * 0.09 * (0.4 + greenBoost*0.8);',
+    '',
+    '  // Subtle overall noise texture',
+    '  col+=snoise(uv*80.0+uTime)*0.008;',
+    '',
+    '  gl_FragColor=vec4(col, 1.0);',
+    '}'
+  ].join('\n');
+
+  var gradientMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+      uScroll: { value: 0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+    },
+    vertexShader: gradientVert,
+    fragmentShader: gradientFrag,
+    depthWrite: false
+  });
+
+  var gradientMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    gradientMaterial
+  );
+  scene.add(gradientMesh);
+
+  // ── Particle System ──
+  var PARTICLE_COUNT = isMobile ? 100 : 300;
+
+  var particleVert = [
+    'attribute float aSize;',
+    'attribute float aOpacity;',
+    'attribute float aSpeed;',
+    'uniform float uTime;',
+    'uniform float uScroll;',
+    'uniform vec2 uMouse;',
+    'varying float vOpacity;',
+    'void main(){',
+    '  vOpacity=aOpacity;',
+    '  vec3 pos=position;',
+    '',
+    '  // Slow upward drift',
+    '  pos.y+=mod(uTime*aSpeed*0.03 + position.y + 1.0, 2.0) - 1.0 - position.y;',
+    '',
+    '  // Parallax: larger particles scroll more',
+    '  pos.y-=uScroll*aSize*0.3;',
+    '',
+    '  // Fade out as user scrolls past hero',
+    '  vOpacity*=1.0 - smoothstep(0.0, 0.35, uScroll);',
+    '',
+    isMobile ? '' : [
+    '  // Mouse repulsion',
+    '  vec2 mouse=uMouse*2.0-1.0;',
+    '  vec2 diff=pos.xy-mouse;',
+    '  float dist=length(diff);',
+    '  if(dist<0.3){pos.xy+=normalize(diff)*(0.3-dist)*0.15;}'
+    ].join('\n'),
+    '',
+    '  gl_Position=vec4(pos, 1.0);',
+    '  gl_PointSize=aSize*(1.0+sin(uTime*aSpeed)*0.2);',
+    '}'
+  ].join('\n');
+
+  var particleFrag = [
+    'precision mediump float;',
+    'varying float vOpacity;',
+    'void main(){',
+    '  float d=length(gl_PointCoord-0.5)*2.0;',
+    '  float alpha=smoothstep(1.0, 0.3, d)*vOpacity;',
+    '  if(alpha<0.01) discard;',
+    '  vec3 col=mix(vec3(1.0,0.55,0.15), vec3(1.0,0.75,0.4), d);',
+    '  gl_FragColor=vec4(col, alpha);',
+    '}'
+  ].join('\n');
+
+  var positions = new Float32Array(PARTICLE_COUNT * 3);
+  var sizes = new Float32Array(PARTICLE_COUNT);
+  var opacities = new Float32Array(PARTICLE_COUNT);
+  var speeds = new Float32Array(PARTICLE_COUNT);
+
+  for (var i = 0; i < PARTICLE_COUNT; i++) {
+    positions[i*3]   = (Math.random() - 0.5) * 2;   // x: -1 to 1
+    positions[i*3+1] = (Math.random() - 0.5) * 2;   // y: -1 to 1
+    positions[i*3+2] = 0;
+    sizes[i] = 1.0 + Math.random() * 3.0;
+    opacities[i] = 0.08 + Math.random() * 0.25;
+    speeds[i] = 0.3 + Math.random() * 1.0;
+  }
+
+  var particleGeom = new THREE.BufferGeometry();
+  particleGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  particleGeom.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+  particleGeom.setAttribute('aOpacity', new THREE.BufferAttribute(opacities, 1));
+  particleGeom.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
+
+  var particleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uScroll: { value: 0 },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) }
+    },
+    vertexShader: particleVert,
+    fragmentShader: particleFrag,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  var particles = new THREE.Points(particleGeom, particleMaterial);
+  scene.add(particles);
+
+  // ── Input: Mouse + Scroll ──
+  var mouseTarget = { x: 0.5, y: 0.5 };
+  var mouseCurrent = { x: 0.5, y: 0.5 };
+  var scrollTarget = 0;
+  var scrollCurrent = 0;
+
+  if (!isMobile) {
+    document.addEventListener('mousemove', function(e) {
+      mouseTarget.x = e.clientX / window.innerWidth;
+      mouseTarget.y = 1.0 - (e.clientY / window.innerHeight);
+    }, { passive: true });
+  }
+
+  window.addEventListener('scroll', function() {
+    var max = document.body.scrollHeight - window.innerHeight;
+    scrollTarget = max > 0 ? window.scrollY / max : 0;
+  }, { passive: true });
+
+  // ── Animation Loop ──
+  var animationId;
+
+  function animate() {
+    animationId = requestAnimationFrame(animate);
+
+    var time = performance.now() * 0.001;
+
+    // Lerp inputs
+    mouseCurrent.x += (mouseTarget.x - mouseCurrent.x) * 0.05;
+    mouseCurrent.y += (mouseTarget.y - mouseCurrent.y) * 0.05;
+    scrollCurrent += (scrollTarget - scrollCurrent) * 0.03;
+
+    // Update gradient uniforms
+    gradientMaterial.uniforms.uTime.value = time;
+    gradientMaterial.uniforms.uMouse.value.set(mouseCurrent.x, mouseCurrent.y);
+    gradientMaterial.uniforms.uScroll.value = scrollCurrent;
+
+    // Update particle uniforms
+    particleMaterial.uniforms.uTime.value = time;
+    particleMaterial.uniforms.uScroll.value = scrollCurrent;
+    particleMaterial.uniforms.uMouse.value.set(mouseCurrent.x, mouseCurrent.y);
+
+    renderer.render(scene, camera);
+  }
+
+  // ── Reduced motion: render single frame ──
+  if (prefersReduced) {
+    gradientMaterial.uniforms.uTime.value = 0;
+    renderer.render(scene, camera);
+  } else {
+    animate();
+  }
+
+  // ── Visibility API: pause when hidden ──
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      cancelAnimationFrame(animationId);
+    } else if (!prefersReduced) {
+      animate();
+    }
+  });
+
+  // ── Resize (debounced) ──
+  var resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      gradientMaterial.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+    }, 150);
+  }, { passive: true });
+
+})();
+</script>
+
+<script>
+// ── Scroll-based nav background + progress bar ──
 const nav = document.getElementById('nav');
+const scrollProgress = document.getElementById('scrollProgress');
 window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 40);
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  scrollProgress.style.width = pct + '%';
 }, { passive: true });
 
 // ── Intersection Observer for reveal animations ──
@@ -1847,6 +2673,77 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
       e.preventDefault();
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  });
+});
+
+// ── Hero word-stagger reveal (safe DOM approach) ──
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!prefersReduced) {
+  document.querySelectorAll('.hero-text-reveal .hero-text-main').forEach(el => {
+    const nodes = Array.from(el.childNodes);
+    while (el.firstChild) el.removeChild(el.firstChild);
+    let wordIndex = 0;
+    nodes.forEach(node => {
+      if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'BR') {
+        el.appendChild(document.createElement('br'));
+      } else if (node.nodeType === Node.TEXT_NODE) {
+        const parts = node.textContent.split(/(\s+)/);
+        parts.forEach(part => {
+          if (part.trim() === '') {
+            el.appendChild(document.createTextNode(part));
+          } else {
+            const span = document.createElement('span');
+            span.textContent = part;
+            span.style.animationDelay = (wordIndex++ * 0.08) + 's';
+            el.appendChild(span);
+          }
+        });
+      }
+    });
+  });
+}
+
+// ── Language text cycling ──
+const rotateWords = document.querySelectorAll('.hero-rotate-word');
+if (rotateWords.length > 0) {
+  let current = 0;
+  setInterval(() => {
+    rotateWords[current].classList.remove('active');
+    current = (current + 1) % rotateWords.length;
+    rotateWords[current].classList.add('active');
+  }, 2500);
+}
+
+// ── Animated number counters ──
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const target = entry.target;
+      const text = target.textContent;
+      const match = text.match(/^(\d+)/);
+      if (match) {
+        const num = parseInt(match[1]);
+        const suffix = text.slice(match[1].length);
+        let count = 0;
+        const step = Math.max(1, Math.ceil(num / 40));
+        const interval = setInterval(() => {
+          count = Math.min(count + step, num);
+          target.textContent = count + suffix;
+          if (count >= num) clearInterval(interval);
+        }, 30);
+      }
+      counterObserver.unobserve(target);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.hero-stat-number').forEach(el => counterObserver.observe(el));
+
+// ── Staggered card entrances ──
+document.querySelectorAll('.features-grid, .steps-grid, .testimonials-grid, .ai-blocks').forEach(parent => {
+  const children = parent.querySelectorAll('.reveal');
+  children.forEach((child, i) => {
+    child.style.transitionDelay = (i * 0.1) + 's';
   });
 });
 </script>
