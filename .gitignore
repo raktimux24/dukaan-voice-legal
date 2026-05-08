@@ -1,2 +1,12 @@
-# Local Netlify folder
-.netlify
+node_modules/
+.next/
+out/
+.netlify/
+
+.env*
+!.env.example
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

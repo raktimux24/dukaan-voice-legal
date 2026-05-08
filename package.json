@@ -1,0 +1,34 @@
+{
+  "name": "dukaan-voice-legal",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raktimux24/dukaan-voice-legal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/raktimux24/dukaan-voice-legal/issues"
+  },
+  "homepage": "https://github.com/raktimux24/dukaan-voice-legal#readme",
+  "dependencies": {
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.2",
+    "@types/react": "19.2.14",
+    "@types/three": "0.128.0",
+    "typescript": "6.0.3"
+  }
+}
