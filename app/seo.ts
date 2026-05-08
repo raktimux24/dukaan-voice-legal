@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { defaultLocale, getLocaleMeta, localizedLanguageAlternates, type Locale, type PageKind } from './i18n';
 
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaan-bol.netlify.app';
 
@@ -40,15 +41,21 @@ export function pageMetadata({
   title,
   description = defaultDescription,
   path = '/',
+  page = 'home',
+  locale = defaultLocale,
   keywords = seoKeywords,
   noIndex = false,
 }: {
   title: string;
   description?: string;
   path?: string;
+  page?: PageKind;
+  locale?: Locale;
   keywords?: string[];
   noIndex?: boolean;
 }): Metadata {
+  const localeMeta = getLocaleMeta(locale);
+
   return {
     title,
     description,
@@ -56,10 +63,7 @@ export function pageMetadata({
     metadataBase: new URL(siteUrl),
     alternates: {
       canonical: path,
-      languages: {
-        'en-IN': path,
-        'x-default': path,
-      },
+      languages: localizedLanguageAlternates(page),
     },
     robots: noIndex
       ? {
@@ -82,7 +86,7 @@ export function pageMetadata({
       description,
       url: absoluteUrl(path),
       siteName: 'Samaan-Bol',
-      locale: 'en_IN',
+      locale: localeMeta.ogLocale,
       type: 'website',
       images: [
         {

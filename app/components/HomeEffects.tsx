@@ -7,6 +7,7 @@ export function HomeEffects() {
   useEffect(() => {
     const nav = document.getElementById('nav');
     const scrollProgress = document.getElementById('scrollProgress') as HTMLElement | null;
+    const mobileMenuButton = document.querySelector<HTMLButtonElement>('.mobile-menu-btn');
 
     const onScroll = () => {
       nav?.classList.toggle('scrolled', window.scrollY > 40);
@@ -19,6 +20,12 @@ export function HomeEffects() {
 
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+
+    const onMobileMenu = () => {
+      nav?.classList.toggle('nav-open');
+    };
+
+    mobileMenuButton?.addEventListener('click', onMobileMenu);
 
     const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -41,6 +48,7 @@ export function HomeEffects() {
         if (target) {
           event.preventDefault();
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          nav?.classList.remove('nav-open');
         }
       };
       a.addEventListener('click', handler);
@@ -116,6 +124,7 @@ export function HomeEffects() {
 
     return () => {
       window.removeEventListener('scroll', onScroll);
+      mobileMenuButton?.removeEventListener('click', onMobileMenu);
       revealObserver.disconnect();
       counterObserver.disconnect();
       anchorHandlers.forEach(([a, handler]) => a.removeEventListener('click', handler));
