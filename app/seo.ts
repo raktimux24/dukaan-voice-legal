@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { defaultLocale, getLocaleMeta, localizedLanguageAlternates, type Locale, type PageKind } from './i18n';
 
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaan-bol.netlify.app';
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaanbol.space';
 
 export const appStoreUrl = 'https://apps.apple.com/in/app/samaan-bol/id6759739444';
 

@@ -2,5 +2,17 @@
   command = "npm run build"
   publish = ".next"
 
+[[redirects]]
+  from = "https://samaan-bol.netlify.app/*"
+  to = "https://samaanbol.space/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://samaan-bol.netlify.app/*"
+  to = "https://samaanbol.space/:splat"
+  status = 301
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
