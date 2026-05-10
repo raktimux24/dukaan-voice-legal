@@ -3,6 +3,7 @@ import { homeHtml } from './home';
 import { privacyHtml } from './privacy';
 import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
+import { getSubscriptionStrings } from './subscriptionStrings';
 
 type ContentPageKind = Extract<PageKind, 'home' | 'privacy' | 'terms'>;
 
@@ -82,10 +83,33 @@ function stripRemovedNavItems(html: string) {
     .replace(/\s*<li><a href="#languages">[^<]*<\/a><\/li>/g, '');
 }
 
+// The bulk pre-translated home HTML in translated.ts predates the /pricing and
+// /account routes, so non-English locales need those <li> items injected before
+// the Download App CTA. English source already has them.
+function injectMissingNavItems(html: string, locale: Locale) {
+  if (html.includes('href="/pricing"') || html.includes(`href="${localizedPath(locale, 'pricing')}"`)) {
+    return html;
+  }
+
+  const t = getSubscriptionStrings(locale);
+  const pricingHref = localizedPath(locale, 'pricing');
+  const accountHref = localizedPath(locale, 'account');
+  const insert = `<li><a href="${pricingHref}">${t.nav.pricing}</a></li>\n        <li><a href="${accountHref}">${t.nav.account}</a></li>\n        `;
+
+  return html.replace(
+    /<li><a href="https:\/\/apps\.apple\.com[^"]*"\s+class="nav-cta"/,
+    `${insert}$&`,
+  );
+}
+
 function adaptHome(html: string, locale: Locale) {
   const switcher = languageSwitcher(locale, 'home');
+  const transformed = injectMissingNavItems(
+    stripRemovedNavItems(activateGooglePlayBadge(localizeLinks(html, locale))),
+    locale,
+  );
 
-  return stripRemovedNavItems(activateGooglePlayBadge(localizeLinks(html, locale))).replace(
+  return transformed.replace(
     '</ul>\n      <button class="mobile-menu-btn"',
     `</ul>\n      ${switcher}\n      <button class="mobile-menu-btn"`,
   );
