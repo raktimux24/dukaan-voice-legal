@@ -2,6 +2,17 @@
   command = "npm run build"
   publish = ".next"
 
+[[headers]]
+  for = "/.well-known/apple-app-site-association"
+  [headers.values]
+    Content-Type = "application/json"
+
+[[redirects]]
+  from = "/.well-known/apple-app-site-association"
+  to = "/.well-known/apple-app-site-association"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "https://samaan-bol.netlify.app/*"
   to = "https://samaanbol.space/:splat"

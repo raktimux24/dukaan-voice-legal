@@ -16,10 +16,10 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <div class="logo-text">Samaan<span>Bol</span></div>
       </a>
       <ul class="nav-links">
-        <li><a href="#how">How It Works</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#ai">AI Intelligence</a></li>
-        <li><a href="#languages">Languages</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/account">Account</a></li>
         <li><a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="nav-cta">Download App</a></li>
       </ul>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
@@ -509,8 +509,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <ul>
           <li><a href="#features">Features</a></li>
           <li><a href="#ai">AI Intelligence</a></li>
-          <li><a href="#languages">Languages</a></li>
-          <li><a href="#">Pricing</a></li>
+          <li><a href="/pricing">Pricing</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -519,13 +518,14 @@ export const homeHtml = `<!-- Three.js background canvas -->
           <li><a href="#">About</a></li>
           <li><a href="#">Blog</a></li>
           <li><a href="#">Careers</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a href="/contact">Contact</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="#">Help Center</a></li>
+          <li><a href="/account">Account</a></li>
+          <li><a href="/refund-policy">Refund Policy</a></li>
           <li><a href="/privacy-policy">Privacy Policy</a></li>
           <li><a href="/terms-of-service">Terms of Service</a></li>
         </ul>
