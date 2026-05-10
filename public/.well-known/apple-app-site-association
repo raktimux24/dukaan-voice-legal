@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "77R8R22PJQ.com.samaan.bol",
+        "paths": ["/subscription/*", "/account", "/account/*"]
+      }
+    ]
+  }
+}

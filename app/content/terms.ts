@@ -23,6 +23,8 @@ export const termsHtml = `<div class="reading-progress" id="readingProgress"></d
         <li><a href="#s13">Changes to These Terms</a></li>
         <li><a href="#s14">Governing Law</a></li>
         <li><a href="#s15">Contact Us</a></li>
+        <li><a href="#s16">Subscription Billing</a></li>
+        <li><a href="#s17">Cancellation, Refunds & Payment Failure</a></li>
       </ol>
     </nav>
 
@@ -186,6 +188,33 @@ export const termsHtml = `<div class="reading-progress" id="readingProgress"></d
       <div class="section-content">
         <p>If you have any questions about these Terms, please contact us at:</p>
         <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+      </div>
+    </details>
+
+    <details id="s16">
+      <summary><h2>16. Subscription Billing</h2></summary>
+      <div class="section-content">
+        <p>Samaan-Bol Premium may be offered as a monthly or annual auto-renewing subscription. Current public pricing is available on the <a href="/pricing">Pricing</a> page.</p>
+        <ul>
+          <li>Monthly subscriptions renew each month until canceled.</li>
+          <li>Annual subscriptions renew each year until canceled.</li>
+          <li>If a 7-day trial is offered, a Razorpay mandate may be created upfront and the first charge is collected after the trial period unless you cancel before the trial ends.</li>
+          <li>For UPI Autopay and other recurring payment methods, Razorpay and participating payment providers handle mandate setup and pre-debit notifications required under applicable RBI guidelines.</li>
+          <li>Prices are displayed in Indian Rupees and include GST where applicable. Razorpay-issued invoices may be available from your web account page.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details id="s17">
+      <summary><h2>17. Cancellation, Refunds & Payment Failure</h2></summary>
+      <div class="section-content">
+        <ul>
+          <li>Android users may manage subscriptions in the app where supported. iOS users manage subscriptions on the web at <a href="/account">/account</a>.</li>
+          <li>Cancellation stops future renewals. Premium access continues until the end of the current paid period unless otherwise stated.</li>
+          <li>Refunds are governed by the <a href="/refund-policy">Refund Policy</a>, including the 7-day first-charge refund window.</li>
+          <li>If payment fails or a mandate is paused, Premium features may be limited until billing is restored.</li>
+          <li>We may change subscription prices with reasonable notice. If you do not agree to a pricing change, you may cancel before the new price takes effect.</li>
+        </ul>
       </div>
     </details>
 

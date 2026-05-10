@@ -96,6 +96,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
           <li><strong>Audit trail:</strong> Maintain a log of inventory changes for accountability and review</li>
           <li><strong>Improve the service:</strong> Diagnose bugs and crashes through anonymized error reports</li>
           <li><strong>Communication:</strong> Send essential account-related notifications (e.g., password resets)</li>
+          <li><strong>Subscription billing:</strong> Create and manage Razorpay subscription checkout, UPI Autopay mandates, invoices, refunds, cancellations, and payment-failure notices</li>
         </ul>
         <p>We do <strong>not</strong> use your data for advertising, and we do <strong>not</strong> sell your personal information to third parties.</p>
       </div>
@@ -134,6 +135,12 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
               <td><a href="https://neon.tech/privacy-policy" target="_blank" rel="noopener">neon.tech/privacy-policy</a></td>
             </tr>
             <tr>
+              <td><strong>Razorpay</strong></td>
+              <td>Subscription payments, UPI Autopay mandates, invoices, refunds, and payment status updates</td>
+              <td>Name, email, phone, billing address, payment metadata, invoice metadata, UPI handle or card last 4 where made available by Razorpay. Razorpay handles full sensitive payment credentials.</td>
+              <td><a href="https://razorpay.com/privacy/" target="_blank" rel="noopener">razorpay.com/privacy</a></td>
+            </tr>
+            <tr>
               <td><strong>Sentry</strong></td>
               <td>Error tracking &amp; crash reporting</td>
               <td>Crash reports, device information (production only)</td>
@@ -167,6 +174,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
           <li><strong>Inventory data:</strong> Retained as long as your account is active.</li>
           <li><strong>Account data:</strong> Retained until you delete your account.</li>
           <li><strong>Crash reports:</strong> Retained according to Sentry's data retention policy (typically 90 days).</li>
+          <li><strong>Subscription and billing records:</strong> Retained as long as needed for account management, tax, invoice, dispute, refund, and legal compliance obligations.</li>
         </ul>
       </div>
     </details>
@@ -212,6 +220,8 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
         <ul>
           <li><strong>Access your data:</strong> View your inventory, audit logs, and preferences within the App</li>
           <li><strong>Delete your data:</strong> Use the account deletion feature in Settings</li>
+          <li><strong>Correct your data:</strong> Update inaccurate account, shop, or billing information where supported, or contact us for help</li>
+          <li><strong>Request portability:</strong> Ask for a copy of your account and shop data in a reasonable portable format where required by applicable law</li>
           <li><strong>Control preferences:</strong> Modify your language, display, and voice settings at any time</li>
           <li><strong>Withdraw from shops:</strong> Leave any shop you are a member of</li>
         </ul>

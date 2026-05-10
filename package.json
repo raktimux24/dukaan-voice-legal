@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/raktimux24/dukaan-voice-legal#readme",
   "dependencies": {
+    "@clerk/nextjs": "^7.3.3",
     "next": "16.2.6",
     "react": "19.2.6",
     "react-dom": "19.2.6",

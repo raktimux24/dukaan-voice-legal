@@ -4,22 +4,36 @@ import { localizedLanguageAlternates, localizedPath, locales, type PageKind } fr
 
 const pages: Array<{ page: PageKind; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
   { page: 'home', changeFrequency: 'weekly', priority: 1 },
+  { page: 'pricing', changeFrequency: 'weekly', priority: 0.8 },
+  { page: 'contact', changeFrequency: 'monthly', priority: 0.4 },
   { page: 'privacy', changeFrequency: 'monthly', priority: 0.3 },
   { page: 'terms', changeFrequency: 'monthly', priority: 0.3 },
+];
+
+const englishPages: Array<{ path: string; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
+  { path: '/refund-policy', changeFrequency: 'monthly', priority: 0.4 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return pages.flatMap(({ page, changeFrequency, priority }) =>
-    locales.map((locale) => ({
-      url: absoluteUrl(localizedPath(locale.code, page)),
+  return [
+    ...pages.flatMap(({ page, changeFrequency, priority }) =>
+      locales.map((locale) => ({
+        url: absoluteUrl(localizedPath(locale.code, page)),
+        lastModified,
+        changeFrequency,
+        priority,
+        alternates: {
+          languages: localizedLanguageAlternates(page, true, absoluteUrl),
+        },
+      })),
+    ),
+    ...englishPages.map(({ path, changeFrequency, priority }) => ({
+      url: absoluteUrl(path),
       lastModified,
       changeFrequency,
       priority,
-      alternates: {
-        languages: localizedLanguageAlternates(page, true, absoluteUrl),
-      },
     })),
-  );
+  ];
 }
