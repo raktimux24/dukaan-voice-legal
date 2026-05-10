@@ -130,6 +130,7 @@ h1, h2, h3, h4 {
   font-size: 14px;
   font-weight: 500;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {
@@ -1568,13 +1569,11 @@ footer {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
   .nav-inner {
     position: relative;
     gap: 12px;
   }
-
-  .logo-text { font-size: 18px; }
 
   .nav-links {
     display: none;
@@ -1599,6 +1598,7 @@ footer {
   .nav-links a {
     display: block;
     padding: 10px 12px;
+    white-space: normal;
   }
 
   .nav-links .nav-cta {
@@ -1610,20 +1610,26 @@ footer {
     position: static;
   }
 
-  .language-button {
-    grid-template-columns: 24px minmax(38px, auto) 14px;
-    gap: 6px;
-    min-height: 38px;
-    max-width: 128px;
-    padding: 4px 9px 4px 6px;
-  }
-
   .language-menu {
     top: calc(100% + 14px);
     left: 0;
     right: 0;
     min-width: 0;
     max-height: min(70vh, 420px);
+  }
+
+  .mobile-menu-btn { display: block; }
+}
+
+@media (max-width: 640px) {
+  .logo-text { font-size: 18px; }
+
+  .language-button {
+    grid-template-columns: 24px minmax(38px, auto) 14px;
+    gap: 6px;
+    min-height: 38px;
+    max-width: 128px;
+    padding: 4px 9px 4px 6px;
   }
 
   .language-switcher-label { display: none; }
@@ -1650,8 +1656,6 @@ footer {
     width: 14px;
     height: 14px;
   }
-
-  .mobile-menu-btn { display: block; }
 
   .hero-stats { flex-direction: column; gap: 16px; align-items: center; }
 

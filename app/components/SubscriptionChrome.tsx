@@ -32,10 +32,10 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
           </Link>
           <ul className="nav-links">
             <li>
-              <a href={`${home === '/' ? '' : home}/#features`}>{t.nav.features}</a>
+              <a href={`${home}#features`}>{t.nav.features}</a>
             </li>
             <li>
-              <a href={`${home === '/' ? '' : home}/#ai`}>{t.nav.ai}</a>
+              <a href={`${home}#ai`}>{t.nav.ai}</a>
             </li>
             <li>
               <Link href={pricingHref}>{t.nav.pricing}</Link>
@@ -70,7 +70,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
   const termsHref = localizedPath(locale, 'terms');
   void page;
 
-  const homeAnchor = (anchor: string) => `${home === '/' ? '' : home}/#${anchor}`;
+  const homeAnchor = (anchor: string) => `${home}#${anchor}`;
 
   return (
     <footer>
