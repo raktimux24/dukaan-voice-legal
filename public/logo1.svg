@@ -1,0 +1,35 @@
+<svg width="512" height="512" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <mask id="stencil-cutout">
+            <!-- White base keeps the main circle solid -->
+            <rect x="0" y="0" width="100" height="100" fill="white" />
+            
+            <!-- 
+              BLACK ELEMENTS (These create the transparent stencil cutouts)
+            -->
+            
+            <!-- 1. The Shirekha (Devnagari Top Bar) -->
+            <rect x="24" y="18" width="52" height="8" rx="4" fill="black" />
+            
+            <!-- 2. The Microphone Head (Hanging from the Shirekha like a letter) -->
+            <rect x="38" y="18" width="24" height="36" rx="12" fill="black" />
+            
+            <!-- 3. The U-Stand (Cradling the mic) -->
+            <path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+            
+            <!-- 4. The Bottom Stem (Mic stand base) -->
+            <rect x="46" y="72" width="8" height="10" rx="4" fill="black" />
+
+            <!-- 
+              WHITE ELEMENTS (These punch back into the black, keeping the orange solid)
+            -->
+            
+            <!-- Mic Grill Lines (Also acts as a subtle nod to stacked goods/Samaan) -->
+            <rect x="36" y="32" width="28" height="4" fill="white" />
+            <rect x="36" y="44" width="28" height="4" fill="white" />
+        </mask>
+    </defs>
+    
+    <!-- Pure flat orange base, perfectly matching your UI's accent color -->
+    <circle cx="50" cy="50" r="50" fill="#ea580c" mask="url(#stencil-cutout)" />
+</svg>

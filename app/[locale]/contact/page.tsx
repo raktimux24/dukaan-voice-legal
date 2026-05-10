@@ -33,6 +33,7 @@ export default async function LocalizedContactPage({ params }: LocaleParams) {
 
   const locale = getLocale(paramLocale);
   const t = getSubscriptionStrings(locale);
+  const businessAddress = '3/1, 1st Main, Mahadevpura, Outer Ring Road, Bangalore-560048';
 
   return (
     <div className="subscription-shell">
@@ -42,19 +43,15 @@ export default async function LocalizedContactPage({ params }: LocaleParams) {
         <section className="subscription-section">
           <h1>{t.contact.heading}</h1>
           <p className="subscription-lead">{t.contact.lead}</p>
-          <div className="subscription-panel">
+          <div className="subscription-panel contact-panel">
             <h3>{t.contact.emailHeading}</h3>
             <p>
               <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
             </p>
-            <h3>{t.contact.developerHeading}</h3>
-            <p>
-              <a href="mailto:raktim.ux@outlook.com">raktim.ux@outlook.com</a>
-            </p>
             <h3>{t.contact.responseHeading}</h3>
             <p className="muted">{t.contact.responseBody}</p>
             <h3>{t.contact.businessHeading}</h3>
-            <p className="muted">{t.contact.businessBody}</p>
+            <p className="muted">{businessAddress}</p>
           </div>
         </section>
       </main>
