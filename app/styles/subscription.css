@@ -178,6 +178,18 @@
   padding: 24px;
 }
 
+.sign-in-panel {
+  margin-top: 40px;
+}
+
+.contact-panel {
+  margin-top: 36px;
+}
+
+.contact-panel h3:not(:first-child) {
+  margin-top: 30px;
+}
+
 .subscription-panel h3,
 .status-panel h3 {
   margin: 0 0 12px;

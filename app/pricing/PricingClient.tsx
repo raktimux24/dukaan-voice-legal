@@ -8,7 +8,7 @@ import { planCopy, type BillingPlan } from '../lib/subscriptions';
 
 export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
   const t = getSubscriptionStrings(locale);
-  const [plan, setPlan] = useState<BillingPlan>('annual');
+  const [plan, setPlan] = useState<BillingPlan>('monthly');
   const active = planCopy[plan];
   const accountHref = useMemo(() => `${localizedPath(locale, 'account')}?plan=${plan}`, [locale, plan]);
 

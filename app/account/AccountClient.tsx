@@ -397,7 +397,7 @@ export function AccountClient({ locale = defaultLocale }: { locale?: Locale }) {
         <section className="subscription-section">
           <h1>{t.account.signedOutHeading}</h1>
           <p className="subscription-lead">{t.account.signedOutLead}</p>
-          <div className="subscription-panel">
+          <div className="subscription-panel sign-in-panel">
             <SignIn routing="hash" />
           </div>
         </section>
