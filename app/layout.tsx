@@ -20,12 +20,20 @@ const clerkAppearance = {
     colorPrimaryForeground: '#FFFFFF',
     colorBackground: '#15151C',
     colorForeground: '#EAEAE6',
-    colorMutedForeground: '#8A8A90',
+    colorMutedForeground: '#A8A8AE',
     colorInput: '#1E1E26',
     colorInputForeground: '#EAEAE6',
+    colorNeutral: '#EAEAE6',
     colorRing: 'rgba(255, 107, 0, 0.42)',
     borderRadius: '8px',
     fontFamily: 'Inter, sans-serif',
+  },
+  elements: {
+    socialButtonsBlockButton: { color: '#EAEAE6' },
+    socialButtonsBlockButtonText: { color: '#EAEAE6' },
+    formFieldLabel: { color: '#EAEAE6' },
+    dividerText: { color: '#A8A8AE' },
+    footerActionText: { color: '#A8A8AE' },
   },
 };
 
