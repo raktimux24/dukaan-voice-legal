@@ -17,18 +17,15 @@ const clerkAppearance = {
   baseTheme: dark,
   variables: {
     colorPrimary: '#FF6B00',
+    colorPrimaryForeground: '#FFFFFF',
     colorBackground: '#15151C',
-    colorInputBackground: '#1E1E26',
-    colorText: '#EAEAE6',
-    colorTextSecondary: '#8A8A90',
-    colorInputText: '#EAEAE6',
-    colorNeutral: '#EAEAE6',
+    colorForeground: '#EAEAE6',
+    colorMutedForeground: '#8A8A90',
+    colorInput: '#1E1E26',
+    colorInputForeground: '#EAEAE6',
+    colorRing: 'rgba(255, 107, 0, 0.42)',
     borderRadius: '8px',
     fontFamily: 'Inter, sans-serif',
-  },
-  elements: {
-    card: 'shadow-none',
-    socialButtonsBlockButton: 'border-color: rgba(255,255,255,0.08)',
   },
 };
 
