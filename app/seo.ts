@@ -37,6 +37,9 @@ export function absoluteUrl(path = '/') {
   return new URL(path, siteUrl).toString();
 }
 
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingSiteVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
+
 export function pageMetadata({
   title,
   description = defaultDescription,
@@ -58,6 +61,11 @@ export function pageMetadata({
 }): Metadata {
   const localeMeta = getLocaleMeta(locale);
 
+  const verification: Metadata['verification'] = {};
+  if (googleSiteVerification) verification.google = googleSiteVerification;
+  if (bingSiteVerification) verification.other = { 'msvalidate.01': bingSiteVerification };
+  const hasVerification = Object.keys(verification).length > 0;
+
   return {
     title,
     description,
@@ -67,6 +75,7 @@ export function pageMetadata({
       canonical: path,
       ...(languageAlternates ? { languages: localizedLanguageAlternates(page) } : {}),
     },
+    ...(hasVerification ? { verification } : {}),
     robots: noIndex
       ? {
           index: false,

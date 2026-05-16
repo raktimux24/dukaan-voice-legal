@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "indexnow:ping": "node scripts/indexnow-ping.mjs"
   },
   "repository": {
     "type": "git",

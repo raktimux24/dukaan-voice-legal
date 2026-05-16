@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
+import { Analytics } from './components/Analytics';
 import { pageMetadata } from './seo';
 import './styles/home.css';
 import './styles/legal-base.css';
@@ -49,7 +50,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             rel="stylesheet"
           />
         </head>
-        <body>{children}</body>
+        <body>
+          {children}
+          <Analytics />
+        </body>
       </html>
     </ClerkProvider>
   );
