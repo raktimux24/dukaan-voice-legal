@@ -28,14 +28,16 @@ export function ReturnClient() {
       return;
     }
 
+    // The webhook flips status a few seconds after Razorpay's redirect. Poll
+    // for ~30s; `isPremium` covers active, mandate-backed trials and legacy.
     async function poll() {
-      for (let attempt = 0; attempt < 5; attempt += 1) {
+      for (let attempt = 0; attempt < 20; attempt += 1) {
         try {
           const token = await getToken();
           const response = await getEntitlement(shopId, token);
           if (!active) return;
           setEntitlement(response);
-          if (response.status === 'active' || response.status === 'trialing') {
+          if (response.isPremium && response.status !== 'legacy_free') {
             setState('success');
             return;
           }
@@ -81,14 +83,19 @@ export function ReturnClient() {
       {isLoaded && isSignedIn ? (
         <section className="subscription-hero">
           <div>
-            {state === 'success' ? <h1>Subscription active</h1> : null}
+            {state === 'success' && entitlement?.status === 'trialing' ? <h1>You're set — your plan starts after the trial</h1> : null}
+            {state === 'success' && entitlement?.status !== 'trialing' ? <h1>Subscription active</h1> : null}
             {state === 'checking' ? <h1>Setting up your subscription</h1> : null}
             {state === 'pending' ? <h1>Payment is still being confirmed</h1> : null}
             {state === 'failed' ? <h1>We could not confirm this subscription</h1> : null}
             <p className="subscription-lead">
-              {state === 'success'
-                ? 'Razorpay has confirmed your subscription. Open Samaan-Bol and refresh your shop to unlock Premium.'
-                : 'Webhook confirmation can take a short moment after Razorpay redirects back to Samaan-Bol.'}
+              {state === 'success' && entitlement?.status === 'trialing'
+                ? `Your UPI Autopay mandate is authorised. Premium continues through your free trial and the first charge is on ${entitlement.trialEnd ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(entitlement.trialEnd)) : 'the trial end date'}. Open Samaan-Bol — nothing else to do.`
+                : state === 'success'
+                  ? 'Razorpay has confirmed your subscription. Open Samaan-Bol and pull to refresh — Premium is on.'
+                  : state === 'pending'
+                    ? 'Razorpay usually confirms within a minute. Your access updates automatically — you can close this page and check the app later.'
+                    : 'Confirmation can take a short moment after Razorpay redirects back to Samaan-Bol.'}
             </p>
             {message ? <div className="subscription-alert">{message}</div> : null}
             <div className="portal-actions">

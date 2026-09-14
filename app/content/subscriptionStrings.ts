@@ -197,7 +197,7 @@ const en: SubscriptionStrings = {
     loadingAccount: 'Loading account...',
     signedOutHeading: 'Sign in to manage your subscription',
     signedOutLead:
-      'Use the same Clerk account email you use in the Samaan-Bol app. iOS users subscribe and manage billing here on the web.',
+      'Use the same account you sign in with in the Samaan-Bol app. All subscriptions are started and managed here on the web.',
     heading: 'Account',
     leadWithEmail: (email) =>
       `Manage shop subscriptions, Razorpay checkout, invoices, cancellations, and account access for ${email}.`,
@@ -215,10 +215,9 @@ const en: SubscriptionStrings = {
     statusNone: 'No active subscription',
     dateUnavailable: 'Not available',
     selectShop: 'Select a shop',
-    renewsOn: (date) => `Renews or changes on ${date}`,
-    chooseIntervalPrompt: 'Choose a billing interval and start Razorpay checkout for this shop.',
-    currentPlan: (label) =>
-      `Your current plan is ${label}. Switching plans or updating your payment method requires authorizing a new UPI Autopay mandate on Razorpay.`,
+    renewsOn: (date) => `Renews on ${date}`,
+    chooseIntervalPrompt: 'Choose a billing interval to start Premium for this shop.',
+    currentPlan: (label) => `Your current plan is ${label}.`,
     switchToAnnual: (amount) => `Switch to Annual — ${amount}`,
     switchToMonthly: (amount) => `Switch to Monthly — ${amount}`,
     updatePaymentMethod: 'Update payment method',

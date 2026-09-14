@@ -300,6 +300,12 @@
   border: 1px solid var(--border-dark);
 }
 
+.subscription-alert.success {
+  border-color: rgba(61, 180, 126, 0.45);
+  background: rgba(61, 180, 126, 0.12);
+  color: #bdf0d6;
+}
+
 @media (max-width: 860px) {
   .subscription-hero,
   .comparison-grid,

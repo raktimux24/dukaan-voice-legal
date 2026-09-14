@@ -3,18 +3,21 @@
 import { SignIn, UserButton, useAuth, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { defaultLocale, type Locale, localizedPath } from '../i18n';
 import { getSubscriptionStrings, type SubscriptionStrings } from '../content/subscriptionStrings';
+import { getAccountStrings, type AccountStrings } from '../content/accountStrings';
 import {
+  cancelPlanSwitch,
   cancelSubscription,
   changePlan,
   createCheckout,
   getEntitlement,
+  getPendingSwitch,
   getShops,
+  hasMandate,
   planCopy,
   updatePaymentMethod,
-  verifyPayment,
   type BillingPlan,
   type CheckoutResponse,
   type Shop,
@@ -22,7 +25,7 @@ import {
 } from '../lib/subscriptions';
 
 type RazorpayHandlerArgs = {
-  razorpay_payment_id: string;
+  razorpay_payment_id?: string;
   razorpay_subscription_id: string;
   razorpay_signature: string;
 };
@@ -44,27 +47,59 @@ declare global {
   }
 }
 
-function formatDate(value: string | undefined, t: SubscriptionStrings) {
+function formatDate(value: string | null | undefined, t: SubscriptionStrings) {
   if (!value) return t.account.dateUnavailable;
   return new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(value));
 }
 
-function statusLabel(entitlement: SubscriptionEntitlement | undefined, t: SubscriptionStrings) {
-  if (!entitlement) return t.account.statusLoading;
-  if (entitlement.status === 'active') return t.account.statusActive(entitlement.interval ?? entitlement.plan ?? 'active');
-  if (entitlement.status === 'trialing') return t.account.statusTrialEnds(formatDate(entitlement.trialEndsAt, t));
-  if (entitlement.status === 'past_due') return t.account.statusPastDue;
-  if (entitlement.status === 'canceled') return t.account.statusCanceled;
-  if (entitlement.status === 'legacy_free') return t.account.statusLegacyFree;
-  return t.account.statusNone;
+function planLabel(plan: BillingPlan | null | undefined, t: SubscriptionStrings) {
+  return plan === 'annual' ? t.plans.annualLabel : t.plans.monthlyLabel;
 }
 
-function planLabel(plan: BillingPlan, t: SubscriptionStrings) {
-  return plan === 'monthly' ? t.plans.monthlyLabel : t.plans.annualLabel;
+// One place that decides what the status panel says for every entitlement
+// state, so the badge and the lead line can't disagree.
+function describe(ent: SubscriptionEntitlement | undefined, t: SubscriptionStrings, a: AccountStrings) {
+  if (!ent) return { badge: t.account.statusLoading, lead: '', warning: false };
+  const mandate = hasMandate(ent);
+  const trialEnd = formatDate(ent.trialEnd, t);
+  const periodEnd = formatDate(ent.currentPeriodEnd, t);
+
+  switch (ent.status) {
+    case 'legacy_free':
+      return { badge: t.account.statusLegacyFree, lead: a.leadLegacyFree, warning: false };
+    case 'trialing':
+      if (ent.cancelAtPeriodEnd) {
+        return { badge: a.statusCancelScheduled, lead: a.leadTrialCancelled(trialEnd), warning: false };
+      }
+      if (!mandate) {
+        return { badge: a.statusTrialAuto(ent.daysLeftInTrial ?? 0), lead: a.leadTrialAuto(trialEnd), warning: false };
+      }
+      return {
+        badge: a.statusTrialMandate(trialEnd),
+        lead: a.leadTrialMandate(planLabel(ent.plan, t), trialEnd),
+        warning: false,
+      };
+    case 'active':
+      if (ent.cancelAtPeriodEnd) {
+        return { badge: a.statusCancelScheduled, lead: a.leadCancelScheduled(periodEnd), warning: false };
+      }
+      return { badge: t.account.statusActive(planLabel(ent.plan, t)), lead: a.leadActive(periodEnd), warning: false };
+    case 'past_due':
+      return { badge: t.account.statusPastDue, lead: a.leadPastDue, warning: true };
+    case 'pending_authentication':
+      return { badge: a.statusPendingAuth, lead: a.leadPendingAuth, warning: true };
+    case 'expired':
+      return { badge: a.statusExpired, lead: a.leadExpired, warning: false };
+    case 'canceled':
+      return { badge: t.account.statusCanceled, lead: a.leadCanceled, warning: false };
+    default:
+      return { badge: t.account.statusNone, lead: a.leadNone(ent.trialDays ?? 7), warning: false };
+  }
 }
 
 function AccountDashboard({ locale }: { locale: Locale }) {
   const t = getSubscriptionStrings(locale);
+  const a = getAccountStrings(locale);
   const searchParams = useSearchParams();
   const initialPlan = searchParams.get('plan') === 'monthly' ? 'monthly' : 'annual';
   const requestedShopId = searchParams.get('shopId') ?? '';
@@ -77,8 +112,10 @@ function AccountDashboard({ locale }: { locale: Locale }) {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   const selectedShop = useMemo(() => shops.find((shop) => shop.id === selectedShopId), [selectedShopId, shops]);
+  const isOwner = !selectedShop?.role || selectedShop.role.toUpperCase() === 'OWNER';
 
   useEffect(() => {
     let active = true;
@@ -105,32 +142,48 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     };
   }, [getToken, requestedShopId, t.account.errorLoadShops]);
 
+  const reloadEntitlement = useCallback(async () => {
+    if (!selectedShopId) return;
+    const token = await getToken();
+    const response = await getEntitlement(selectedShopId, token);
+    setEntitlement(response);
+    return response;
+  }, [getToken, selectedShopId]);
+
   useEffect(() => {
     let active = true;
     if (!selectedShopId) return;
-
-    async function loadEntitlement() {
-      setError('');
-      try {
-        const token = await getToken();
-        const response = await getEntitlement(selectedShopId, token);
-        if (active) setEntitlement(response);
-      } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : t.account.errorLoadEntitlement);
-      }
-    }
-
-    loadEntitlement();
+    setEntitlement(undefined);
+    setNotice('');
+    setError('');
+    reloadEntitlement().catch((err) => {
+      if (active) setError(err instanceof Error ? err.message : t.account.errorLoadEntitlement);
+    });
     return () => {
       active = false;
     };
-  }, [getToken, selectedShopId, t.account.errorLoadEntitlement]);
+  }, [reloadEntitlement, selectedShopId, t.account.errorLoadEntitlement]);
 
-  const isActiveOrTrialing = entitlement?.status === 'active' || entitlement?.status === 'trialing';
-  const currentPlan = (entitlement?.plan ?? entitlement?.interval) as BillingPlan | undefined;
+  const status = entitlement?.status;
+  const mandate = hasMandate(entitlement);
+  const isTrial = status === 'trialing';
+  const canSubscribe =
+    !!entitlement &&
+    !entitlement.pendingReason &&
+    (status === 'none' ||
+      status === 'expired' ||
+      status === 'canceled' ||
+      status === 'pending_authentication' ||
+      (isTrial && !mandate && !entitlement.cancelAtPeriodEnd));
+  const canManage = !!entitlement && mandate && (status === 'active' || status === 'past_due' || isTrial);
+  const canCancel =
+    !!entitlement &&
+    !entitlement.cancelAtPeriodEnd &&
+    (status === 'active' || status === 'past_due' || isTrial);
+  const { badge, lead, warning } = describe(entitlement, t, a);
 
-  function openRazorpayCheckout(opts: { checkout: CheckoutResponse; description: string; onDone: () => void }) {
-    const { checkout, description, onDone } = opts;
+  function openRazorpayCheckout(opts: { checkout: CheckoutResponse; description: string; onDone: () => void; onSuccess: (args: RazorpayHandlerArgs) => void }) {
+    const { checkout, description, onDone, onSuccess } = opts;
 
     if (typeof window === 'undefined' || !window.Razorpay) {
       throw new Error(t.account.errorRazorpayNotLoaded);
@@ -149,19 +202,16 @@ function AccountDashboard({ locale }: { locale: Locale }) {
         email: user?.primaryEmailAddress?.emailAddress ?? undefined,
       },
       theme: { color: '#FF6B00' },
-      handler: async (resp) => {
-        try {
-          const token = await getToken();
-          await verifyPayment(resp, token);
-        } catch {
-          // Best-effort; webhook is canonical.
-        }
-        window.location.href = `/subscription/return?razorpay_subscription_id=${resp.razorpay_subscription_id}`;
-      },
+      handler: onSuccess,
       modal: { ondismiss: onDone },
     });
 
     rzp.open();
+  }
+
+  function goToReturnPage(razorpaySubscriptionId: string) {
+    const query = new URLSearchParams({ shopId: selectedShopId, razorpay_subscription_id: razorpaySubscriptionId });
+    window.location.href = `/subscription/return?${query}`;
   }
 
   async function startCheckout() {
@@ -175,6 +225,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
         checkout,
         description: plan === 'annual' ? t.plans.annualDescription : t.plans.monthlyDescription,
         onDone: () => setBusy(''),
+        onSuccess: (resp) => goToReturnPage(resp.razorpay_subscription_id),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : t.account.errorStartCheckout);
@@ -182,50 +233,89 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     }
   }
 
-  async function switchPlan(nextPlan: BillingPlan) {
+  // Plan switch and payment-method refresh both schedule a replacement
+  // subscription that takes over at the end of the current period. Whether
+  // the user finishes or dismisses Razorpay, the pending card below reflects
+  // where things stand — so just reload the entitlement either way.
+  async function scheduleChange(kind: 'switch-plan' | 'payment-method', nextPlan?: BillingPlan) {
     if (!selectedShopId) return;
-    setBusy('switch-plan');
+    setBusy(kind);
+    setError('');
+    setNotice('');
+    try {
+      const token = await getToken();
+      const result =
+        kind === 'switch-plan' && nextPlan
+          ? await changePlan(selectedShopId, nextPlan, token)
+          : await updatePaymentMethod(selectedShopId, token);
+      const description =
+        kind === 'switch-plan'
+          ? nextPlan === 'annual'
+            ? t.plans.annualDescription
+            : t.plans.monthlyDescription
+          : t.account.updatePaymentMethod;
+      const finish = () => {
+        setBusy('');
+        reloadEntitlement().catch(() => {});
+      };
+      openRazorpayCheckout({ checkout: result, description, onDone: finish, onSuccess: finish });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : kind === 'switch-plan' ? t.account.errorSwitchPlan : t.account.errorPaymentMethod);
+      setBusy('');
+      reloadEntitlement().catch(() => {});
+    }
+  }
+
+  async function resumePendingAuthorisation() {
+    if (!selectedShopId) return;
+    setBusy('pending-auth');
     setError('');
     try {
       const token = await getToken();
-      const result = await changePlan(selectedShopId, nextPlan, token);
+      const pending = await getPendingSwitch(selectedShopId, token);
+      const finish = () => {
+        setBusy('');
+        reloadEntitlement().catch(() => {});
+      };
       openRazorpayCheckout({
-        checkout: result,
-        description: nextPlan === 'annual' ? t.plans.annualDescription : t.plans.monthlyDescription,
-        onDone: () => setBusy(''),
+        checkout: { shortUrl: pending.shortUrl ?? '', subscriptionId: pending.subscriptionId, keyId: pending.keyId },
+        description: pending.reason === 'payment_method' ? t.account.updatePaymentMethod : planLabel(pending.plan, t),
+        onDone: finish,
+        onSuccess: finish,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.account.errorSwitchPlan);
+      setError(err instanceof Error ? err.message : a.errorPendingSwitch);
       setBusy('');
     }
   }
 
-  async function refreshPaymentMethod() {
-    if (!selectedShopId) return;
-    setBusy('payment-method');
+  async function dropPendingSwitch() {
+    if (!selectedShopId || !window.confirm(a.pendingCancelConfirm)) return;
+    setBusy('cancel-switch');
     setError('');
     try {
       const token = await getToken();
-      const result = await updatePaymentMethod(selectedShopId, token);
-      openRazorpayCheckout({
-        checkout: result,
-        description: t.account.updatePaymentMethod,
-        onDone: () => setBusy(''),
-      });
+      const response = await cancelPlanSwitch(selectedShopId, token);
+      setEntitlement(response);
+      setNotice(a.pendingCancelled);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t.account.errorPaymentMethod);
+      setError(err instanceof Error ? err.message : a.errorPendingSwitch);
+    } finally {
       setBusy('');
     }
   }
 
   async function cancel() {
-    if (!selectedShopId) return;
+    if (!selectedShopId || !entitlement) return;
+    const until = formatDate(isTrial ? entitlement.trialEnd : entitlement.currentPeriodEnd, t);
+    if (!window.confirm(isTrial ? a.cancelConfirmTrial(until) : a.cancelConfirmActive(until))) return;
     setBusy('cancel');
     setError('');
     try {
       const token = await getToken();
       const response = await cancelSubscription(selectedShopId, token);
       setEntitlement(response);
+      setNotice(isTrial ? a.cancelDoneTrial(until) : a.cancelDoneActive(until));
     } catch (err) {
       setError(err instanceof Error ? err.message : t.account.errorCancel);
     } finally {
@@ -234,6 +324,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
   }
 
   const accountEmail = user?.primaryEmailAddress?.emailAddress ?? t.account.accountFallback;
+  const switchDate = entitlement?.currentPeriodEnd ?? entitlement?.trialEnd ?? null;
 
   return (
     <section className="subscription-section">
@@ -241,6 +332,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
       <p className="subscription-lead">{t.account.leadWithEmail(accountEmail)}</p>
 
       {error ? <div className="subscription-alert">{error}</div> : null}
+      {notice ? <div className="subscription-alert success">{notice}</div> : null}
 
       <div className="portal-grid subscription-section">
         <aside className="subscription-panel">
@@ -264,84 +356,102 @@ function AccountDashboard({ locale }: { locale: Locale }) {
         </aside>
 
         <div className="status-panel">
-          <div className={entitlement?.status === 'past_due' ? 'status-badge warning' : 'status-badge'}>{statusLabel(entitlement, t)}</div>
+          <div className={warning ? 'status-badge warning' : 'status-badge'}>{badge}</div>
           <h2>{selectedShop?.name ?? t.account.selectShop}</h2>
-          <p className="muted">
-            {entitlement?.status === 'active' || entitlement?.status === 'trialing'
-              ? t.account.renewsOn(formatDate(entitlement.currentPeriodEnd ?? entitlement.trialEndsAt, t))
-              : t.account.chooseIntervalPrompt}
-          </p>
+          {lead ? <p className="muted">{lead}</p> : null}
 
-          {isActiveOrTrialing ? (
-            <>
-              <p className="muted" style={{ marginTop: '1rem' }}>
-                {t.account.currentPlan(planLabel(currentPlan ?? 'monthly', t))}
-              </p>
-              <div className="portal-actions">
-                {currentPlan && currentPlan !== 'annual' ? (
-                  <button
-                    className="subscription-button"
-                    type="button"
-                    disabled={busy === 'switch-plan'}
-                    onClick={() => switchPlan('annual')}
-                  >
-                    {t.account.switchToAnnual(planCopy.annual.amount)}
+          {!isOwner && entitlement ? <p className="muted">{a.ownerOnly}</p> : null}
+
+          {/* Scheduled plan switch / payment-method refresh */}
+          {entitlement?.pendingReason ? (
+            <div className="subscription-panel" style={{ marginTop: '1rem' }}>
+              <strong>
+                {entitlement.pendingReason === 'plan_switch'
+                  ? a.pendingSwitchTitle(planLabel(entitlement.pendingPlan, t), formatDate(entitlement.scheduledSwitchAt, t))
+                  : a.pendingPaymentTitle(formatDate(entitlement.scheduledSwitchAt, t))}
+              </strong>
+              <p className="muted">{a.pendingBody}</p>
+              <p className="muted">{a.pendingNeedsAuth}</p>
+              {isOwner ? (
+                <div className="portal-actions">
+                  <button className="subscription-button" type="button" disabled={busy === 'pending-auth'} onClick={resumePendingAuthorisation}>
+                    {a.pendingAuthorise}
                   </button>
-                ) : null}
-                {currentPlan && currentPlan !== 'monthly' ? (
-                  <button
-                    className="subscription-button"
-                    type="button"
-                    disabled={busy === 'switch-plan'}
-                    onClick={() => switchPlan('monthly')}
-                  >
-                    {t.account.switchToMonthly(planCopy.monthly.amount)}
+                  <button className="subscription-button secondary" type="button" disabled={busy === 'cancel-switch'} onClick={dropPendingSwitch}>
+                    {a.pendingKeepCurrent}
                   </button>
-                ) : null}
-                <button
-                  className="subscription-button secondary"
-                  type="button"
-                  disabled={busy === 'payment-method'}
-                  onClick={refreshPaymentMethod}
-                >
-                  {t.account.updatePaymentMethod}
-                </button>
-                <button
-                  className="subscription-button danger"
-                  type="button"
-                  disabled={busy === 'cancel'}
-                  onClick={cancel}
-                >
-                  {t.account.cancelSubscription}
-                </button>
-              </div>
-            </>
-          ) : (
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Subscribe (new, expired, canceled, unfinished setup, or auto trial) */}
+          {isOwner && canSubscribe ? (
             <>
-              <div className="pricing-toggle" role="group" aria-label={t.pricing.billingIntervalLabel}>
+              <div className="pricing-toggle" role="group" aria-label={t.pricing.billingIntervalLabel} style={{ marginTop: '1rem' }}>
                 {(['monthly', 'annual'] as BillingPlan[]).map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    aria-pressed={plan === item ? 'true' : 'false'}
-                    onClick={() => setPlan(item)}
-                  >
+                  <button key={item} type="button" aria-pressed={plan === item ? 'true' : 'false'} onClick={() => setPlan(item)}>
                     {planLabel(item, t)}
                   </button>
                 ))}
               </div>
+              <p className="muted">
+                {isTrial ? a.subscribeDuringTrialNote(formatDate(entitlement?.trialEnd, t)) : a.subscribeNowNote}
+              </p>
               <div className="portal-actions">
-                <button
-                  className="subscription-button"
-                  type="button"
-                  disabled={!selectedShopId || busy === 'checkout'}
-                  onClick={startCheckout}
-                >
-                  {t.account.subscribeWithAmount(planCopy[plan].amount)}
+                <button className="subscription-button" type="button" disabled={!selectedShopId || busy === 'checkout'} onClick={startCheckout}>
+                  {status === 'pending_authentication'
+                    ? a.finishSetup(planCopy[plan].amount)
+                    : status === 'canceled' || status === 'expired'
+                      ? a.subscribeAgain(planCopy[plan].amount)
+                      : t.account.subscribeWithAmount(planCopy[plan].amount)}
                 </button>
+                {isTrial && canCancel ? (
+                  <button className="subscription-button secondary" type="button" disabled={busy === 'cancel'} onClick={cancel}>
+                    {a.cancelTrialButton}
+                  </button>
+                ) : null}
               </div>
             </>
-          )}
+          ) : null}
+
+          {/* Manage an existing mandate */}
+          {isOwner && canManage ? (
+            <>
+              <p className="muted" style={{ marginTop: '1rem' }}>
+                {a.currentPlanShort(planLabel(entitlement?.plan, t))}{' '}
+                {switchDate ? a.switchExplainer(formatDate(switchDate, t)) : a.switchExplainerNoPeriod}
+              </p>
+              {status === 'past_due' ? null : <p className="muted">{a.updatePaymentExplainer}</p>}
+              <div className="portal-actions">
+                {!entitlement?.pendingReason && !entitlement?.cancelAtPeriodEnd && entitlement?.plan !== 'annual' ? (
+                  <button className="subscription-button" type="button" disabled={busy === 'switch-plan'} onClick={() => scheduleChange('switch-plan', 'annual')}>
+                    {t.account.switchToAnnual(planCopy.annual.amount)}
+                  </button>
+                ) : null}
+                {!entitlement?.pendingReason && !entitlement?.cancelAtPeriodEnd && entitlement?.plan !== 'monthly' ? (
+                  <button className="subscription-button" type="button" disabled={busy === 'switch-plan'} onClick={() => scheduleChange('switch-plan', 'monthly')}>
+                    {t.account.switchToMonthly(planCopy.monthly.amount)}
+                  </button>
+                ) : null}
+                {!entitlement?.pendingReason && !entitlement?.cancelAtPeriodEnd ? (
+                  <button
+                    className={status === 'past_due' ? 'subscription-button' : 'subscription-button secondary'}
+                    type="button"
+                    disabled={busy === 'payment-method'}
+                    onClick={() => scheduleChange('payment-method')}
+                  >
+                    {status === 'past_due' ? a.restorePaymentMethod : t.account.updatePaymentMethod}
+                  </button>
+                ) : null}
+                {canCancel ? (
+                  <button className="subscription-button danger" type="button" disabled={busy === 'cancel'} onClick={cancel}>
+                    {t.account.cancelSubscription}
+                  </button>
+                ) : null}
+              </div>
+            </>
+          ) : null}
 
           <h3>{t.account.paymentHistory}</h3>
           {entitlement?.invoices?.length ? (
@@ -373,6 +483,9 @@ function AccountDashboard({ locale }: { locale: Locale }) {
 
           <div className="portal-actions">
             <UserButton />
+            <a className="subscription-button secondary" href="samaan-bol://subscription/return">
+              {a.openInApp}
+            </a>
             <Link className="subscription-button secondary" href={localizedPath(locale, 'pricing')}>
               {t.account.backToPricing}
             </Link>
