@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { defaultLocale, type Locale, type PageKind, localizedPath } from '../i18n';
 import { getSubscriptionStrings } from '../content/subscriptionStrings';
+import { getLocaleHomeSlots } from '../content/localeHomeSlots';
 import { languageSwitcher } from '../content/localized';
 import { appStoreUrl } from '../seo';
 
@@ -14,6 +15,7 @@ type ChromeProps = { locale?: Locale; page: PageKind };
 
 export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
   const t = getSubscriptionStrings(locale);
+  const menuLabel = getLocaleHomeSlots(locale)?.ariaMenu ?? 'Menu';
   const home = localizedPath(locale, 'home');
   const pricingHref = localizedPath(locale, 'pricing');
   const accountHref = localizedPath(locale, 'account');
@@ -49,7 +51,7 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
             </li>
           </ul>
           <span dangerouslySetInnerHTML={{ __html: switcherHtml }} />
-          <button type="button" className="mobile-menu-btn" aria-label="Menu">
+          <button type="button" className="mobile-menu-btn" aria-label={menuLabel}>
             ☰
           </button>
         </div>

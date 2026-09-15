@@ -1,4 +1,5 @@
 import type { Locale } from '../i18n';
+import { getLocaleHomeSlots } from './localeHomeSlots';
 
 export type SubscriptionStrings = {
   brand: { tagline: string };
@@ -1664,6 +1665,7 @@ const shopDayPricing: Partial<Record<Locale, {
 
 export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
   const base = subscriptionStrings[locale] ?? en;
+  const homeSlots = getLocaleHomeSlots(locale);
   const nav = { ...base.nav, ...navOverlay[locale] };
   const day = shopDayPricing[locale];
   const premiumFeatures = day?.premiumFeatures ?? [
@@ -1693,6 +1695,9 @@ export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
       ai: nav.ai,
       pricing: nav.pricing,
       account: nav.account,
+      product: homeSlots?.footerProduct ?? base.footer.product,
+      company: homeSlots?.footerCompany ?? base.footer.company,
+      support: homeSlots?.footerSupport ?? base.footer.support,
       ...(day
         ? {
             contact: day.footerContact,

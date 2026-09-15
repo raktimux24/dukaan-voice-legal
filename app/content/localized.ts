@@ -17,7 +17,9 @@ const englishHtml: Record<ContentPageKind, string> = {
 
 export function languageSwitcher(locale: Locale, page: PageKind) {
   const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
-  const languageLabel = getLocaleHomeSlots(locale)?.chromeLanguage ?? 'Language';
+  const homeSlots = getLocaleHomeSlots(locale);
+  const languageLabel = homeSlots?.chromeLanguage ?? 'Language';
+  const selectLanguage = homeSlots?.ariaSelectLanguage ?? 'Select language';
   const options = locales
     .map((item) => {
       const selected = item.code === locale ? ' aria-current="true"' : '';
@@ -32,7 +34,7 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
     .join('');
 
   return `<div class="language-switcher" data-language-switcher>
-    <button class="language-button" type="button" data-language-button aria-haspopup="true" aria-expanded="false" aria-label="Select language">
+    <button class="language-button" type="button" data-language-button aria-haspopup="true" aria-expanded="false" aria-label="${selectLanguage}">
       <span class="language-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false">
           <circle cx="12" cy="12" r="9"></circle>

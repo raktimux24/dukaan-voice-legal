@@ -111,6 +111,11 @@ export type HomeSlots = {
   chromeLanguage?: string;
   footerRights?: string;
   footerMadeInIndia?: string;
+  footerProduct?: string;
+  footerCompany?: string;
+  footerSupport?: string;
+  ariaMenu?: string;
+  ariaSelectLanguage?: string;
 };
 
 const TWIN = 'जो बोला, वही बिल।';
@@ -231,6 +236,11 @@ const hi: HomeSlots = {
   chromeLanguage: "भाषा",
   footerRights: "सर्वाधिकार सुरक्षित",
   footerMadeInIndia: "भारत में बना ♥ 🇮🇳",
+  footerProduct: "प्रॉडक्ट",
+  footerCompany: "कंपनी",
+  footerSupport: "सहायता",
+  ariaMenu: "मेनू",
+  ariaSelectLanguage: "भाषा चुनें",
 };
 
 const localeSlots: Partial<Record<Locale, HomeSlots>> = {
@@ -344,6 +354,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "ভাষা",
     footerRights: "সর্বস্বত্ব সংরক্ষিত",
     footerMadeInIndia: "ভারতে তৈরি ♥ 🇮🇳",
+    footerProduct: "প্রোডাক্ট",
+    footerCompany: "কোম্পানি",
+    footerSupport: "সহায়তা",
+    ariaMenu: "মেনু",
+    ariaSelectLanguage: "ভাষা বেছে নিন",
   },
   ta: {
     navFeatures: "அம்சங்கள்",
@@ -454,6 +469,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "மொழி",
     footerRights: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை",
     footerMadeInIndia: "இந்தியாவில் தயாரிப்பு ♥ 🇮🇳",
+    footerProduct: "தயாரிப்பு",
+    footerCompany: "நிறுவனம்",
+    footerSupport: "ஆதரவு",
+    ariaMenu: "மெனு",
+    ariaSelectLanguage: "மொழியைத் தேர்ந்தெடுக்கவும்",
   },
   te: {
     navFeatures: "ఫీచర్లు",
@@ -564,6 +584,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "భాష",
     footerRights: "అన్ని హక్కులు ప్రత్యేకించబడ్డాయి",
     footerMadeInIndia: "భారత్‌లో తయారు ♥ 🇮🇳",
+    footerProduct: "ప్రొడక్ట్",
+    footerCompany: "కంపెనీ",
+    footerSupport: "సపోర్ట్",
+    ariaMenu: "మెనూ",
+    ariaSelectLanguage: "భాష ఎంచుకోండి",
   },
   mr: {
     navFeatures: "फीचर्स",
@@ -674,6 +699,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "भाषा",
     footerRights: "सर्व हक्क राखीव",
     footerMadeInIndia: "भारतात बनवले ♥ 🇮🇳",
+    footerProduct: "प्रॉडक्ट",
+    footerCompany: "कंपनी",
+    footerSupport: "मदत",
+    ariaMenu: "मेनू",
+    ariaSelectLanguage: "भाषा निवडा",
   },
   kn: {
     navFeatures: "ವೈಶಿಷ್ಟ್ಯಗಳು",
@@ -784,6 +814,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "ಭಾಷೆ",
     footerRights: "ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ",
     footerMadeInIndia: "ಭಾರತದಲ್ಲಿ ತಯಾರು ♥ 🇮🇳",
+    footerProduct: "ಪ್ರಾಡಕ್ಟ್",
+    footerCompany: "ಕಂಪನಿ",
+    footerSupport: "ಸಹಾಯ",
+    ariaMenu: "ಮೆನು",
+    ariaSelectLanguage: "ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ",
   },
   gu: {
     navFeatures: "ફીચર્સ",
@@ -894,6 +929,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "ભાષા",
     footerRights: "સર્વ હક્કો સુરક્ષિત",
     footerMadeInIndia: "ભારતમાં બનાવેલ ♥ 🇮🇳",
+    footerProduct: "પ્રોડક્ટ",
+    footerCompany: "કંપની",
+    footerSupport: "સપોર્ટ",
+    ariaMenu: "મેનૂ",
+    ariaSelectLanguage: "ભાષા પસંદ કરો",
   },
   ml: {
     navFeatures: "ഫീച്ചറുകൾ",
@@ -1004,6 +1044,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "ഭാഷ",
     footerRights: "എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം",
     footerMadeInIndia: "ഇന്ത്യയിൽ നിർമ്മിച്ചത് ♥ 🇮🇳",
+    footerProduct: "പ്രോഡക്റ്റ്",
+    footerCompany: "കമ്പനി",
+    footerSupport: "സപ്പോർട്ട്",
+    ariaMenu: "മെനു",
+    ariaSelectLanguage: "ഭാഷ തിരഞ്ഞെടുക്കുക",
   },
   or: {
     navFeatures: "ଫିଚର୍ସ",
@@ -1114,6 +1159,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "ଭାଷା",
     footerRights: "ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ",
     footerMadeInIndia: "ଭାରତରେ ତିଆରି ♥ 🇮🇳",
+    footerProduct: "ପ୍ରୋଡକ୍ଟ",
+    footerCompany: "କମ୍ପାନୀ",
+    footerSupport: "ସହାୟତା",
+    ariaMenu: "ମେନୁ",
+    ariaSelectLanguage: "ଭାଷା ବାଛନ୍ତୁ",
   },
   pa: {
     navFeatures: "ਫੀਚਰ",
@@ -1224,6 +1274,11 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     chromeLanguage: "ਭਾਸ਼ਾ",
     footerRights: "ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ",
     footerMadeInIndia: "ਭਾਰਤ ਵਿੱਚ ਬਣਾਇਆ ♥ 🇮🇳",
+    footerProduct: "ਪ੍ਰੋਡਕਟ",
+    footerCompany: "ਕੰਪਨੀ",
+    footerSupport: "ਸਹਾਇਤਾ",
+    ariaMenu: "ਮੀਨੂ",
+    ariaSelectLanguage: "ਭਾਸ਼ਾ ਚੁਣੋ",
   },
 };
 
@@ -1246,8 +1301,6 @@ function slashPair(body: string | undefined, left: string, right: string): [stri
  * - App Store badge "Download on the"; Play "GET IT ON"; store names
  * - phone.chips Sell | Cart | Udhaar | Today
  * - Bengaluru Hinglish quotes; brand tokens (UPI, WhatsApp, Maggi, Samaan Bol)
- * - Footer h4 Product / Company / Support (no map key)
- * - Menu aria-label
  */
 
 export function applyHomeSlots(html: string, locale: Locale) {
@@ -1542,6 +1595,10 @@ export function applyHomeSlots(html: string, locale: Locale) {
   );
   out = swap(out, 'All rights reserved.', `${slots.footerRights ?? 'All rights reserved'}.`);
   out = swap(out, 'Made with ♥ in India 🇮🇳', slots.footerMadeInIndia ?? 'Made with ♥ in India 🇮🇳');
+  out = swap(out, '<h4>Product</h4>', `<h4>${slots.footerProduct ?? 'Product'}</h4>`);
+  out = swap(out, '<h4>Company</h4>', `<h4>${slots.footerCompany ?? 'Company'}</h4>`);
+  out = swap(out, '<h4>Support</h4>', `<h4>${slots.footerSupport ?? 'Support'}</h4>`);
+  out = swap(out, 'aria-label="Menu"', `aria-label="${slots.ariaMenu ?? 'Menu'}"`);
 
   if (slots.navFeatures) {
     out = swap(out, '<li><a href="#features">Features</a></li>', `<li><a href="#features">${slots.navFeatures}</a></li>`);
