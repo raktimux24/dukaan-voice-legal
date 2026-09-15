@@ -1,9 +1,10 @@
 import { defaultLocale, type Locale, type PageKind, localizedPath, locales } from '../i18n';
-import { homeHtml } from './home';
+import { homeHtml, proofSectionHtml } from './home';
 import { privacyHtml } from './privacy';
 import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
 import { getSubscriptionStrings } from './subscriptionStrings';
+import { appStoreUrl } from '../seo';
 
 type ContentPageKind = Extract<PageKind, 'home' | 'privacy' | 'terms'>;
 
@@ -12,8 +13,6 @@ const englishHtml: Record<ContentPageKind, string> = {
   privacy: privacyHtml,
   terms: termsHtml,
 };
-
-const googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.samaan.bol';
 
 export function languageSwitcher(locale: Locale, page: PageKind) {
   const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
@@ -54,18 +53,6 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
   </div>`;
 }
 
-function activateGooglePlayBadge(html: string) {
-  return html
-    .replaceAll(
-      '<a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">',
-      `<a href="${googlePlayUrl}" class="store-badge">`,
-    )
-    .replace(
-      /\n\s*<span style="position:absolute; top:-10px; right:-10px; background:var\(--saffron\); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">[\s\S]*?<\/span>/g,
-      '',
-    );
-}
-
 function localizeLinks(html: string, locale: Locale) {
   const home = localizedPath(locale, 'home');
   const privacy = localizedPath(locale, 'privacy');
@@ -83,9 +70,6 @@ function stripRemovedNavItems(html: string) {
     .replace(/\s*<li><a href="#languages">[^<]*<\/a><\/li>/g, '');
 }
 
-// The bulk pre-translated home HTML in translated.ts predates the /pricing and
-// /account routes, so non-English locales need those <li> items injected before
-// the Download App CTA. English source already has them.
 function injectMissingNavItems(html: string, locale: Locale) {
   if (html.includes('href="/pricing"') || html.includes(`href="${localizedPath(locale, 'pricing')}"`)) {
     return html;
@@ -102,10 +86,60 @@ function injectMissingNavItems(html: string, locale: Locale) {
   );
 }
 
+const manageBadgeIcon =
+  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+
+function replacePlayStoreBadge(html: string, locale: Locale) {
+  const accountHref = localizedPath(locale, 'account');
+  const t = getSubscriptionStrings(locale);
+  const badge = `<a href="${accountHref}" class="store-badge">
+          <div class="store-badge-icon">${manageBadgeIcon}</div>
+          <div class="store-badge-text">
+            <div class="store-badge-label">Already have a shop?</div>
+            <div class="store-badge-name">${t.nav.account}</div>
+          </div>
+        </a>`;
+
+  return html
+    .replace(/<a href="[^"]*" class="store-badge"[^>]*>[\s\S]*?Google Play[\s\S]*?<\/a>/g, badge)
+    .replaceAll('https://play.google.com/store/apps/details?id=com.samaan.bol', accountHref);
+}
+
+function rewriteDeadCompanyLinks(html: string, locale: Locale) {
+  const t = getSubscriptionStrings(locale);
+  const pricingHref = localizedPath(locale, 'pricing');
+  const accountHref = localizedPath(locale, 'account');
+
+  return html.replace(
+    /(<div class="footer-col">\s*<h4>[^<]*<\/h4>\s*<ul>\s*)(?:<li><a href="#">[^<]*<\/a><\/li>\s*){3}(<li><a href="[^"]*">[^<]*<\/a><\/li>)/,
+    `$1<li><a href="${pricingHref}">${t.footer.pricing}</a></li>\n          <li><a href="${accountHref}">${t.nav.account}</a></li>\n          $2`,
+  );
+}
+
+function sanitizeTranslatedHome(html: string, locale: Locale) {
+  const t = getSubscriptionStrings(locale);
+  let out = html
+    .replaceAll('चावल 5 किलो जोड़ दो', 'चावल 5 किलो बेचा')
+    .replaceAll('Priya General Store', 'Kirana counter')
+    .replace(/<div class="hero-stat-number">50K\+<\/div>/g, '<div class="hero-stat-number">7 days</div>')
+    .replace(/href="#download" class="btn-primary"/g, `href="${appStoreUrl}" class="btn-primary"`)
+    .replace(/<section class="testimonials">[\s\S]*?<\/section>/, proofSectionHtml);
+
+  out = replacePlayStoreBadge(out, locale);
+  out = rewriteDeadCompanyLinks(out, locale);
+
+  out = out.replace(
+    /(<li><a href="#ai">)[^<]*(<\/a><\/li>)/,
+    `$1${t.nav.ai}$2`,
+  );
+
+  return out;
+}
+
 function adaptHome(html: string, locale: Locale) {
   const switcher = languageSwitcher(locale, 'home');
   const transformed = injectMissingNavItems(
-    stripRemovedNavItems(activateGooglePlayBadge(localizeLinks(html, locale))),
+    stripRemovedNavItems(sanitizeTranslatedHome(localizeLinks(html, locale), locale)),
     locale,
   );
 

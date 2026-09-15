@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   if (!isLocale(locale) || locale === 'en') notFound();
 
   return pageMetadata({
-    title: 'Account — Samaan-Bol',
-    description: 'Manage your Samaan-Bol subscription, invoices, cancellation, and Razorpay billing status.',
+    title: 'Manage subscription — Samaan Bol',
+    description: 'Manage your Samaan Bol subscription, invoices, cancellation, and Razorpay billing status. Not a trial signup — new shops start a 7-day Premium trial in the app, no card.',
     path: `/${locale}/account`,
     page: 'account',
     locale: getLocale(locale),

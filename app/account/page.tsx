@@ -10,8 +10,8 @@ import { pageMetadata } from '../seo';
 import { AccountClient } from './AccountClient';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Account — Samaan-Bol',
-  description: 'Manage your Samaan-Bol subscription, invoices, cancellation, and Razorpay billing status.',
+  title: 'Manage subscription — Samaan Bol',
+  description: 'Manage your Samaan Bol subscription, invoices, cancellation, and Razorpay billing status. Not a trial signup — new shops start a 7-day Premium trial in the app, no card.',
   path: '/account',
   page: 'account',
   noIndex: true,

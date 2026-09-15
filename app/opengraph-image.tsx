@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'Samaan-Bol voice-first inventory app for Indian retail';
+export const alt = 'voice POS / kirana billing';
 export const size = {
   width: 1200,
   height: 630,
@@ -50,22 +50,22 @@ export default function OpenGraphImage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22, maxWidth: 860 }}>
           <div style={{ color: '#FF8A33', fontSize: 34, fontWeight: 700 }}>
-            बोल के संभालो अपना बिज़नेस
+            बिल मत टाइप करो। बोलो।
           </div>
           <div style={{ fontSize: 72, lineHeight: 1.02, fontWeight: 900, letterSpacing: -2 }}>
-            Voice-first AI inventory for Indian retail
+            Don't type the bill. Say it.
           </div>
           <div style={{ color: '#C4C4C8', fontSize: 30, lineHeight: 1.35 }}>
-            Manage kirana stock, expiry alerts, buy lists, and team updates by speaking in Hindi and regional Indian languages.
+            Voice billing for kirana — cash, UPI QR, udhaar. Free tap POS on the App Store.
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 18, color: '#8A8A90', fontSize: 24 }}>
-          <span>Voice Inventory App</span>
+          <span>Voice POS</span>
           <span>•</span>
-          <span>Kirana Store Stock Management</span>
+          <span>Kirana billing</span>
           <span>•</span>
-          <span>AI Stock Alerts</span>
+          <span>App Store</span>
         </div>
       </div>
     ),

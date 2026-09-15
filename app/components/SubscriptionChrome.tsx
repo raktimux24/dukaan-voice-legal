@@ -4,8 +4,7 @@ import { getSubscriptionStrings } from '../content/subscriptionStrings';
 import { languageSwitcher } from '../content/localized';
 import { appStoreUrl } from '../seo';
 
-export const googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.samaan.bol';
-export const appStoreLinkUrl = 'https://apps.apple.com/in/app/samaan-bol/id6759739444';
+export const appStoreLinkUrl = appStoreUrl;
 export const supportEmail = 'meetslimshady07@gmail.com';
 
 const stencilSvg = (id: string) =>
@@ -103,13 +102,10 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
             <h4>{t.footer.company}</h4>
             <ul>
               <li>
-                <a href="#">{t.footer.about}</a>
+                <Link href={pricingHref}>{t.footer.pricing}</Link>
               </li>
               <li>
-                <a href="#">{t.footer.blog}</a>
-              </li>
-              <li>
-                <a href="#">{t.footer.careers}</a>
+                <Link href={accountHref}>{t.footer.account}</Link>
               </li>
               <li>
                 <Link href={contactHref}>{t.footer.contact}</Link>
@@ -147,7 +143,6 @@ export function AppDownloadLinks() {
   return (
     <div className="app-download-links">
       <a href={appStoreUrl}>App Store</a>
-      <a href={googlePlayUrl}>Google Play</a>
     </div>
   );
 }
