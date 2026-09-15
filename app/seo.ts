@@ -6,30 +6,23 @@ export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaanbol.sp
 export const appStoreUrl = 'https://apps.apple.com/in/app/samaan-bol/id6759739444';
 
 export const seoKeywords = [
-  'voice inventory app',
-  'voice command inventory',
-  'voice based inventory app',
-  'hands-free inventory app',
-  'inventory app in Hindi',
-  'Hindi inventory app',
-  'stock management app Hindi',
-  'inventory app for kirana store',
-  'kirana store inventory app',
-  'kirana shop stock app',
-  'multilingual inventory app',
-  'Indian language inventory app',
-  'AI inventory app India',
-  'AI stock management app',
-  'predictive stock app',
-  'festival stock prediction',
-  'dukaan ka hisaab app',
-  'samaan ka hisaab app',
-  'shop register app',
-  'shop notebook app',
+  'kirana billing app',
+  'voice billing app',
+  'voice POS',
+  'kirana POS',
+  'UPI QR bill',
+  'udhaar/khata (Premium)',
+  'Hindi/Hinglish billing',
+  'speak the sale',
+  'bill share WhatsApp',
+  'tap to sell',
+  'shop counter billing',
 ];
 
 export const defaultDescription =
-  'Samaan-Bol is a voice-first AI inventory app for Indian kirana and retail shops. Manage stock by speaking in Hindi, English, and regional Indian languages.';
+  'Speak the sale in Hindi or Hinglish. Samaan Bol catches it, takes cash / UPI QR / udhaar, and stock updates. Free tap POS on App Store. Premium voice till — 7-day trial, no card.';
+
+export const defaultTitle = 'Samaan Bol — Voice billing for kirana | Cash, UPI, Udhaar';
 
 export const defaultOpenGraphImage = '/opengraph-image';
 
@@ -96,7 +89,7 @@ export function pageMetadata({
       title,
       description,
       url: absoluteUrl(path),
-      siteName: 'Samaan-Bol',
+      siteName: 'Samaan Bol',
       locale: localeMeta.ogLocale,
       type: 'website',
       images: [
@@ -104,7 +97,7 @@ export function pageMetadata({
           url: defaultOpenGraphImage,
           width: 1200,
           height: 630,
-          alt: 'Samaan-Bol voice-first AI inventory app for Indian retail',
+          alt: 'voice POS / kirana billing',
         },
       ],
     },
@@ -115,7 +108,7 @@ export function pageMetadata({
       images: [defaultOpenGraphImage],
     },
     appleWebApp: {
-      title: 'Samaan-Bol',
+      title: 'Samaan Bol',
       capable: true,
       statusBarStyle: 'black-translucent',
     },
@@ -125,7 +118,7 @@ export function pageMetadata({
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Samaan-Bol',
+  name: 'Samaan Bol',
   url: siteUrl,
   logo: absoluteUrl('/opengraph-image'),
   sameAs: [appStoreUrl],
@@ -134,7 +127,7 @@ export const organizationSchema = {
 export const softwareApplicationSchema = {
   '@context': 'https://schema.org',
   '@type': ['SoftwareApplication', 'MobileApplication'],
-  name: 'Samaan-Bol',
+  name: 'Samaan Bol',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'iOS',
   url: siteUrl,
@@ -142,18 +135,19 @@ export const softwareApplicationSchema = {
   installUrl: appStoreUrl,
   offers: {
     '@type': 'Offer',
+    name: 'Samaan Bol on the App Store',
     price: '0',
     priceCurrency: 'INR',
+    url: appStoreUrl,
+    availability: 'https://schema.org/InStock',
   },
   description: defaultDescription,
   featureList: [
-    'Voice-first inventory management',
-    'Hindi and regional Indian language support',
-    'Predictive stock alerts',
-    'Expiry alerts',
-    'Smart buy lists',
-    'Team collaboration',
-    'Inventory audit trails',
+    'Sell by voice',
+    'Cash / UPI QR / udhaar',
+    'Bill share',
+    "Today's sales",
+    'Stock behind sale',
   ],
   audience: {
     '@type': 'Audience',
@@ -169,8 +163,49 @@ export const softwareApplicationSchema = {
 export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Samaan-Bol',
+  name: 'Samaan Bol',
   url: siteUrl,
   inLanguage: 'en-IN',
   description: defaultDescription,
 };
+
+export const pricingOfferSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Samaan Bol Premium',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'iOS',
+  url: absoluteUrl('/pricing'),
+  downloadUrl: appStoreUrl,
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Premium — Monthly',
+      price: '499',
+      priceCurrency: 'INR',
+      url: absoluteUrl('/pricing'),
+    },
+    {
+      '@type': 'Offer',
+      name: 'Premium — Annual',
+      price: '3999',
+      priceCurrency: 'INR',
+      url: absoluteUrl('/pricing'),
+    },
+  ],
+};
+
+export function faqPageSchema(faq: Array<{ q: string; a: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: a,
+      },
+    })),
+  };
+}

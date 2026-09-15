@@ -6,7 +6,9 @@ import { LanguageSelectEffects } from '../../components/LanguageSelectEffects';
 import { SubscriptionFooter, SubscriptionNav } from '../../components/SubscriptionChrome';
 import { PricingClient } from '../../pricing/PricingClient';
 import { getLocale, isLocale, translatedLocales } from '../../i18n';
-import { pageMetadata } from '../../seo';
+import { faqPageSchema, pageMetadata, pricingOfferSchema } from '../../seo';
+import { JsonLd } from '../../components/JsonLd';
+import { getSubscriptionStrings } from '../../content/subscriptionStrings';
 
 type LocaleParams = { params: Promise<{ locale: string }> };
 
@@ -19,8 +21,9 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   if (!isLocale(locale) || locale === 'en') notFound();
 
   return pageMetadata({
-    title: 'Pricing — Samaan-Bol Premium',
-    description: 'Subscribe to Samaan-Bol Premium for voice AI, predictions, analytics, multi-shop inventory, and secure Razorpay UPI Autopay billing.',
+    title: 'Pricing — Samaan Bol Premium',
+    description:
+      'Premium voice till for ₹499/month or ₹3,999/year. New shops get 7 days of Premium in the app, no card. The 7-day refund is separate — it starts from the first charge.',
     path: `/${locale}/pricing`,
     page: 'pricing',
     locale: getLocale(locale),
@@ -35,6 +38,7 @@ export default async function LocalizedPricingPage({ params }: LocaleParams) {
 
   return (
     <div className="subscription-shell">
+      <JsonLd data={[pricingOfferSchema, faqPageSchema(getSubscriptionStrings(locale).pricing.faq)]} />
       <AmbientBackground />
       <SubscriptionNav locale={locale} page="pricing" />
       <main className="subscription-main">

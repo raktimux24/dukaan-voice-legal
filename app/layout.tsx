@@ -2,15 +2,14 @@ import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import { Analytics } from './components/Analytics';
-import { pageMetadata } from './seo';
+import { defaultDescription, defaultTitle, pageMetadata } from './seo';
 import './styles/home.css';
 import './styles/legal-base.css';
 import './styles/subscription.css';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Samaan-Bol — Voice Inventory App for Indian Kirana Stores',
-  description:
-    'Voice-first AI inventory app for Indian kirana and retail shops. Speak in Hindi, English, or regional languages to manage stock, alerts, expiry, and buy lists.',
+  title: defaultTitle,
+  description: defaultDescription,
   path: '/',
 });
 

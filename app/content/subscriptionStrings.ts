@@ -111,24 +111,24 @@ export type SubscriptionStrings = {
 };
 
 const en: SubscriptionStrings = {
-  brand: { tagline: 'Voice-first AI inventory management, built for the heart of Indian retail.' },
-  nav: { features: 'Features', ai: 'AI Intelligence', pricing: 'Pricing', account: 'Account', download: 'Download App' },
+  brand: { tagline: 'Voice POS for Indian kirana counters.' },
+  nav: { features: 'Features', ai: 'Voice till', pricing: 'Pricing', account: 'Manage subscription', download: 'Download Free' },
   footer: {
     product: 'Product',
     company: 'Company',
     support: 'Support',
     features: 'Features',
-    ai: 'AI Intelligence',
+    ai: 'Voice till',
     pricing: 'Pricing',
     about: 'About',
     blog: 'Blog',
     careers: 'Careers',
     contact: 'Contact',
-    account: 'Account',
+    account: 'Manage subscription',
     refund: 'Refund Policy',
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
-    copyright: '© Samaan-Bol. Voice-first inventory for Indian retail.',
+    copyright: '© 2026 Samaan Bol. Voice POS for Indian kirana counters.',
   },
   plans: {
     monthlyLabel: 'Monthly',
@@ -148,10 +148,10 @@ const en: SubscriptionStrings = {
     annualSavings: 'Save about 33%. Effective price is about ₹333/month.',
     monthlyFlexible: 'Flexible monthly billing. Cancel before the next billing cycle.',
     subscribeWithAmount: (amount) => `Subscribe — ${amount}`,
-    refundWindow: '7-day refund window from first charge',
+    refundWindow: '7-day refund from first charge (not the free trial)',
     razorpaySecure: 'Secure payments by Razorpay',
     gstInvoice: 'GST invoice support through Razorpay',
-    comparisonHeading: 'Choose the inventory system that matches your shop',
+    comparisonHeading: 'Choose the till that matches your counter',
     freeHeading: 'Free',
     premiumHeading: 'Premium',
     freeFeatures: [
@@ -165,14 +165,23 @@ const en: SubscriptionStrings = {
       'Voice AI in Hindi, English, and regional Indian languages — sell by voice',
       'Full sales reports: profit & margin, busy hours, staff-wise, CSV export',
       'Udhaar (khata): customer balances, pay-later, WhatsApp reminders',
-      'AI stock predictions, expiry alerts and buy-list suggestions',
+      'Stock updates behind each sale',
       'Advanced stock analytics and full history',
       'Multi-shop support for growing retailers',
     ],
     secureBillingHeading: 'Secure billing for Indian shops',
-    trustStrip: ['Razorpay hosted checkout', 'UPI Autopay supported', 'Cancel anytime', '7-day refund window'],
+    trustStrip: [
+      'Razorpay hosted checkout',
+      'UPI Autopay supported',
+      'Cancel anytime',
+      'New shops: 7-day Premium trial in the app, no card',
+    ],
     faqHeading: 'Questions before you subscribe',
     faq: [
+      {
+        q: "What's the 7-day trial?",
+        a: 'New shops get 7 days of Premium in the app, no card. The 7-day refund is separate — it starts from the first charge.',
+      },
       {
         q: 'What is UPI Autopay?',
         a: 'UPI Autopay lets you approve a recurring mandate once, then Razorpay collects future subscription payments automatically under RBI rules.',
@@ -196,8 +205,8 @@ const en: SubscriptionStrings = {
     loadingAccount: 'Loading account...',
     signedOutHeading: 'Sign in to manage your subscription',
     signedOutLead:
-      'Use the same account you sign in with in the Samaan-Bol app. All subscriptions are started and managed here on the web.',
-    heading: 'Account',
+      'Use the same account you sign in with in the Samaan Bol app. This page is for managing a subscription on a shop you already have — not for starting a trial. New shops get 7 days of Premium in the app, no card.',
+    heading: 'Manage subscription',
     leadWithEmail: (email) =>
       `Manage shop subscriptions, Razorpay checkout, invoices, cancellations, and account access for ${email}.`,
     accountFallback: 'your Samaan-Bol account',

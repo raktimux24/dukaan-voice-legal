@@ -64,7 +64,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">भाषाएँ समर्थित</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">आइटम दैनिक रूप से ट्रैक किए गए</div>
           </div>
           <div class="hero-stat">
@@ -78,7 +78,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 किग्रा</p>
         </div>
 
@@ -105,7 +105,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">सुप्रभात! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -213,7 +213,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>अपनी आज्ञा बोलो</h3>
         <p>माइक टैप करें और बताएं कि आपको क्या चाहिए - स्टॉक जोड़ें, मात्रा जांचें, खरीदारी सूची बनाएं। किसी भी भारतीय भाषा में.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 किलो चावल डालें</div>
         </div>
       </div>
@@ -1040,7 +1040,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">ভাষা সমর্থিত</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">আইটেম প্রতিদিন ট্র্যাক</div>
           </div>
           <div class="hero-stat">
@@ -1054,7 +1054,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 কেজি</p>
         </div>
 
@@ -1081,7 +1081,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">শুভ সকাল! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -1189,7 +1189,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>আপনার আদেশের কথা বলুন</h3>
         <p>মাইকে আলতো চাপুন এবং আপনার যা প্রয়োজন তা বলুন — স্টক যোগ করুন, পরিমাণ পরীক্ষা করুন, একটি ক্রয়ের তালিকা তৈরি করুন। যে কোন ভারতীয় ভাষায়।</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 কেজি চাল যোগ করুন</div>
         </div>
       </div>
@@ -2015,7 +2015,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">மொழிகள் ஆதரிக்கப்படுகின்றன</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">பொருட்கள் தினசரி கண்காணிக்கப்படும்</div>
           </div>
           <div class="hero-stat">
@@ -2029,7 +2029,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 கிலோ</p>
         </div>
 
@@ -2056,7 +2056,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">காலை வணக்கம்! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -2164,7 +2164,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>உங்கள் கட்டளையைப் பேசுங்கள்</h3>
         <p>மைக்கைத் தட்டி, உங்களுக்குத் தேவையானதைச் சொல்லவும் — பங்குகளைச் சேர்க்கவும், அளவைச் சரிபார்க்கவும், வாங்குதல் பட்டியலை உருவாக்கவும். எந்த இந்திய மொழியிலும்.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 கிலோ அரிசி சேர்க்கவும்</div>
         </div>
       </div>
@@ -2990,7 +2990,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">భాషలు మద్దతు ఇవ్వబడ్డాయి</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">ప్రతిరోజూ ట్రాక్ చేయబడిన అంశాలు</div>
           </div>
           <div class="hero-stat">
@@ -3004,7 +3004,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 కిలోలు</p>
         </div>
 
@@ -3031,7 +3031,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">శుభోదయం! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -3139,7 +3139,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>మీ ఆజ్ఞను మాట్లాడండి</h3>
         <p>మైక్‌ని నొక్కి, మీకు ఏమి కావాలో చెప్పండి — స్టాక్‌ను జోడించండి, పరిమాణాన్ని తనిఖీ చేయండి, కొనుగోలు జాబితాను సృష్టించండి. ఏదైనా భారతీయ భాషలో.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 కిలోల బియ్యం జోడించండి</div>
         </div>
       </div>
@@ -3980,7 +3980,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice - 18 → 23 किलो</p>
         </div>
 
@@ -4007,7 +4007,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">सुप्रभात! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -4115,7 +4115,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>तुमची आज्ञा बोला</h3>
         <p>माइकवर टॅप करा आणि तुम्हाला काय हवे आहे ते सांगा — स्टॉक जोडा, प्रमाण तपासा, खरेदी सूची तयार करा. कोणत्याही भारतीय भाषेत.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 किलो तांदूळ घाला</div>
         </div>
       </div>
@@ -4941,7 +4941,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">ಬೆಂಬಲಿತ ಭಾಷೆಗಳು</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">ಐಟಂಗಳನ್ನು ಪ್ರತಿದಿನ ಟ್ರ್ಯಾಕ್ ಮಾಡಲಾಗುತ್ತದೆ</div>
           </div>
           <div class="hero-stat">
@@ -4955,7 +4955,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 ಕೆಜಿ</p>
         </div>
 
@@ -4982,7 +4982,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">ಶುಭೋದಯ! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -5090,7 +5090,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>ನಿಮ್ಮ ಆಜ್ಞೆಯನ್ನು ಮಾತನಾಡಿ</h3>
         <p>ಮೈಕ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ ಮತ್ತು ನಿಮಗೆ ಬೇಕಾದುದನ್ನು ಹೇಳಿ - ಸ್ಟಾಕ್ ಸೇರಿಸಿ, ಪ್ರಮಾಣವನ್ನು ಪರಿಶೀಲಿಸಿ, ಖರೀದಿ ಪಟ್ಟಿಯನ್ನು ರಚಿಸಿ. ಯಾವುದೇ ಭಾರತೀಯ ಭಾಷೆಯಲ್ಲಿ.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 ಕೆಜಿ ಅಕ್ಕಿ ಸೇರಿಸಿ</div>
         </div>
       </div>
@@ -5917,7 +5917,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">ભાષાઓ સપોર્ટેડ છે</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">આઇટમ્સ દરરોજ ટ્રૅક કરવામાં આવે છે</div>
           </div>
           <div class="hero-stat">
@@ -5931,7 +5931,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 કિગ્રા</p>
         </div>
 
@@ -5958,7 +5958,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">સુપ્રભાત! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -6066,7 +6066,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>તમારો આદેશ બોલો</h3>
         <p>માઇકને ટેપ કરો અને કહો કે તમને શું જોઈએ છે — સ્ટોક ઉમેરો, જથ્થો તપાસો, ખરીદીની સૂચિ બનાવો. કોઈપણ ભારતીય ભાષામાં.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 કિલો ચોખા ઉમેરો</div>
         </div>
       </div>
@@ -6892,7 +6892,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">ഭാഷകൾ പിന്തുണയ്ക്കുന്നു</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">ദിവസവും ട്രാക്ക് ചെയ്യുന്ന ഇനങ്ങൾ</div>
           </div>
           <div class="hero-stat">
@@ -6906,7 +6906,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 കിലോ</p>
         </div>
 
@@ -6933,7 +6933,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">സുപ്രഭാതം! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -7041,7 +7041,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>നിങ്ങളുടെ കമാൻഡ് പറയുക</h3>
         <p>മൈക്ക് ടാപ്പുചെയ്ത് നിങ്ങൾക്ക് ആവശ്യമുള്ളത് പറയുക - സ്റ്റോക്ക് ചേർക്കുക, അളവ് പരിശോധിക്കുക, വാങ്ങൽ ലിസ്റ്റ് സൃഷ്ടിക്കുക. ഏത് ഇന്ത്യൻ ഭാഷയിലും.</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 കിലോ അരി ചേർക്കുക</div>
         </div>
       </div>
@@ -7868,7 +7868,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="hero-stat-label">ਭਾਸ਼ਾਵਾਂ ਸਮਰਥਿਤ ਹਨ</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">50K+</div>
+            <div class="hero-stat-number">7 days</div>
             <div class="hero-stat-label">ਆਈਟਮਾਂ ਨੂੰ ਰੋਜ਼ਾਨਾ ਟਰੈਕ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</div>
           </div>
           <div class="hero-stat">
@@ -7882,7 +7882,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice — 18 → 23 ਕਿਲੋਗ੍ਰਾਮ</p>
         </div>
 
@@ -7909,7 +7909,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">ਸ਼ੁਭ ਸਵੇਰ! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -8017,7 +8017,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>ਆਪਣਾ ਹੁਕਮ ਬੋਲੋ</h3>
         <p>ਮਾਈਕ ਨੂੰ ਟੈਪ ਕਰੋ ਅਤੇ ਕਹੋ ਕਿ ਤੁਹਾਨੂੰ ਕੀ ਚਾਹੀਦਾ ਹੈ — ਸਟਾਕ ਸ਼ਾਮਲ ਕਰੋ, ਮਾਤਰਾ ਦੀ ਜਾਂਚ ਕਰੋ, ਇੱਕ ਖਰੀਦ ਸੂਚੀ ਬਣਾਓ। ਕਿਸੇ ਵੀ ਭਾਰਤੀ ਭਾਸ਼ਾ ਵਿੱਚ।</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 ਕਿਲੋ ਚੌਲ ਪਾਓ</div>
         </div>
       </div>
@@ -8857,7 +8857,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-          <p><strong class="hindi">"चावल 5 किलो जोड़ दो"</strong></p>
+          <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
           <p style="margin-top:6px; font-size:12px; color:var(--success);">✓ Basmati Rice - 18 → 23 କିଲୋଗ୍ରାମ |</p>
         </div>
 
@@ -8884,7 +8884,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="phone-header">
               <div>
                 <div class="phone-greeting">ଶୁଭ ସକାଳ! 👋</div>
-                <div class="phone-subtext">Priya General Store</div>
+                <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -8992,7 +8992,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
         <h3>ତୁମର ଆଦେଶ କୁହ |</h3>
         <p>ମାଇକ୍ ଟ୍ୟାପ୍ କରନ୍ତୁ ଏବଂ ଆପଣ ଯାହା ଆବଶ୍ୟକ କରନ୍ତି କୁହନ୍ତୁ - ଷ୍ଟକ୍ ଯୋଡନ୍ତୁ, ପରିମାଣ ଯାଞ୍ଚ କରନ୍ତୁ, ଏକ କ୍ରୟ ତାଲିକା ସୃଷ୍ଟି କରନ୍ତୁ | ଯେକ any ଣସି ଭାରତୀୟ ଭାଷାରେ |</p>
         <div class="step-example">
-          <div class="hindi">"चावल 5 किलो जोड़ दो"</div>
+          <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">5 କିଲୋଗ୍ରାମ ଚାଉଳ ମିଶାନ୍ତୁ |</div>
         </div>
       </div>

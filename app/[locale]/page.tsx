@@ -5,7 +5,7 @@ import { JsonLd } from '../components/JsonLd';
 import { LanguageSelectEffects } from '../components/LanguageSelectEffects';
 import { getLocalizedHtml } from '../content/localized';
 import { getLocale, getLocaleMeta, isLocale, translatedLocales, type Locale } from '../i18n';
-import { organizationSchema, pageMetadata, softwareApplicationSchema, websiteSchema } from '../seo';
+import { defaultDescription, defaultTitle, organizationSchema, pageMetadata, softwareApplicationSchema, websiteSchema } from '../seo';
 
 type LocaleParams = {
   params: Promise<{ locale: string }>;
@@ -20,9 +20,8 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   if (!isLocale(locale) || locale === 'en') notFound();
 
   return pageMetadata({
-    title: 'Samaan-Bol — Voice Inventory App for Indian Kirana Stores',
-    description:
-      'Voice-first AI inventory app for Indian kirana and retail shops. Speak in Hindi, English, or regional languages to manage stock, alerts, expiry, and buy lists.',
+    title: defaultTitle,
+    description: defaultDescription,
     path: `/${locale}`,
     page: 'home',
     locale: getLocale(locale),
