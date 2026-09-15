@@ -104,6 +104,7 @@ export type HomeSlots = {
   hisaab2Gloss?: string;
   hisaab4Line?: string;
   hisaab4Gloss?: string;
+  hisaabSoldTag?: string;
   cmpLabel?: string;
   cmpWithoutChrome?: string;
   cmpWithChrome?: string;
@@ -241,6 +242,7 @@ const hi: HomeSlots = {
   footerSupport: "सहायता",
   ariaMenu: "मेनू",
   ariaSelectLanguage: "भाषा चुनें",
+  hisaabSoldTag: "बेचा।",
 };
 
 const localeSlots: Partial<Record<Locale, HomeSlots>> = {
@@ -359,6 +361,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "সহায়তা",
     ariaMenu: "মেনু",
     ariaSelectLanguage: "ভাষা বেছে নিন",
+    hisaabSoldTag: "বিক্রি।",
   },
   ta: {
     navFeatures: "அம்சங்கள்",
@@ -474,6 +477,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "ஆதரவு",
     ariaMenu: "மெனு",
     ariaSelectLanguage: "மொழியைத் தேர்ந்தெடுக்கவும்",
+    hisaabSoldTag: "விற்றது.",
   },
   te: {
     navFeatures: "ఫీచర్లు",
@@ -589,6 +593,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "సపోర్ట్",
     ariaMenu: "మెనూ",
     ariaSelectLanguage: "భాష ఎంచుకోండి",
+    hisaabSoldTag: "అమ్మింది.",
   },
   mr: {
     navFeatures: "फीचर्स",
@@ -704,6 +709,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "मदत",
     ariaMenu: "मेनू",
     ariaSelectLanguage: "भाषा निवडा",
+    hisaabSoldTag: "विकले.",
   },
   kn: {
     navFeatures: "ವೈಶಿಷ್ಟ್ಯಗಳು",
@@ -819,6 +825,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "ಸಹಾಯ",
     ariaMenu: "ಮೆನು",
     ariaSelectLanguage: "ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ",
+    hisaabSoldTag: "ಮಾರಾಟ.",
   },
   gu: {
     navFeatures: "ફીચર્સ",
@@ -934,6 +941,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "સપોર્ટ",
     ariaMenu: "મેનૂ",
     ariaSelectLanguage: "ભાષા પસંદ કરો",
+    hisaabSoldTag: "વેચ્યું.",
   },
   ml: {
     navFeatures: "ഫീച്ചറുകൾ",
@@ -1049,6 +1057,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "സപ്പോർട്ട്",
     ariaMenu: "മെനു",
     ariaSelectLanguage: "ഭാഷ തിരഞ്ഞെടുക്കുക",
+    hisaabSoldTag: "വിറ്റു.",
   },
   or: {
     navFeatures: "ଫିଚର୍ସ",
@@ -1164,6 +1173,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "ସହାୟତା",
     ariaMenu: "ମେନୁ",
     ariaSelectLanguage: "ଭାଷା ବାଛନ୍ତୁ",
+    hisaabSoldTag: "ବିକିଲା।",
   },
   pa: {
     navFeatures: "ਫੀਚਰ",
@@ -1279,6 +1289,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerSupport: "ਸਹਾਇਤਾ",
     ariaMenu: "ਮੀਨੂ",
     ariaSelectLanguage: "ਭਾਸ਼ਾ ਚੁਣੋ",
+    hisaabSoldTag: "ਵੇਚਿਆ।",
   },
 };
 
@@ -1534,6 +1545,11 @@ export function applyHomeSlots(html: string, locale: Locale) {
               <div class="translation">Those items already moved</div>`,
       `<div class="hindi">${slots.hisaab4Line ?? 'Stock with the bill'}</div>
               <div class="translation">${slots.hisaab4Gloss ?? 'Those items already moved'}</div>`,
+    );
+    out = swap(
+      out,
+      '<div class="ai-block-tag ai-block-tag--insight">Sold.</div>',
+      `<div class="ai-block-tag ai-block-tag--insight">${slots.hisaabSoldTag ?? 'Sold.'}</div>`,
     );
   }
 

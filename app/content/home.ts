@@ -356,7 +356,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
 
       <div class="ai-block reveal">
         <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-        <div class="ai-block-tag ai-block-tag--insight">Sold</div>
+        <div class="ai-block-tag ai-block-tag--insight">Sold.</div>
         <h3>Aaj kitna becha</h3>
         <p>What went out today. Cash and UPI totals on the same day.</p>
         <div class="ai-voice-example">
