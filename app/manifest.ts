@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Samaan Bol',
     short_name: 'Samaan Bol',
-    description: 'Voice POS for Indian kirana counters. Speak the sale. Cash, UPI QR, udhaar.',
+    description: 'For the kirana counter. You say what they took. The bill keeps up.',
     start_url: '/',
     display: 'standalone',
     background_color: '#0A0A0F',

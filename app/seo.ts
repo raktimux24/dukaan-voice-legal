@@ -6,21 +6,19 @@ export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaanbol.sp
 export const appStoreUrl = 'https://apps.apple.com/in/app/samaan-bol/id6759739444';
 
 export const seoKeywords = [
-  'kirana billing app',
-  'voice billing app',
-  'voice POS',
-  'kirana POS',
-  'UPI QR bill',
-  'udhaar/khata (Premium)',
-  'Hindi/Hinglish billing',
+  'kirana bill',
+  'udhaar',
+  'UPI QR',
+  'evening hisaab',
+  'Hindi Hinglish billing',
   'speak the sale',
   'bill share WhatsApp',
-  'tap to sell',
   'shop counter billing',
+  'kirana billing app',
 ];
 
 export const defaultDescription =
-  'Speak the sale in Hindi or Hinglish. Samaan Bol catches it, takes cash / UPI QR / udhaar, and stock updates. Free tap POS on App Store. Premium voice till — 7-day trial, no card.';
+  'While the customer is still there, you say what they took. The app puts it on a bill. Cash, UPI QR, or udhaar. Stock is not a second notebook. Free on the App Store. New shops get 7 days of voice in the app, no card.';
 
 export const defaultTitle = 'Samaan Bol — Voice billing for kirana | Cash, UPI, Udhaar';
 
@@ -97,7 +95,7 @@ export function pageMetadata({
           url: defaultOpenGraphImage,
           width: 1200,
           height: 630,
-          alt: 'voice POS / kirana billing',
+          alt: 'kirana counter billing — cash, UPI, udhaar',
         },
       ],
     },
@@ -143,11 +141,12 @@ export const softwareApplicationSchema = {
   },
   description: defaultDescription,
   featureList: [
-    'Sell by voice',
+    'Say what they took',
     'Cash / UPI QR / udhaar',
-    'Bill share',
-    "Today's sales",
-    'Stock behind sale',
+    'WhatsApp bill',
+    "Today's cash and UPI totals",
+    'Stock updates with the bill',
+    '7-day voice in the app for new shops (no card)',
   ],
   audience: {
     '@type': 'Audience',

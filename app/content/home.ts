@@ -3,25 +3,25 @@ export const proofSectionHtml = `<!-- ═══ PROOF ═══ -->
   <div class="container">
     <div class="reveal">
       <div class="section-label">Proof</div>
-      <h2 class="section-heading">What you get. No invented quotes.</h2>
+      <h2 class="section-heading">Plain facts. No invented quotes.</h2>
     </div>
     <div class="testimonials-grid">
       <div class="testimonial reveal reveal-delay-1">
-        <div class="testimonial-stars">Free</div>
-        <blockquote>Tap to sell on iPhone. Download on the App Store.</blockquote>
-        <div class="testimonial-author">Free tap-to-sell</div>
-        <div class="testimonial-role">App Store live · no Play Store download</div>
+        <div class="testimonial-stars">App Store</div>
+        <blockquote>On iPhone. Download on the App Store. No Play Store.</blockquote>
+        <div class="testimonial-author">App Store · iPhone</div>
+        <div class="testimonial-role">The live download</div>
       </div>
       <div class="testimonial reveal reveal-delay-2">
-        <div class="testimonial-stars">Premium</div>
-        <blockquote>Voice till in the app — 7 days, no card. Then ₹499/month or ₹3,999/year. Manage on /account. Trial is not a refund window.</blockquote>
-        <div class="testimonial-author">Premium voice</div>
-        <div class="testimonial-role">7 days in the app, no card · then manage subscription</div>
+        <div class="testimonial-stars">7 days</div>
+        <blockquote>New shop: 7 days of voice in the app, no card. Then ₹499/month or ₹3,999/year. Manage on /account. Trial is not the refund once you are charged.</blockquote>
+        <div class="testimonial-author">New shop trial</div>
+        <div class="testimonial-role">In the app, no card · trial ≠ refund</div>
       </div>
       <div class="testimonial reveal reveal-delay-3">
-        <div class="testimonial-stars">POS</div>
-        <blockquote>Stock follows the sale. No GST on bills. No card reader.</blockquote>
-        <div class="testimonial-author">Stock behind sale</div>
+        <div class="testimonial-stars">Bills</div>
+        <blockquote>We do not put GST on the shop bill. That is not tax advice.</blockquote>
+        <div class="testimonial-author">Shop bill</div>
         <div class="testimonial-role">Cash · UPI QR · udhaar</div>
       </div>
     </div>
@@ -47,10 +47,10 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </a>
       <ul class="nav-links">
         <li><a href="#features">Features</a></li>
-        <li><a href="#ai">Voice till</a></li>
+        <li><a href="#ai">Evening hisaab</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/account">Manage subscription</a></li>
-        <li><a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="nav-cta">Download Free</a></li>
+        <li><a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="nav-cta">Download</a></li>
       </ul>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
@@ -62,37 +62,37 @@ export const homeHtml = `<!-- Three.js background canvas -->
   <div class="container">
     <div class="hero-grid">
       <div>
-        <div class="hero-eyebrow">Voice POS for the kirana counter</div>
+        <div class="hero-eyebrow">For the kirana counter</div>
         <h1 class="hero-text-reveal">
-          <span class="hindi-line hindi">बिल मत टाइप करो। बोलो।</span>
-          <span class="hero-text-main">Don't type the bill.<br>Say it.</span>
+          <span class="hindi-line hindi">जो बोला, वही बिल।</span>
+          <span class="hero-text-main">You already said it out loud.<br>The bill should keep up.</span>
         </h1>
         <p class="hero-sub">
-          You already speak the sale in <span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">Kannada</span><span class="hero-rotate-word">Gujarati</span><span class="hero-rotate-word">Malayalam</span><span class="hero-rotate-word">Punjabi</span><span class="hero-rotate-word">Odia</span><span class="hero-rotate-word">English</span></span>.
-          Samaan Bol catches it, takes cash, UPI, or udhaar, and stock follows. Free tap-to-sell on iPhone. Premium adds voice at the till — new shops get 7 days free, no card. Hindi, Hinglish, or any of 10 Indian languages + English.
+          While the customer is still there, you say what they took in <span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">Kannada</span><span class="hero-rotate-word">Gujarati</span><span class="hero-rotate-word">Malayalam</span><span class="hero-rotate-word">Punjabi</span><span class="hero-rotate-word">Odia</span><span class="hero-rotate-word">English</span></span>.
+          The app puts it on a bill. You take cash, show a UPI QR, or write it as udhaar. Stock is not a second notebook.
         </p>
         <div class="hero-actions">
           <a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="btn-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download Free
+            Download
           </a>
           <a href="#how" class="btn-secondary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            See It In Action
+            See how a sale works
           </a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
-            <div class="hero-stat-number">Free</div>
-            <div class="hero-stat-label">Tap to sell</div>
+            <div class="hero-stat-number">Cash</div>
+            <div class="hero-stat-label">On the bill</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">7 days</div>
-            <div class="hero-stat-label">Premium in the app, no card</div>
+            <div class="hero-stat-number">UPI</div>
+            <div class="hero-stat-label">QR amount</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-number">iPhone</div>
-            <div class="hero-stat-label">App Store live</div>
+            <div class="hero-stat-number">Udhaar</div>
+            <div class="hero-stat-label">On a name</div>
           </div>
         </div>
       </div>
@@ -102,13 +102,13 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
           <p><strong class="hindi">"चावल 5 किलो बेचा"</strong></p>
-          <p style="margin-top:6px; font-size:12px; color:var(--success);">Rice 5 kg · Cash/UPI?</p>
+          <p style="margin-top:6px; font-size:12px; color:var(--success);">Rice 5 kg sold · Cash/UPI?</p>
         </div>
 
         <div class="float-card float-card--alert">
           <div class="float-card-icon float-card-icon--alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-          <p><strong>Bill ready</strong></p>
-          <p style="margin-top:4px; font-size:12px;">WhatsApp / PDF</p>
+          <p><strong>WhatsApp bill</strong></p>
+          <p style="margin-top:4px; font-size:12px;">To the customer standing there</p>
         </div>
 
         <!-- Phone mockup — mirrors actual app UI -->
@@ -127,7 +127,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
             <!-- Header: greeting + bell -->
             <div class="phone-header">
               <div>
-                <div class="phone-greeting">Good morning! 👋</div>
+                <div class="phone-greeting">Good evening</div>
                 <div class="phone-subtext">Kirana counter</div>
               </div>
               <div class="phone-bell">
@@ -225,15 +225,15 @@ export const homeHtml = `<!-- Three.js background canvas -->
 <section class="how-it-works" id="how">
   <div class="container">
     <div class="reveal">
-      <div class="section-label">How It Works</div>
-      <h2 class="section-heading">Three steps. No training needed.</h2>
-      <p class="section-sub">Speak the sale — or tap to sell on the free plan. Voice never finishes payment.</p>
+      <div class="section-label">How a sale works</div>
+      <h2 class="section-heading">Three steps. While they are still there.</h2>
+      <p class="section-sub">You still tap to take money — a spoken sentence cannot send UPI alone.</p>
     </div>
     <div class="steps-grid">
       <div class="step reveal reveal-delay-1">
         <div class="step-number">01</div>
-        <h3>Speak the sale (or tap free)</h3>
-        <p>Say what sold, or tap it on the free plan. Hindi, Hinglish, or any of 10 Indian languages + English.</p>
+        <h3>You say what they took</h3>
+        <p>Or tap the item if you are not on voice.</p>
         <div class="step-example">
           <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">Rice 5 kg sold</div>
@@ -241,8 +241,8 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-number">02</div>
-        <h3>Cash / UPI QR / udhaar</h3>
-        <p>Take cash, show a UPI QR, or put it on udhaar. Voice never finishes payment.</p>
+        <h3>You take the money</h3>
+        <p>Cash, show UPI amount on QR, or put it on that customer's udhaar. You still tap to take money — spoken sentence cannot send UPI alone.</p>
         <div class="step-example">
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
             <span style="background:var(--saffron-tint); color:var(--saffron); padding:4px 10px; border-radius:4px; font-size:12px;">Cash</span>
@@ -253,11 +253,11 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </div>
       <div class="step reveal reveal-delay-3">
         <div class="step-number">03</div>
-        <h3>Stock + today's sales + bill</h3>
-        <p>Stock follows the sale. Today's sales update. Share the bill on WhatsApp or PDF.</p>
+        <h3>WhatsApp bill. Totals move.</h3>
+        <p>WhatsApp bill to the customer. Today's cash/UPI totals move. Stock for those items is already updated.</p>
         <div class="step-example">
-          <div class="hindi">Stock · today's sales · WhatsApp/PDF</div>
-          <div class="english">Bill leaves the counter</div>
+          <div class="hindi">WhatsApp · cash/UPI today</div>
+          <div class="english">Stock already updated with the bill</div>
         </div>
       </div>
     </div>
@@ -270,128 +270,117 @@ export const homeHtml = `<!-- Three.js background canvas -->
   <div class="container">
     <div class="reveal">
       <div class="section-label">Features</div>
-      <h2 class="section-heading">Everything your shop needs. Nothing it doesn't.</h2>
+      <h2 class="section-heading">What happens at the counter.</h2>
     </div>
     <div class="features-grid">
       <div class="feature feature--hero reveal reveal-delay-1">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-        <h3>Voice till (Premium)</h3>
-        <p>Speak the sale at the counter. Samaan Bol catches it. Confirm cash, UPI QR, or udhaar yourself — voice never finishes payment. New shops get 7 days of Premium in the app, no card.</p>
+        <h3>You speak the sale</h3>
+        <p>Confirm cash, UPI, or udhaar with a tap. This is not a call to the customer's UPI app.</p>
       </div>
       <div class="feature reveal reveal-delay-2">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
         <h3>10 Indian languages + English</h3>
-        <p>Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, Punjabi, and Odia — plus English. Hindi or Hinglish at the till is fine.</p>
+        <p>Hinglish is how you speak. It is not a chip. Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, Punjabi, Odia, English.</p>
       </div>
       <div class="feature reveal reveal-delay-3">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-        <h3>Staff sell from their phones</h3>
-        <p>Helpers can sell from their own phones. The bill still lands on the shop counter.</p>
+        <h3>Helper's phone</h3>
+        <p>Still this shop's hisaab. Not a private wallet.</p>
       </div>
       <div class="feature reveal reveal-delay-1">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg></div>
-        <h3>Bill leaves the counter</h3>
-        <p>Share the bill on WhatsApp or as a PDF. No GST on bills.</p>
+        <h3>WhatsApp bill</h3>
+        <p>To the customer standing there.</p>
       </div>
       <div class="feature reveal reveal-delay-2">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
-        <h3>Udhaar/khata (Premium)</h3>
-        <p>Put a sale on udhaar. Khata stays with the shop — Premium.</p>
+        <h3>Udhaar on a name</h3>
+        <p>Ramesh's rice on his name. Premium, once, plainly.</p>
       </div>
       <div class="feature reveal reveal-delay-3">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="16" x2="17" y2="16"/></svg></div>
-        <h3>Barcode to cart</h3>
-        <p>Scan a barcode to put the item on the bill. Tap to sell on the free plan.</p>
+        <h3>Scan onto this bill</h3>
+        <p>Not stock-in unless you are adding stock.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ AI INTELLIGENCE ═══ -->
+<!-- ═══ EVENING HISAAB ═══ -->
 <section class="ai-section" id="ai" style="overflow:hidden;">
   <div class="orb orb--indigo" style="bottom: -100px; left: -100px;"></div>
   <div class="orb orb--green" style="top: 200px; right: -80px;"></div>
   <div class="container">
     <div class="ai-header reveal">
-      <div class="section-label">Voice till</div>
+      <div class="section-label">Evening hisaab</div>
       <h2 class="section-heading">
-        <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(22px,2.8vw,32px); font-weight:500; margin-bottom:8px;">बोलो। पैसे कन्फर्म करो।</span>
-        Speak the sale. Confirm the money.
+        <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(22px,2.8vw,32px); font-weight:500; margin-bottom:8px;">आज का हिसाब</span>
+        Ask the day, not the diary
       </h2>
-      <p class="section-sub">Voice selling, payments, today's sales Q&amp;A, and stock behind the sale. Not a digital brain. No festival forecasting.</p>
+      <p class="section-sub">Cash, UPI, udhaar, what sold. Stock already moved with the bill.</p>
     </div>
 
     <div class="ai-blocks">
-      <!-- Voice selling -->
       <div class="ai-block reveal">
         <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
-        <div class="ai-block-tag ai-block-tag--predict">Voice selling</div>
-        <h3>Speak the sale</h3>
-        <p>Say what sold. Samaan Bol puts it on the bill. Or tap to sell on the free plan.</p>
-        <div class="ai-voice-example">
-          <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-            <div class="voice-bubble-content">
-              <div class="hindi">"चावल 5 किलो बेचा"</div>
-              <div class="translation">Rice 5 kg · Cash/UPI?</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Payments -->
-      <div class="ai-block reveal">
-        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <div class="ai-block-tag ai-block-tag--alert">Payments</div>
-        <h3>Confirm the money</h3>
-        <p>Cash, UPI QR, or udhaar. You finish payment. Voice never does.</p>
-        <div class="ai-voice-example">
-          <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-            <div class="voice-bubble-content">
-              <div class="hindi">Cash / UPI / udhaar</div>
-              <div class="translation">You confirm. Voice never finishes payment.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Today's sales Q&A -->
-      <div class="ai-block reveal">
-        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-        <div class="ai-block-tag ai-block-tag--insight">Today's sales Q&amp;A</div>
-        <h3>Ask about today's sales</h3>
-        <p>Ask how the counter did today. Spoken answers, on-screen numbers.</p>
+        <div class="ai-block-tag ai-block-tag--predict">Cash</div>
+        <h3>Aaj kitna cash aaya</h3>
+        <p>Ask the day. Cash in the box should match what the bills say.</p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
             <div class="voice-bubble-avatar voice-bubble-avatar--user"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
             <div class="voice-bubble-content">
-              <div class="hindi">"आज कितना बिका?"</div>
-              <div class="translation">How much sold today?</div>
-            </div>
-          </div>
-          <div class="voice-bubble">
-            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-            <div class="voice-bubble-content">
-              <div class="hindi">Today's sales · Cash · UPI</div>
-              <div class="translation">On-screen totals for the day</div>
+              <div class="hindi">"आज कितना कैश आया?"</div>
+              <div class="translation">How much cash came in today?</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Stock behind the sale -->
       <div class="ai-block reveal">
-        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <div class="ai-block-tag ai-block-tag--team">Stock behind the sale</div>
-        <h3>Stock follows the bill</h3>
-        <p>When the sale lands, stock updates. No festival forecasting. No digital brain.</p>
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--alert">Udhaar</div>
+        <h3>Whose udhaar is open</h3>
+        <p>Names, not a paper slip in the drawer.</p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
             <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
             <div class="voice-bubble-content">
-              <div class="hindi">Stock behind the sale</div>
-              <div class="translation">The bill moves stock. That's it.</div>
+              <div class="hindi">Ramesh · open udhaar</div>
+              <div class="translation">Whose khata is still open today</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-block reveal">
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--insight">Sold</div>
+        <h3>Aaj kitna becha</h3>
+        <p>What went out today. Cash and UPI totals on the same day.</p>
+        <div class="ai-voice-example">
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--user"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="voice-bubble-content">
+              <div class="hindi">"आज कितना बेचा?"</div>
+              <div class="translation">How much sold today?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-block reveal">
+        <div class="ai-block-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="ai-block-tag ai-block-tag--team">Stock</div>
+        <h3>Stock already moved with the bill</h3>
+        <p>You do not count it again on Sunday to know what the bill already took.</p>
+        <div class="ai-voice-example">
+          <div class="voice-bubble">
+            <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+            <div class="voice-bubble-content">
+              <div class="hindi">Stock with the bill</div>
+              <div class="translation">Those items already moved</div>
             </div>
           </div>
         </div>
@@ -407,7 +396,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
     <div class="reveal">
       <div class="section-label">Built for Bharat</div>
       <h2 class="section-heading">Your language. Your business. Your way.</h2>
-      <p class="section-sub">Hindi, Hinglish, or any of 10 Indian languages + English — including native scripts and the names you actually use at the counter.</p>
+      <p class="section-sub">Hinglish is speech, not a chip. 10 Indian languages + English, with the names you actually use at the counter.</p>
     </div>
     <div class="lang-grid reveal">
       <div class="lang-chip lang-chip--featured">Hindi <span class="native hindi">हिन्दी</span></div>
@@ -430,31 +419,31 @@ export const homeHtml = `<!-- Three.js background canvas -->
   <div class="container">
     <div class="reveal">
       <div class="section-label">Why Samaan Bol</div>
-      <h2 class="section-heading">The difference is night and day</h2>
+      <h2 class="section-heading">The evening should match the box</h2>
     </div>
     <div class="comparison-grid reveal">
       <div class="comparison-col comparison-col--without">
         <h3>Without Samaan Bol</h3>
-        <p class="comparison-col-subtitle">Typed bills and a notebook</p>
+        <p class="comparison-col-subtitle">Rush, paper, two places</p>
         <ul class="comparison-list">
-          <li><span class="icon">✕</span> Typed bills and paper notebooks</li>
-          <li><span class="icon">✕</span> Cash, UPI, and udhaar tracked separately</li>
-          <li><span class="icon">✕</span> Stock counted after the rush</li>
-          <li><span class="icon">✕</span> Bills stay at the counter</li>
-          <li><span class="icon">✕</span> No picture of today's sales</li>
-          <li><span class="icon">✕</span> Voice till locked behind typing</li>
+          <li><span class="icon">✕</span> Rush at the counter</li>
+          <li><span class="icon">✕</span> Paper udhaar</li>
+          <li><span class="icon">✕</span> Sunday stock count</li>
+          <li><span class="icon">✕</span> UPI and cash in two places</li>
+          <li><span class="icon">✕</span> Helper slow at typing</li>
+          <li><span class="icon">✕</span> Evening hisaab ≠ cash box</li>
         </ul>
       </div>
       <div class="comparison-col comparison-col--with">
         <h3>With Samaan Bol</h3>
-        <p class="comparison-col-subtitle">Speak or tap · cash · UPI · udhaar</p>
+        <p class="comparison-col-subtitle">The sentence you said is the bill</p>
         <ul class="comparison-list">
-          <li><span class="icon">✓</span> Speak the sale — or tap to sell on the free plan</li>
-          <li><span class="icon">✓</span> Cash, UPI QR, or udhaar on the same bill</li>
-          <li><span class="icon">✓</span> Stock follows the sale</li>
-          <li><span class="icon">✓</span> Share the bill on WhatsApp or PDF</li>
-          <li><span class="icon">✓</span> Today's sales at a glance</li>
-          <li><span class="icon">✓</span> Premium voice at the till</li>
+          <li><span class="icon">✓</span> The sentence you said becomes the bill</li>
+          <li><span class="icon">✓</span> Cash, UPI, or udhaar</li>
+          <li><span class="icon">✓</span> Stock moved</li>
+          <li><span class="icon">✓</span> WhatsApp bill</li>
+          <li><span class="icon">✓</span> Today's totals</li>
+          <li><span class="icon">✓</span> Helper feeds this shop's hisaab</li>
         </ul>
       </div>
     </div>
@@ -467,12 +456,12 @@ ${proofSectionHtml}
 <section class="cta-section" id="download">
   <div class="container">
     <div class="reveal">
-      <div class="section-label">Get Started Free</div>
+      <div class="section-label">Next customer</div>
       <h2 class="section-heading">
-        <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(20px,2.4vw,28px); font-weight:500; margin-bottom:8px;">आज ही शुरू करें</span>
-        Speak the sale. Take the money.
+        <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(20px,2.4vw,28px); font-weight:500; margin-bottom:8px;">अगले ग्राहक पर आज़माओ</span>
+        Try it on the next customer, not on a quiet Sunday.
       </h2>
-      <p class="section-sub">Free tap-to-sell on the App Store. Premium voice till — 7 days in the app, no card. Trial is not a refund window.</p>
+      <p class="section-sub">On the App Store. New shops get 7 days of voice in the app, no card. Trial is not a refund.</p>
       <div class="cta-actions">
         <a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
@@ -502,13 +491,13 @@ ${proofSectionHtml}
           <div class="logo-mark"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="stencil-footer"><rect x="0" y="0" width="100" height="100" fill="white"/><rect x="24" y="18" width="52" height="8" rx="4" fill="black"/><rect x="38" y="18" width="24" height="36" rx="12" fill="black"/><path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/><rect x="46" y="72" width="8" height="10" rx="4" fill="black"/><rect x="36" y="32" width="28" height="4" fill="white"/><rect x="36" y="44" width="28" height="4" fill="white"/></mask></defs><circle cx="50" cy="50" r="50" fill="#ea580c" mask="url(#stencil-footer)"/></svg></div>
           <div class="logo-text">Samaan<span>Bol</span></div>
         </a>
-        <p>Voice POS for Indian kirana counters.</p>
+        <p>For the kirana counter. You say what they took. The bill keeps up.</p>
       </div>
       <div class="footer-col">
         <h4>Product</h4>
         <ul>
           <li><a href="#features">Features</a></li>
-          <li><a href="#ai">Voice till</a></li>
+          <li><a href="#ai">Evening hisaab</a></li>
           <li><a href="/pricing">Pricing</a></li>
         </ul>
       </div>

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   return pageMetadata({
     title: 'Pricing — Samaan Bol Premium',
     description:
-      'Premium voice till for ₹499/month or ₹3,999/year. New shops get 7 days of Premium in the app, no card. The 7-day refund is separate — it starts from the first charge.',
+      'Premium for ₹499/month or ₹3,999/year. New shops get 7 days of voice in the app, no card. The 7-day refund is separate — it starts from the first charge.',
     path: `/${locale}/pricing`,
     page: 'pricing',
     locale: getLocale(locale),

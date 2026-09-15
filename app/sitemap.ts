@@ -14,7 +14,7 @@ const englishPages: Array<{ path: string; changeFrequency: 'weekly' | 'monthly';
   { path: '/refund-policy', changeFrequency: 'monthly', priority: 0.4 },
 ];
 
-const lastModified = new Date('2026-09-15T00:00:00.000Z');
+const lastModified = new Date('2026-09-15T13:50:00.000Z');
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

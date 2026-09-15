@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'voice POS / kirana billing';
+export const alt = 'kirana counter billing — cash, UPI, udhaar';
 export const size = {
   width: 1200,
   height: 630,
@@ -50,20 +50,20 @@ export default function OpenGraphImage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22, maxWidth: 860 }}>
           <div style={{ color: '#FF8A33', fontSize: 34, fontWeight: 700 }}>
-            बिल मत टाइप करो। बोलो।
+            जो बोला, वही बिल।
           </div>
-          <div style={{ fontSize: 72, lineHeight: 1.02, fontWeight: 900, letterSpacing: -2 }}>
-            Don't type the bill. Say it.
+          <div style={{ fontSize: 56, lineHeight: 1.05, fontWeight: 900, letterSpacing: -2 }}>
+            You already said it out loud. The bill should keep up.
           </div>
           <div style={{ color: '#C4C4C8', fontSize: 30, lineHeight: 1.35 }}>
-            Voice billing for kirana — cash, UPI QR, udhaar. Free tap POS on the App Store.
+            Cash, UPI QR, or udhaar. Stock is not a second notebook.
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 18, color: '#8A8A90', fontSize: 24 }}>
-          <span>Voice POS</span>
+          <span>Kirana counter</span>
           <span>•</span>
-          <span>Kirana billing</span>
+          <span>Cash · UPI · Udhaar</span>
           <span>•</span>
           <span>App Store</span>
         </div>

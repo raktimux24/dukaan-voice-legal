@@ -111,14 +111,14 @@ export type SubscriptionStrings = {
 };
 
 const en: SubscriptionStrings = {
-  brand: { tagline: 'Voice POS for Indian kirana counters.' },
-  nav: { features: 'Features', ai: 'Voice till', pricing: 'Pricing', account: 'Manage subscription', download: 'Download Free' },
+  brand: { tagline: 'For the kirana counter. You say what they took. The bill keeps up.' },
+  nav: { features: 'Features', ai: 'Evening hisaab', pricing: 'Pricing', account: 'Manage subscription', download: 'Download' },
   footer: {
     product: 'Product',
     company: 'Company',
     support: 'Support',
     features: 'Features',
-    ai: 'Voice till',
+    ai: 'Evening hisaab',
     pricing: 'Pricing',
     about: 'About',
     blog: 'Blog',
@@ -128,7 +128,7 @@ const en: SubscriptionStrings = {
     refund: 'Refund Policy',
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
-    copyright: '© 2026 Samaan Bol. Voice POS for Indian kirana counters.',
+    copyright: '© 2026 Samaan Bol. For the kirana counter.',
   },
   plans: {
     monthlyLabel: 'Monthly',
@@ -151,23 +151,22 @@ const en: SubscriptionStrings = {
     refundWindow: '7-day refund from first charge (not the free trial)',
     razorpaySecure: 'Secure payments by Razorpay',
     gstInvoice: 'GST invoice support through Razorpay',
-    comparisonHeading: 'Choose the till that matches your counter',
+    comparisonHeading: 'Pick what matches your counter',
     freeHeading: 'Free',
     premiumHeading: 'Premium',
     freeFeatures: [
-      'Point of sale: cash & UPI QR checkout, shareable bills',
-      "Today's sales and last 7 days",
-      'Products, stock entry, barcode scan',
-      'Single shop, team invites',
-      'Last 7 days of activity',
+      'Cash + UPI QR bill',
+      'Today and last 7 days',
+      'Products, stock, barcode on the bill',
+      'One shop, helpers',
+      '7 days of activity',
     ],
     premiumFeatures: [
-      'Voice AI in Hindi, English, and regional Indian languages — sell by voice',
-      'Full sales reports: profit & margin, busy hours, staff-wise, CSV export',
-      'Udhaar (khata): customer balances, pay-later, WhatsApp reminders',
-      'Stock updates behind each sale',
-      'Advanced stock analytics and full history',
-      'Multi-shop support for growing retailers',
+      'Voice for the sale in 10 Indian languages + English',
+      'Full sales reports and history',
+      'Udhaar list on customer names, reminders',
+      'Warnings and reports from actual sales',
+      'Multi-shop',
     ],
     secureBillingHeading: 'Secure billing for Indian shops',
     trustStrip: [
@@ -179,8 +178,8 @@ const en: SubscriptionStrings = {
     faqHeading: 'Questions before you subscribe',
     faq: [
       {
-        q: "What's the 7-day trial?",
-        a: 'New shops get 7 days of Premium in the app, no card. The 7-day refund is separate — it starts from the first charge.',
+        q: 'What is the 7-day trial?',
+        a: 'New shop gets 7 days voice+Premium in app, no card. Refund is separate from first charge.',
       },
       {
         q: 'What is UPI Autopay?',

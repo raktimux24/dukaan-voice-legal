@@ -11,10 +11,10 @@ import { PricingClient } from './PricingClient';
 export const metadata: Metadata = pageMetadata({
   title: 'Pricing — Samaan Bol Premium',
   description:
-    'Premium voice till for ₹499/month or ₹3,999/year. New shops get 7 days of Premium in the app, no card. The 7-day refund is separate — it starts from the first charge.',
+    'Premium for ₹499/month or ₹3,999/year. New shops get 7 days of voice in the app, no card. The 7-day refund is separate — it starts from the first charge.',
   path: '/pricing',
   page: 'pricing',
-  keywords: ['Samaan Bol pricing', 'kirana POS pricing', 'voice till subscription', 'Razorpay UPI Autopay'],
+  keywords: ['Samaan Bol pricing', 'kirana billing pricing', 'Razorpay UPI Autopay'],
 });
 
 export default function PricingPage() {
