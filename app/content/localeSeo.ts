@@ -59,6 +59,8 @@ const localeSeo: Partial<Record<Locale, LocaleSeo>> = {
   },
 };
 
-export function getLocaleSeo(locale: Locale): LocaleSeo | undefined {
-  return localeSeo[locale];
+export function getLocaleSeo(locale: Locale): (LocaleSeo & { websiteDescription: string }) | undefined {
+  const seo = localeSeo[locale];
+  if (!seo) return undefined;
+  return { ...seo, websiteDescription: seo.description };
 }

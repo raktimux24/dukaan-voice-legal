@@ -6,7 +6,7 @@ import { LanguageSelectEffects } from '../components/LanguageSelectEffects';
 import { getLocalizedHtml } from '../content/localized';
 import { getLocale, getLocaleMeta, isLocale, translatedLocales, type Locale } from '../i18n';
 import { getLocaleSeo } from '../content/localeSeo';
-import { defaultDescription, defaultTitle, organizationSchema, pageMetadata, softwareApplicationSchemaFor, websiteSchema } from '../seo';
+import { defaultDescription, defaultTitle, organizationSchema, pageMetadata, softwareApplicationSchemaFor, websiteSchemaFor } from '../seo';
 
 type LocaleParams = {
   params: Promise<{ locale: string }>;
@@ -41,7 +41,7 @@ export default async function LocalizedHomePage({ params }: LocaleParams) {
 
   return (
     <>
-      <JsonLd data={[organizationSchema, websiteSchema, softwareApplicationSchemaFor(locale)]} />
+      <JsonLd data={[organizationSchema, websiteSchemaFor(locale), softwareApplicationSchemaFor(locale)]} />
       <div lang={localeMeta.hreflang} dangerouslySetInnerHTML={{ __html: getLocalizedHtml('home', locale as Locale) }} />
       <HomeEffects />
       <LanguageSelectEffects />

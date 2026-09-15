@@ -181,6 +181,15 @@ export const websiteSchema = {
   description: defaultDescription,
 };
 
+export function websiteSchemaFor(locale: Locale = defaultLocale) {
+  const seo = getLocaleSeo(locale);
+  return {
+    ...websiteSchema,
+    inLanguage: getLocaleMeta(locale).hreflang,
+    description: seo?.websiteDescription ?? seo?.description ?? defaultDescription,
+  };
+}
+
 export const pricingOfferSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',

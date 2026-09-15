@@ -42,6 +42,7 @@ export type HomeSlots = {
   f5Body?: string;
   f6Title?: string;
   f6Body?: string;
+  whatHappens?: string;
   hisaabLabel?: string;
   hisaabHindi?: string;
   hisaabHeading?: string;
@@ -70,6 +71,7 @@ export type HomeSlots = {
   cmpWith4?: string;
   cmpWith5?: string;
   cmpWith6?: string;
+  eveningMatch?: string;
   proofLabel?: string;
   proofHeading?: string;
   ctaLabel?: string;
@@ -132,6 +134,7 @@ const hi: HomeSlots = {
   f5Body: "रमेश ने आज चावल लिया। उसके नाम पर बैठा। महीने के अंत में रजिस्टर नहीं पलटना। ये लिस्ट Premium पर है।",
   f6Title: "स्कैन करके इसी बिल पर",
   f6Body: "बारकोड Maggi को इसी बिल पर डालता है। स्टॉक-इन स्कैन तभी है जब तुम स्टॉक जोड़ रहे हो।",
+  whatHappens: "काउंटर पर क्या होता है।",
   hisaabLabel: "शाम का हिसाब",
   hisaabHindi: "आज कितना कैश आया?",
   hisaabHeading: "दिन से पूछो, रजिस्टर से नहीं",
@@ -160,6 +163,7 @@ const hi: HomeSlots = {
   cmpWith4: "खड़े ग्राहक को WhatsApp बिल",
   cmpWith5: "आज का कैश और UPI एक जगह",
   cmpWith6: "हेल्पर का फ़ोन भी इसी दुकान के हिसाब में",
+  eveningMatch: "शाम का हिसाब बॉक्स से मिलना चाहिए",
   proofLabel: "उदाहरण",
   proofHeading: "बेंगलुरु काउंटर से (उदाहरण)",
   ctaLabel: "शुरू करो",
@@ -215,6 +219,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "রমেশ আজ চাল নিয়েছে। তার নামে বসে। মাস শেষে খাতা উল্টাতে হয় না। এই লিস্ট Premium-এ।",
     f6Title: "স্ক্যান করে এই বিলে",
     f6Body: "বারকোড Maggi-কে এই বিলে তোলে। স্টক-ইন স্ক্যান তখনই, যখন আপনি স্টক যোগ করছেন।",
+    whatHappens: "কাউন্টারে কী হয়।",
     hisaabLabel: "সন্ধ্যের হিসাব",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "দিনকে জিজ্ঞেস করুন, খাতাকে নয়",
@@ -243,6 +248,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "দাঁড়ানো কাস্টমারকে WhatsApp বিল",
     cmpWith5: "আজকের ক্যাশ আর UPI এক জায়গায়",
     cmpWith6: "হেল্পারের ফোনও এই দোকানের হিসাবে",
+    eveningMatch: "সন্ধ্যের হিসাব বক্সের সঙ্গে মেলানো উচিত",
     proofLabel: "উদাহরণ",
     proofHeading: "বেঙ্গালুরু কাউন্টার থেকে (উদাহরণ)",
     ctaLabel: "শুরু করুন",
@@ -295,6 +301,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "ரமேஷ் இன்று அரிசி எடுத்தார். அவர் பெயரில் இருக்கிறது. மாத இறுதியில் டைரி புரட்ட வேண்டாம். இந்த பட்டியல் Premium-ல்.",
     f6Title: "ஸ்கேன் செய்து இந்த பில்லில்",
     f6Body: "பார்கோடு Maggi-ஐ இந்த பில்லில் போடும். ஸ்டாக்-இன் ஸ்கேன், நீங்கள் ஸ்டாக் சேர்க்கும்போது மட்டும்.",
+    whatHappens: "கவுண்டரில் என்ன நடக்கிறது.",
     hisaabLabel: "மாலை கணக்கு",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "நாள் கணக்கைக் கேளுங்கள், டைரியை அல்ல",
@@ -323,6 +330,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "நிற்கும் வாடிக்கையாளருக்கு WhatsApp பில்",
     cmpWith5: "இன்றைய கேஷ் மற்றும் UPI ஒரே இடத்தில்",
     cmpWith6: "உதவியாளர் போனும் இந்த கடை கணக்கிலேயே",
+    eveningMatch: "மாலை கணக்கு பெட்டியுடன் பொருந்த வேண்டும்",
     proofLabel: "எடுத்துக்காட்டுகள்",
     proofHeading: "பெங்களூரு கவுண்டர்களில் இருந்து (எடுத்துக்காட்டுகள்)",
     ctaLabel: "தொடங்குங்கள்",
@@ -375,6 +383,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "రమేష్ ఈరోజు బియ్యం తీసుకున్నాడు. అతని పేరు మీద ఉంది. నెల చివర నోట్‌బుక్ తిప్పక్కర్లేదు. ఈ లిస్ట్ Premiumలో.",
     f6Title: "స్కాన్ చేసి ఈ బిల్ మీద",
     f6Body: "బార్‌కోడ్ Maggiని ఈ బిల్ మీద పెడుతుంది. స్టాక్-ఇన్ స్కాన్ మీరు స్టాక్ జోడించేటప్పుడు మాత్రమే.",
+    whatHappens: "కౌంటర్ మీద ఏమి జరుగుతుంది.",
     hisaabLabel: "సాయంత్రం హిసాబ్",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "రోజును అడగండి, డైరీని కాదు",
@@ -403,6 +412,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "నిలబడి ఉన్న కస్టమర్‌కి WhatsApp బిల్",
     cmpWith5: "నేటి క్యాష్, UPI ఒకే చోట",
     cmpWith6: "హెల్పర్ ఫోన్ కూడా ఈ దుకాణం హిసాబ్‌లోకే",
+    eveningMatch: "సాయంత్రం బాక్స్‌తో సరిపోవాలి",
     proofLabel: "ఉదాహరణలు",
     proofHeading: "బెంగళూరు కౌంటర్ల నుండి (ఉదాహరణలు)",
     ctaLabel: "మొదలుపెట్టండి",
@@ -455,6 +465,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "रमेशने आज तांदूळ घेतला. त्याच्या नावावर बसला. महिन्याच्या शेवटी वही पलटायची नाही. ही लिस्ट Premium वर आहे.",
     f6Title: "स्कॅन करून याच बिलावर",
     f6Body: "बारकोड Maggi या बिलावर घालतो. स्टॉक-इन स्कॅन तेव्हाच, जेव्हा तुम्ही स्टॉक जोडता.",
+    whatHappens: "काउंटरवर काय चालते.",
     hisaabLabel: "संध्याकाळचा हिशोब",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "दिवसाला विचारा, वहीला नाही",
@@ -483,6 +494,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "उभ्या ग्राहकाला WhatsApp बिल",
     cmpWith5: "आजचा कॅश आणि UPI एका ठिकाणी",
     cmpWith6: "हेल्परचा फोनही या दुकानाच्या हिशोबात",
+    eveningMatch: "संध्याकाळचा हिशेब बॉक्सशी जुळावा",
     proofLabel: "उदाहरणे",
     proofHeading: "बेंगळुरू काउंटरवरून (उदाहरणे)",
     ctaLabel: "सुरू करा",
@@ -535,6 +547,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "ರಮೇಶ್ ಇಂದು ಅಕ್ಕಿ ತೆಗೆದುಕೊಂಡ. ಅವನ ಹೆಸರಿನ ಮೇಲೆ ಕುಳಿತಿದೆ. ತಿಂಗಳ ಕೊನೆಯಲ್ಲಿ ಡೈರಿ ತಿರುಗಿಸಬೇಕಿಲ್ಲ. ಈ ಲಿಸ್ಟ್ Premiumನಲ್ಲಿ.",
     f6Title: "ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಈ ಬಿಲ್‌ಗೆ",
     f6Body: "ಬಾರ್‌ಕೋಡ್ Maggi ಅನ್ನು ಈ ಬಿಲ್‌ಗೆ ಹಾಕುತ್ತದೆ. ಸ್ಟಾಕ್-ಇನ್ ಸ್ಕ್ಯಾನ್ ನೀವು ಸ್ಟಾಕ್ ಸೇರಿಸುವಾಗ ಮಾತ್ರ.",
+    whatHappens: "ಕೌಂಟರ್‌ನಲ್ಲಿ ಏನಾಗುತ್ತದೆ.",
     hisaabLabel: "ಸಂಜೆಯ ಹಿಸಾಬ್",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "ದಿನವನ್ನು ಕೇಳಿ, ಡೈರಿಯನ್ನು ಅಲ್ಲ",
@@ -563,6 +576,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "ನಿಂತಿರುವ ಗ್ರಾಹಕರಿಗೆ WhatsApp ಬಿಲ್",
     cmpWith5: "ಇಂದಿನ ಕ್ಯಾಶ್ ಮತ್ತು UPI ಒಂದೇ ಕಡೆ",
     cmpWith6: "ಹೆಲ್ಪರ್ ಫೋನ್ ಈ ಅಂಗಡಿಯ ಹಿಸಾಬ್‌ಗೇ",
+    eveningMatch: "ಸಂಜೆ ಬಾಕ್ಸ್‌ಗೆ ಸರಿಹೊಂದಬೇಕು",
     proofLabel: "ಉದಾಹರಣೆಗಳು",
     proofHeading: "ಬೆಂಗಳೂರು ಕೌಂಟರ್‌ಗಳಿಂದ (ಉದಾಹರಣೆಗಳು)",
     ctaLabel: "ಪ್ರಾರಂಭಿಸಿ",
@@ -615,6 +629,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "રમેશે આજે ચોખા લીધા. તેના નામ પર બેઠા. મહિના અંતે ડાયરી ઉલટાવવી નહીં. આ લિસ્ટ Premium પર છે.",
     f6Title: "સ્કૅન કરીને આ જ બિલ પર",
     f6Body: "બારકોડ Maggiને આ બિલ પર મૂકે છે. સ્ટોક-ઇન સ્કૅન ત્યારે જ, જ્યારે તમે સ્ટોક ઉમેરો.",
+    whatHappens: "કાઉન્ટર પર શું થાય છે.",
     hisaabLabel: "સાંજનું હિસાબ",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "દિવસને પૂછો, ડાયરીને નહીં",
@@ -643,6 +658,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "ઊભા ગ્રાહકને WhatsApp બિલ",
     cmpWith5: "આજનું કેશ અને UPI એક જગ્યાએ",
     cmpWith6: "હેલ્પરનો ફોન પણ આ દુકાનના હિસાબમાં",
+    eveningMatch: "સાંજે બોક્સ સાથે મેળ ખાવું જોઈએ",
     proofLabel: "ઉદાહરણો",
     proofHeading: "બેંગલુરુ કાઉન્ટરથી (ઉદાહરણો)",
     ctaLabel: "શરૂ કરો",
@@ -695,6 +711,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "രമേഷ് ഇന്ന് അരി എടുത്തു. അയാളുടെ പേരിൽ ഇരിക്കുന്നു. മാസാവസാനം ഡയറി മറിക്കേണ്ട. ഈ ലിസ്റ്റ് Premium-ൽ.",
     f6Title: "സ്കാൻ ചെയ്ത് ഈ ബില്ലിലേക്ക്",
     f6Body: "ബാർകോഡ് Maggi ഈ ബില്ലിൽ ഇടും. സ്റ്റോക്ക്-ഇൻ സ്കാൻ നിങ്ങൾ സ്റ്റോക്ക് ചേർക്കുമ്പോൾ മാത്രം.",
+    whatHappens: "കൗണ്ടറിൽ എന്ത് നടക്കുന്നു.",
     hisaabLabel: "വൈകുന്നേരത്തെ കണക്ക്",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "ദിവസത്തോട് ചോദിക്കൂ, ഡയറിയോടല്ല",
@@ -723,6 +740,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "നിൽക്കുന്ന കസ്റ്റമറിന് WhatsApp ബിൽ",
     cmpWith5: "ഇന്നത്തെ ക്യാഷും UPIയും ഒരിടത്ത്",
     cmpWith6: "ഹെൽപ്പറുടെ ഫോണും ഈ കടയുടെ ഹിസാബിലേക്ക്",
+    eveningMatch: "വൈകുന്നേരം ബോക്സുമായി ചേരണം",
     proofLabel: "ഉദാഹരണങ്ങൾ",
     proofHeading: "ബെംഗളൂരു കൗണ്ടറുകളിൽ നിന്ന് (ഉദാഹരണങ്ങൾ)",
     ctaLabel: "തുടങ്ങൂ",
@@ -775,6 +793,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "ରମେଶ ଆଜି ଚାଉଳ ନେଲେ। ତାଙ୍କ ନାମରେ ବସିଛି। ମାସ ଶେଷରେ ଡାଏରୀ ଓଲଟାଇବା ନାହିଁ। ଏହି ଲିଷ୍ଟ Premiumରେ।",
     f6Title: "ସ୍କାନ୍ କରି ଏହି ବିଲ୍‌ରେ",
     f6Body: "ବାରକୋଡ୍ Maggiକୁ ଏହି ବିଲ୍‌ରେ ପକାଏ। ଷ୍ଟକ୍-ଇନ୍ ସ୍କାନ୍ କେବଳ ଯେତେବେଳେ ଆପଣ ଷ୍ଟକ୍ ଯୋଡ଼ନ୍ତି।",
+    whatHappens: "କାଉଣ୍ଟରରେ କ’ଣ ଚାଲେ।",
     hisaabLabel: "ସନ୍ଧ୍ୟା ହିସାବ",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "ଦିନକୁ ପଚାରନ୍ତୁ, ଡାଏରୀକୁ ନୁହେଁ",
@@ -803,6 +822,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "ଠିଆ ଗ୍ରାହକଙ୍କୁ WhatsApp ବିଲ୍",
     cmpWith5: "ଆଜିର କ୍ୟାଶ୍ ଓ UPI ଏକା ଠାରେ",
     cmpWith6: "ହେଲ୍ପର ଫୋନ୍ ମଧ୍ୟ ଏହି ଦୋକାନ ହିସାବରେ",
+    eveningMatch: "ସନ୍ଧ୍ୟାରେ ବକ୍ସ ସହ ମେଳ ଖାଇବା ଉଚିତ",
     proofLabel: "ଉଦାହରଣ",
     proofHeading: "ବେଙ୍ଗାଲୁରୁ କାଉଣ୍ଟରରୁ (ଉଦାହରଣ)",
     ctaLabel: "ଆରମ୍ଭ କରନ୍ତୁ",
@@ -855,6 +875,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     f5Body: "ਰਮੇਸ਼ ਨੇ ਅੱਜ ਚੌਲ ਲਏ। ਉਸਦੇ ਨਾਂ ’ਤੇ ਬੈਠਾ। ਮਹੀਨੇ ਦੇ ਅੰਤ ’ਤੇ ਡਾਇਰੀ ਨਹੀਂ ਉਲਟਾਉਣੀ। ਇਹ ਲਿਸਟ Premium ’ਤੇ ਹੈ।",
     f6Title: "ਸਕੈਨ ਕਰ ਕੇ ਇਸੇ ਬਿੱਲ ’ਤੇ",
     f6Body: "ਬਾਰਕੋਡ Maggi ਨੂੰ ਇਸੇ ਬਿੱਲ ’ਤੇ ਪਾਉਂਦਾ ਹੈ। ਸਟਾਕ-ਇਨ ਸਕੈਨ ਤਦ ਹੀ, ਜਦੋਂ ਤੁਸੀਂ ਸਟਾਕ ਜੋੜ ਰਹੇ ਹੋ।",
+    whatHappens: "ਕਾਊਂਟਰ ’ਤੇ ਕੀ ਹੁੰਦਾ ਹੈ।",
     hisaabLabel: "ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ",
     hisaabHindi: "आज कितना कैश आया?",
     hisaabHeading: "ਦਿਨ ਨੂੰ ਪੁੱਛੋ, ਡਾਇਰੀ ਨੂੰ ਨਹੀਂ",
@@ -883,6 +904,7 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     cmpWith4: "ਖੜ੍ਹੇ ਗਾਹਕ ਨੂੰ WhatsApp ਬਿੱਲ",
     cmpWith5: "ਅੱਜ ਦਾ ਕੈਸ਼ ਤੇ UPI ਇੱਕ ਥਾਂ",
     cmpWith6: "ਹੈਲਪਰ ਦਾ ਫੋਨ ਵੀ ਇਸੇ ਦੁਕਾਨ ਦੇ ਹਿਸਾਬ ਵਿੱਚ",
+    eveningMatch: "ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ ਬਾਕਸ ਨਾਲ ਮਿਲਣਾ ਚਾਹੀਦਾ ਹੈ",
     proofLabel: "ਉਦਾਹਰਣ",
     proofHeading: "ਬੈਂਗਲੁਰੂ ਕਾਊਂਟਰਾਂ ਤੋਂ (ਉਦਾਹਰਣ)",
     ctaLabel: "ਸ਼ੁਰੂ ਕਰੋ",
@@ -1011,6 +1033,7 @@ export function applyHomeSlots(html: string, locale: Locale) {
     `<p>${slots.how3Body ?? "WhatsApp bill to the customer. Today's cash/UPI totals move. Stock for those items is already updated."}</p>`,
   );
 
+  out = swap(out, '<h2 class="section-heading">What happens at the counter.</h2>', `<h2 class="section-heading">${slots.whatHappens ?? 'What happens at the counter.'}</h2>`);
   out = swap(out, '<h3>You speak the sale</h3>', `<h3>${slots.f1Title ?? 'You speak the sale'}</h3>`);
   out = swap(
     out,
@@ -1069,6 +1092,11 @@ export function applyHomeSlots(html: string, locale: Locale) {
     `<p class="section-sub">${slots.langSub ?? 'Hinglish is speech, not a chip. 10 Indian languages + English, with the names you actually use at the counter.'}</p>`,
   );
 
+  out = swap(
+    out,
+    '<h2 class="section-heading">The evening should match the box</h2>',
+    `<h2 class="section-heading">${slots.eveningMatch ?? 'The evening should match the box'}</h2>`,
+  );
   out = swap(
     out,
     '<p class="comparison-col-subtitle">Rush, paper, two places</p>',
