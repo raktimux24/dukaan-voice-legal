@@ -490,13 +490,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">इसे लगाओ</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">जल्द आ रहा है</span>
         </a>
       </div>
     </div>
@@ -1466,13 +1465,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">এটা পেতে</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">শীঘ্রই আসছে</span>
         </a>
       </div>
     </div>
@@ -2441,13 +2439,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">அதைப் பெறுங்கள்</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">விரைவில்</span>
         </a>
       </div>
     </div>
@@ -3416,13 +3413,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">దాన్ని పొందండి</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">త్వరలో వస్తుంది</span>
         </a>
       </div>
     </div>
@@ -4392,13 +4388,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">वर मिळवा</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">लवकरच येत आहे</span>
         </a>
       </div>
     </div>
@@ -5367,13 +5362,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">ಅದನ್ನು ಪಡೆಯಿರಿ</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ</span>
         </a>
       </div>
     </div>
@@ -6343,13 +6337,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">તેના પર મેળવો</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">ટૂંક સમયમાં આવી રહ્યું છે</span>
         </a>
       </div>
     </div>
@@ -7318,13 +7311,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">അത് നേടുക</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">ഉടൻ വരുന്നു</span>
         </a>
       </div>
     </div>
@@ -8294,13 +8286,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">ਇਸ 'ਤੇ ਪ੍ਰਾਪਤ ਕਰੋ</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">ਜਲਦੀ ਆ ਰਿਹਾ ਹੈ</span>
         </a>
       </div>
     </div>
@@ -9269,13 +9260,12 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
             <div class="store-badge-name">App Store</div>
           </div>
         </a>
-        <a href="#" class="store-badge" style="position:relative; opacity:0.65; pointer-events:none;">
+        <a href="https://play.google.com/store/apps/details?id=com.samaan.bol" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.3 2.3-8.636-8.632z"/></svg></div>
           <div class="store-badge-text">
             <div class="store-badge-label">ଏହାକୁ ପ୍ରାପ୍ତ କର |</div>
             <div class="store-badge-name">Google Play</div>
           </div>
-          <span style="position:absolute; top:-10px; right:-10px; background:var(--saffron); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; text-transform:uppercase;">ଶୀଘ୍ର ଆସୁଛି |</span>
         </a>
       </div>
     </div>
