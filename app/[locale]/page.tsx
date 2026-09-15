@@ -5,7 +5,8 @@ import { JsonLd } from '../components/JsonLd';
 import { LanguageSelectEffects } from '../components/LanguageSelectEffects';
 import { getLocalizedHtml } from '../content/localized';
 import { getLocale, getLocaleMeta, isLocale, translatedLocales, type Locale } from '../i18n';
-import { defaultDescription, defaultTitle, organizationSchema, pageMetadata, softwareApplicationSchema, websiteSchema } from '../seo';
+import { getLocaleSeo } from '../content/localeSeo';
+import { defaultDescription, defaultTitle, organizationSchema, pageMetadata, softwareApplicationSchemaFor, websiteSchema } from '../seo';
 
 type LocaleParams = {
   params: Promise<{ locale: string }>;
@@ -19,12 +20,15 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   const { locale } = await params;
   if (!isLocale(locale) || locale === 'en') notFound();
 
+  const resolved = getLocale(locale);
+  const localeSeo = getLocaleSeo(resolved);
+
   return pageMetadata({
-    title: defaultTitle,
-    description: defaultDescription,
+    title: localeSeo?.title ?? defaultTitle,
+    description: localeSeo?.description ?? defaultDescription,
     path: `/${locale}`,
     page: 'home',
-    locale: getLocale(locale),
+    locale: resolved,
   });
 }
 
@@ -37,7 +41,7 @@ export default async function LocalizedHomePage({ params }: LocaleParams) {
 
   return (
     <>
-      <JsonLd data={[organizationSchema, websiteSchema, softwareApplicationSchema]} />
+      <JsonLd data={[organizationSchema, websiteSchema, softwareApplicationSchemaFor(locale)]} />
       <div lang={localeMeta.hreflang} dangerouslySetInnerHTML={{ __html: getLocalizedHtml('home', locale as Locale) }} />
       <HomeEffects />
       <LanguageSelectEffects />

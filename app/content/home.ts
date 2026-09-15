@@ -3,7 +3,7 @@ export const proofSectionHtml = `<!-- ═══ PROOF ═══ -->
   <div class="container">
     <div class="reveal">
       <div class="section-label">Bengaluru</div>
-      <h2 class="section-heading">What shopkeepers in Bengaluru are saying</h2>
+      <h2 class="section-heading">From Bengaluru counters (examples)</h2>
     </div>
     <div class="testimonials-grid">
       <div class="testimonial reveal reveal-delay-1">

@@ -1496,13 +1496,13 @@ const navOverlay: Partial<Record<Locale, Partial<SubscriptionStrings['nav']>>> =
   },
   bn: { download: 'ডাউনলোড' },
   ta: { download: 'பதிவிறக்கம்', ai: 'மாலை கணக்கு' },
-  te: { download: 'డౌన్‌లోడ్', ai: 'సాయంత్రం హిసాబ్' },
-  mr: { download: 'डाउनलोड', ai: 'संध्याकाळचा हिशोब' },
-  kn: { download: 'ಡೌನ್‌ಲೋಡ್' },
-  gu: { download: 'ડાઉનલોડ' },
-  ml: { download: 'ഡൗൺലോഡ്', ai: 'വൈകുന്നേരത്തെ കണക്ക്' },
+  te: { features: "ఫీచర్లు", ai: "సాయంత్రం హిసాబ్", pricing: "ధర", account: "సబ్‌స్క్రిప్షన్ నిర్వహించండి", download: "డౌన్‌లోడ్" },
+  mr: { features: "फीचर्स", ai: "संध्याकाळचा हिशोब", pricing: "किंमत", account: "सबस्क्रिप्शन व्यवस्थापित करा", download: "डाउनलोड" },
+  kn: { features: "ವೈಶಿಷ್ಟ್ಯಗಳು", ai: "ಸಂಜೆಯ ಹಿಸಾಬ್", pricing: "ಬೆಲೆ", account: "ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ನಿರ್ವಹಿಸಿ", download: "ಡೌನ್‌ಲೋಡ್" },
+  gu: { features: "ફીચર્સ", ai: "સાંજનું હિસાબ", pricing: "કિંમત", account: "સબ્સ્ક્રિપ્શન મેનેજ કરો", download: "ડાઉનલોડ" },
+  ml: { features: "ഫീച്ചറുകൾ", ai: "വൈകുന്നേരത്തെ കണക്ക്", pricing: "വില", account: "സബ്‌സ്‌ക്രിപ്‌ഷൻ മാനേജ് ചെയ്യുക", download: "ഡൗൺലോഡ്" },
   pa: { download: 'ਡਾਊਨਲੋਡ', ai: 'ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ' },
-  or: { download: 'ଡାଉନଲୋଡ୍', ai: 'ସନ୍ଧ୍ୟା ହିସାବ' },
+  or: { features: "ଫିଚର୍ସ", ai: "ସନ୍ଧ୍ୟା ହିସାବ", pricing: "ମୂଲ୍ୟ", account: "ସବ୍‌ସ୍କ୍ରିପ୍ସନ୍ ମ୍ୟାନେଜ୍ କରନ୍ତୁ", download: "ଡାଉନଲୋଡ୍" },
 };
 
 const premium4: Partial<Record<Locale, string>> = {
@@ -1523,22 +1523,121 @@ const hiTrialFaq = {
   a: 'नई दुकान को ऐप में 7 दिन वॉइस और Premium, कार्ड नहीं। 7 दिन का रिफ़ंड अलग है। वो पहली चार्ज से शुरू होता है।',
 };
 
+const shopDayPricing: Partial<Record<Locale, {
+  tagline: string;
+  comparisonHeading: string;
+  freeFeatures: string[];
+  premiumFeatures: string[];
+  refundWindow: string;
+  trustStrip: string[];
+  trialFaq: { q: string; a: string };
+  footerContact: string;
+  footerRefund: string;
+  footerPrivacy: string;
+  footerTerms: string;
+}>> = {
+  te: {
+    tagline: "కిరాణా కౌంటర్ కోసం. తీసుకున్నది చెప్పండి. బిల్ వెంట వస్తుంది.",
+    comparisonHeading: "మీ కౌంటర్‌కు సరిపడేది తీసుకోండి",
+    freeFeatures: ["బిల్ మీద క్యాష్ మరియు UPI QR", "నేటి సేల్ మరియు గత 7 రోజులు", "ప్రొడక్ట్, స్టాక్, బార్‌కోడ్ బిల్ మీద", "ఒక దుకాణం, హెల్పర్లు తమ ఫోన్‌లో", "గత 7 రోజుల కదలిక"],
+    premiumFeatures: ["సేల్‌కి వాయిస్, 10 భారతీయ భాషలు + English", "పూర్తి సేల్ రిపోర్టులు మరియు హిస్టరీ", "కస్టమర్ పేర్ల మీద ఉధార్ లిస్ట్, రిమైండర్లు", "అసలు సేల్ నుంచి, తీరబోయే సరుకు హెచ్చరిక", "మల్టీ-షాప్"],
+    refundWindow: "మొదటి ఛార్జ్ నుండి 7 రోజుల రీఫండ్ (ఉచిత ట్రయల్ కాదు)",
+    trustStrip: ["Razorpay హోస్టెడ్ చెక్‌అవుట్", "UPI Autopay", "ఎప్పుడైనా క్యాన్సల్", "కొత్త దుకాణం: యాప్‌లో 7 రోజులు వాయిస్, కార్డు లేదు", "మొదటి ఛార్జ్ నుండి 7 రోజుల రీఫండ్"],
+    trialFaq: { q: "7 రోజుల ట్రయల్ అంటే ఏమిటి?", a: "కొత్త దుకాణానికి యాప్‌లో 7 రోజులు వాయిస్ మరియు Premium, కార్డు వద్దు. 7 రోజుల రీఫండ్ వేరు. అది మొదటి ఛార్జ్ నుండి మొదలవుతుంది." },
+    footerContact: "సంప్రదించండి",
+    footerRefund: "రీఫండ్ విధానం",
+    footerPrivacy: "ప్రైవసీ",
+    footerTerms: "నిబంధనలు",
+  },
+  mr: {
+    tagline: "किराणा काउंटरसाठी. जे घेतले ते सांगा. बिल सोबत चालते.",
+    comparisonHeading: "तुमच्या काउंटरला जे जुळे ते निवडा",
+    freeFeatures: ["बिलावर कॅश आणि UPI QR", "आजची सेल आणि मागील 7 दिवस", "प्रॉडक्ट, स्टॉक, बारकोड बिलावर", "एक दुकान, हेल्पर आपल्या फोनवर", "मागील 7 दिवसांची हालचाल"],
+    premiumFeatures: ["सेलसाठी व्हॉइस, 10 भारतीय भाषा + English", "पूर्ण सेल रिपोर्ट आणि हिस्ट्री", "ग्राहकाच्या नावावर उधार लिस्ट, रिमाइंडर", "खऱ्या विक्रीवरून, संपणार ते सांगतो", "मल्टी-शॉप"],
+    refundWindow: "पहिल्या चार्जपासून 7 दिवसांचा रिफंड (मोफत ट्रायल नाही)",
+    trustStrip: ["Razorpay होस्टेड चेकआउट", "UPI Autopay", "कधीही कॅन्सल", "नवीन दुकान: अॅपमध्ये 7 दिवस व्हॉइस, कार्ड नाही", "पहिल्या चार्जपासून 7 दिवसांचा रिफंड"],
+    trialFaq: { q: "7 दिवसांचा ट्रायल म्हणजे काय?", a: "नवीन दुकानाला अॅपमध्ये 7 दिवस व्हॉइस आणि Premium, कार्ड नाही. 7 दिवसांचा रिफंड वेगळा. तो पहिल्या चार्जपासून सुरू होतो." },
+    footerContact: "संपर्क",
+    footerRefund: "रिफंड धोरण",
+    footerPrivacy: "प्रायव्हसी",
+    footerTerms: "अटी",
+  },
+  kn: {
+    tagline: "ಕಿರಾಣಿ ಕೌಂಟರ್‌ಗಾಗಿ. ತೆಗೆದುಕೊಂಡದ್ದು ಹೇಳಿ. ಬಿಲ್ ಜೊತೆ ಬರುತ್ತದೆ.",
+    comparisonHeading: "ನಿಮ್ಮ ಕೌಂಟರ್‌ಗೆ ಸರಿಹೊಂದುವುದನ್ನು ಆರಿಸಿ",
+    freeFeatures: ["ಬಿಲ್‌ನಲ್ಲಿ ಕ್ಯಾಶ್ ಮತ್ತು UPI QR", "ಇಂದಿನ ಸೇಲ್ ಮತ್ತು ಕಳೆದ 7 ದಿನ", "ಪ್ರಾಡಕ್ಟ್, ಸ್ಟಾಕ್, ಬಾರ್‌ಕೋಡ್ ಬಿಲ್‌ಗೆ", "ಒಂದು ಅಂಗಡಿ, ಹೆಲ್ಪರ್‌ಗಳು ತಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ", "ಕಳೆದ 7 ದಿನದ ಚಲನೆ"],
+    premiumFeatures: ["ಸೇಲ್‌ಗೆ ವಾಯ್ಸ್, 10 ಭಾರತೀಯ ಭಾಷೆಗಳು + English", "ಪೂರ್ಣ ಸೇಲ್ ರಿಪೋರ್ಟ್ ಮತ್ತು ಹಿಸ್ಟರಿ", "ಗ್ರಾಹಕರ ಹೆಸರಿನ ಮೇಲೆ ಉಧಾರ್ ಲಿಸ್ಟ್, ರಿಮೈಂಡರ್", "ನಿಜವಾದ ಮಾರಾಟದಿಂದ, ಮುಗಿಯುವುದನ್ನು ಎಚ್ಚರಿಸುತ್ತದೆ", "ಮಲ್ಟಿ-ಶಾಪ್"],
+    refundWindow: "ಮೊದಲ ಚಾರ್ಜ್‌ನಿಂದ 7 ದಿನದ ರಿಫಂಡ್ (ಉಚಿತ ಟ್ರಯಲ್ ಅಲ್ಲ)",
+    trustStrip: ["Razorpay ಹೋಸ್ಟೆಡ್ ಚೆಕ್‌ಔಟ್", "UPI Autopay", "ಯಾವಾಗ ಬೇಕಾದರೂ ರದ್ದು", "ಹೊಸ ಅಂಗಡಿ: ಆ್ಯಪ್‌ನಲ್ಲಿ 7 ದಿನ ವಾಯ್ಸ್, ಕಾರ್ಡ್ ಇಲ್ಲ", "ಮೊದಲ ಚಾರ್ಜ್‌ನಿಂದ 7 ದಿನದ ರಿಫಂಡ್"],
+    trialFaq: { q: "7 ದಿನದ ಟ್ರಯಲ್ ಎಂದರೇನು?", a: "ಹೊಸ ಅಂಗಡಿಗೆ ಆ್ಯಪ್‌ನಲ್ಲಿ 7 ದಿನ ವಾಯ್ಸ್ ಮತ್ತು Premium, ಕಾರ್ಡ್ ಬೇಡ. 7 ದಿನದ ರಿಫಂಡ್ ಪ್ರತ್ಯೇಕ. ಅದು ಮೊದಲ ಚಾರ್ಜ್‌ನಿಂದ ಪ್ರಾರಂಭ." },
+    footerContact: "ಸಂಪರ್ಕ",
+    footerRefund: "ರಿಫಂಡ್ ನೀತಿ",
+    footerPrivacy: "ಗೌಪ್ಯತೆ",
+    footerTerms: "ನಿಯಮಗಳು",
+  },
+  gu: {
+    tagline: "કિરાણા કાઉન્ટર માટે. જે લીધું તે બોલો. બિલ સાથે ચાલે છે.",
+    comparisonHeading: "તમારા કાઉન્ટરને જે ફાવે તે પસંદ કરો",
+    freeFeatures: ["બિલ પર કેશ અને UPI QR", "આજની સેલ અને છેલ્લા 7 દિવસ", "પ્રોડક્ટ, સ્ટોક, બારકોડ બિલ પર", "એક દુકાન, હેલ્પર પોતાના ફોન પર", "છેલ્લા 7 દિવસની હિલચાલ"],
+    premiumFeatures: ["સેલની વૉઇસ, 10 ભારતીય ભાષાઓ + English", "પૂરી સેલ રિપોર્ટ અને હિસ્ટ્રી", "ગ્રાહકના નામ પર ઉધાર લિસ્ટ, રિમાઇન્ડર", "અસલ વેચાણથી, ખૂટવાનું હોય તેની ચેતવણી", "મલ્ટી-શોપ"],
+    refundWindow: "પહેલા ચાર્જથી 7 દિવસનું રિફંડ (ફ્રી ટ્રાયલ નહીં)",
+    trustStrip: ["Razorpay હોસ્ટેડ ચેકઆઉટ", "UPI Autopay", "ગમે ત્યારે કેન્સલ", "નવી દુકાન: એપમાં 7 દિવસ વૉઇસ, કાર્ડ નહીં", "પહેલા ચાર્જથી 7 દિવસનું રિફંડ"],
+    trialFaq: { q: "7 દિવસનું ટ્રાયલ શું છે?", a: "નવી દુકાનને એપમાં 7 દિવસ વૉઇસ અને Premium, કાર્ડ નહીં. 7 દિવસનું રિફંડ અલગ છે. તે પહેલા ચાર્જથી શરૂ થાય છે." },
+    footerContact: "સંપર્ક",
+    footerRefund: "રિફંડ નીતિ",
+    footerPrivacy: "પ્રાઇવસી",
+    footerTerms: "શરતો",
+  },
+  ml: {
+    tagline: "കിരാന കൗണ്ടറിന്. എടുത്തത് പറയൂ. ബിൽ കൂടെ വരും.",
+    comparisonHeading: "നിങ്ങളുടെ കൗണ്ടറിന് യോജിക്കുന്നത് എടുക്കൂ",
+    freeFeatures: ["ബില്ലിൽ ക്യാഷും UPI QR-ഉം", "ഇന്നത്തെ സെയിലും കഴിഞ്ഞ 7 ദിവസവും", "പ്രോഡക്റ്റ്, സ്റ്റോക്ക്, ബാർകോഡ് ബില്ലിലേക്ക്", "ഒരു കട, ഹെൽപ്പർമാർ സ്വന്തം ഫോണിൽ", "കഴിഞ്ഞ 7 ദിവസത്തെ നീക്കം"],
+    premiumFeatures: ["സെയിലിന് വോയ്‌സ്, 10 ഇന്ത്യൻ ഭാഷകൾ + English", "മുഴുവൻ സെയിൽ റിപ്പോർട്ടും ഹിസ്റ്ററിയും", "കസ്റ്റമർ പേരിൽ ഉധാർ ലിസ്റ്റ്, റിമൈൻഡർ", "യഥാർത്ഥ വിൽപ്പനയിൽ നിന്ന്, തീരാൻ പോകുന്നത് മുന്നറിയിപ്പ്", "മൾട്ടി-ഷോപ്പ്"],
+    refundWindow: "ആദ്യ ചാർജിൽ നിന്ന് 7 ദിവസത്തെ റിഫണ്ട് (സൗജന്യ ട്രയൽ അല്ല)",
+    trustStrip: ["Razorpay ഹോസ്റ്റഡ് ചെക്കൗട്ട്", "UPI Autopay", "എപ്പോൾ വേണമെങ്കിലും ക്യാൻസൽ", "പുതിയ കട: ആപ്പിൽ 7 ദിവസം വോയ്‌സ്, കാർഡ് ഇല്ല", "ആദ്യ ചാർജിൽ നിന്ന് 7 ദിവസത്തെ റിഫണ്ട്"],
+    trialFaq: { q: "7 ദിവസത്തെ ട്രയൽ എന്താണ്?", a: "പുതിയ കടയ്ക്ക് ആപ്പിൽ 7 ദിവസം വോയ്‌സും Premium-ഉം, കാർഡ് വേണ്ട. 7 ദിവസത്തെ റിഫണ്ട് പ്രത്യേകം. അത് ആദ്യ ചാർജിൽ നിന്ന് തുടങ്ങും." },
+    footerContact: "ബന്ധപ്പെടുക",
+    footerRefund: "റിഫണ്ട് നയം",
+    footerPrivacy: "സ്വകാര്യത",
+    footerTerms: "നിബന്ധനകൾ",
+  },
+  or: {
+    tagline: "କିରାଣା କାଉଣ୍ଟର ପାଇଁ। ଯାହା ନେଲେ ତାହା କୁହନ୍ତୁ। ବିଲ୍ ସାଙ୍ଗରେ ଚାଲେ।",
+    comparisonHeading: "ଆପଣଙ୍କ କାଉଣ୍ଟର ସହ ମେଳ ଖାଉଥିବାଟି ବାଛନ୍ତୁ",
+    freeFeatures: ["ବିଲ୍‌ରେ କ୍ୟାଶ୍ ଓ UPI QR", "ଆଜିର ସେଲ୍ ଓ ଗତ 7 ଦିନ", "ପ୍ରୋଡକ୍ଟ, ଷ୍ଟକ୍, ବାରକୋଡ୍ ବିଲ୍‌ରେ", "ଗୋଟିଏ ଦୋକାନ, ହେଲ୍ପର ନିଜ ଫୋନରେ", "ଗତ 7 ଦିନର ଗତିବିଧି"],
+    premiumFeatures: ["ସେଲ୍ ପାଇଁ ଭଏସ୍, 10 ଭାରତୀୟ ଭାଷା + English", "ପୂରା ସେଲ୍ ରିପୋର୍ଟ ଓ ହିଷ୍ଟ୍ରି", "ଗ୍ରାହକ ନାମରେ ଉଧାର ଲିଷ୍ଟ, ରିମାଇଣ୍ଡର", "ପ୍ରକୃତ ବିକ୍ରିରୁ, ସରିବାକୁ ଥିବା ଜିନିଷର ସତର୍କତା", "ମଲ୍ଟି-ସପ୍"],
+    refundWindow: "ପ୍ରଥମ ଚାର୍ଜରୁ 7 ଦିନର ରିଫଣ୍ଡ (ମାଗଣା ଟ୍ରାଏଲ୍ ନୁହେଁ)",
+    trustStrip: ["Razorpay ହୋଷ୍ଟେଡ୍ ଚେକଆଉଟ୍", "UPI Autopay", "ଯେକୌଣସି ସମୟରେ କ୍ୟାନସଲ୍", "ନୂଆ ଦୋକାନ: ଆପ୍‌ରେ 7 ଦିନ ଭଏସ୍, କାର୍ଡ ନାହିଁ", "ପ୍ରଥମ ଚାର୍ଜରୁ 7 ଦିନର ରିଫଣ୍ଡ"],
+    trialFaq: { q: "7 ଦିନର ଟ୍ରାଏଲ୍ କ’ଣ?", a: "ନୂଆ ଦୋକାନକୁ ଆପ୍‌ରେ 7 ଦିନ ଭଏସ୍ ଓ Premium, କାର୍ଡ ନାହିଁ। 7 ଦିନର ରିଫଣ୍ଡ ଅଲଗା। ତାହା ପ୍ରଥମ ଚାର୍ଜରୁ ଆରମ୍ଭ।" },
+    footerContact: "ଯୋଗାଯୋଗ",
+    footerRefund: "ରିଫଣ୍ଡ ନୀତି",
+    footerPrivacy: "ଗୋପନୀୟତା",
+    footerTerms: "ସର୍ତ୍ତ",
+  },
+};
+
 export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
   const base = subscriptionStrings[locale] ?? en;
   const nav = { ...base.nav, ...navOverlay[locale] };
-  const premiumFeatures = [
+  const day = shopDayPricing[locale];
+  const premiumFeatures = day?.premiumFeatures ?? [
     en.pricing.premiumFeatures[0],
     en.pricing.premiumFeatures[1],
     en.pricing.premiumFeatures[2],
     premium4[locale] ?? en.pricing.premiumFeatures[3],
     en.pricing.premiumFeatures[4],
   ];
-  const faq = locale === 'hi' ? [hiTrialFaq, ...base.pricing.faq] : base.pricing.faq;
+  const faq = day
+    ? [day.trialFaq, ...base.pricing.faq]
+    : locale === 'hi'
+      ? [hiTrialFaq, ...base.pricing.faq]
+      : base.pricing.faq;
 
   return {
     ...base,
-    brand:
-      locale === 'hi'
+    brand: day
+      ? { tagline: day.tagline }
+      : locale === 'hi'
         ? { tagline: 'किराना काउंटर के लिए। जो लिया वो बोलो। बिल साथ चलता है।' }
         : base.brand,
     nav,
@@ -1548,11 +1647,22 @@ export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
       ai: nav.ai,
       pricing: nav.pricing,
       account: nav.account,
+      ...(day
+        ? {
+            contact: day.footerContact,
+            refund: day.footerRefund,
+            privacy: day.footerPrivacy,
+            terms: day.footerTerms,
+          }
+        : {}),
     },
     pricing: {
       ...base.pricing,
-      freeFeatures: en.pricing.freeFeatures,
+      comparisonHeading: day?.comparisonHeading ?? base.pricing.comparisonHeading,
+      freeFeatures: day?.freeFeatures ?? en.pricing.freeFeatures,
       premiumFeatures,
+      refundWindow: day?.refundWindow ?? base.pricing.refundWindow,
+      trustStrip: day?.trustStrip ?? base.pricing.trustStrip,
       faq,
     },
     account: {

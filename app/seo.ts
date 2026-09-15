@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getLocaleSeo } from './content/localeSeo';
 import { defaultLocale, getLocaleMeta, localizedLanguageAlternates, type Locale, type PageKind } from './i18n';
 
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaanbol.space';
@@ -159,6 +160,17 @@ export const softwareApplicationSchema = {
   },
   inLanguage: ['en-IN', 'hi-IN', 'bn-IN', 'ta-IN', 'te-IN', 'mr-IN', 'kn-IN', 'gu-IN', 'ml-IN', 'pa-IN', 'or-IN'],
 };
+
+export function softwareApplicationSchemaFor(locale: Locale = defaultLocale) {
+  const seo = getLocaleSeo(locale);
+  if (!seo) return softwareApplicationSchema;
+  return {
+    ...softwareApplicationSchema,
+    description: seo.description,
+    featureList: seo.featureList,
+    inLanguage: [getLocaleMeta(locale).hreflang],
+  };
+}
 
 export const websiteSchema = {
   '@context': 'https://schema.org',

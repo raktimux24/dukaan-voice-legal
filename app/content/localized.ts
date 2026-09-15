@@ -5,7 +5,7 @@ import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
 import { getSubscriptionStrings } from './subscriptionStrings';
 import { appStoreUrl, playStoreUrl } from '../seo';
-import { getLocaleHomeHtml } from './localeHomeSlots';
+import { applyBengaluruProofHeading, getLocaleHomeHtml } from './localeHomeSlots';
 
 type ContentPageKind = Extract<PageKind, 'home' | 'privacy' | 'terms'>;
 
@@ -131,6 +131,7 @@ function sanitizeTranslatedHome(html: string, locale: Locale) {
     .replace(/<div class="hero-stat-number">50K\s*\+<\/div>/g, '<div class="hero-stat-number">Cash</div>')
     .replace(/href="#download" class="btn-primary"/g, `href="${appStoreUrl}" class="btn-primary"`)
     .replace(/<section class="testimonials">[\s\S]*?<\/section>/, proofSectionHtml);
+  out = applyBengaluruProofHeading(out, locale);
 
   out = activatePlayStoreBadge(out);
   out = rewriteDeadCompanyLinks(out, locale);
