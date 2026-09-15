@@ -5,7 +5,7 @@ import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
 import { getSubscriptionStrings } from './subscriptionStrings';
 import { appStoreUrl, playStoreUrl } from '../seo';
-import { applyBengaluruProofHeading, getLocaleHomeHtml } from './localeHomeSlots';
+import { applyBengaluruProofHeading, getLocaleHomeHtml, getLocaleHomeSlots } from './localeHomeSlots';
 
 type ContentPageKind = Extract<PageKind, 'home' | 'privacy' | 'terms'>;
 
@@ -17,6 +17,7 @@ const englishHtml: Record<ContentPageKind, string> = {
 
 export function languageSwitcher(locale: Locale, page: PageKind) {
   const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
+  const languageLabel = getLocaleHomeSlots(locale)?.chromeLanguage ?? 'Language';
   const options = locales
     .map((item) => {
       const selected = item.code === locale ? ' aria-current="true"' : '';
@@ -41,7 +42,7 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
         </svg>
       </span>
       <span class="language-switcher-copy">
-        <span class="language-switcher-label">Language</span>
+        <span class="language-switcher-label">${languageLabel}</span>
         <span class="language-current"><span class="language-local-icon" aria-hidden="true">${currentLocale.icon}</span>${currentLocale.nativeLabel}</span>
       </span>
       <span class="language-chevron" aria-hidden="true">

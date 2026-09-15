@@ -83,6 +83,34 @@ export type HomeSlots = {
   footerRefund?: string;
   footerPrivacy?: string;
   footerTerms?: string;
+  heroStatCashLabel?: string;
+  heroStatUpiLabel?: string;
+  heroStatUdhaarLabel?: string;
+  floatCustomer?: string;
+  phoneGreeting?: string;
+  phoneShopName?: string;
+  phoneTodaySales?: string;
+  phoneBillsToday?: string;
+  phoneStatCash?: string;
+  phoneLine1Name?: string;
+  phoneLine1Meta?: string;
+  phoneLine2Meta?: string;
+  phoneLine3Meta?: string;
+  phoneQtyUnit?: string;
+  featuresLabel?: string;
+  how3LineHindi?: string;
+  how3LineEnglish?: string;
+  hisaab2Line?: string;
+  hisaab2Gloss?: string;
+  hisaab4Line?: string;
+  hisaab4Gloss?: string;
+  cmpLabel?: string;
+  cmpWithoutChrome?: string;
+  cmpWithChrome?: string;
+  langLabel?: string;
+  chromeLanguage?: string;
+  footerRights?: string;
+  footerMadeInIndia?: string;
 };
 
 const TWIN = 'जो बोला, वही बिल।';
@@ -175,6 +203,34 @@ const hi: HomeSlots = {
   footerRefund: "रिफ़ंड नीति",
   footerPrivacy: "प्राइवेसी",
   footerTerms: "शर्तें",
+  heroStatCashLabel: "बिल पर",
+  heroStatUpiLabel: "QR राशि",
+  heroStatUdhaarLabel: "नाम पर",
+  floatCustomer: "खड़े ग्राहक को",
+  phoneGreeting: "शुभ संध्या",
+  phoneShopName: "किराना काउंटर",
+  phoneTodaySales: "आज की सेल",
+  phoneBillsToday: "आज के बिल",
+  phoneStatCash: "कैश",
+  phoneLine1Name: "चावल 5 किलो",
+  phoneLine1Meta: "कैश · UPI?",
+  phoneLine2Meta: "2 पैकेट · उधार",
+  phoneLine3Meta: "4 पैकेट · कैश",
+  phoneQtyUnit: "बिल",
+  featuresLabel: "फीचर्स",
+  how3LineHindi: "WhatsApp · आज कैश/UPI",
+  how3LineEnglish: "बिल के साथ स्टॉक पहले से अपडेट",
+  hisaab2Line: "रमेश · खुला उधार",
+  hisaab2Gloss: "किसका खाता आज भी खुला है",
+  hisaab4Line: "बिल के साथ स्टॉक",
+  hisaab4Gloss: "वो चीज़ें पहले से चल गईं",
+  cmpLabel: "क्यों Samaan Bol",
+  cmpWithoutChrome: "Samaan Bol के बिना",
+  cmpWithChrome: "Samaan Bol के साथ",
+  langLabel: "भारत के लिए",
+  chromeLanguage: "भाषा",
+  footerRights: "सर्वाधिकार सुरक्षित",
+  footerMadeInIndia: "भारत में बना ♥ 🇮🇳",
 };
 
 const localeSlots: Partial<Record<Locale, HomeSlots>> = {
@@ -260,6 +316,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "রিফান্ড নীতি",
     footerPrivacy: "প্রাইভেসি",
     footerTerms: "শর্ত",
+    heroStatCashLabel: "বিলে",
+    heroStatUpiLabel: "QR অ্যামাউন্ট",
+    heroStatUdhaarLabel: "নামে",
+    floatCustomer: "দাঁড়ানো গ্রাহককে",
+    phoneGreeting: "শুভ সন্ধ্যা",
+    phoneShopName: "কিরানা কাউন্টার",
+    phoneTodaySales: "আজকের সেল",
+    phoneBillsToday: "আজকের বিল",
+    phoneStatCash: "ক্যাশ",
+    phoneLine1Name: "চাল ৫ কেজি",
+    phoneLine1Meta: "ক্যাশ · UPI?",
+    phoneLine2Meta: "২ প্যাকেট · উধার",
+    phoneLine3Meta: "৪ প্যাকেট · ক্যাশ",
+    phoneQtyUnit: "বিল",
+    featuresLabel: "ফিচার",
+    how3LineHindi: "WhatsApp · আজ ক্যাশ/UPI",
+    how3LineEnglish: "বিলের সাথে স্টক আগেই আপডেট",
+    hisaab2Line: "রমেশ · খোলা উধার",
+    hisaab2Gloss: "কার খাতা আজও খোলা",
+    hisaab4Line: "বিলের সাথে স্টক",
+    hisaab4Gloss: "ওই জিনিস আগেই সরেছে",
+    cmpLabel: "কেন Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol ছাড়া",
+    cmpWithChrome: "Samaan Bol দিয়ে",
+    langLabel: "ভারতের জন্য",
+    chromeLanguage: "ভাষা",
+    footerRights: "সর্বস্বত্ব সংরক্ষিত",
+    footerMadeInIndia: "ভারতে তৈরি ♥ 🇮🇳",
   },
   ta: {
     navFeatures: "அம்சங்கள்",
@@ -342,6 +426,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "ரிஃபண்ட் கொள்கை",
     footerPrivacy: "தனியுரிமை",
     footerTerms: "விதிகள்",
+    heroStatCashLabel: "பில்லில்",
+    heroStatUpiLabel: "QR தொகை",
+    heroStatUdhaarLabel: "பெயரில்",
+    floatCustomer: "நிற்கும் வாடிக்கையாளருக்கு",
+    phoneGreeting: "மாலை வணக்கம்",
+    phoneShopName: "கிரானா கவுண்டர்",
+    phoneTodaySales: "இன்றைய விற்பனை",
+    phoneBillsToday: "இன்றைய பில்கள்",
+    phoneStatCash: "கேஷ்",
+    phoneLine1Name: "அரிசி 5 கிலோ",
+    phoneLine1Meta: "கேஷ் · UPI?",
+    phoneLine2Meta: "2 பேக் · உதார்",
+    phoneLine3Meta: "4 பேக் · கேஷ்",
+    phoneQtyUnit: "பில்",
+    featuresLabel: "அம்சங்கள்",
+    how3LineHindi: "WhatsApp · இன்று கேஷ்/UPI",
+    how3LineEnglish: "பில்லுடன் ஸ்டாக் ஏற்கனவே அப்டேட்",
+    hisaab2Line: "ரமேஷ் · திறந்த உதார்",
+    hisaab2Gloss: "யாருடைய கணக்கு இன்று திறந்திருக்கிறது",
+    hisaab4Line: "பில்லுடன் ஸ்டாக்",
+    hisaab4Gloss: "அந்த பொருட்கள் ஏற்கனவே நகர்ந்தன",
+    cmpLabel: "ஏன் Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol இல்லாமல்",
+    cmpWithChrome: "Samaan Bol உடன்",
+    langLabel: "பாரதத்திற்காக",
+    chromeLanguage: "மொழி",
+    footerRights: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை",
+    footerMadeInIndia: "இந்தியாவில் தயாரிப்பு ♥ 🇮🇳",
   },
   te: {
     navFeatures: "ఫీచర్లు",
@@ -424,6 +536,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "రీఫండ్ విధానం",
     footerPrivacy: "ప్రైవసీ",
     footerTerms: "నిబంధనలు",
+    heroStatCashLabel: "బిల్ మీద",
+    heroStatUpiLabel: "QR మొత్తం",
+    heroStatUdhaarLabel: "పేరు మీద",
+    floatCustomer: "నిలబడి ఉన్న కస్టమర్‌కి",
+    phoneGreeting: "శుభ సాయంత్రం",
+    phoneShopName: "కిరాణా కౌంటర్",
+    phoneTodaySales: "నేటి సేల్",
+    phoneBillsToday: "నేటి బిల్లులు",
+    phoneStatCash: "క్యాష్",
+    phoneLine1Name: "బియ్యం 5 కిలో",
+    phoneLine1Meta: "క్యాష్ · UPI?",
+    phoneLine2Meta: "2 ప్యాక్ · ఉధార్",
+    phoneLine3Meta: "4 ప్యాక్ · క్యాష్",
+    phoneQtyUnit: "బిల్",
+    featuresLabel: "ఫీచర్లు",
+    how3LineHindi: "WhatsApp · నేటి క్యాష్/UPI",
+    how3LineEnglish: "బిల్‌తో స్టాక్ ఇప్పటికే అప్‌డేట్",
+    hisaab2Line: "రమేష్ · తెరిచి ఉన్న ఉధార్",
+    hisaab2Gloss: "ఎవరి ఖాతా ఈరోజు తెరిచి ఉంది",
+    hisaab4Line: "బిల్‌తో స్టాక్",
+    hisaab4Gloss: "ఆ వస్తువులు ఇప్పటికే కదిలాయి",
+    cmpLabel: "ఎందుకు Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol లేకుండా",
+    cmpWithChrome: "Samaan Bol తో",
+    langLabel: "భారత్ కోసం",
+    chromeLanguage: "భాష",
+    footerRights: "అన్ని హక్కులు ప్రత్యేకించబడ్డాయి",
+    footerMadeInIndia: "భారత్‌లో తయారు ♥ 🇮🇳",
   },
   mr: {
     navFeatures: "फीचर्स",
@@ -506,6 +646,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "रिफंड धोरण",
     footerPrivacy: "प्रायव्हसी",
     footerTerms: "अटी",
+    heroStatCashLabel: "बिलावर",
+    heroStatUpiLabel: "QR रक्कम",
+    heroStatUdhaarLabel: "नावावर",
+    floatCustomer: "उभ्या ग्राहकाला",
+    phoneGreeting: "शुभ संध्याकाळ",
+    phoneShopName: "किराणा काउंटर",
+    phoneTodaySales: "आजची विक्री",
+    phoneBillsToday: "आजची बिले",
+    phoneStatCash: "रोख",
+    phoneLine1Name: "तांदूळ 5 किलो",
+    phoneLine1Meta: "रोख · UPI?",
+    phoneLine2Meta: "2 पॅक · उधार",
+    phoneLine3Meta: "4 पॅक · रोख",
+    phoneQtyUnit: "बिल",
+    featuresLabel: "वैशिष्ट्ये",
+    how3LineHindi: "WhatsApp · आज रोख/UPI",
+    how3LineEnglish: "बिलासोबत स्टॉक आधीच अपडेट",
+    hisaab2Line: "रमेश · उघडे उधार",
+    hisaab2Gloss: "कोणाचे खाते आजही उघडे आहे",
+    hisaab4Line: "बिलासोबत स्टॉक",
+    hisaab4Gloss: "त्या वस्तू आधीच हलल्या",
+    cmpLabel: "का Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol शिवाय",
+    cmpWithChrome: "Samaan Bol सोबत",
+    langLabel: "भारतासाठी",
+    chromeLanguage: "भाषा",
+    footerRights: "सर्व हक्क राखीव",
+    footerMadeInIndia: "भारतात बनवले ♥ 🇮🇳",
   },
   kn: {
     navFeatures: "ವೈಶಿಷ್ಟ್ಯಗಳು",
@@ -588,6 +756,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "ರಿಫಂಡ್ ನೀತಿ",
     footerPrivacy: "ಗೌಪ್ಯತೆ",
     footerTerms: "ನಿಯಮಗಳು",
+    heroStatCashLabel: "ಬಿಲ್‌ನಲ್ಲಿ",
+    heroStatUpiLabel: "QR ಮೊತ್ತ",
+    heroStatUdhaarLabel: "ಹೆಸರಿನ ಮೇಲೆ",
+    floatCustomer: "ನಿಂತಿರುವ ಗ್ರಾಹಕರಿಗೆ",
+    phoneGreeting: "ಶುಭ ಸಂಜೆ",
+    phoneShopName: "ಕಿರಾಣಿ ಕೌಂಟರ್",
+    phoneTodaySales: "ಇಂದಿನ ಮಾರಾಟ",
+    phoneBillsToday: "ಇಂದಿನ ಬಿಲ್‌ಗಳು",
+    phoneStatCash: "ಕ್ಯಾಶ್",
+    phoneLine1Name: "ಅಕ್ಕಿ 5 ಕೆಜಿ",
+    phoneLine1Meta: "ಕ್ಯಾಶ್ · UPI?",
+    phoneLine2Meta: "2 ಪ್ಯಾಕ್ · ಉಧಾರ್",
+    phoneLine3Meta: "4 ಪ್ಯಾಕ್ · ಕ್ಯಾಶ್",
+    phoneQtyUnit: "ಬಿಲ್",
+    featuresLabel: "ವೈಶಿಷ್ಟ್ಯಗಳು",
+    how3LineHindi: "WhatsApp · ಇಂದು ಕ್ಯಾಶ್/UPI",
+    how3LineEnglish: "ಬಿಲ್ ಜೊತೆ ಸ್ಟಾಕ್ ಈಗಾಗಲೇ ಅಪ್‌ಡೇಟ್",
+    hisaab2Line: "ರಮೇಶ್ · ತೆರೆದ ಉಧಾರ್",
+    hisaab2Gloss: "ಯಾರ ಖಾತೆ ಇಂದು ತೆರೆದಿದೆ",
+    hisaab4Line: "ಬಿಲ್ ಜೊತೆ ಸ್ಟಾಕ್",
+    hisaab4Gloss: "ಆ ವಸ್ತುಗಳು ಈಗಾಗಲೇ ಚಲಿಸಿವೆ",
+    cmpLabel: "ಏಕೆ Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol ಇಲ್ಲದೆ",
+    cmpWithChrome: "Samaan Bol ಜೊತೆ",
+    langLabel: "ಭಾರತಕ್ಕಾಗಿ",
+    chromeLanguage: "ಭಾಷೆ",
+    footerRights: "ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ",
+    footerMadeInIndia: "ಭಾರತದಲ್ಲಿ ತಯಾರು ♥ 🇮🇳",
   },
   gu: {
     navFeatures: "ફીચર્સ",
@@ -670,6 +866,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "રિફંડ નીતિ",
     footerPrivacy: "પ્રાઇવસી",
     footerTerms: "શરતો",
+    heroStatCashLabel: "બિલ પર",
+    heroStatUpiLabel: "QR રકમ",
+    heroStatUdhaarLabel: "નામ પર",
+    floatCustomer: "ઊભા ગ્રાહકને",
+    phoneGreeting: "શુભ સાંજ",
+    phoneShopName: "કિરાણા કાઉન્ટર",
+    phoneTodaySales: "આજની સેલ",
+    phoneBillsToday: "આજના બિલ",
+    phoneStatCash: "કેશ",
+    phoneLine1Name: "ચોખા 5 કિલો",
+    phoneLine1Meta: "કેશ · UPI?",
+    phoneLine2Meta: "2 પેક · ઉધાર",
+    phoneLine3Meta: "4 પેક · કેશ",
+    phoneQtyUnit: "બિલ",
+    featuresLabel: "ફીચર્સ",
+    how3LineHindi: "WhatsApp · આજે કેશ/UPI",
+    how3LineEnglish: "બિલ સાથે સ્ટોક પહેલેથી અપડેટ",
+    hisaab2Line: "રમેશ · ખુલ્લું ઉધાર",
+    hisaab2Gloss: "કોનું ખાતું આજે ખુલ્લું છે",
+    hisaab4Line: "બિલ સાથે સ્ટોક",
+    hisaab4Gloss: "તે વસ્તુઓ પહેલેથી ખસી ગઈ",
+    cmpLabel: "શા માટે Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol વગર",
+    cmpWithChrome: "Samaan Bol સાથે",
+    langLabel: "ભારત માટે",
+    chromeLanguage: "ભાષા",
+    footerRights: "સર્વ હક્કો સુરક્ષિત",
+    footerMadeInIndia: "ભારતમાં બનાવેલ ♥ 🇮🇳",
   },
   ml: {
     navFeatures: "ഫീച്ചറുകൾ",
@@ -752,6 +976,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "റിഫണ്ട് നയം",
     footerPrivacy: "സ്വകാര്യത",
     footerTerms: "നിബന്ധനകൾ",
+    heroStatCashLabel: "ബില്ലിൽ",
+    heroStatUpiLabel: "QR തുക",
+    heroStatUdhaarLabel: "പേരിൽ",
+    floatCustomer: "നിൽക്കുന്ന കസ്റ്റമറിന്",
+    phoneGreeting: "ശുഭ സന്ധ്യ",
+    phoneShopName: "കിരാന കൗണ്ടർ",
+    phoneTodaySales: "ഇന്നത്തെ സെയിൽ",
+    phoneBillsToday: "ഇന്നത്തെ ബില്ലുകൾ",
+    phoneStatCash: "ക്യാഷ്",
+    phoneLine1Name: "അരി 5 കിലോ",
+    phoneLine1Meta: "ക്യാഷ് · UPI?",
+    phoneLine2Meta: "2 പായ്ക്ക് · ഉധാർ",
+    phoneLine3Meta: "4 പായ്ക്ക് · ക്യാഷ്",
+    phoneQtyUnit: "ബിൽ",
+    featuresLabel: "ഫീച്ചറുകൾ",
+    how3LineHindi: "WhatsApp · ഇന്ന് ക്യാഷ്/UPI",
+    how3LineEnglish: "ബില്ലിനൊപ്പം സ്റ്റോക്ക് ഇതിനകം അപ്‌ഡേറ്റ്",
+    hisaab2Line: "രമേഷ് · തുറന്ന ഉധാർ",
+    hisaab2Gloss: "ആരുടെ ഖാതാ ഇന്ന് തുറന്നിരിക്കുന്നു",
+    hisaab4Line: "ബില്ലിനൊപ്പം സ്റ്റോക്ക്",
+    hisaab4Gloss: "ആ സാധനങ്ങൾ ഇതിനകം നീങ്ങി",
+    cmpLabel: "എന്തുകൊണ്ട് Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol ഇല്ലാതെ",
+    cmpWithChrome: "Samaan Bol ഉപയോഗിച്ച്",
+    langLabel: "ഭാരതത്തിനായി",
+    chromeLanguage: "ഭാഷ",
+    footerRights: "എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം",
+    footerMadeInIndia: "ഇന്ത്യയിൽ നിർമ്മിച്ചത് ♥ 🇮🇳",
   },
   or: {
     navFeatures: "ଫିଚର୍ସ",
@@ -834,6 +1086,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "ରିଫଣ୍ଡ ନୀତି",
     footerPrivacy: "ଗୋପନୀୟତା",
     footerTerms: "ସର୍ତ୍ତ",
+    heroStatCashLabel: "ବିଲ୍‌ରେ",
+    heroStatUpiLabel: "QR ରାଶି",
+    heroStatUdhaarLabel: "ନାମରେ",
+    floatCustomer: "ଠିଆ ଗ୍ରାହକଙ୍କୁ",
+    phoneGreeting: "ଶୁଭ ସନ୍ଧ୍ୟା",
+    phoneShopName: "କିରାଣା କାଉଣ୍ଟର",
+    phoneTodaySales: "ଆଜିର ସେଲ୍",
+    phoneBillsToday: "ଆଜିର ବିଲ୍",
+    phoneStatCash: "କ୍ୟାଶ୍",
+    phoneLine1Name: "ଚାଉଳ 5 କିଲୋ",
+    phoneLine1Meta: "କ୍ୟାଶ୍ · UPI?",
+    phoneLine2Meta: "2 ପ୍ୟାକ୍ · ଉଧାର",
+    phoneLine3Meta: "4 ପ୍ୟାକ୍ · କ୍ୟାଶ୍",
+    phoneQtyUnit: "ବିଲ୍",
+    featuresLabel: "ଫିଚର୍ସ",
+    how3LineHindi: "WhatsApp · ଆଜି କ୍ୟାଶ୍/UPI",
+    how3LineEnglish: "ବିଲ୍ ସାଙ୍ଗେ ଷ୍ଟକ୍ ଆଗରୁ ଅପଡେଟ୍",
+    hisaab2Line: "ରମେଶ · ଖୋଲା ଉଧାର",
+    hisaab2Gloss: "କାହାର ଖାତା ଆଜି ଖୋଲା",
+    hisaab4Line: "ବିଲ୍ ସାଙ୍ଗେ ଷ୍ଟକ୍",
+    hisaab4Gloss: "ସେହି ଜିନିଷ ଆଗରୁ ଖସିଲା",
+    cmpLabel: "କାହିଁକି Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol ବିନା",
+    cmpWithChrome: "Samaan Bol ସହିତ",
+    langLabel: "ଭାରତ ପାଇଁ",
+    chromeLanguage: "ଭାଷା",
+    footerRights: "ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ",
+    footerMadeInIndia: "ଭାରତରେ ତିଆରି ♥ 🇮🇳",
   },
   pa: {
     navFeatures: "ਫੀਚਰ",
@@ -916,6 +1196,34 @@ const localeSlots: Partial<Record<Locale, HomeSlots>> = {
     footerRefund: "ਰਿਫੰਡ ਨੀਤੀ",
     footerPrivacy: "ਪਰਾਈਵੇਸੀ",
     footerTerms: "ਸ਼ਰਤਾਂ",
+    heroStatCashLabel: "ਬਿੱਲ ’ਤੇ",
+    heroStatUpiLabel: "QR ਰਕਮ",
+    heroStatUdhaarLabel: "ਨਾਮ ’ਤੇ",
+    floatCustomer: "ਖੜ੍ਹੇ ਗਾਹਕ ਨੂੰ",
+    phoneGreeting: "ਸ਼ੁਭ ਸ਼ਾਮ",
+    phoneShopName: "ਕਿਰਾਨਾ ਕਾਊਂਟਰ",
+    phoneTodaySales: "ਅੱਜ ਦੀ ਸੇਲ",
+    phoneBillsToday: "ਅੱਜ ਦੇ ਬਿੱਲ",
+    phoneStatCash: "ਕੈਸ਼",
+    phoneLine1Name: "ਚਾਵਲ 5 ਕਿਲੋ",
+    phoneLine1Meta: "ਕੈਸ਼ · UPI?",
+    phoneLine2Meta: "2 ਪੈਕ · ਉਧਾਰ",
+    phoneLine3Meta: "4 ਪੈਕ · ਕੈਸ਼",
+    phoneQtyUnit: "ਬਿੱਲ",
+    featuresLabel: "ਫੀਚਰ",
+    how3LineHindi: "WhatsApp · ਅੱਜ ਕੈਸ਼/UPI",
+    how3LineEnglish: "ਬਿੱਲ ਨਾਲ ਸਟਾਕ ਪਹਿਲਾਂ ਤੋਂ ਅਪਡੇਟ",
+    hisaab2Line: "ਰਮੇਸ਼ · ਖੁੱਲ੍ਹਾ ਉਧਾਰ",
+    hisaab2Gloss: "ਕਿਸ ਦਾ ਖਾਤਾ ਅੱਜ ਖੁੱਲ੍ਹਾ ਹੈ",
+    hisaab4Line: "ਬਿੱਲ ਨਾਲ ਸਟਾਕ",
+    hisaab4Gloss: "ਉਹ ਚੀਜ਼ਾਂ ਪਹਿਲਾਂ ਤੋਂ ਹਿਲ ਗਈਆਂ",
+    cmpLabel: "ਕਿਉਂ Samaan Bol",
+    cmpWithoutChrome: "Samaan Bol ਤੋਂ ਬਿਨਾਂ",
+    cmpWithChrome: "Samaan Bol ਨਾਲ",
+    langLabel: "ਭਾਰਤ ਲਈ",
+    chromeLanguage: "ਭਾਸ਼ਾ",
+    footerRights: "ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ",
+    footerMadeInIndia: "ਭਾਰਤ ਵਿੱਚ ਬਣਾਇਆ ♥ 🇮🇳",
   },
 };
 
@@ -924,6 +1232,23 @@ function swap(html: string, needle: string, next?: string) {
   if (!html.includes(needle)) return html;
   return html.replaceAll(needle, next);
 }
+
+/** Split `"roman" / native` shop-day bodies for voice-bubble sides. */
+function slashPair(body: string | undefined, left: string, right: string): [string, string] {
+  if (!body) return [left, right];
+  const idx = body.indexOf(' / ');
+  if (idx === -1) return [left, body];
+  return [body.slice(0, idx), body.slice(idx + 3)];
+}
+
+/**
+ * KEEP EN on locale homes (maps / CoS):
+ * - App Store badge "Download on the"; Play "GET IT ON"; store names
+ * - phone.chips Sell | Cart | Udhaar | Today
+ * - Bengaluru Hinglish quotes; brand tokens (UPI, WhatsApp, Maggi, Samaan Bol)
+ * - Footer h4 Product / Company / Support (no map key)
+ * - Menu aria-label
+ */
 
 export function applyHomeSlots(html: string, locale: Locale) {
   const slots = localeSlots[locale];
@@ -987,15 +1312,15 @@ export function applyHomeSlots(html: string, locale: Locale) {
             <div class="hero-stat-number">Udhaar</div>
             <div class="hero-stat-label">On a name</div>`,
       `            <div class="hero-stat-number">${slots.chipCash ?? 'Cash'}</div>
-            <div class="hero-stat-label">On the bill</div>
+            <div class="hero-stat-label">${slots.heroStatCashLabel ?? 'On the bill'}</div>
           </div>
           <div class="hero-stat">
             <div class="hero-stat-number">${slots.chipUpi ?? 'UPI'}</div>
-            <div class="hero-stat-label">QR amount</div>
+            <div class="hero-stat-label">${slots.heroStatUpiLabel ?? 'QR amount'}</div>
           </div>
           <div class="hero-stat">
             <div class="hero-stat-number">${slots.chipUdhaar ?? 'Udhaar'}</div>
-            <div class="hero-stat-label">On a name</div>`,
+            <div class="hero-stat-label">${slots.heroStatUdhaarLabel ?? 'On a name'}</div>`,
     );
   }
 
@@ -1003,12 +1328,34 @@ export function applyHomeSlots(html: string, locale: Locale) {
   out = swap(out, 'Rice 5 kg sold · Cash/UPI?', slots.floatGloss ?? 'Rice 5 kg sold · Cash/UPI?');
   out = swap(out, '<div class="english">Rice 5 kg sold</div>', `<div class="english">${slots.how1Example ?? 'Rice 5 kg sold'}</div>`);
   out = swap(out, 'Search to sell…', slots.phoneSearch ?? 'Search to sell…');
+  out = swap(out, '<div class="phone-greeting">Good evening</div>', `<div class="phone-greeting">${slots.phoneGreeting ?? 'Good evening'}</div>`);
+  out = swap(out, '<div class="phone-subtext">Kirana counter</div>', `<div class="phone-subtext">${slots.phoneShopName ?? 'Kirana counter'}</div>`);
+  out = swap(out, '<div class="phone-stat-label">Today\'s sales</div>', `<div class="phone-stat-label">${slots.phoneTodaySales ?? "Today's sales"}</div>`);
+  out = swap(out, '<div class="phone-stat-label">Bills today</div>', `<div class="phone-stat-label">${slots.phoneBillsToday ?? 'Bills today'}</div>`);
+  out = swap(
+    out,
+    `<div class="phone-stat-label">Cash</div>
+              </div>
+              <div class="phone-stat-card phone-stat-card--activity">
+                <div class="phone-stat-number" style="color:var(--success);">₹3,320</div>
+                <div class="phone-stat-label">UPI</div>`,
+    `<div class="phone-stat-label">${slots.phoneStatCash ?? 'Cash'}</div>
+              </div>
+              <div class="phone-stat-card phone-stat-card--activity">
+                <div class="phone-stat-number" style="color:var(--success);">₹3,320</div>
+                <div class="phone-stat-label">${slots.chipUpi ?? 'UPI'}</div>`,
+  );
+  out = swap(out, '<div class="phone-product-name">Rice 5 kg</div>', `<div class="phone-product-name">${slots.phoneLine1Name ?? 'Rice 5 kg'}</div>`);
+  out = swap(out, '<div class="phone-product-meta">Cash · UPI?</div>', `<div class="phone-product-meta">${slots.phoneLine1Meta ?? 'Cash · UPI?'}</div>`);
+  out = swap(out, '<div class="phone-product-meta">2 pkt · Udhaar</div>', `<div class="phone-product-meta">${slots.phoneLine2Meta ?? '2 pkt · Udhaar'}</div>`);
+  out = swap(out, '<div class="phone-product-meta">4 pkt · Cash</div>', `<div class="phone-product-meta">${slots.phoneLine3Meta ?? '4 pkt · Cash'}</div>`);
+  out = swap(out, '<div class="phone-product-qty-unit">bill</div>', `<div class="phone-product-qty-unit">${slots.phoneQtyUnit ?? 'bill'}</div>`);
   out = swap(
     out,
     `<p><strong>WhatsApp bill</strong></p>
           <p style="margin-top:4px; font-size:12px;">To the customer standing there</p>`,
     `<p><strong>${slots.floatSecond ?? 'WhatsApp bill'}</strong></p>
-          <p style="margin-top:4px; font-size:12px;">To the customer standing there</p>`,
+          <p style="margin-top:4px; font-size:12px;">${slots.floatCustomer ?? 'To the customer standing there'}</p>`,
   );
 
   out = swap(out, '<div class="section-label">How a sale works</div>', `<div class="section-label">${slots.howLabel ?? 'How a sale works'}</div>`);
@@ -1032,6 +1379,25 @@ export function applyHomeSlots(html: string, locale: Locale) {
     "<p>WhatsApp bill to the customer. Today's cash/UPI totals move. Stock for those items is already updated.</p>",
     `<p>${slots.how3Body ?? "WhatsApp bill to the customer. Today's cash/UPI totals move. Stock for those items is already updated."}</p>`,
   );
+  out = swap(
+    out,
+    '<span style="background:var(--saffron-tint); color:var(--saffron); padding:4px 10px; border-radius:4px; font-size:12px;">Cash</span>',
+    `<span style="background:var(--saffron-tint); color:var(--saffron); padding:4px 10px; border-radius:4px; font-size:12px;">${slots.chipCash ?? 'Cash'}</span>`,
+  );
+  out = swap(
+    out,
+    '<span style="background:rgba(50,213,131,0.1); color:var(--success); padding:4px 10px; border-radius:4px; font-size:12px;">UPI QR</span>',
+    `<span style="background:rgba(50,213,131,0.1); color:var(--success); padding:4px 10px; border-radius:4px; font-size:12px;">${slots.chipUpi ?? 'UPI'} QR</span>`,
+  );
+  out = swap(
+    out,
+    '<span style="background:rgba(99,102,241,0.1); color:#818CF8; padding:4px 10px; border-radius:4px; font-size:12px;">Udhaar</span>',
+    `<span style="background:rgba(99,102,241,0.1); color:#818CF8; padding:4px 10px; border-radius:4px; font-size:12px;">${slots.chipUdhaar ?? 'Udhaar'}</span>`,
+  );
+  out = swap(out, '<div class="hindi">WhatsApp · cash/UPI today</div>', `<div class="hindi">${slots.how3LineHindi ?? 'WhatsApp · cash/UPI today'}</div>`);
+  out = swap(out, '<div class="english">Stock already updated with the bill</div>', `<div class="english">${slots.how3LineEnglish ?? 'Stock already updated with the bill'}</div>`);
+
+  out = swap(out, '<div class="section-label">Features</div>', `<div class="section-label">${slots.featuresLabel ?? 'Features'}</div>`);
 
   out = swap(out, '<h2 class="section-heading">What happens at the counter.</h2>', `<h2 class="section-heading">${slots.whatHappens ?? 'What happens at the counter.'}</h2>`);
   out = swap(out, '<h3>You speak the sale</h3>', `<h3>${slots.f1Title ?? 'You speak the sale'}</h3>`);
@@ -1085,6 +1451,40 @@ export function applyHomeSlots(html: string, locale: Locale) {
   out = swap(out, '<h3>Stock already moved with the bill</h3>', `<h3>${slots.hisaab4Title ?? 'Stock already moved with the bill'}</h3>`);
   out = swap(out, '<p>You do not count it again on Sunday to know what the bill already took.</p>', `<p>${slots.hisaab4Body ?? 'You do not count it again on Sunday to know what the bill already took.'}</p>`);
 
+  {
+    const [cashLeft, cashRight] = slashPair(slots.hisaab1Body, '"aaj kitna cash aaya"', 'How much cash came in today?');
+    out = swap(
+      out,
+      `<div class="hindi">"आज कितना कैश आया?"</div>
+              <div class="translation">How much cash came in today?</div>`,
+      `<div class="hindi">${cashLeft}</div>
+              <div class="translation">${cashRight}</div>`,
+    );
+    out = swap(
+      out,
+      `<div class="hindi">Ramesh · open udhaar</div>
+              <div class="translation">Whose khata is still open today</div>`,
+      `<div class="hindi">${slots.hisaab2Line ?? 'Ramesh · open udhaar'}</div>
+              <div class="translation">${slots.hisaab2Gloss ?? 'Whose khata is still open today'}</div>`,
+    );
+    const [soldLeft, soldRight] = slashPair(slots.hisaab3Body, '"aaj kitna becha"', 'How much sold today?');
+    out = swap(
+      out,
+      `<div class="hindi">"आज कितना बेचा?"</div>
+              <div class="translation">How much sold today?</div>`,
+      `<div class="hindi">${soldLeft}</div>
+              <div class="translation">${soldRight}</div>`,
+    );
+    out = swap(
+      out,
+      `<div class="hindi">Stock with the bill</div>
+              <div class="translation">Those items already moved</div>`,
+      `<div class="hindi">${slots.hisaab4Line ?? 'Stock with the bill'}</div>
+              <div class="translation">${slots.hisaab4Gloss ?? 'Those items already moved'}</div>`,
+    );
+  }
+
+  out = swap(out, '<div class="section-label">Built for Bharat</div>', `<div class="section-label">${slots.langLabel ?? 'Built for Bharat'}</div>`);
   out = swap(out, '<h2 class="section-heading">Your language. Your business. Your way.</h2>', `<h2 class="section-heading">${slots.langHeading ?? 'Your language. Your business. Your way.'}</h2>`);
   out = swap(
     out,
@@ -1092,6 +1492,7 @@ export function applyHomeSlots(html: string, locale: Locale) {
     `<p class="section-sub">${slots.langSub ?? 'Hinglish is speech, not a chip. 10 Indian languages + English, with the names you actually use at the counter.'}</p>`,
   );
 
+  out = swap(out, '<div class="section-label">Why Samaan Bol</div>', `<div class="section-label">${slots.cmpLabel ?? 'Why Samaan Bol'}</div>`);
   out = swap(
     out,
     '<h2 class="section-heading">The evening should match the box</h2>',
@@ -1107,6 +1508,8 @@ export function applyHomeSlots(html: string, locale: Locale) {
     '<p class="comparison-col-subtitle">The sentence you said is the bill</p>',
     `<p class="comparison-col-subtitle">${slots.cmpWithHeading ?? 'The sentence you said is the bill'}</p>`,
   );
+  out = swap(out, '<h3>Without Samaan Bol</h3>', `<h3>${slots.cmpWithoutChrome ?? 'Without Samaan Bol'}</h3>`);
+  out = swap(out, '<h3>With Samaan Bol</h3>', `<h3>${slots.cmpWithChrome ?? 'With Samaan Bol'}</h3>`);
   out = swap(out, '<li><span class="icon">✕</span> Rush at the counter</li>', `<li><span class="icon">✕</span> ${slots.cmpWithout1 ?? 'Rush at the counter'}</li>`);
   out = swap(out, '<li><span class="icon">✕</span> Paper udhaar</li>', `<li><span class="icon">✕</span> ${slots.cmpWithout2 ?? 'Paper udhaar'}</li>`);
   out = swap(out, '<li><span class="icon">✕</span> Sunday stock count</li>', `<li><span class="icon">✕</span> ${slots.cmpWithout3 ?? 'Sunday stock count'}</li>`);
@@ -1137,6 +1540,8 @@ export function applyHomeSlots(html: string, locale: Locale) {
     '<p>For the kirana counter. You say what they took. The bill keeps up.</p>',
     `<p>${slots.footerBlurb ?? 'For the kirana counter. You say what they took. The bill keeps up.'}</p>`,
   );
+  out = swap(out, 'All rights reserved.', `${slots.footerRights ?? 'All rights reserved'}.`);
+  out = swap(out, 'Made with ♥ in India 🇮🇳', slots.footerMadeInIndia ?? 'Made with ♥ in India 🇮🇳');
 
   if (slots.navFeatures) {
     out = swap(out, '<li><a href="#features">Features</a></li>', `<li><a href="#features">${slots.navFeatures}</a></li>`);
@@ -1180,6 +1585,10 @@ export function applyBengaluruProofHeading(html: string, locale: Locale) {
     `<h2 class="section-heading">${slots.proofHeading}</h2>`,
   );
   return out;
+}
+
+export function getLocaleHomeSlots(locale: Locale) {
+  return localeSlots[locale];
 }
 
 export function getLocaleHomeHtml(locale: Locale) {
