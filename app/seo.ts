@@ -4,6 +4,7 @@ import { defaultLocale, getLocaleMeta, localizedLanguageAlternates, type Locale,
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://samaanbol.space';
 
 export const appStoreUrl = 'https://apps.apple.com/in/app/samaan-bol/id6759739444';
+export const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.samaan.bol';
 
 export const seoKeywords = [
   'kirana bill',
@@ -18,7 +19,7 @@ export const seoKeywords = [
 ];
 
 export const defaultDescription =
-  'While the customer is still there, you say what they took. The app puts it on a bill. Cash, UPI QR, or udhaar. Stock is not a second notebook. Free on the App Store. New shops get 7 days of voice in the app, no card.';
+  'While the customer is still there, you say what they took. The app puts it on a bill. Cash, UPI QR, or udhaar. Stock is not a second notebook. Free on the App Store and Google Play. New shops get 7 days of voice in the app, no card.';
 
 export const defaultTitle = 'Samaan Bol — Voice billing for kirana | Cash, UPI, Udhaar';
 
@@ -119,7 +120,7 @@ export const organizationSchema = {
   name: 'Samaan Bol',
   url: siteUrl,
   logo: absoluteUrl('/opengraph-image'),
-  sameAs: [appStoreUrl],
+  sameAs: [appStoreUrl, playStoreUrl],
 };
 
 export const softwareApplicationSchema = {
@@ -127,7 +128,7 @@ export const softwareApplicationSchema = {
   '@type': ['SoftwareApplication', 'MobileApplication'],
   name: 'Samaan Bol',
   applicationCategory: 'BusinessApplication',
-  operatingSystem: 'iOS',
+  operatingSystem: 'iOS, Android',
   url: siteUrl,
   downloadUrl: appStoreUrl,
   installUrl: appStoreUrl,
@@ -173,7 +174,7 @@ export const pricingOfferSchema = {
   '@type': 'SoftwareApplication',
   name: 'Samaan Bol Premium',
   applicationCategory: 'BusinessApplication',
-  operatingSystem: 'iOS',
+  operatingSystem: 'iOS, Android',
   url: absoluteUrl('/pricing'),
   downloadUrl: appStoreUrl,
   offers: [

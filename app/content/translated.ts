@@ -2,6 +2,9 @@ import type { Locale } from '../i18n';
 
 type LocalizedPageHtml = { home: string; privacy: string; terms: string };
 
+// Locale home HTML in this file is unused. Shop-day locale copy is applied
+// from EN home.ts via localeHomeSlots.ts so Play stays live and POS-era copy is not served.
+
 export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
   "hi": {
     home: `<!-- Three.js background canvas -->

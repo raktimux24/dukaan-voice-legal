@@ -4,7 +4,8 @@ import { privacyHtml } from './privacy';
 import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
 import { getSubscriptionStrings } from './subscriptionStrings';
-import { appStoreUrl } from '../seo';
+import { appStoreUrl, playStoreUrl } from '../seo';
+import { getLocaleHomeHtml } from './localeHomeSlots';
 
 type ContentPageKind = Extract<PageKind, 'home' | 'privacy' | 'terms'>;
 
@@ -57,10 +58,18 @@ function localizeLinks(html: string, locale: Locale) {
   const home = localizedPath(locale, 'home');
   const privacy = localizedPath(locale, 'privacy');
   const terms = localizedPath(locale, 'terms');
+  const pricing = localizedPath(locale, 'pricing');
+  const account = localizedPath(locale, 'account');
+  const contact = localizedPath(locale, 'contact');
+  const refund = localizedPath(locale, 'refund');
 
   return html
     .replaceAll('href="/privacy-policy"', `href="${privacy}"`)
     .replaceAll('href="/terms-of-service"', `href="${terms}"`)
+    .replaceAll('href="/pricing"', `href="${pricing}"`)
+    .replaceAll('href="/account"', `href="${account}"`)
+    .replaceAll('href="/contact"', `href="${contact}"`)
+    .replaceAll('href="/refund-policy"', `href="${refund}"`)
     .replaceAll('href="/" class="back"', `href="${home}" class="back"`);
 }
 
@@ -86,23 +95,17 @@ function injectMissingNavItems(html: string, locale: Locale) {
   );
 }
 
-const manageBadgeIcon =
-  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
-
-function replacePlayStoreBadge(html: string, locale: Locale) {
-  const accountHref = localizedPath(locale, 'account');
-  const t = getSubscriptionStrings(locale);
-  const badge = `<a href="${accountHref}" class="store-badge">
-          <div class="store-badge-icon">${manageBadgeIcon}</div>
-          <div class="store-badge-text">
-            <div class="store-badge-label">Already have a shop?</div>
-            <div class="store-badge-name">${t.nav.account}</div>
-          </div>
-        </a>`;
-
+function activatePlayStoreBadge(html: string) {
   return html
-    .replace(/<a href="[^"]*" class="store-badge"[^>]*>[\s\S]*?Google Play[\s\S]*?<\/a>/g, badge)
-    .replaceAll('https://play.google.com/store/apps/details?id=com.samaan.bol', accountHref);
+    .replace(
+      /<a href="#"( class="store-badge"[^>]*)>/g,
+      `<a href="${playStoreUrl}" class="store-badge">`,
+    )
+    .replace(/ style="position:relative; opacity:0.65; pointer-events:none;"/g, '')
+    .replace(
+      /<span style="position:absolute; top:-10px; right:-10px;[^>]*>[\s\S]*?<\/span>/g,
+      '',
+    );
 }
 
 function rewriteDeadCompanyLinks(html: string, locale: Locale) {
@@ -121,11 +124,15 @@ function sanitizeTranslatedHome(html: string, locale: Locale) {
   let out = html
     .replaceAll('चावल 5 किलो जोड़ दो', 'चावल 5 किलो बेचा')
     .replaceAll('Priya General Store', 'Kirana counter')
-    .replace(/<div class="hero-stat-number">50K\+<\/div>/g, '<div class="hero-stat-number">7 days</div>')
+    .replaceAll('Download Free', t.nav.download)
+    .replaceAll('No Play Store.', '')
+    .replaceAll('No Play Store', '')
+    .replaceAll('Play is not live', '')
+    .replace(/<div class="hero-stat-number">50K\s*\+<\/div>/g, '<div class="hero-stat-number">Cash</div>')
     .replace(/href="#download" class="btn-primary"/g, `href="${appStoreUrl}" class="btn-primary"`)
     .replace(/<section class="testimonials">[\s\S]*?<\/section>/, proofSectionHtml);
 
-  out = replacePlayStoreBadge(out, locale);
+  out = activatePlayStoreBadge(out);
   out = rewriteDeadCompanyLinks(out, locale);
 
   out = out.replace(
@@ -159,8 +166,8 @@ function adaptLegal(html: string, locale: Locale, page: PageKind) {
 }
 
 export function getLocalizedHtml(page: ContentPageKind, locale: Locale) {
-  const source = locale === defaultLocale ? englishHtml[page] : translatedHtml[locale]?.[page] ?? englishHtml[page];
+  if (page === 'home') return adaptHome(getLocaleHomeHtml(locale), locale);
 
-  if (page === 'home') return adaptHome(source, locale);
+  const source = locale === defaultLocale ? englishHtml[page] : translatedHtml[locale]?.[page] ?? englishHtml[page];
   return adaptLegal(source, locale, page);
 }

@@ -1486,6 +1486,78 @@ export const subscriptionStrings: Record<Locale, SubscriptionStrings> = {
   or,
 };
 
+const navOverlay: Partial<Record<Locale, Partial<SubscriptionStrings['nav']>>> = {
+  hi: {
+    features: 'फ़ीचर्स',
+    ai: 'शाम का हिसाब',
+    pricing: 'कीमत',
+    account: 'सब्सक्रिप्शन मैनेज करें',
+    download: 'डाउनलोड',
+  },
+  bn: { download: 'ডাউনলোড' },
+  ta: { download: 'பதிவிறக்கம்', ai: 'மாலை கணக்கு' },
+  te: { download: 'డౌన్‌లోడ్', ai: 'సాయంత్రం హిసాబ్' },
+  mr: { download: 'डाउनलोड', ai: 'संध्याकाळचा हिशोब' },
+  kn: { download: 'ಡೌನ್‌ಲೋಡ್' },
+  gu: { download: 'ડાઉનલોડ' },
+  ml: { download: 'ഡൗൺലോഡ്', ai: 'വൈകുന്നേരത്തെ കണക്ക്' },
+  pa: { download: 'ਡਾਊਨਲੋਡ', ai: 'ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ' },
+  or: { download: 'ଡାଉନଲୋଡ୍', ai: 'ସନ୍ଧ୍ୟା ହିସାବ' },
+};
+
+const premium4: Partial<Record<Locale, string>> = {
+  hi: 'जो खत्म होने वाला है, असल बिक्री से चेतावनी',
+  bn: 'যা ফুরিয়ে যাবে, আসল বিক্রি থেকে সতর্ক করে',
+  ta: 'உண்மையான விற்பனையிலிருந்து, தீர்ந்து போகும் பொருளை எச்சரிக்கும்',
+  te: 'అసలు సేల్ నుంచి, తీరబోయే సరుకు హెచ్చరిక',
+  mr: 'खऱ्या विक्रीवरून, संपणार ते सांगतो',
+  kn: 'ನಿಜವಾದ ಮಾರಾಟದಿಂದ, ಮುಗಿಯುವುದನ್ನು ಎಚ್ಚರಿಸುತ್ತದೆ',
+  gu: 'અસલ વેચાણથી, ખૂટવાનું હોય તેની ચેતવણી',
+  ml: 'യഥാർത്ഥ വിൽപ്പനയിൽ നിന്ന്, തീരാൻ പോകുന്നത് മുന്നറിയിപ്പ്',
+  pa: 'ਅਸਲ ਵਿਕਰੀ ਤੋਂ, ਖਤਮ ਹੋਣ ਵਾਲੀ ਚੀਜ਼ ਦੀ ਚੇਤਾਵਨੀ',
+  or: 'ପ୍ରକୃତ ବିକ୍ରିରୁ, ସରିବାକୁ ଥିବା ଜିନିଷର ସତର୍କତା',
+};
+
+const hiTrialFaq = {
+  q: '7 दिन का ट्रायल क्या है?',
+  a: 'नई दुकान को ऐप में 7 दिन वॉइस और Premium, कार्ड नहीं। 7 दिन का रिफ़ंड अलग है। वो पहली चार्ज से शुरू होता है।',
+};
+
 export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
-  return subscriptionStrings[locale] ?? en;
+  const base = subscriptionStrings[locale] ?? en;
+  const nav = { ...base.nav, ...navOverlay[locale] };
+  const premiumFeatures = [
+    en.pricing.premiumFeatures[0],
+    en.pricing.premiumFeatures[1],
+    en.pricing.premiumFeatures[2],
+    premium4[locale] ?? en.pricing.premiumFeatures[3],
+    en.pricing.premiumFeatures[4],
+  ];
+  const faq = locale === 'hi' ? [hiTrialFaq, ...base.pricing.faq] : base.pricing.faq;
+
+  return {
+    ...base,
+    brand:
+      locale === 'hi'
+        ? { tagline: 'किराना काउंटर के लिए। जो लिया वो बोलो। बिल साथ चलता है।' }
+        : base.brand,
+    nav,
+    footer: {
+      ...base.footer,
+      features: nav.features,
+      ai: nav.ai,
+      pricing: nav.pricing,
+      account: nav.account,
+    },
+    pricing: {
+      ...base.pricing,
+      freeFeatures: en.pricing.freeFeatures,
+      premiumFeatures,
+      faq,
+    },
+    account: {
+      ...base.account,
+      heading: nav.account,
+    },
+  };
 }

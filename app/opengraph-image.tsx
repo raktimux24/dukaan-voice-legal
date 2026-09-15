@@ -65,7 +65,7 @@ export default function OpenGraphImage() {
           <span>•</span>
           <span>Cash · UPI · Udhaar</span>
           <span>•</span>
-          <span>App Store</span>
+          <span>App Store · Google Play</span>
         </div>
       </div>
     ),
