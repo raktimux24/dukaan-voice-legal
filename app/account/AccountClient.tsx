@@ -24,29 +24,6 @@ import {
   type SubscriptionEntitlement,
 } from '../lib/subscriptions';
 
-type RazorpayHandlerArgs = {
-  razorpay_payment_id?: string;
-  razorpay_subscription_id: string;
-  razorpay_signature: string;
-};
-type RazorpayOptions = {
-  key?: string;
-  subscription_id?: string;
-  name?: string;
-  description?: string;
-  prefill?: { name?: string; email?: string; contact?: string };
-  theme?: { color?: string };
-  handler?: (args: RazorpayHandlerArgs) => void;
-  modal?: { ondismiss?: () => void };
-};
-type RazorpayInstance = { open: () => void };
-type RazorpayConstructor = new (options: RazorpayOptions) => RazorpayInstance;
-declare global {
-  interface Window {
-    Razorpay?: RazorpayConstructor;
-  }
-}
-
 function formatDate(value: string | null | undefined, t: SubscriptionStrings) {
   if (!value) return t.account.dateUnavailable;
   return new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(value));
@@ -188,36 +165,13 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     (status === 'active' || status === 'past_due' || isTrial);
   const { badge, lead, warning } = describe(entitlement, t, a);
 
-  function openRazorpayCheckout(opts: { checkout: CheckoutResponse; description: string; onDone: () => void; onSuccess: (args: RazorpayHandlerArgs) => void }) {
-    const { checkout, description, onDone, onSuccess } = opts;
-
-    if (typeof window === 'undefined' || !window.Razorpay) {
-      throw new Error(t.account.errorRazorpayNotLoaded);
-    }
-    if (!checkout.subscriptionId || !checkout.keyId) {
+  // Hosted Razorpay page (short_url). Standard checkout.js is blocked in live
+  // mode until samaanbol.space is Approved in the Razorpay dashboard.
+  function startRazorpayHosted(checkout: CheckoutResponse) {
+    if (!checkout.shortUrl) {
       throw new Error(t.account.errorCheckoutMissingId);
     }
-
-    const rzp = new window.Razorpay({
-      key: checkout.keyId,
-      subscription_id: checkout.subscriptionId,
-      name: 'Samaan-Bol',
-      description,
-      prefill: {
-        name: user?.fullName ?? undefined,
-        email: user?.primaryEmailAddress?.emailAddress ?? undefined,
-      },
-      theme: { color: '#FF6B00' },
-      handler: onSuccess,
-      modal: { ondismiss: onDone },
-    });
-
-    rzp.open();
-  }
-
-  function goToReturnPage(razorpaySubscriptionId: string) {
-    const query = new URLSearchParams({ shopId: selectedShopId, razorpay_subscription_id: razorpaySubscriptionId });
-    window.location.href = `/subscription/return?${query}`;
+    window.location.assign(checkout.shortUrl);
   }
 
   async function startCheckout() {
@@ -227,12 +181,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     try {
       const token = await getToken();
       const checkout = await createCheckout(selectedShopId, plan, token);
-      openRazorpayCheckout({
-        checkout,
-        description: plan === 'annual' ? t.plans.annualDescription : t.plans.monthlyDescription,
-        onDone: () => setBusy(''),
-        onSuccess: (resp) => goToReturnPage(resp.razorpay_subscription_id),
-      });
+      startRazorpayHosted(checkout);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.account.errorStartCheckout);
       setBusy('');
@@ -254,17 +203,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
         kind === 'switch-plan' && nextPlan
           ? await changePlan(selectedShopId, nextPlan, token)
           : await updatePaymentMethod(selectedShopId, token);
-      const description =
-        kind === 'switch-plan'
-          ? nextPlan === 'annual'
-            ? t.plans.annualDescription
-            : t.plans.monthlyDescription
-          : t.account.updatePaymentMethod;
-      const finish = () => {
-        setBusy('');
-        reloadEntitlement().catch(() => {});
-      };
-      openRazorpayCheckout({ checkout: result, description, onDone: finish, onSuccess: finish });
+      startRazorpayHosted(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : kind === 'switch-plan' ? t.account.errorSwitchPlan : t.account.errorPaymentMethod);
       setBusy('');
@@ -279,15 +218,10 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     try {
       const token = await getToken();
       const pending = await getPendingSwitch(selectedShopId, token);
-      const finish = () => {
-        setBusy('');
-        reloadEntitlement().catch(() => {});
-      };
-      openRazorpayCheckout({
-        checkout: { shortUrl: pending.shortUrl ?? '', subscriptionId: pending.subscriptionId, keyId: pending.keyId },
-        description: pending.reason === 'payment_method' ? t.account.updatePaymentMethod : planLabel(pending.plan, t),
-        onDone: finish,
-        onSuccess: finish,
+      startRazorpayHosted({
+        shortUrl: pending.shortUrl ?? '',
+        subscriptionId: pending.subscriptionId,
+        keyId: pending.keyId,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : a.errorPendingSwitch);

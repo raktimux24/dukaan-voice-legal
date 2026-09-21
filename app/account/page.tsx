@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { Suspense } from 'react';
 import { AmbientBackground } from '../components/AmbientBackground';
 import { SubscriptionFooter, SubscriptionNav } from '../components/SubscriptionChrome';
@@ -25,7 +24,6 @@ export default function AccountPage() {
   return (
     <div className="subscription-shell">
       <AmbientBackground />
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <SubscriptionNav locale={locale} page="account" />
       <main className="subscription-main">
         <Suspense fallback={<div className="subscription-panel">{t.account.loadingAccount}</div>}>

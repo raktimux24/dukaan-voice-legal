@@ -242,7 +242,7 @@ const en: SubscriptionStrings = {
     noInvoices: 'No Razorpay invoices are available yet.',
     backToPricing: 'Back to pricing',
     errorRazorpayNotLoaded: 'Razorpay Checkout has not loaded yet. Refresh the page and try again.',
-    errorCheckoutMissingId: 'Checkout response missing subscription_id or key_id.',
+    errorCheckoutMissingId: 'Razorpay did not return a payment page. Try again in a minute.',
     errorLoadShops: 'Unable to load shops.',
     errorLoadEntitlement: 'Unable to load subscription status.',
     errorStartCheckout: 'Unable to start checkout.',
