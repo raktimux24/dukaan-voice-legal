@@ -519,25 +519,33 @@ export function AccountClient({ locale = defaultLocale }: { locale?: Locale }) {
   const searchParams = useSearchParams();
   const ticket = searchParams.get('ticket');
   const { isLoaded, isSignedIn } = useUser();
-  const { isLoaded: signInLoaded, signIn, setActive } = useSignIn();
+  const { signIn } = useSignIn();
   const [ticketBusy, setTicketBusy] = useState(!!ticket);
 
   useEffect(() => {
-    if (!ticket || !signInLoaded || !signIn || !setActive) {
-      if (!ticket) setTicketBusy(false);
+    if (!ticket) {
+      setTicketBusy(false);
       return;
     }
+    if (!isLoaded) return;
     let cancelled = false;
     (async () => {
       try {
-        const result = await signIn.create({ strategy: 'ticket', ticket });
+        const ticketResult = await signIn.ticket({ ticket });
         if (cancelled) return;
-        if (result.status === 'complete' && result.createdSessionId) {
-          await setActive({ session: result.createdSessionId });
-          const url = new URL(window.location.href);
-          url.searchParams.delete('ticket');
-          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+        if (ticketResult.error) {
+          console.error('Clerk ticket sign-in failed', ticketResult.error);
+          return;
         }
+        const finalizeResult = await signIn.finalize();
+        if (cancelled) return;
+        if (finalizeResult.error) {
+          console.error('Clerk ticket finalize failed', finalizeResult.error);
+          return;
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.delete('ticket');
+        window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
       } catch (err) {
         console.error('Clerk ticket sign-in failed', err);
       } finally {
@@ -547,7 +555,7 @@ export function AccountClient({ locale = defaultLocale }: { locale?: Locale }) {
     return () => {
       cancelled = true;
     };
-  }, [ticket, signInLoaded, signIn, setActive]);
+  }, [ticket, isLoaded, signIn]);
 
   if (!isLoaded || ticketBusy) {
     return <div className="subscription-panel">{t.account.loadingSignIn}</div>;
