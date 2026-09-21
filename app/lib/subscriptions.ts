@@ -41,6 +41,11 @@ export type SubscriptionEntitlement = {
   cancelAtPeriodEnd: boolean;
   // True when a UPI Autopay mandate backs this shop.
   hasMandate?: boolean;
+  needsAuthorization?: boolean;
+  canCancelPendingSwitch?: boolean;
+  cancellationPending?: boolean;
+  billingSyncPending?: boolean;
+  subscriptionId?: string | null;
   // A scheduled plan switch / payment-method refresh waiting to take over.
   pendingPlan: BillingPlan | null;
   pendingReason: 'plan_switch' | 'payment_method' | null;
@@ -59,6 +64,7 @@ export function hasMandate(entitlement: SubscriptionEntitlement | undefined): bo
 
 export type CheckoutResponse = {
   shortUrl: string;
+  plan?: BillingPlan;
   subscriptionId?: string;
   keyId?: string;
   // Set by /change-plan and /update-payment-method: when the new mandate takes over.
@@ -82,6 +88,13 @@ export type ApiError = Error & { code?: string; status?: number };
 
 // Server error codes → sentences. Anything else falls back to the raw body.
 const ERROR_MESSAGES: Record<string, string> = {
+  billing_operation_unresolved: 'Your previous request is still being checked. Please do not start another payment. Try again later or contact support.',
+  switch_already_authorized: 'The replacement is already authorised and the previous renewal cannot be restored. Cancel the subscription to stop all future billing.',
+  billing_temporarily_unavailable: 'Billing is temporarily unavailable. Your request may still be processing; refresh before trying again.',
+  period_boundary_retry: 'Your current period is ending. Please retry in one minute.',
+  invalid_checkout_signature: 'We could not verify this checkout. Check your subscription status before retrying.',
+  cancellation_not_confirmed: 'Cancellation is still being confirmed. Refresh this page before making another billing change.',
+
   shop_already_premium: 'This shop already has Premium.',
   no_active_subscription: 'There is no active subscription to change on this shop.',
   same_plan: 'That is already your current plan.',
@@ -99,6 +112,7 @@ async function apiFetch<T>(path: string, token: string | null, init?: RequestIni
 
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
+    signal: AbortSignal.timeout(60_000),
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -114,7 +128,7 @@ async function apiFetch<T>(path: string, token: string | null, init?: RequestIni
     } catch {
       // not JSON
     }
-    const err = new Error(ERROR_MESSAGES[code] ?? (text || `Request failed with status ${response.status}`)) as ApiError;
+    const err = new Error(ERROR_MESSAGES[code] ?? (code || `Request failed with status ${response.status}`)) as ApiError;
     err.code = code || undefined;
     err.status = response.status;
     throw err;
@@ -128,12 +142,13 @@ export async function getShops(token: string | null) {
   return { shops: Array.isArray(response) ? response : response.shops ?? [] };
 }
 
-export async function getEntitlement(shopId: string, token: string | null) {
-  const query = new URLSearchParams({ shopId });
+export async function getEntitlement(shopId: string, token: string | null, refresh = false) {
+  const query = new URLSearchParams({ shopId, ...(refresh ? { refresh: "true" } : {}) });
   return apiFetch<SubscriptionEntitlement>(`/api/subscriptions/entitlement?${query}`, token);
 }
 
 type CheckoutWire = {
+  plan?: BillingPlan;
   shortUrl?: string;
   short_url?: string;
   subscriptionId?: string;
@@ -145,6 +160,7 @@ type CheckoutWire = {
 
 function normalizeCheckout(response: CheckoutWire): CheckoutResponse {
   return {
+    plan: response.plan,
     shortUrl: response.shortUrl ?? response.short_url ?? '',
     subscriptionId: response.subscriptionId ?? response.subscription_id,
     keyId: response.keyId ?? response.key_id,
@@ -209,3 +225,14 @@ export const planCopy: Record<BillingPlan, { label: string; price: string; suffi
     amount: '₹3,999/year',
   },
 };
+
+export type CheckoutConfirmation = { subscriptionId: string; state: 'paid' | 'authorized' | 'pending' | 'failed'; remoteStatus: string };
+export async function verifyCheckout(shopId: string, subscriptionId: string, paymentId: string, signature: string, token: string | null) {
+  return apiFetch<CheckoutConfirmation>('/api/subscriptions/verify', token, { method: 'POST', body: JSON.stringify({ shopId, subscriptionId, paymentId, signature }) });
+}
+export async function getCheckoutStatus(shopId: string, subscriptionId: string, token: string | null) {
+  return apiFetch<CheckoutConfirmation>(`/api/subscriptions/checkout-status?${new URLSearchParams({ shopId, subscriptionId })}`, token);
+}
+export async function getInvoices(shopId: string, token: string | null) {
+  return apiFetch<{ invoices: Invoice[] }>(`/api/subscriptions/invoices?${new URLSearchParams({ shopId })}`, token);
+}

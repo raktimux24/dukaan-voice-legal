@@ -1,127 +1,49 @@
 'use client';
-
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AppDownloadLinks } from '../../components/SubscriptionChrome';
-import { getEntitlement, type SubscriptionEntitlement } from '../../lib/subscriptions';
+import { getCheckoutStatus, type CheckoutConfirmation } from '../../lib/subscriptions';
 
-type ReturnState = 'checking' | 'success' | 'pending' | 'failed';
-
+type State = 'checking' | 'paid' | 'authorized' | 'pending' | 'failed';
 export function ReturnClient() {
-  const searchParams = useSearchParams();
-  const shopId = searchParams.get('shopId') ?? '';
-  const razorpaySubscriptionId = searchParams.get('razorpay_subscription_id') ?? '';
+  const params = useSearchParams();
+  const shopId = params.get('shopId') ?? '';
+  const subscriptionId = params.get('razorpay_subscription_id') ?? '';
   const { getToken } = useAuth();
   const { isLoaded, isSignedIn } = useUser();
-  const [state, setState] = useState<ReturnState>('checking');
-  const [entitlement, setEntitlement] = useState<SubscriptionEntitlement>();
+  const [state, setState] = useState<State>('checking');
   const [message, setMessage] = useState('');
-
   useEffect(() => {
     let active = true;
+    let timer: ReturnType<typeof setTimeout>;
     if (!isLoaded || !isSignedIn) return;
-    if (!shopId) {
-      setState('failed');
-      setMessage('Missing shopId. Open account management to confirm your subscription.');
-      return;
-    }
-
-    // The webhook flips status a few seconds after Razorpay's redirect. Poll
-    // for ~30s; `isPremium` covers active, mandate-backed trials and legacy.
-    async function poll() {
-      for (let attempt = 0; attempt < 20; attempt += 1) {
-        try {
-          const token = await getToken();
-          const response = await getEntitlement(shopId, token);
-          if (!active) return;
-          setEntitlement(response);
-          if (response.isPremium && response.status !== 'legacy_free') {
-            setState('success');
-            return;
-          }
-        } catch (err) {
-          if (active) setMessage(err instanceof Error ? err.message : 'Unable to confirm subscription.');
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+    setState('checking'); setMessage('');
+    if (!shopId || !subscriptionId) { setState('failed'); setMessage('Checkout details are missing. Open your account to check subscription status.'); return; }
+    let attempts = 0;
+    const poll = async () => {
+      try {
+        const result: CheckoutConfirmation = await getCheckoutStatus(shopId, subscriptionId, await getToken());
+        if (!active) return;
+        setMessage('');
+        if (result.state !== 'pending') { setState(result.state); return; }
+      } catch (e) {
+        if (!active) return;
+        setMessage(e instanceof Error ? e.message : 'Unable to confirm checkout.');
       }
-      if (active) setState('pending');
-    }
-
-    poll();
-    return () => {
-      active = false;
+      if (!active) return;
+      if (++attempts >= 20) { setState('pending'); return; }
+      timer = setTimeout(poll, 1500);
     };
-  }, [getToken, isLoaded, isSignedIn, shopId]);
-
-  function openApp() {
-    window.location.href = 'samaan-bol://subscription/return';
-  }
-
-  return (
-    <>
-      {!isLoaded ? <div className="subscription-panel">Loading sign-in status...</div> : null}
-
-      {isLoaded && !isSignedIn ? (
-        <section className="subscription-section">
-          <h1>Sign in to confirm your subscription</h1>
-          <p className="subscription-lead">Use the same account you used to start Razorpay checkout.</p>
-          <div className="portal-actions">
-            <SignInButton mode="modal">
-              <button className="subscription-button" type="button">
-                Sign in
-              </button>
-            </SignInButton>
-            <Link className="subscription-button secondary" href="/account">
-              Open account
-            </Link>
-          </div>
-        </section>
-      ) : null}
-
-      {isLoaded && isSignedIn ? (
-        <section className="subscription-hero">
-          <div>
-            {state === 'success' && entitlement?.status === 'trialing' ? <h1>You're set — your plan starts after the trial</h1> : null}
-            {state === 'success' && entitlement?.status !== 'trialing' ? <h1>Subscription active</h1> : null}
-            {state === 'checking' ? <h1>Setting up your subscription</h1> : null}
-            {state === 'pending' ? <h1>Payment is still being confirmed</h1> : null}
-            {state === 'failed' ? <h1>We could not confirm this subscription</h1> : null}
-            <p className="subscription-lead">
-              {state === 'success' && entitlement?.status === 'trialing'
-                ? `Your UPI Autopay mandate is authorised. Premium continues through your free trial and the first charge is on ${entitlement.trialEnd ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(entitlement.trialEnd)) : 'the trial end date'}. Open Samaan-Bol — nothing else to do.`
-                : state === 'success'
-                  ? 'Razorpay has confirmed your subscription. Open Samaan-Bol and pull to refresh — Premium is on.'
-                  : state === 'pending'
-                    ? 'Razorpay usually confirms within a minute. Your access updates automatically — you can close this page and check the app later.'
-                    : 'Confirmation can take a short moment after Razorpay redirects back to Samaan-Bol.'}
-            </p>
-            {message ? <div className="subscription-alert">{message}</div> : null}
-            <div className="portal-actions">
-              <button className="subscription-button" type="button" onClick={openApp}>
-                Open in app
-              </button>
-              <Link className="subscription-button secondary" href={`/account${shopId ? `?shopId=${shopId}` : ''}`}>
-                View account
-              </Link>
-              {state === 'failed' ? (
-                <Link className="subscription-button secondary" href="/pricing">
-                  Try again
-                </Link>
-              ) : null}
-            </div>
-          </div>
-          <aside className="status-panel">
-            <span className={state === 'pending' ? 'status-badge warning' : 'status-badge'}>{state}</span>
-            <h3>Checkout details</h3>
-            <p className="muted">Shop ID: {shopId || 'Not provided'}</p>
-            <p className="muted">Razorpay subscription: {razorpaySubscriptionId || 'Waiting for Razorpay'}</p>
-            <p className="muted">Current status: {entitlement?.status ?? 'Checking'}</p>
-            <AppDownloadLinks />
-          </aside>
-        </section>
-      ) : null}
-    </>
-  );
+    void poll();
+    return () => { active = false; clearTimeout(timer); };
+  }, [getToken, isLoaded, isSignedIn, shopId, subscriptionId]);
+  const account = `/account?${new URLSearchParams({ shopId })}`;
+  const returnUrl = `/subscription/return?${new URLSearchParams({ shopId, razorpay_subscription_id: subscriptionId })}`;
+  const title = { checking: 'Checking your subscription', paid: 'Payment confirmed', authorized: 'Payment method authorised', pending: 'Confirmation is still pending', failed: 'Subscription setup is not complete' }[state];
+  const description = { checking: 'We are checking this checkout with Razorpay.', paid: 'Razorpay has confirmed a paid billing cycle. Your subscription status is updated.', authorized: 'Razorpay has authorised your payment method. This does not mean a subscription charge has completed. Your account shows your current access and billing dates.', pending: 'We have not confirmed authorization yet. Check your account before trying another payment.', failed: 'Open your account to review the status and available recovery options.' }[state];
+  if (!isLoaded) return <div className="subscription-panel">Loading sign-in status…</div>;
+  if (!isSignedIn) return <section className="subscription-section"><h1>Sign in to confirm your subscription</h1><p>Use the account that started checkout.</p><SignInButton mode="modal" forceRedirectUrl={returnUrl}><button className="subscription-button">Sign in</button></SignInButton></section>;
+  return <section className="subscription-hero"><div><h1>{title}</h1><p className="subscription-lead">{description}</p>{message ? <div role="alert" className="subscription-alert">{message}</div> : null}<div className="portal-actions"><a className="subscription-button" href={`samaan-bol://subscription/return?${new URLSearchParams({ shopId, subscriptionId })}`}>Open in app</a><Link className="subscription-button secondary" href={account}>View account</Link></div></div><aside className="status-panel"><span className="status-badge">{state}</span><h3>Your subscription</h3><p>Manage billing and payment history from your account.</p><AppDownloadLinks /></aside></section>;
 }
