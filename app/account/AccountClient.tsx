@@ -194,14 +194,6 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     (status === 'active' || status === 'past_due' || isTrial);
   const { badge, lead, warning } = describe(entitlement, t, a);
 
-  function checkoutBlockedMessage(raw?: string) {
-    const text = raw ?? '';
-    if (/does not match registered website/i.test(text) || /hosted page is not available/i.test(text)) {
-      return a.razorpayWebsitePending;
-    }
-    return text || t.account.errorStartCheckout;
-  }
-
   // UPI Autopay authorisation uses Razorpay Standard Checkout (subscription_id),
   // not the rzp.io short_url — that hosted page is not enabled on this merchant.
   function openRazorpayCheckout(opts: {
@@ -236,7 +228,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     });
 
     rzp.on('payment.failed', (response) => {
-      setError(checkoutBlockedMessage(response.error?.description));
+      setError(response.error?.description || t.account.errorStartCheckout);
       onDone();
     });
 
@@ -262,7 +254,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
         onSuccess: (resp) => goToReturnPage(resp.razorpay_subscription_id),
       });
     } catch (err) {
-      setError(checkoutBlockedMessage(err instanceof Error ? err.message : ''));
+      setError(err instanceof Error ? err.message : t.account.errorStartCheckout);
       setBusy('');
     }
   }
@@ -444,7 +436,6 @@ function AccountDashboard({ locale }: { locale: Locale }) {
               <p className="muted">
                 {isTrial ? a.subscribeDuringTrialNote(formatDate(entitlement?.trialEnd, t)) : a.subscribeNowNote}
               </p>
-              <p className="muted">{a.razorpayWebsitePending}</p>
               <div className="portal-actions">
                 <button className="subscription-button" type="button" disabled={!selectedShopId || busy === 'checkout'} onClick={startCheckout}>
                   {status === 'pending_authentication'

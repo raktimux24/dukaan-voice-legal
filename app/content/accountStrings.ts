@@ -61,7 +61,6 @@ export type AccountStrings = {
   switchAccount: string;
   openInApp: string;
   errorPendingSwitch: string;
-  razorpayWebsitePending: string;
 };
 
 const en: AccountStrings = {
@@ -114,8 +113,6 @@ const en: AccountStrings = {
   switchAccount: 'Switch account',
   openInApp: 'Open in the app',
   errorPendingSwitch: 'Unable to load the scheduled change.',
-  razorpayWebsitePending:
-    'Live UPI Autopay on this site waits on Razorpay. In the Razorpay dashboard, Website details must show https://samaanbol.space/ as Approved (not Under review). That usually takes 24–48 hours — message Razorpay from that screen to speed it up, then tap Subscribe again.',
 };
 
 // Per-locale overrides. Add keys here as translations land; anything missing
