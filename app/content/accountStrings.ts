@@ -57,6 +57,8 @@ export type AccountStrings = {
 
   // misc
   ownerOnly: string;
+  signedInAs: (email: string, role: string) => string;
+  switchAccount: string;
   openInApp: string;
   errorPendingSwitch: string;
 };
@@ -107,6 +109,8 @@ const en: AccountStrings = {
   cancelTrialButton: 'Cancel trial',
 
   ownerOnly: 'Only the shop owner can change billing for this shop.',
+  signedInAs: (email, role) => `You're signed in as ${email} (${role}). Sign in with the same account you use in the Samaan-Bol app — the shop owner's account — to subscribe.`,
+  switchAccount: 'Switch account',
   openInApp: 'Open in the app',
   errorPendingSwitch: 'Unable to load the scheduled change.',
 };

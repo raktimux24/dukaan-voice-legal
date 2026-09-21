@@ -4,6 +4,7 @@ export type Shop = {
   id: string;
   name: string;
   role?: string;
+  ownerId?: string;
 };
 
 export type Invoice = {

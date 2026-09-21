@@ -1,6 +1,6 @@
 'use client';
 
-import { SignIn, UserButton, useAuth, useUser } from '@clerk/nextjs';
+import { SignIn, UserButton, useAuth, useClerk, useSignIn, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -115,7 +115,13 @@ function AccountDashboard({ locale }: { locale: Locale }) {
   const [notice, setNotice] = useState('');
 
   const selectedShop = useMemo(() => shops.find((shop) => shop.id === selectedShopId), [selectedShopId, shops]);
-  const isOwner = !selectedShop?.role || selectedShop.role.toUpperCase() === 'OWNER';
+  const isOwner =
+    selectedShop?.role?.toUpperCase() === 'OWNER' ||
+    (!!user?.id && !!selectedShop?.ownerId && selectedShop.ownerId === user.id);
+  const { signOut } = useClerk();
+  const roleLabel = selectedShop?.role
+    ? selectedShop.role.charAt(0).toUpperCase() + selectedShop.role.slice(1).toLowerCase()
+    : t.account.shopRoleFallback;
 
   useEffect(() => {
     let active = true;
@@ -360,7 +366,19 @@ function AccountDashboard({ locale }: { locale: Locale }) {
           <h2>{selectedShop?.name ?? t.account.selectShop}</h2>
           {lead ? <p className="muted">{lead}</p> : null}
 
-          {!isOwner && entitlement ? <p className="muted">{a.ownerOnly}</p> : null}
+          {!isOwner && entitlement ? (
+            <div className="subscription-alert" style={{ marginTop: '1rem' }}>
+              <p style={{ margin: 0 }}>{a.ownerOnly}</p>
+              <p className="muted" style={{ margin: '8px 0 0' }}>
+                {a.signedInAs(accountEmail, roleLabel)}
+              </p>
+              <div className="portal-actions" style={{ marginTop: '1rem' }}>
+                <button className="subscription-button" type="button" onClick={() => void signOut()}>
+                  {a.switchAccount}
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           {/* Scheduled plan switch / payment-method refresh */}
           {entitlement?.pendingReason ? (
@@ -498,9 +516,40 @@ function AccountDashboard({ locale }: { locale: Locale }) {
 
 export function AccountClient({ locale = defaultLocale }: { locale?: Locale }) {
   const t = getSubscriptionStrings(locale);
+  const searchParams = useSearchParams();
+  const ticket = searchParams.get('ticket');
   const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded: signInLoaded, signIn, setActive } = useSignIn();
+  const [ticketBusy, setTicketBusy] = useState(!!ticket);
 
-  if (!isLoaded) {
+  useEffect(() => {
+    if (!ticket || !signInLoaded || !signIn || !setActive) {
+      if (!ticket) setTicketBusy(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await signIn.create({ strategy: 'ticket', ticket });
+        if (cancelled) return;
+        if (result.status === 'complete' && result.createdSessionId) {
+          await setActive({ session: result.createdSessionId });
+          const url = new URL(window.location.href);
+          url.searchParams.delete('ticket');
+          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+        }
+      } catch (err) {
+        console.error('Clerk ticket sign-in failed', err);
+      } finally {
+        if (!cancelled) setTicketBusy(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ticket, signInLoaded, signIn, setActive]);
+
+  if (!isLoaded || ticketBusy) {
     return <div className="subscription-panel">{t.account.loadingSignIn}</div>;
   }
 
