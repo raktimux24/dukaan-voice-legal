@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { AmbientBackground } from '../../components/AmbientBackground';
@@ -40,6 +41,7 @@ export default async function LocalizedAccountPage({ params }: LocaleParams) {
   return (
     <div className="subscription-shell">
       <AmbientBackground />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <SubscriptionNav locale={locale} page="account" />
       <main className="subscription-main">
         <Suspense fallback={<div className="subscription-panel">{t.account.loadingAccount}</div>}>
