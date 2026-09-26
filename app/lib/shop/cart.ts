@@ -37,6 +37,16 @@ export type PendingSale = {
   startedAt: number;
 };
 
+const EMPTY_CART: Cart = {
+  lines: [],
+  billDiscount: 0,
+  note: '',
+  customerId: null,
+  customerName: null,
+  customerPhone: null,
+  customerClientId: null,
+};
+
 const empty = (): Cart => ({
   lines: [],
   billDiscount: 0,
@@ -46,6 +56,57 @@ const empty = (): Cart => ({
   customerPhone: null,
   customerClientId: null,
 });
+
+type Snapshot<T> = { raw: string | null; value: T };
+
+const cartSnapshots = new Map<string, Snapshot<Cart>>();
+const pendingSnapshots = new Map<string, Snapshot<PendingSale | null>>();
+
+function readRaw(key: string) {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function cartSnapshot(userId: string | null, shopId: string | null): Cart {
+  if (!userId || !shopId) return EMPTY_CART;
+  const storageKey = cartKey(userId, shopId);
+  const raw = readRaw(storageKey);
+  const cached = cartSnapshots.get(storageKey);
+  if (cached && cached.raw === raw) return cached.value;
+  let value = EMPTY_CART;
+  if (raw) {
+    try {
+      const saved = JSON.parse(raw) as Cart;
+      if (saved?.lines) value = { ...empty(), ...saved, lines: saved.lines };
+    } catch {
+      value = EMPTY_CART;
+    }
+  }
+  cartSnapshots.set(storageKey, { raw, value });
+  return value;
+}
+
+function pendingSnapshot(userId: string | null, shopId: string | null): PendingSale | null {
+  if (!userId || !shopId) return null;
+  const storageKey = pendingKey(userId, shopId);
+  const raw = readRaw(storageKey);
+  const cached = pendingSnapshots.get(storageKey);
+  if (cached && cached.raw === raw) return cached.value;
+  let value: PendingSale | null = null;
+  if (raw) {
+    try {
+      value = JSON.parse(raw) as PendingSale;
+    } catch {
+      value = null;
+    }
+  }
+  pendingSnapshots.set(storageKey, { raw, value });
+  return value;
+}
 
 const listeners = new Set<() => void>();
 
@@ -134,18 +195,16 @@ export function saleFingerprint(payload: Omit<CreateSalePayload, 'clientId'>) {
 }
 
 export function useCart(userId: string | null, shopId: string | null) {
-  const key = userId && shopId ? `${userId}:${shopId}` : '';
   const cart = useSyncExternalStore(
     subscribeCart,
-    () => (userId && shopId ? readCart(userId, shopId) : empty()),
-    () => empty(),
+    () => cartSnapshot(userId, shopId),
+    () => EMPTY_CART,
   );
   const pending = useSyncExternalStore(
     subscribeCart,
-    () => (userId && shopId ? readPending(userId, shopId) : null),
+    () => pendingSnapshot(userId, shopId),
     () => null,
   );
-  void key;
 
   const update = (next: Cart) => {
     if (!userId || !shopId) return;

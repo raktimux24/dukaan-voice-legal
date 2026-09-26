@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { formatINR } from '../../../lib/shop/money';
 import { useShop } from '../context';
-import { Card, Spinner } from '../ui';
+import { Button, Card, Spinner } from '../ui';
 
 export function HomeScreen() {
   const { api, shop, perms, premium, t } = useShop();
@@ -54,11 +54,15 @@ export function HomeScreen() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl">{t('nav.home', 'Home')}</h1>
-        <Link href="/shop/alerts" className="rounded-full border border-line px-3 py-2 text-sm">
-          Alerts {alerts.data?.counts.total ? <span className="text-danger">{alerts.data.counts.total}</span> : null}
-        </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl text-ink">{t('nav.home', 'Home')}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button href="/shop/sell">New sale</Button>
+          {perms.canEditProducts ? <Button href="/shop/products/new" tone="ghost">New product</Button> : null}
+          <Link href="/shop/alerts" className="rounded-full border border-line px-3 py-2 text-sm text-ink">
+            Alerts {alerts.data?.counts.total ? <span className="text-danger">{alerts.data.counts.total}</span> : null}
+          </Link>
+        </div>
       </div>
       <input
         className="rounded-xl border border-line bg-card px-4 py-3"

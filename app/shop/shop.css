@@ -29,6 +29,13 @@
   font-family: Inter, sans-serif;
 }
 
+/* Tailwind preflight is off so marketing CSS stays intact. Without this,
+   anchors keep the browser's blue underline and shop cards look unstyled. */
+.shop-root :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
 .shop-root[data-text='small'] {
   font-size: 14px;
 }
