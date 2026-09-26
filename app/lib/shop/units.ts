@@ -9,6 +9,19 @@ export const UNITS = ['kg', 'g', 'L', 'mL', 'piece', 'packet', 'dozen', 'crate']
 
 export const isWeightOrVolume = (unit: string) => unit in SUB_UNITS;
 
+export function altUnit(unit: string): string | null {
+  const pair = SUB_UNITS[unit];
+  if (!pair) return null;
+  return unit === pair.large ? pair.small : pair.large;
+}
+
+export function convert(qty: number, from: string, to: string): number {
+  if (from === to) return qty;
+  const pair = SUB_UNITS[from];
+  if (!pair || (to !== pair.small && to !== pair.large)) return qty;
+  return from === pair.large ? qty * pair.factor : qty / pair.factor;
+}
+
 export const r3 = (n: number) => Math.round(n * 1000) / 1000;
 
 export function stepFor(unit: string): number {
@@ -67,4 +80,15 @@ export function formatQty(
     text += ` (${trim(packs)} ${label}${packs === 1 ? '' : 's'})`;
   }
   return text;
+}
+
+export function chipLabel(qty: number, unit: string, pack?: { packSize?: number | null; packLabel?: string | null }): string {
+  if (pack?.packSize && pack.packSize > 0 && Math.abs(qty - pack.packSize) < 1e-9) {
+    return `1 ${pack.packLabel || 'pack'}`;
+  }
+  const alt = altUnit(unit);
+  if (alt && (unit === 'kg' || unit === 'L') && qty > 0 && qty < 1) {
+    return `${trim(convert(qty, unit, alt))} ${alt}`;
+  }
+  return `${trim(qty)} ${unit}`;
 }

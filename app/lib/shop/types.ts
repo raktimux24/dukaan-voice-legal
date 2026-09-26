@@ -303,6 +303,7 @@ export type Nudge = {
   productId: string | null;
   customerId: string | null;
   status: string;
+  evidence?: { anchorProductId?: string; supportPct?: number } | null;
 };
 
 export type BriefResponse = {
@@ -310,6 +311,118 @@ export type BriefResponse = {
   items: Nudge[];
   history: Nudge[];
   premium: boolean;
+};
+
+export type SupplierRow = {
+  name: string;
+  batches: number;
+  products: number;
+  spend: number;
+  spend30d: number;
+  firstAt?: string | null;
+  lastAt: string | null;
+};
+
+export type SupplierItem = {
+  productId: string;
+  name: string;
+  unit: string;
+  sellingPrice: number | null;
+  batches: number;
+  quantity: number;
+  spend: number;
+  lastPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  lastAt: string | null;
+  alt: { supplier: string; price: number; at: string } | null;
+};
+
+export type SupplierBatch = {
+  id: string;
+  productId: string;
+  name: string;
+  unit: string;
+  quantity: number;
+  remaining: number;
+  price: number;
+  at: string;
+  expiryDate: string | null;
+  status: string;
+};
+
+export type SupplierDetail = {
+  name: string;
+  summary: { batches: number; products: number; spend: number; firstAt: string | null; lastAt: string | null };
+  items: SupplierItem[];
+  batches: SupplierBatch[];
+};
+
+export type SupplierCompareProduct = {
+  productId: string;
+  name: string;
+  unit: string;
+  cheapest: string;
+  lastUsed?: string;
+  spreadPct: number;
+  savingPct: number;
+  suppliers: { name: string; price: number; at: string }[];
+};
+
+export type SalesReport = {
+  period: string;
+  premium: boolean;
+  limitedToDays: number | null;
+  showCost: boolean;
+  summary: {
+    bills: number;
+    voided: number;
+    revenue: number;
+    discounts: number;
+    returns: number;
+    cogs: number;
+    grossProfit: number;
+    marginPct: number | null;
+    avgBill: number;
+    itemsSold: number;
+    byMethod: Record<string, number>;
+    cashInDrawer: number;
+    byHour: number[];
+    series: { date: string; bills: number; revenue: number; grossProfit: number }[];
+  };
+  comparison: {
+    label: string;
+    previous: { revenue: number; bills: number; avgBill: number; itemsSold: number };
+    deltaPct: { revenue: number; bills: number; avgBill: number; itemsSold: number };
+  } | null;
+  byCategory: { category: string; bills: number; units: number; revenue: number; sharePct: number; marginPct: number }[];
+  byWeekday: { dow: number; bills: number; revenue: number }[];
+  bestHour: number | null;
+  basket: { itemsPerBill: number; avgBill: number; discountPctOfGross: number; discountedBills: number } | null;
+  returns: { returns: number; returnAmount: number; voids: number; voidAmount: number } | null;
+  inputMethods: { method: string; bills: number; revenue: number }[];
+};
+
+export type StockReport = {
+  premium: boolean;
+  limitedToDays: number | null;
+  showCost: boolean;
+  onHand: {
+    products: number;
+    units: number;
+    costValue: number;
+    retailValue: number;
+    potentialMargin: number;
+    byStatus: Record<string, { products: number; costValue: number }>;
+  };
+  byCategory: { category: string; products: number; units: number; costValue: number; retailValue: number; lowStock: number; outOfStock: number }[];
+  movementByDay: { date: string; unitsIn: number; unitsSold: number; unitsAdjusted: number }[];
+  expiry: {
+    within7: { batches: number; units: number };
+    within30: { batches: number; units: number };
+    within60: { batches: number; units: number };
+    items: { productId: string; name: string; unit: string; expiryDate: string; daysRemaining: number; units: number; costValue: number }[];
+  };
 };
 
 export type UnifiedAlerts = {

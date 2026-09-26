@@ -7,13 +7,14 @@ import { ApiError } from '../../../lib/shop/api';
 import { downloadText } from '../../../lib/shop/csv';
 import { formatINR, formatWhen } from '../../../lib/shop/money';
 import { useShop } from '../context';
-import { Button, Card, NoAccess, Notice, PremiumLock, Spinner, isPremiumError } from '../ui';
+import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, Pill, PremiumLock, Spinner, isPremiumError } from '../ui';
 
 const PERIODS = ['today', 'yesterday', 'week', 'month'] as const;
 
 export function SalesScreen() {
   const { api, shop, perms, premium } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number] | 'custom'>('today');
+  const [desk, setDesk] = useState<'all' | 'udhaar'>('all');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [applied, setApplied] = useState({ from: '', to: '' });
@@ -40,60 +41,76 @@ export function SalesScreen() {
   if (!shop) return <Spinner />;
   if (!perms.canSell) return <NoAccess what="You cannot view sales." />;
 
+  const rows = (sales.data?.sales ?? []).filter((sale) => desk === 'all' || sale.creditTotal > 0 || sale.paymentStatus === 'credit' || sale.paymentStatus === 'partial');
+
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl">Sales</h1>
-        {perms.canSeeReports ? (
-          premium ? (
-            <Button
-              tone="ghost"
-              onClick={() => {
-                void api.salesCsv(shop.id, period === 'custom' ? { from: applied.from, to: applied.to } : { period }).then((csv) => downloadText(`sales-${period}.csv`, csv)).catch(setError);
-              }}
-            >
-              Export CSV
-            </Button>
-          ) : <Button href={`/account?shopId=${shop.id}`}>Premium CSV</Button>
-        ) : null}
-      </div>
+    <div className="shop-page">
+      <PageHeader
+        kicker="Counter"
+        title="Sales"
+        description={sales.data ? `${sales.data.total} ${sales.data.total === 1 ? 'bill' : 'bills'} in this range` : undefined}
+        actions={
+          perms.canSeeReports ? (
+            premium ? (
+              <Button
+                tone="ghost"
+                onClick={() => {
+                  void api.salesCsv(shop.id, period === 'custom' ? { from: applied.from, to: applied.to } : { period }).then((csv) => downloadText(`sales-${period}.csv`, csv)).catch(setError);
+                }}
+              >
+                Export CSV
+              </Button>
+            ) : <Button href="/shop/settings/subscription" tone="ghost">CSV needs Premium</Button>
+          ) : null
+        }
+      />
       <Notice error={error ?? (sales.error && !isPremiumError(sales.error) ? sales.error : null)} />
       {isPremiumError(error) || isPremiumError(sales.error) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
-      <div className="flex flex-wrap gap-2">
-        {PERIODS.map((item) => (
-          <Button key={item} tone={period === item ? 'primary' : 'ghost'} onClick={() => setPeriod(item)}>{item}</Button>
-        ))}
-        <Button tone={period === 'custom' ? 'primary' : 'ghost'} onClick={() => setPeriod('custom')}>Range</Button>
+      <div className="pos-chips" role="tablist" aria-label="Bill type">
+        <Chip active={desk === 'all'} onClick={() => setDesk('all')}>All bills</Chip>
+        <Chip active={desk === 'udhaar'} onClick={() => setDesk('udhaar')}>Udhaar</Chip>
       </div>
-      {period === 'custom' ? (
-        <Card className="flex flex-wrap items-end gap-3">
-          <label className="text-sm">From<input className="mt-1 block rounded-lg border border-line bg-elevated px-3 py-2" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
-          <label className="text-sm">To<input className="mt-1 block rounded-lg border border-line bg-elevated px-3 py-2" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label>
-          <Button onClick={() => {
-            setError(null);
-            setApplied({ from, to });
-          }}>Apply</Button>
-        </Card>
-      ) : null}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="pos-chips">
+          {PERIODS.map((item) => (
+            <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{item[0].toUpperCase() + item.slice(1)}</Chip>
+          ))}
+          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>Custom range</Chip>
+        </div>
+        {period === 'custom' ? (
+          <div className="flex flex-wrap items-end gap-3">
+            <Field label="From"><input className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
+            <Field label="To"><input className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
+            <Button tone="ghost" onClick={() => {
+              setError(null);
+              setApplied({ from, to });
+            }}>Apply</Button>
+          </div>
+        ) : null}
+      </div>
       {sales.data?.limitedToDays ? <p className="text-sm text-muted">Showing the last {sales.data.limitedToDays} days.</p> : null}
       {sales.isLoading ? <Spinner label="Loading sales" /> : null}
-      <div className="grid gap-2">
-        {(sales.data?.sales ?? []).map((sale) => (
-          <Link key={sale.id} href={`/shop/sales/${sale.id}`} className="shop-surface rounded-xl border border-line bg-card p-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-semibold">#{sale.saleNumber} {sale.customerName ? `· ${sale.customerName}` : ''}</p>
-                <p className="text-sm text-muted">{formatWhen(sale.soldAt)} · {sale.sellerName} · {sale.itemCount} items</p>
+      <Card flush>
+        <div className="shop-list">
+          {rows.map((sale) => (
+            <Link key={sale.id} href={`/shop/sales/${sale.id}`} className="shop-list-row">
+              <div className="shop-list-main">
+                <p className="shop-list-title">
+                  #{sale.saleNumber}
+                  {sale.customerName ? ` · ${sale.customerName}` : ''}
+                  {sale.firstItem ? <span className="text-muted"> · {sale.firstItem}{sale.itemCount > 1 ? ` +${sale.itemCount - 1}` : ''}</span> : null}
+                </p>
+                <p className="shop-list-meta">{formatWhen(sale.soldAt)} · {sale.sellerName}</p>
               </div>
-              <div className="text-right">
-                <p>{formatINR(sale.total)}</p>
-                <p className="text-xs text-muted">{sale.status} · {sale.paymentStatus}</p>
+              <div className="shop-list-right flex items-center gap-4">
+                <p className="num font-semibold">{formatINR(sale.total)}</p>
+                {sale.status === 'voided' ? <Pill tone="danger">Voided</Pill> : sale.paymentStatus === 'credit' ? <Pill tone="warn">Udhaar</Pill> : sale.paymentStatus === 'partial' ? <Pill tone="warn">Partial</Pill> : <Pill tone="ok">Paid</Pill>}
               </div>
-            </div>
-          </Link>
-        ))}
-        {!sales.isLoading && (sales.data?.sales.length ?? 0) === 0 ? <Card><p>No bills in this range.</p></Card> : null}
-      </div>
+            </Link>
+          ))}
+          {!sales.isLoading && rows.length === 0 ? <p className="shop-list-empty">{desk === 'udhaar' ? 'No udhaar bills in this range.' : 'No bills in this range.'}</p> : null}
+        </div>
+      </Card>
     </div>
   );
 }

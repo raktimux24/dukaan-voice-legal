@@ -16,8 +16,13 @@ import type {
   Product,
   Sale,
   SaleListRow,
+  SalesReport,
   SalesSummary,
   ShopRecord,
+  StockReport,
+  SupplierCompareProduct,
+  SupplierDetail,
+  SupplierRow,
   StockBatch,
   UnifiedAlerts,
   UserPreferences,
@@ -335,6 +340,10 @@ export function bindApi(getToken: TokenGetter) {
     getSales: (shopId: string, params: Record<string, string | number | undefined>) =>
       send<{ sales: SaleListRow[]; total: number; hasMore: boolean; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
     getSale: (shopId: string, saleId: string) => send<Sale>(`/api/shops/${shopId}/sales/${saleId}`),
+    getProductSales: (shopId: string, productId: string, days = 30) =>
+      send<{ days: number; units: number; revenue: number; bills: number; lastSoldAt: string | null; daysOfCover: number | null }>(
+        `/api/shops/${shopId}/sales/products/${productId}/summary?days=${days}`,
+      ),
     getSalesSummary: (shopId: string, params: Record<string, string | undefined>) =>
       send<SalesSummary>(`/api/shops/${shopId}/sales/summary${queryString(params)}`),
     getTopProducts: (shopId: string, params: Record<string, string | number | undefined>) =>
@@ -382,17 +391,13 @@ export function bindApi(getToken: TokenGetter) {
     deleteBuyListItem: (shopId: string, itemId: string) => send(`/api/shops/${shopId}/buy-list/${itemId}`, { method: 'DELETE' }),
 
     getSuppliers: (shopId: string, q?: string) =>
-      send<{ suppliers: { name: string; batches: number; products: number; spend: number; spend30d: number; lastAt: string | null }[] }>(
-        `/api/shops/${shopId}/suppliers${queryString({ q })}`,
-      ),
-    getSupplier: (shopId: string, name: string) => send<Record<string, unknown>>(`/api/shops/${shopId}/suppliers/${encodeURIComponent(name)}`),
+      send<{ suppliers: SupplierRow[] }>(`/api/shops/${shopId}/suppliers${queryString({ q })}`),
+    getSupplier: (shopId: string, name: string) => send<SupplierDetail>(`/api/shops/${shopId}/suppliers/${encodeURIComponent(name)}`),
     compareSuppliers: (shopId: string) =>
-      send<{ products: { productId: string; name: string; unit: string; cheapest: string; spreadPct: number; savingPct: number; suppliers: { name: string; price: number; at: string }[] }[] }>(
-        `/api/shops/${shopId}/suppliers/compare`,
-      ),
+      send<{ products: SupplierCompareProduct[] }>(`/api/shops/${shopId}/suppliers/compare`),
 
-    getSalesReport: (shopId: string, period: string) => send<Record<string, unknown>>(`/api/shops/${shopId}/reports/sales?period=${period}`),
-    getStockReport: (shopId: string, period: string) => send<Record<string, unknown>>(`/api/shops/${shopId}/reports/stock?period=${period}`),
+    getSalesReport: (shopId: string, period: string) => send<SalesReport>(`/api/shops/${shopId}/reports/sales?period=${period}`),
+    getStockReport: (shopId: string, period: string) => send<StockReport>(`/api/shops/${shopId}/reports/stock?period=${period}`),
     stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken),
     ask: (shopId: string, question: string, language?: string) =>
       send<{ answer: string; intent: string | null }>(`/api/shops/${shopId}/analytics/ask`, {
@@ -441,7 +446,8 @@ export function bindApi(getToken: TokenGetter) {
       return res;
     },
 
-    getNudges: (shopId: string) => send<{ nudges: Nudge[]; premium: boolean }>(`/api/shops/${shopId}/nudges?surface=home`),
+    getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' = 'home') =>
+      send<{ nudges: Nudge[]; premium: boolean }>(`/api/shops/${shopId}/nudges?surface=${surface}`),
     getBrief: (shopId: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief`),
     nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed') =>
       send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface: 'home' }) }),

@@ -119,6 +119,12 @@ function ShopSession({ children }: { children: ReactNode }) {
   }, [shops, pathname, router]);
 
   useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(null), 3500);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
+  useEffect(() => {
     const onRemoved = () => {
       setShopId(null);
       void refreshShops();
@@ -197,7 +203,7 @@ function ShopSession({ children }: { children: ReactNode }) {
       >
         <ShopChrome onSignOut={() => void signOut({ redirectUrl: '/' })}>{children}</ShopChrome>
         {notice ? (
-          <div className="no-print fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-elevated px-4 py-2 text-sm text-ink shadow-lg md:bottom-6">
+          <div className="shop-toast no-print" role="status">
             {notice}
           </div>
         ) : null}

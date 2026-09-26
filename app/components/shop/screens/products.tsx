@@ -10,7 +10,7 @@ import { formatINR } from '../../../lib/shop/money';
 import type { InventoryItem } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
-import { Button, Card, Spinner } from '../ui';
+import { Button, Card, Chip, PageHeader, Pill, Spinner } from '../ui';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -52,45 +52,46 @@ export function ProductsScreen() {
   if (!shop) return <Spinner label="Loading products" />;
 
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl">Products</h1>
-        <div className="flex gap-2">
-          <Button
-            tone="ghost"
-            onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}
-          >
-            Export
-          </Button>
-          {perms.canEditProducts ? <Button href="/shop/products/new">Add product</Button> : null}
+    <div className="shop-page">
+      <PageHeader
+        kicker="Stock"
+        title="Products"
+        description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
+        actions={
+          <>
+            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}>Export CSV</Button>
+            {perms.canEditProducts ? <Button href="/shop/products/new">Add product</Button> : null}
+          </>
+        }
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="pos-chips">
+          {FILTERS.filter((item) => item.id !== 'unpriced' || perms.canEditProducts).map((item) => (
+            <Chip key={item.id} active={filter === item.id} href={item.id === 'all' ? '/shop/products' : `/shop/products?filter=${item.id}`}>{item.label}</Chip>
+          ))}
         </div>
+        <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder="Filter by name or barcode" value={q} onChange={(event) => setQ(event.target.value)} aria-label="Filter products" />
       </div>
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.filter((item) => item.id !== 'unpriced' || perms.canEditProducts).map((item) => (
-          <Link key={item.id} href={item.id === 'all' ? '/shop/products' : `/shop/products?filter=${item.id}`} className={`rounded-full px-3 py-1 text-sm ${filter === item.id ? 'bg-saffron text-white' : 'border border-line text-muted'}`}>
-            {item.label}
-          </Link>
-        ))}
-      </div>
-      <input className="rounded-xl border border-line bg-card px-4 py-3" placeholder="Filter products" value={q} onChange={(event) => setQ(event.target.value)} aria-label="Filter products" />
       {catalog.isLoading ? <Spinner label="Loading products" /> : null}
-      <div className="grid gap-2">
-        {rows.map((item) => (
-          <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-surface rounded-xl border border-line bg-card p-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-semibold">{item.product.name}</p>
-                <p className="text-sm text-muted">{catalogL1Label(item.product.category)} · {formatQty(item.quantity, item.unit)}</p>
+      <Card flush>
+        <div className="shop-list">
+          {rows.map((item) => (
+            <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
+              <div className="shop-list-main">
+                <p className="shop-list-title">{item.product.name}</p>
+                <p className="shop-list-meta">{catalogL1Label(item.product.category)} · {formatQty(item.quantity, item.unit)} on hand</p>
               </div>
-              <div className="text-right">
-                <p>{item.product.sellingPrice == null ? 'Unpriced' : formatINR(item.product.sellingPrice)}</p>
-                <p className={`text-xs ${item.stockStatus === 'OUT' || item.stockStatus === 'LOW' ? 'text-danger' : 'text-muted'}`}>{item.stockStatus}</p>
+              <div className="shop-list-right flex items-center gap-4">
+                <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">Unpriced</span> : formatINR(item.product.sellingPrice)}</p>
+                <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
+                  {item.stockStatus === 'OUT' ? 'Out' : item.stockStatus === 'LOW' ? 'Low' : 'In stock'}
+                </Pill>
               </div>
-            </div>
-          </Link>
-        ))}
-        {!catalog.isLoading && rows.length === 0 ? <Card><p>No products in this view.</p></Card> : null}
-      </div>
+            </Link>
+          ))}
+          {!catalog.isLoading && rows.length === 0 ? <p className="shop-list-empty">No products in this view.</p> : null}
+        </div>
+      </Card>
     </div>
   );
 }

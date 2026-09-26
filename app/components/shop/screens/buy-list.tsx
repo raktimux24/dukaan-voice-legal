@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { UNITS } from '../../../lib/shop/units';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
+import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
 
 export function BuyListScreen() {
   const { api, shop, perms, premium } = useShop();
@@ -25,8 +25,8 @@ export function BuyListScreen() {
   const aiLocked = (list.data ?? []).some((item) => item.isAiSuggested && !premium);
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">Buy list</h1>
+    <div className="shop-page">
+      <PageHeader kicker="Stock" title="Buy list" description="What to buy next. Stocking a row adds a batch to the product." />
       <Notice error={error ?? list.error} />
       <Card>
         <form

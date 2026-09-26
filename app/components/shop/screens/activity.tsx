@@ -3,9 +3,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { auditCsv, downloadText } from '../../../lib/shop/csv';
-import { formatWhen } from '../../../lib/shop/money';
+import { formatTime } from '../../../lib/shop/money';
+import type { AuditLogEntry } from '../../../lib/shop/types';
 import { useShop } from '../context';
-import { Button, Card, Notice, Spinner } from '../ui';
+import { Button, Chip, Notice, PageHeader, Spinner } from '../ui';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -29,6 +30,37 @@ const LABELS: Record<string, string> = {
   member_removed: 'Member removed',
 };
 
+function dayLabel(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return 'Earlier';
+  const today = new Date();
+  const same = (left: Date, right: Date) =>
+    left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
+  if (same(date, today)) return 'Today';
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (same(date, yesterday)) return 'Yesterday';
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function tone(action: string) {
+  if (action.includes('void') || action.includes('return') || action.includes('deleted') || action.includes('removed')) return 'is-danger';
+  if (action.startsWith('sale')) return 'is-sale';
+  if (action.startsWith('stock') || action.startsWith('batch') || action.startsWith('product')) return 'is-stock';
+  return '';
+}
+
+function groups(logs: AuditLogEntry[]) {
+  const days: { label: string; logs: AuditLogEntry[] }[] = [];
+  for (const log of logs) {
+    const label = dayLabel(log.createdAt);
+    const last = days[days.length - 1];
+    if (last?.label === label) last.logs.push(log);
+    else days.push({ label, logs: [log] });
+  }
+  return days;
+}
+
 export function ActivityScreen() {
   const { api, shop } = useShop();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('all');
@@ -40,36 +72,50 @@ export function ActivityScreen() {
   });
 
   if (!shop) return <Spinner />;
+  const days = groups(logs.data?.logs ?? []);
 
   return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl">Activity</h1>
-        <Button
-          tone="ghost"
-          onClick={() => {
-            setError(null);
-            void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError);
-          }}
-        >
-          Export
-        </Button>
-      </div>
-      <div className="flex gap-2">
-        {FILTERS.map((item) => <Button key={item.id} tone={filter === item.id ? 'primary' : 'ghost'} onClick={() => setFilter(item.id)}>{item.label}</Button>)}
+    <div className="shop-page">
+      <PageHeader
+        kicker="Insights"
+        title="Activity"
+        description="Every stock change, sale, void, and staff change in this shop."
+        actions={
+          <Button
+            tone="ghost"
+            onClick={() => {
+              setError(null);
+              void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError);
+            }}
+          >
+            Export CSV
+          </Button>
+        }
+      />
+      <div className="pos-chips">
+        {FILTERS.map((item) => <Chip key={item.id} active={filter === item.id} onClick={() => setFilter(item.id)}>{item.label}</Chip>)}
       </div>
       <Notice error={error ?? logs.error} />
-      {logs.data?.limitedToDays ? <p className="text-sm text-muted">Showing the last {logs.data.limitedToDays} days.</p> : null}
+      {logs.data?.limitedToDays ? <p className="party-meta">Showing the last {logs.data.limitedToDays} days.</p> : null}
       {logs.isLoading ? <Spinner label="Loading activity" /> : null}
-      <div className="grid gap-2">
-        {(logs.data?.logs ?? []).map((log) => (
-          <Card key={log.id}>
-            <p className="font-medium">{LABELS[log.actionType] ?? log.actionType.replaceAll('_', ' ')}</p>
-            <p className="text-sm text-muted">{log.description}</p>
-            <p className="text-xs text-faint">{formatWhen(log.createdAt)} · {log.userName} · {log.inputMethod}</p>
-          </Card>
-        ))}
-      </div>
+      {!logs.isLoading && days.length === 0 ? <p className="shop-list-empty">Nothing recorded for this filter.</p> : null}
+      {days.map((day) => (
+        <section key={day.label}>
+          <h2 className="timeline-day">{day.label}</h2>
+          <ol className="timeline">
+            {day.logs.map((log) => (
+              <li key={log.id} className={`timeline-item ${tone(log.actionType)}`}>
+                <div>
+                  <p className="timeline-title">{LABELS[log.actionType] ?? log.actionType.replaceAll('_', ' ')}</p>
+                  <p className="timeline-meta">{log.description}</p>
+                  <p className="timeline-meta">{log.userName} · {log.inputMethod}</p>
+                </div>
+                <time className="timeline-when" dateTime={log.createdAt}>{formatTime(log.createdAt)}</time>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))}
     </div>
   );
 }

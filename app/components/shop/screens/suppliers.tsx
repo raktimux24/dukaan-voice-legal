@@ -3,9 +3,9 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
-import { formatINR, formatDay } from '../../../lib/shop/money';
+import { formatDay, formatINR } from '../../../lib/shop/money';
 import { useShop } from '../context';
-import { Card, NoAccess, Notice, Spinner, inputClass } from '../ui';
+import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 export function SuppliersScreen() {
   const { api, shop, perms } = useShop();
@@ -17,34 +17,60 @@ export function SuppliersScreen() {
   if (!shop) return <Spinner />;
   if (!perms.canSeeCost) return <NoAccess what="Suppliers show purchase prices, so helpers cannot open them." />;
 
+  const suppliers = list.data?.suppliers ?? [];
+  const compared = compare.data?.products ?? [];
+
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">Suppliers</h1>
-      <p className="text-muted">Suppliers come from batches you stock. There is no separate supplier form.</p>
-      <input className={inputClass} placeholder="Search suppliers" value={q} onChange={(event) => setQ(event.target.value)} aria-label="Search suppliers" />
+    <div className="shop-page">
+      <PageHeader
+        kicker="Stock"
+        title="Suppliers"
+        description="Built from the supplier named on each batch. Spend is what this shop has paid them."
+      />
+      <input
+        className={`${inputClass} shop-search`}
+        placeholder="Search suppliers"
+        value={q}
+        onChange={(event) => setQ(event.target.value)}
+        aria-label="Search suppliers"
+      />
       <Notice error={list.error ?? compare.error} />
       {list.isLoading ? <Spinner label="Loading suppliers" /> : null}
-      <div className="grid gap-2">
-        {(list.data?.suppliers ?? []).map((supplier) => (
-          <Link key={supplier.name} href={`/shop/suppliers/${encodeURIComponent(supplier.name)}`} className="shop-surface rounded-xl border border-line bg-card p-3">
-            <div className="flex justify-between gap-3">
+      {!list.isLoading && suppliers.length === 0 ? (
+        <Card>
+          <p>No suppliers yet. Name a supplier when you add a batch and they show up here.</p>
+        </Card>
+      ) : null}
+      <div className="party-grid">
+        {suppliers.map((supplier) => (
+          <Link key={supplier.name} href={`/shop/suppliers/${encodeURIComponent(supplier.name)}`} className="party-card">
+            <div className="party-card-top">
               <div>
-                <p className="font-semibold">{supplier.name}</p>
-                <p className="text-sm text-muted">{supplier.products} products · last {formatDay(supplier.lastAt)}</p>
+                <p className="party-name">{supplier.name}</p>
+                <p className="party-meta">Last purchase {formatDay(supplier.lastAt)}</p>
               </div>
-              <p>{formatINR(supplier.spend)}</p>
+              <p className="party-spend">{formatINR(supplier.spend)}</p>
+            </div>
+            <div className="party-stats">
+              <div className="party-stat"><span>Products</span><b>{supplier.products}</b></div>
+              <div className="party-stat"><span>Batches</span><b>{supplier.batches}</b></div>
+              <div className="party-stat"><span>30 days</span><b>{formatINR(supplier.spend30d)}</b></div>
             </div>
           </Link>
         ))}
       </div>
-      {(compare.data?.products.length ?? 0) > 0 ? (
+      {compared.length > 0 ? (
         <Card>
-          <h2 className="font-semibold">Price compare</h2>
-          <div className="mt-3 grid gap-3">
-            {compare.data?.products.slice(0, 12).map((product) => (
-              <div key={product.productId}>
-                <p>{product.name} · cheapest {product.cheapest}</p>
-                <p className="text-sm text-muted">{product.suppliers.map((row) => `${row.name} ${formatINR(row.price)}`).join(' · ')}</p>
+          <h2 className="shop-section-title">Price compare</h2>
+          <p className="shop-section-sub">Same product, more than one supplier. The name on the right is the cheaper last price.</p>
+          <div className="chart-rows">
+            {compared.map((product) => (
+              <div key={product.productId} className="chart-row is-compare">
+                <span>{product.name}</span>
+                <span className="party-meta">
+                  {product.suppliers.map((row) => `${row.name} ${formatINR(row.price)}`).join(' · ')}
+                </span>
+                <b>{product.savingPct > 0 ? `${Math.round(product.savingPct)}% less at ${product.cheapest}` : product.cheapest}</b>
               </div>
             ))}
           </div>

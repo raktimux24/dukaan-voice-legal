@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { Nudge } from '../../../lib/shop/types';
 import { useShop } from '../context';
-import { Button, Card, NoAccess, Notice, Spinner } from '../ui';
+import { Button, Card, NoAccess, Notice, PageHeader, Spinner } from '../ui';
 
 function canAct(nudge: Nudge, canEdit: boolean) {
   const type = nudge.action?.type ?? '';
@@ -30,8 +30,8 @@ export function BriefScreen() {
   const items = [brief.data?.today, ...(brief.data?.items ?? [])].filter((item): item is Nudge => !!item);
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">Daily brief</h1>
+    <div className="shop-page">
+      <PageHeader kicker="Insights" title="Daily brief" description="A short read on the day, with the actions that matter most." />
       {items.length === 0 ? <Card><p>No actions today. The brief is still here.</p></Card> : null}
       <Notice error={error} />
       {items.map((item) => (

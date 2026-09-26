@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { formatINR, formatWhen } from '../../../lib/shop/money';
 import { normalizeIndianMobile } from '../../../lib/shop/phone';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
+import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
 
 export function CustomerDetailScreen({ customerId }: { customerId: string }) {
   const { api, shop, perms, premium } = useShop();
@@ -35,9 +35,34 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
   const shownPhone = ready ? phone : (customer.phone ?? '');
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">{customer.name}</h1>
-      <Card><p className="text-sm text-muted">Udhaar</p><p className="text-3xl">{formatINR(customer.balance)}</p></Card>
+    <div className="shop-page">
+      <PageHeader
+        kicker="Customer"
+        title={customer.name}
+        description={customer.phone ?? undefined}
+        actions={
+          <>
+            {customer.phone && customer.balance > 0 ? (
+              <Button
+                tone="ghost"
+                onClick={() => {
+                  const message = `Namaste ${customer.name}, your balance at ${shop.name} is ${formatINR(customer.balance)}.`;
+                  window.location.href = `sms:${customer.phone}?body=${encodeURIComponent(message)}`;
+                }}
+              >
+                Text reminder
+              </Button>
+            ) : null}
+            <Button href="/shop/customers" tone="quiet" size="sm">All customers</Button>
+          </>
+        }
+      />
+      <div className="dash-stats">
+        <div className={`shop-stat ${customer.balance > 0 ? 'shop-stat--warn' : 'shop-stat--ok'}`}>
+          <span className="shop-stat-n num">{formatINR(customer.balance)}</span>
+          <span className="shop-stat-l">Udhaar outstanding</span>
+        </div>
+      </div>
       <Notice error={error} />
       <Card className="grid gap-3">
         <h2 className="font-semibold">Record payment</h2>

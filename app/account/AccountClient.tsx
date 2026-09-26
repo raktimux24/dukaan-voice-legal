@@ -107,12 +107,20 @@ function describe(ent: SubscriptionEntitlement | undefined, t: SubscriptionStrin
   }
 }
 
-function AccountDashboard({ locale }: { locale: Locale }) {
+export function AccountDashboard({
+  locale,
+  lockedShopId,
+  embedded = false,
+}: {
+  locale: Locale;
+  lockedShopId?: string;
+  embedded?: boolean;
+}) {
   const t = getSubscriptionStrings(locale);
   const a = getAccountStrings(locale);
   const searchParams = useSearchParams();
   const initialPlan = searchParams.get('plan') === 'monthly' ? 'monthly' : 'annual';
-  const requestedShopId = searchParams.get('shopId') ?? '';
+  const requestedShopId = lockedShopId || searchParams.get('shopId') || '';
   const { getToken } = useAuth();
   const { user } = useUser();
   const [shops, setShops] = useState<Shop[]>([]);
@@ -149,7 +157,10 @@ function AccountDashboard({ locale }: { locale: Locale }) {
         const response = await getShops(token);
         if (!active) return;
         setShops(response.shops);
-        setSelectedShopId((current) => current || response.shops.find((shop) => shop.id === requestedShopId)?.id || response.shops[0]?.id || '');
+        setSelectedShopId((current) => {
+          if (lockedShopId && response.shops.some((shop) => shop.id === lockedShopId)) return lockedShopId;
+          return current || response.shops.find((shop) => shop.id === requestedShopId)?.id || response.shops[0]?.id || '';
+        });
       } catch (err) {
         if (active) setError(err instanceof Error ? err.message : t.account.errorLoadShops);
       } finally {
@@ -161,7 +172,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
     return () => {
       active = false;
     };
-  }, [getToken, requestedShopId, t.account.errorLoadShops]);
+  }, [getToken, lockedShopId, requestedShopId, t.account.errorLoadShops]);
 
   const reloadEntitlement = useCallback(async () => {
     if (!selectedShopId) return;
@@ -390,14 +401,14 @@ function AccountDashboard({ locale }: { locale: Locale }) {
 
   return (
     <section className="subscription-section">
-      <h1>{t.account.heading}</h1>
-      <p className="subscription-lead">{t.account.leadWithEmail(accountEmail)}</p>
+      {embedded ? null : <h1>{t.account.heading}</h1>}
+      {embedded ? null : <p className="subscription-lead">{t.account.leadWithEmail(accountEmail)}</p>}
 
       {error ? <div className="subscription-alert">{error}</div> : null}
       {notice ? <div className="subscription-alert success">{notice}</div> : null}
 
       <div className="portal-grid subscription-section">
-        <aside className="subscription-panel">
+        {embedded ? null : <aside className="subscription-panel">
           <h3>{t.account.linkedShops}</h3>
           {loading ? <p className="muted">{t.account.loadingShops}</p> : null}
           {!loading && shops.length === 0 ? <p className="muted">{t.account.noShops}</p> : null}
@@ -415,7 +426,7 @@ function AccountDashboard({ locale }: { locale: Locale }) {
               </button>
             ))}
           </div>
-        </aside>
+        </aside>}
 
         <div className="status-panel">
           <div className={warning ? 'status-badge warning' : 'status-badge'}>{badge}</div>
@@ -560,13 +571,15 @@ function AccountDashboard({ locale }: { locale: Locale }) {
           )}
 
           <div className="portal-actions">
-            <UserButton />
+            {embedded ? null : <UserButton />}
             <a className="subscription-button secondary" href="samaan-bol://subscription/return">
               {a.openInApp}
             </a>
-            <Link className="subscription-button secondary" href={localizedPath(locale, 'pricing')}>
-              {t.account.backToPricing}
-            </Link>
+            {embedded ? null : (
+              <Link className="subscription-button secondary" href={localizedPath(locale, 'pricing')}>
+                {t.account.backToPricing}
+              </Link>
+            )}
           </div>
         </div>
       </div>

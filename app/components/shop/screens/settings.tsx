@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { auditCsv, downloadText, inventoryCsv } from '../../../lib/shop/csv';
 import { useShop } from '../context';
-import { Button, Card, Field, Notice, Spinner, inputClass } from '../ui';
+import { Button, Card, Field, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 const LANGUAGES = [
   ['en', 'English'],
@@ -30,34 +30,46 @@ export function SettingsScreen() {
   if (!shop) return <Spinner />;
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">Settings</h1>
+    <div className="shop-page">
+      <PageHeader back={{ href: '/shop', label: 'Home' }} kicker={shop.name} title="Settings" description={`You are signed in as ${role?.toLowerCase() ?? 'a member'} of this shop.`} />
       <Notice error={error} />
-      <Card className="grid gap-2">
-        <p className="text-sm text-muted">Signed in as {role?.toLowerCase()}</p>
-        {perms.canManageStaff ? <Link href="/shop/settings/staff">Staff and invites</Link> : null}
-        {perms.canManageShop ? <Link href="/shop/settings/shop">Shop profile</Link> : null}
-        {perms.canManageShop ? <Link href="/shop/settings/payments">Payments and UPI</Link> : null}
-        {perms.canManageShop ? <Link href={`/account?shopId=${shop.id}`}>Subscription</Link> : null}
-        {role === 'MANAGER' && shop.helperInviteCode ? (
-          <p>
-            Helper invite: <button type="button" className="text-saffron" onClick={() => void navigator.clipboard.writeText(shop.helperInviteCode || '')}>{shop.helperInviteCode}</button>
-          </p>
-        ) : null}
-        {!perms.canManageShop ? (
-          <Button
-            tone="danger"
-            onClick={() => {
-              if (!window.confirm('Leave this shop?')) return;
-              void api.leaveShop(shop.id).then(() => window.location.assign('/shop')).catch(setError);
-            }}
-          >
-            Leave shop
-          </Button>
-        ) : null}
-      </Card>
-      <Card className="grid gap-3">
-        <h2 className="font-semibold">Preferences</h2>
+      {perms.canManageShop ? (
+        <Card flush>
+          <div className="shop-list">
+            <Link href="/shop/settings/shop" className="shop-list-row">
+              <div className="shop-list-main"><p className="shop-list-title">Shop profile</p><p className="shop-list-meta">Name, type, contact details</p></div>
+              <span className="text-muted">›</span>
+            </Link>
+            <Link href="/shop/settings/payments" className="shop-list-row">
+              <div className="shop-list-main"><p className="shop-list-title">Payments and UPI</p><p className="shop-list-meta">UPI ID, QR, default tender, void window</p></div>
+              <span className="text-muted">›</span>
+            </Link>
+            <Link href="/shop/settings/staff" className="shop-list-row">
+              <div className="shop-list-main"><p className="shop-list-title">Staff and invites</p><p className="shop-list-meta">Members, roles, invite codes</p></div>
+              <span className="text-muted">›</span>
+            </Link>
+            <Link href="/shop/settings/subscription" className="shop-list-row">
+              <div className="shop-list-main"><p className="shop-list-title">Subscription</p><p className="shop-list-meta">{premium ? 'Premium is active' : 'Free plan'} · plans, invoices, and Razorpay</p></div>
+              <span className="text-muted">›</span>
+            </Link>
+          </div>
+        </Card>
+      ) : null}
+      {role === 'MANAGER' && shop.helperInviteCode ? (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium">Helper invite code</p>
+            <p className="text-sm text-muted">Share this with a new helper. They join from the phone or at /shop/onboarding.</p>
+          </div>
+          <Button tone="ghost" onClick={() => void navigator.clipboard.writeText(shop.helperInviteCode || '')}>Copy {shop.helperInviteCode}</Button>
+        </Card>
+      ) : null}
+      <Card className="grid gap-4">
+        <div>
+          <h2 className="shop-section-title">Preferences</h2>
+          <p className="shop-section-sub">These apply to this shop workspace on every device you sign in on.</p>
+        </div>
+        <div className="form-grid is-2">
         <Field label="App language">
           <select className={inputClass} value={prefs?.appLanguage ?? 'en'} onChange={(event) => void savePrefs({ appLanguage: event.target.value }).catch(setError)}>
             {LANGUAGES.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
@@ -68,36 +80,59 @@ export function SettingsScreen() {
             {SIZES.map((size) => <option key={size} value={size}>{size.replace('_', ' ')}</option>)}
           </select>
         </Field>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={!!prefs?.highContrastMode} onChange={(event) => void savePrefs({ highContrastMode: event.target.checked }).catch(setError)} />
-          High contrast
+        <label className="shop-toggle">
+          <span>High contrast<span className="block text-xs text-muted">Stronger borders inside the shop workspace.</span></span>
+          <input type="checkbox" className="shop-field" checked={!!prefs?.highContrastMode} onChange={(event) => void savePrefs({ highContrastMode: event.target.checked }).catch(setError)} />
         </label>
         {role === 'OWNER' ? (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={!!prefs?.dailyRecapEnabled} onChange={(event) => void savePrefs({ dailyRecapEnabled: event.target.checked }).catch(setError)} />
-            Daily recap on the phone
+          <label className="shop-toggle">
+            <span>Daily recap<span className="block text-xs text-muted">Sent to the phone each evening.</span></span>
+            <input type="checkbox" className="shop-field" checked={!!prefs?.dailyRecapEnabled} onChange={(event) => void savePrefs({ dailyRecapEnabled: event.target.checked }).catch(setError)} />
           </label>
         ) : null}
+        </div>
       </Card>
-      <Card className="grid gap-3">
-        <h2 className="font-semibold">Exports</h2>
-        <Button
-          tone="ghost"
-          onClick={() => {
-            void api.getAllInventory(shop.id, hideCost).then((items) => downloadText(`products-${shop.name}.csv`, inventoryCsv(items, hideCost))).catch(setError);
-          }}
-        >
-          Inventory CSV
-        </Button>
-        <Button tone="ghost" onClick={() => void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError)}>Activity CSV</Button>
-        {perms.canSeeReports ? (
-          premium ? <Button tone="ghost" onClick={() => void api.salesCsv(shop.id, { period: 'month' }).then((csv) => downloadText('sales-month.csv', csv)).catch(setError)}>Sales CSV</Button> : <Link href={`/account?shopId=${shop.id}`}>Sales CSV needs Premium</Link>
-        ) : null}
+      <Card className="grid gap-4">
+        <div>
+          <h2 className="shop-section-title">Exports</h2>
+          <p className="shop-section-sub">CSV files open in Excel or Google Sheets.</p>
+        </div>
+        <div className="shop-actions">
+          <Button
+            tone="ghost"
+            onClick={() => {
+              void api.getAllInventory(shop.id, hideCost).then((items) => downloadText(`products-${shop.name}.csv`, inventoryCsv(items, hideCost))).catch(setError);
+            }}
+          >
+            Inventory CSV
+          </Button>
+          <Button tone="ghost" onClick={() => void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError)}>Activity CSV</Button>
+          {perms.canSeeReports ? (
+            premium ? <Button tone="ghost" onClick={() => void api.salesCsv(shop.id, { period: 'month' }).then((csv) => downloadText('sales-month.csv', csv)).catch(setError)}>Sales CSV (this month)</Button> : <Button tone="ghost" href="/shop/settings/subscription">Sales CSV needs Premium</Button>
+          ) : null}
+        </div>
       </Card>
+      {!perms.canManageShop ? (
+        <Card className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium">Leave this shop</p>
+            <p className="text-sm text-muted">You lose access to {shop.name}. The owner can invite you again.</p>
+          </div>
+          <Button
+            tone="danger"
+            onClick={() => {
+              if (!window.confirm('Leave this shop?')) return;
+              void api.leaveShop(shop.id).then(() => window.location.assign('/shop')).catch(setError);
+            }}
+          >
+            Leave shop
+          </Button>
+        </Card>
+      ) : null}
       <Card>
-        <h2 className="font-semibold">Delete account</h2>
-        <p className="mt-2 text-sm text-muted">This removes your Samaan Bol account. Confirm twice. It does not cancel a shop subscription by itself.</p>
-        <div className="mt-3">
+        <h2 className="shop-section-title">Delete account</h2>
+        <p className="shop-section-sub mt-1">This removes your Samaan Bol account. Confirm twice. It does not cancel a shop subscription by itself.</p>
+        <div className="mt-4">
           <Button
             tone="danger"
             disabled={deleting}

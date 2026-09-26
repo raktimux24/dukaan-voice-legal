@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { formatINR } from '../../../lib/shop/money';
 import { normalizeIndianMobile } from '../../../lib/shop/phone';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PremiumLock, Spinner, inputClass } from '../ui';
+import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass } from '../ui';
 
 export function CustomersScreen() {
   const { api, shop, perms, premium } = useShop();
@@ -22,12 +22,12 @@ export function CustomersScreen() {
   if (!premium) return <PremiumLock shopId={shop.id} feature="udhaar" />;
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">Customers</h1>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Card><p className="text-sm text-muted">Outstanding</p><p className="text-2xl">{summary.isLoading ? '…' : formatINR(summary.data?.outstandingTotal)}</p></Card>
-        <Card><p className="text-sm text-muted">People with udhaar</p><p className="text-2xl">{summary.data?.debtorCount ?? '…'}</p></Card>
-        <Card><p className="text-sm text-muted">Customers</p><p className="text-2xl">{summary.data?.customerCount ?? '…'}</p></Card>
+    <div className="shop-page">
+      <PageHeader kicker="People" title="Customers" description="Profiles and the udhaar ledger. Credit sales at checkout land here." />
+      <div className="dash-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+        <div className="shop-stat shop-stat--warn"><span className="shop-stat-n num">{summary.isLoading ? '…' : formatINR(summary.data?.outstandingTotal)}</span><span className="shop-stat-l">Outstanding udhaar</span></div>
+        <div className="shop-stat"><span className="shop-stat-n num">{summary.data?.debtorCount ?? '…'}</span><span className="shop-stat-l">People with udhaar</span></div>
+        <div className="shop-stat shop-stat--ok"><span className="shop-stat-n num">{summary.data?.customerCount ?? '…'}</span><span className="shop-stat-l">Customers</span></div>
       </div>
       <Notice error={error ?? summary.error ?? list.error} />
       <Card>

@@ -16,6 +16,13 @@ export function formatWhen(value: string | null | undefined) {
   return new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
+export function formatTime(value: string | null | undefined) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-IN', { timeStyle: 'short' }).format(date);
+}
+
 export function formatDay(value: string | null | undefined) {
   if (!value) return '—';
   const date = new Date(value);

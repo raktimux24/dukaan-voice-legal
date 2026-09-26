@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, Spinner, inputClass } from '../ui';
+import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 const VPA = /^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/;
 const MAX_QR = 1_500_000;
@@ -44,8 +44,8 @@ export function PaymentsScreen() {
   const hoursInvalid = !Number.isInteger(hoursNumber) || hoursNumber < 1 || hoursNumber > 720;
 
   return (
-    <div className="grid gap-4">
-      <h1 className="font-display text-3xl">Payments</h1>
+    <div className="shop-page">
+      <PageHeader back={{ href: '/shop/settings', label: 'Settings' }} kicker="Settings" title="Payments" description="The UPI ID and QR shown at checkout, the default tender, and how long a bill can be voided." />
       <Notice error={error ?? settings.error} />
       <Card>
         <form
