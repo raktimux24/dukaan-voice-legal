@@ -8,7 +8,7 @@ import { useShop } from '../context';
 import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 export function SuppliersScreen() {
-  const { api, shop, perms } = useShop();
+  const { api, shop, perms, t } = useShop();
   const [q, setQ] = useState('');
   const enabled = !!shop && perms.canSeeCost;
   const list = useQuery({ queryKey: ['suppliers', shop?.id, q], enabled, queryFn: () => api.getSuppliers(shop!.id, q.trim() || undefined) });
@@ -24,7 +24,7 @@ export function SuppliersScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Stock"
-        title="Suppliers"
+        title={t('suppliers.title', 'Suppliers')}
         description="Built from the supplier named on each batch. Spend is what this shop has paid them."
       />
       <input

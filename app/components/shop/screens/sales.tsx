@@ -12,7 +12,7 @@ import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, Pill, PremiumL
 const PERIODS = ['today', 'yesterday', 'week', 'month'] as const;
 
 export function SalesScreen() {
-  const { api, shop, perms, premium } = useShop();
+  const { api, shop, perms, premium, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number] | 'custom'>('today');
   const [desk, setDesk] = useState<'all' | 'udhaar'>('all');
   const [from, setFrom] = useState('');
@@ -47,7 +47,7 @@ export function SalesScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Counter"
-        title="Sales"
+        title={t('sales.title', 'Sales')}
         description={sales.data ? `${sales.data.total} ${sales.data.total === 1 ? 'bill' : 'bills'} in this range` : undefined}
         actions={
           perms.canSeeReports ? (

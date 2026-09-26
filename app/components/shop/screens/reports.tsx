@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { catalogL1Label } from '../../../lib/shop/catalog';
+import { labeledL1 } from '../../../lib/shop/catalog';
 import { downloadText } from '../../../lib/shop/csv';
 import { formatINR } from '../../../lib/shop/money';
 import type { SalesReport, StockReport } from '../../../lib/shop/types';
@@ -75,6 +75,7 @@ function ShareList({ rows }: { rows: { key: string; label: string; pct: number; 
 }
 
 function SalesView({ report, showCost }: { report: SalesReport; showCost: boolean }) {
+  const { t } = useShop();
   const summary = report.summary;
   const revenue = summary?.revenue ?? 0;
   const methodTotal = METHODS.reduce((sum, method) => sum + (summary?.byMethod?.[method.id] ?? 0), 0) || 1;
@@ -161,7 +162,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           <ShareList
             rows={(report.byCategory ?? []).map((row) => ({
               key: row.category,
-              label: catalogL1Label(row.category),
+              label: labeledL1(row.category, (key) => t(key, key)),
               pct: row.sharePct,
               value: formatINR(row.revenue),
             }))}
@@ -200,6 +201,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
 }
 
 function StockView({ report, showCost }: { report: StockReport; showCost: boolean }) {
+  const { t } = useShop();
   const onHand = report.onHand;
   const products = onHand?.products || 1;
   const movement = report.movementByDay ?? [];
@@ -257,7 +259,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
         <ShareList
           rows={(report.byCategory ?? []).map((row) => ({
             key: row.category,
-            label: catalogL1Label(row.category),
+            label: labeledL1(row.category, (key) => t(key, key)),
             pct: products ? (row.products / products) * 100 : 0,
             value: showCost ? formatINR(row.retailValue) : `${row.products} products`,
           }))}
@@ -292,7 +294,7 @@ function formatDaySafe(value: string) {
 }
 
 export function ReportsScreen() {
-  const { api, shop, perms, premium, prefs, hideCost } = useShop();
+  const { api, shop, perms, premium, prefs, hideCost, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['id']>('week');
   const [tab, setTab] = useState<'sales' | 'stock'>('sales');
   const [question, setQuestion] = useState('');
@@ -321,7 +323,7 @@ export function ReportsScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Insights"
-        title="Reports"
+        title={t('reports.title', 'Reports')}
         description="Sales and stock for the period you pick. Switch the view without losing the dates."
         actions={
           premium ? (

@@ -56,22 +56,22 @@ const GROUPS: NavGroup[] = [
   {
     label: 'Stock',
     items: [
-      { href: '/shop/products', label: 'Products', key: 'nav.products', icon: 'products' },
-      { href: '/shop/buy-list', label: 'Buy list', key: 'nav.buyList', icon: 'buy', show: (p) => p.canEditProducts },
-      { href: '/shop/suppliers', label: 'Suppliers', key: 'nav.suppliers', icon: 'suppliers', show: (p) => p.canSeeCost },
+      { href: '/shop/products', label: 'Products', key: 'products.title', icon: 'products' },
+      { href: '/shop/buy-list', label: 'Buy list', key: 'nav.buy_list', icon: 'buy', show: (p) => p.canEditProducts },
+      { href: '/shop/suppliers', label: 'Suppliers', key: 'suppliers.title', icon: 'suppliers', show: (p) => p.canSeeCost },
     ],
   },
   {
     label: 'People',
     items: [
-      { href: '/shop/customers', label: 'Customers', key: 'nav.customers', icon: 'customers', show: (p) => p.canManageCustomers },
-      { href: '/shop/settings/staff', label: 'Staff', key: 'nav.staff', icon: 'staff', show: (p) => p.canManageStaff },
+      { href: '/shop/customers', label: 'Customers', key: 'customers.title', icon: 'customers', show: (p) => p.canManageCustomers },
+      { href: '/shop/settings/staff', label: 'Staff', key: 'modal.staff.title', icon: 'staff', show: (p) => p.canManageStaff },
     ],
   },
   {
     label: 'Insights',
     items: [
-      { href: '/shop/reports', label: 'Reports', key: 'nav.reports', icon: 'reports', show: (p) => p.canSeeReports },
+      { href: '/shop/reports', label: 'Reports', key: 'reports.title', icon: 'reports', show: (p) => p.canSeeReports },
       { href: '/shop/activity', label: 'Activity', key: 'nav.activity', icon: 'activity' },
     ],
   },
@@ -81,7 +81,7 @@ const MOBILE_TABS: NavItem[] = [
   { href: '/shop', label: 'Home', key: 'nav.home', icon: 'home' },
   { href: '/shop/sell', label: 'Sell', key: 'nav.sell', icon: 'sell' },
   { href: '/shop/sales', label: 'Sales', key: 'nav.sales', icon: 'sales' },
-  { href: '/shop/products', label: 'Products', key: 'nav.products', icon: 'products' },
+  { href: '/shop/products', label: 'Products', key: 'products.title', icon: 'products' },
   { href: '/shop/settings', label: 'Settings', key: 'nav.settings', icon: 'settings' },
 ];
 
@@ -95,7 +95,7 @@ function isActive(pathname: string, href: string) {
 
 function AlertsBell() {
   const pathname = usePathname();
-  const { api, shop } = useShop();
+  const { api, shop, t } = useShop();
   const alerts = useQuery({
     queryKey: ['alerts', shop?.id],
     enabled: !!shop?.id,
@@ -104,7 +104,7 @@ function AlertsBell() {
   const count = alerts.data?.counts.total ?? 0;
   const active = pathname.startsWith('/shop/alerts');
   return (
-    <Link href="/shop/alerts" className={cx('shop-bell', active && 'is-active')} aria-current={active ? 'page' : undefined} aria-label={count > 0 ? `${count} notifications` : 'Notifications'}>
+    <Link href="/shop/alerts" className={cx('shop-bell', active && 'is-active')} aria-current={active ? 'page' : undefined} aria-label={count > 0 ? `${count} ${t('settings.section_notifications', 'Notifications')}` : t('settings.section_notifications', 'Notifications')}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" />
         <path d="M10 20a2 2 0 0 0 4 0" />
@@ -114,13 +114,14 @@ function AlertsBell() {
   );
 }
 
-function todayLabel() {
-  return new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+function todayLabel(language?: string | null) {
+  const locale = language && language !== 'en' ? `${language}-IN` : 'en-IN';
+  return new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 }
 
 export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSignOut: () => void }) {
   const pathname = usePathname();
-  const { shop, shops, role, selectShop, t, perms } = useShop();
+  const { shop, shops, role, selectShop, t, perms, prefs } = useShop();
   const onboarding = pathname.startsWith('/shop/onboarding');
   const showNav = !onboarding && !!shop;
   const wide = pathname === '/shop/sell';
@@ -149,7 +150,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
             {role ? <span className="shop-role">{t(`role.${role.toLowerCase()}`, role.toLowerCase())}</span> : null}
             {shops.length > 1 ? (
               <label>
-                <span className="sr-only">Switch shop</span>
+                <span className="sr-only">{t('modal.shop_settings.switch_shop', 'Switch shop')}</span>
                 <select value={shop?.id ?? ''} onChange={(event) => selectShop(event.target.value)}>
                   {shops.map((item) => (
                     <option key={item.id} value={item.id}>{item.name}</option>
@@ -177,7 +178,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
             {perms.canManageShop ? (
               <Link href="/shop/settings/subscription" aria-current={pathname.startsWith('/shop/settings/subscription') ? 'page' : undefined} className={pathname.startsWith('/shop/settings/subscription') ? 'shop-nav-link is-active' : 'shop-nav-link'}>
                 <Icon name="billing" />
-                Billing
+                {t('subscription.section_title', 'Billing')}
               </Link>
             ) : null}
           </div>
@@ -194,7 +195,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
                 <strong>{shop?.name ?? 'Shop'}</strong>
                 {shops.length > 1 ? (
                   <label className="text-xs text-muted">
-                    <span className="sr-only">Switch shop</span>
+                    <span className="sr-only">{t('modal.shop_settings.switch_shop', 'Switch shop')}</span>
                     <select className="bg-transparent text-muted" value={shop?.id ?? ''} onChange={(event) => selectShop(event.target.value)}>
                       {shops.map((item) => (
                         <option key={item.id} value={item.id}>{item.name}</option>
@@ -205,17 +206,17 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
                   <span className="text-xs text-muted">{role ? t(`role.${role.toLowerCase()}`, role.toLowerCase()) : ''}</span>
                 )}
               </div>
-              <p className="shop-topbar-date">{todayLabel()}</p>
+              <p className="shop-topbar-date">{todayLabel(prefs?.appLanguage)}</p>
             </>
           )}
           <div className="shop-topbar-actions">
             {showNav ? <AlertsBell /> : null}
             {showNav && !pathname.startsWith('/shop/sell') && perms.canSell ? (
-              <Button href="/shop/sell" tone="ghost" size="sm" className="shop-topbar-new">New sale</Button>
+              <Button href="/shop/sell" tone="ghost" size="sm" className="shop-topbar-new">{t('sale_complete.new_sale', 'New sale')}</Button>
             ) : null}
             <UserButton />
             <button type="button" className="text-sm text-muted hover:text-ink" onClick={onSignOut}>
-              Sign out
+              {t('settings.sign_out', 'Sign out')}
             </button>
           </div>
         </header>

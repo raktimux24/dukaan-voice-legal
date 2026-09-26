@@ -3,7 +3,7 @@ export const proofSectionHtml = `<!-- ═══ PROOF ═══ -->
   <div class="container">
     <div class="reveal">
       <div class="section-label">Bengaluru</div>
-      <h2 class="section-heading">From Bengaluru counters (examples)</h2>
+      <h2 class="section-heading">From Bengaluru counters</h2>
     </div>
     <div class="testimonials-grid">
       <div class="testimonial reveal reveal-delay-1">
@@ -47,10 +47,9 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </a>
       <ul class="nav-links">
         <li><a href="#features">Features</a></li>
-        <li><a href="#ai">Evening hisaab</a></li>
+        <li><a href="#web">On a laptop</a></li>
         <li><a href="/pricing">Pricing</a></li>
-        <li><a href="/account">Manage subscription</a></li>
-        <li><a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="nav-cta">Download</a></li>
+        <li><a href="/shop" class="nav-cta">Open shop</a></li>
       </ul>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
@@ -69,18 +68,18 @@ export const homeHtml = `<!-- Three.js background canvas -->
         </h1>
         <p class="hero-sub">
           While the customer is still there, you say what they took in <span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">Kannada</span><span class="hero-rotate-word">Gujarati</span><span class="hero-rotate-word">Malayalam</span><span class="hero-rotate-word">Punjabi</span><span class="hero-rotate-word">Odia</span><span class="hero-rotate-word">English</span></span>.
-          The app puts it on a bill. You take cash, show a UPI QR, or write it as udhaar. Stock is not a second notebook.
+          On the phone, that sentence becomes the bill. On a laptop, you search, scan, and charge the same shop. Cash, a UPI QR, or udhaar. Stock is not a second notebook.
         </p>
         <div class="hero-actions">
-          <a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="btn-primary">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download
+          <a href="/shop" class="btn-primary">
+            Open the shop
           </a>
-          <a href="#how" class="btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            See how a sale works
+          <a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download the app
           </a>
         </div>
+        <p class="hero-more"><a href="#how">See how a sale works</a></p>
         <div class="hero-stats">
           <div class="hero-stat">
             <div class="hero-stat-number">Cash</div>
@@ -98,6 +97,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </div>
 
       <div class="hero-visual">
+        <div class="hero-stage">
         <!-- Floating cards (z-index 10 — in FRONT of phone) -->
         <div class="float-card float-card--voice">
           <div class="float-card-icon float-card-icon--voice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
@@ -106,9 +106,9 @@ export const homeHtml = `<!-- Three.js background canvas -->
         </div>
 
         <div class="float-card float-card--alert">
-          <div class="float-card-icon float-card-icon--alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-          <p><strong>WhatsApp bill</strong></p>
-          <p style="margin-top:4px; font-size:12px;">To the customer standing there</p>
+          <div class="float-card-icon float-card-icon--alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <p><strong>Share the bill</strong></p>
+          <p style="margin-top:4px; font-size:12px;">Same total on the laptop</p>
         </div>
 
         <!-- Phone mockup — mirrors actual app UI -->
@@ -216,6 +216,25 @@ export const homeHtml = `<!-- Three.js background canvas -->
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0D12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
           </div>
         </div>
+        <div class="browser-frame" aria-hidden="true">
+          <div class="browser-chrome">
+            <span></span><span></span><span></span>
+            <div class="browser-url">samaanbol.space/shop/sell</div>
+          </div>
+          <div class="browser-body">
+            <div class="browser-kicker">Sell</div>
+            <div class="browser-search">Search, or scan a barcode</div>
+            <div class="browser-row"><span>Pepsi Zero Sugar</span><b>₹40</b></div>
+            <div class="browser-row"><span>Masoor dal · 250 g</span><b>₹20</b></div>
+            <div class="browser-bill">
+              <div class="browser-bill-head">Bill · Raju</div>
+              <div class="browser-row"><span>1 piece</span><b>₹40</b></div>
+              <div class="browser-total"><span>Total</span><b>₹40</b></div>
+              <div class="browser-charge">Charge ₹40</div>
+            </div>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   </div>
@@ -232,8 +251,8 @@ export const homeHtml = `<!-- Three.js background canvas -->
     <div class="steps-grid">
       <div class="step reveal reveal-delay-1">
         <div class="step-number">01</div>
-        <h3>You say what they took</h3>
-        <p>Or tap the item if you are not on voice.</p>
+        <h3>Say it, or pick it</h3>
+        <p>On the phone, say what they took. On a laptop, search, scan, or weigh it — 250 g or 0.25 kg.</p>
         <div class="step-example">
           <div class="hindi">"चावल 5 किलो बेचा"</div>
           <div class="english">Rice 5 kg sold</div>
@@ -242,7 +261,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
       <div class="step reveal reveal-delay-2">
         <div class="step-number">02</div>
         <h3>You take the money</h3>
-        <p>Cash, show UPI amount on QR, or put it on that customer's udhaar. You still tap to take money — spoken sentence cannot send UPI alone.</p>
+        <p>Cash, show the UPI amount on a QR, or put it on that customer's udhaar. Card appears when the shop has turned it on. You still confirm the payment yourself.</p>
         <div class="step-example">
           <div style="display:flex; gap:12px; flex-wrap:wrap;">
             <span style="background:var(--saffron-tint); color:var(--saffron); padding:4px 10px; border-radius:4px; font-size:12px;">Cash</span>
@@ -253,8 +272,8 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </div>
       <div class="step reveal reveal-delay-3">
         <div class="step-number">03</div>
-        <h3>WhatsApp bill. Totals move.</h3>
-        <p>WhatsApp bill to the customer. Today's cash/UPI totals move. Stock for those items is already updated.</p>
+        <h3>Share the bill. Totals move.</h3>
+        <p>Share the bill with the customer. Today's cash and UPI totals move. Stock for those items is already updated.</p>
         <div class="step-example">
           <div class="hindi">WhatsApp · cash/UPI today</div>
           <div class="english">Stock already updated with the bill</div>
@@ -286,7 +305,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
       <div class="feature reveal reveal-delay-3">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <h3>Helper's phone</h3>
-        <p>Still this shop's hisaab. Not a private wallet.</p>
+        <p>The helper's phone and the owner's laptop write the same hisaab.</p>
       </div>
       <div class="feature reveal reveal-delay-1">
         <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg></div>
@@ -303,6 +322,11 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <h3>Scan onto this bill</h3>
         <p>Not stock-in unless you are adding stock.</p>
       </div>
+      <div class="feature feature--laptop reveal">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3>Laptop at the counter</h3>
+        <p>The same shop in the browser: search, scan, the customer on the bill, then charge. <a href="#web">See the laptop</a>.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -318,7 +342,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(22px,2.8vw,32px); font-weight:500; margin-bottom:8px;">आज का हिसाब</span>
         Ask the day, not the diary
       </h2>
-      <p class="section-sub">Cash, UPI, udhaar, what sold. Stock already moved with the bill.</p>
+      <p class="section-sub">Cash, UPI, udhaar, what sold. Stock already moved with the bill. The same answers are on the shop home in the browser.</p>
     </div>
 
     <div class="ai-blocks">
@@ -396,7 +420,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
     <div class="reveal">
       <div class="section-label">Built for Bharat</div>
       <h2 class="section-heading">Your language. Your business. Your way.</h2>
-      <p class="section-sub">Hinglish is speech, not a chip. 10 Indian languages + English, with the names you actually use at the counter.</p>
+      <p class="section-sub">Hinglish is speech, not a chip. 10 Indian languages + English, with the names you actually use at the counter. Voice and this site use these languages. The shop in the browser is in English for now.</p>
     </div>
     <div class="lang-grid reveal">
       <div class="lang-chip lang-chip--featured">Hindi <span class="native hindi">हिन्दी</span></div>
@@ -410,6 +434,47 @@ export const homeHtml = `<!-- Three.js background canvas -->
       <div class="lang-chip">Punjabi <span class="native">ਪੰਜਾਬੀ</span></div>
       <div class="lang-chip">Odia <span class="native">ଓଡ଼ିଆ</span></div>
       <div class="lang-chip">English <span class="native">English</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ON A LAPTOP ═══ -->
+<section class="web-section" id="web">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">On a laptop</div>
+      <h2 class="section-heading">The same shop, on a laptop.</h2>
+      <p class="section-sub">Voice stays on the phone. The browser runs the counter, the stock, the people, and the plan.</p>
+    </div>
+    <div class="desk-frame reveal">
+      <div class="browser-chrome">
+        <span></span><span></span><span></span>
+        <div class="browser-url">samaanbol.space/shop</div>
+      </div>
+      <div class="desk-stats">
+        <div><b>₹8,420</b><span>Today's sales</span></div>
+        <div><b>₹5,100</b><span>Cash</span></div>
+        <div><b>₹3,320</b><span>UPI</span></div>
+        <div><b>₹640</b><span>Udhaar</span></div>
+      </div>
+    </div>
+    <div class="web-grid">
+      <article class="web-card reveal">
+        <h3>Sell without the rush of typing</h3>
+        <p>Search, scan, set the quantity, put the customer on the bill, then charge.</p>
+      </article>
+      <article class="web-card reveal">
+        <h3>The bill is a page you can share</h3>
+        <p>Receipt on the left, share and print on the right. Void and return from the same bill.</p>
+      </article>
+      <article class="web-card reveal">
+        <h3>Stock, people, and the day</h3>
+        <p>Products and batches, customers and udhaar, suppliers, staff, reports, and alerts.</p>
+      </article>
+      <article class="web-card reveal">
+        <h3>Premium lives with the shop</h3>
+        <p>Invoices, the plan, and cancel sit in Billing inside the shop.</p>
+      </article>
     </div>
   </div>
 </section>
@@ -432,6 +497,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
           <li><span class="icon">✕</span> UPI and cash in two places</li>
           <li><span class="icon">✕</span> Helper slow at typing</li>
           <li><span class="icon">✕</span> Evening hisaab ≠ cash box</li>
+          <li><span class="icon">✕</span> Stock and billing only on the phone</li>
         </ul>
       </div>
       <div class="comparison-col comparison-col--with">
@@ -444,6 +510,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
           <li><span class="icon">✓</span> WhatsApp bill</li>
           <li><span class="icon">✓</span> Today's totals</li>
           <li><span class="icon">✓</span> Helper feeds this shop's hisaab</li>
+          <li><span class="icon">✓</span> The counter also runs in the browser, and billing is in the shop</li>
         </ul>
       </div>
     </div>
@@ -461,8 +528,15 @@ ${proofSectionHtml}
         <span class="hindi" style="display:block; color:var(--saffron); font-size:clamp(20px,2.4vw,28px); font-weight:500; margin-bottom:8px;">अगले ग्राहक पर आज़माओ</span>
         Try it on the next customer, not on a quiet Sunday.
       </h2>
-      <p class="section-sub">On the App Store and Google Play. New shops get 7 days of voice in the app, no card. Trial is not a refund.</p>
+      <p class="section-sub">Open the shop in the browser, or install the phone app. New shops get 7 days of voice in the app, no card. Trial is not a refund.</p>
       <div class="cta-actions">
+        <a href="/shop" class="store-badge is-web">
+          <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.8 3.8 6 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-6-3.8-9s1.3-6.2 3.8-9z"/></svg></div>
+          <div class="store-badge-text">
+            <div class="store-badge-label">Open on the</div>
+            <div class="store-badge-name">Web</div>
+          </div>
+        </a>
         <a href="https://apps.apple.com/in/app/samaan-bol/id6759739444" class="store-badge">
           <div class="store-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></div>
           <div class="store-badge-text">
@@ -497,22 +571,21 @@ ${proofSectionHtml}
         <h4>Product</h4>
         <ul>
           <li><a href="#features">Features</a></li>
-          <li><a href="#ai">Evening hisaab</a></li>
+          <li><a href="#web">On a laptop</a></li>
           <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/shop">Open shop</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
         <ul>
-          <li><a href="/pricing">Pricing</a></li>
-          <li><a href="/account">Manage subscription</a></li>
           <li><a href="/contact">Contact</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
         <ul>
-          <li><a href="/account">Manage subscription</a></li>
+          <li><a href="/account">Billing</a></li>
           <li><a href="/refund-policy">Refund Policy</a></li>
           <li><a href="/privacy-policy">Privacy Policy</a></li>
           <li><a href="/terms-of-service">Terms of Service</a></li>

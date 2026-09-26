@@ -21,7 +21,7 @@ function roleTone(role: Role): 'saffron' | 'ok' | 'neutral' {
 }
 
 export function StaffScreen() {
-  const { api, shop, perms, refreshShops, userId } = useShop();
+  const { api, shop, perms, refreshShops, userId, t } = useShop();
   const queryClient = useQueryClient();
   const members = useQuery({
     queryKey: ['members', shop?.id],
@@ -43,7 +43,7 @@ export function StaffScreen() {
       <PageHeader
         back={{ href: '/shop/settings', label: 'Settings' }}
         kicker="People"
-        title="Staff"
+        title={t('modal.staff.title', 'Staff')}
         description="Members of this shop, their roles, and the invite codes they join with."
       />
       <Notice error={error ?? members.error} />

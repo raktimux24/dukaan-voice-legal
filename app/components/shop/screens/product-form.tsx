@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { catalogL1Label, catalogL2Label, enabledL1, isAllowedL2, l2ForL1, remapProductL1 } from '../../../lib/shop/catalog';
+import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty, isWeightOrVolume } from '../../../lib/shop/units';
 import { useShop } from '../context';
@@ -55,7 +55,7 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
 }
 
 export function ProductFormScreen({ productId }: { productId?: string }) {
-  const { api, shop, perms, hideCost, setNotice } = useShop();
+  const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const router = useRouter();
   const params = useSearchParams();
   const queryClient = useQueryClient();
@@ -203,12 +203,12 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
               <div className="form-grid is-2">
                 <Field label="Category">
                   <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '' })}>
-                    {l1.map((row) => <option key={row.code} value={row.code}>{row.label}</option>)}
+                    {l1.map((row) => <option key={row.code} value={row.code}>{labeledL1(row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
                 <Field label="Sub-category">
                   <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value })} required>
-                    {subs.map((row) => <option key={row.code} value={row.code}>{row.label}</option>)}
+                    {subs.map((row) => <option key={row.code} value={row.code}>{labeledL2(form.category, row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
               </div>
@@ -302,7 +302,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
             <p className="shop-kicker">{productId ? 'Saving changes to' : 'Adding'}</p>
             <p className="form-summary-name">{form.name.trim() || 'New product'}</p>
             <div className="grid gap-2">
-              <p className="form-summary-row"><span>Category</span><b>{catalogL1Label(form.category)}{form.subcategory ? ` · ${catalogL2Label(form.category, form.subcategory)}` : ''}</b></p>
+              <p className="form-summary-row"><span>Category</span><b>{labeledL1(form.category, (key) => t(key, key))}{form.subcategory ? ` · ${labeledL2(form.category, form.subcategory, (key) => t(key, key))}` : ''}</b></p>
               <p className="form-summary-row"><span>Sells at</span><b className="num">{selling == null ? 'Price at counter' : `${formatINR(selling)} / ${form.unit}`}</b></p>
               {form.mrp !== '' ? <p className="form-summary-row"><span>MRP</span><b className="num">{formatINR(Number(form.mrp))}</b></p> : null}
               {!productId ? (

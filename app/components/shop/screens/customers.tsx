@@ -9,7 +9,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass } from '../ui';
 
 export function CustomersScreen() {
-  const { api, shop, perms, premium } = useShop();
+  const { api, shop, perms, premium, t } = useShop();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<unknown>(null);
@@ -23,7 +23,7 @@ export function CustomersScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader kicker="People" title="Customers" description="Profiles and the udhaar ledger. Credit sales at checkout land here." />
+      <PageHeader kicker="People" title={t('customers.title', 'Customers')} description="Profiles and the udhaar ledger. Credit sales at checkout land here." />
       <div className="dash-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
         <div className="shop-stat shop-stat--warn"><span className="shop-stat-n num">{summary.isLoading ? '…' : formatINR(summary.data?.outstandingTotal)}</span><span className="shop-stat-l">Outstanding udhaar</span></div>
         <div className="shop-stat"><span className="shop-stat-n num">{summary.data?.debtorCount ?? '…'}</span><span className="shop-stat-l">People with udhaar</span></div>

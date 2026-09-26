@@ -20,9 +20,9 @@ export const seoKeywords = [
 ];
 
 export const defaultDescription =
-  'While the customer is still there, you say what they took. The app puts it on a bill. Cash, UPI QR, or udhaar. Stock is not a second notebook. Free on the App Store and Google Play. New shops get 7 days of voice in the app, no card.';
+  'While the customer is still there, you say what they took on the phone, or run the same bill in the browser. Cash, UPI QR, or udhaar. Stock is not a second notebook. Voice stays on the phone. New shops get 7 days of voice in the app, no card.';
 
-export const defaultTitle = 'Samaan Bol — Voice billing for kirana | Cash, UPI, Udhaar';
+export const defaultTitle = 'Samaan Bol — Kirana billing on the phone and in the browser';
 
 export const defaultOpenGraphImage = '/opengraph-image';
 
@@ -126,10 +126,10 @@ export const organizationSchema = {
 
 export const softwareApplicationSchema = {
   '@context': 'https://schema.org',
-  '@type': ['SoftwareApplication', 'MobileApplication'],
+  '@type': ['SoftwareApplication', 'MobileApplication', 'WebApplication'],
   name: 'Samaan Bol',
   applicationCategory: 'BusinessApplication',
-  operatingSystem: 'iOS, Android',
+  operatingSystem: 'iOS, Android, Web',
   url: siteUrl,
   downloadUrl: appStoreUrl,
   installUrl: appStoreUrl,
@@ -148,6 +148,7 @@ export const softwareApplicationSchema = {
     'WhatsApp bill',
     "Today's cash and UPI totals",
     'Stock updates with the bill',
+    'The same shop in the browser: sell, stock, bills, and billing',
     '7-day voice in the app for new shops (no card)',
   ],
   audience: {
@@ -195,7 +196,7 @@ export const pricingOfferSchema = {
   '@type': 'SoftwareApplication',
   name: 'Samaan Bol Premium',
   applicationCategory: 'BusinessApplication',
-  operatingSystem: 'iOS, Android',
+  operatingSystem: 'iOS, Android, Web',
   url: absoluteUrl('/pricing'),
   downloadUrl: appStoreUrl,
   offers: [

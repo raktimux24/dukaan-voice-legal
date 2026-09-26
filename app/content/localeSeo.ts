@@ -59,8 +59,41 @@ const localeSeo: Partial<Record<Locale, LocaleSeo>> = {
   },
 };
 
+const browserNote: Partial<Record<Locale, string>> = {
+  hi: ' लैपटॉप पर वही दुकान ब्राउज़र में चलती है। वॉइस फ़ोन पर रहती है।',
+  bn: ' ল্যাপটপে একই দোকান ব্রাউজারে চলে। ভয়েস ফোনে থাকে।',
+  ta: ' லேப்டாப்பில் அதே கடை உலாவியில் ஓடும். வாய்ஸ் போனில் இருக்கும்.',
+  pa: ' ਲੈਪਟਾਪ ’ਤੇ ਉਹੀ ਦੁਕਾਨ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਚੱਲਦੀ ਹੈ। ਵੌਇਸ ਫੋਨ ’ਤੇ ਰਹਿੰਦੀ ਹੈ।',
+  te: ' ల్యాప్‌టాప్‌లో అదే దుకాణం బ్రౌజర్‌లో నడుస్తుంది. వాయిస్ ఫోన్‌లో ఉంటుంది.',
+  mr: ' लॅपटॉपवर तीच दुकान ब्राउझरमध्ये चालते. व्हॉइस फोनवर राहते.',
+  kn: ' ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ ಅದೇ ಅಂಗಡಿ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತದೆ. ವಾಯ್ಸ್ ಫೋನ್‌ನಲ್ಲಿ ಇರುತ್ತದೆ.',
+  gu: ' લેપટોપ પર એ જ દુકાન બ્રાઉઝરમાં ચાલે છે. વૉઇસ ફોન પર રહે છે.',
+  ml: ' ലാപ്‌ടോപ്പിൽ അതേ കട ബ്രൗസറിൽ ഓടും. വോയ്‌സ് ഫോണിൽ നിൽക്കും.',
+  or: ' ଲ୍ୟାପଟପ୍‌ରେ ସେହି ଦୋକାନ ବ୍ରାଉଜରରେ ଚାଲେ। ଭଏସ୍ ଫୋନରେ ରହେ।',
+};
+
+const browserFeature: Partial<Record<Locale, string>> = {
+  hi: 'ब्राउज़र में वही दुकान: बिक्री, स्टॉक, बिल',
+  bn: 'ব্রাউজারে একই দোকান: বিক্রি, স্টক, বিল',
+  ta: 'உலாவியில் அதே கடை: விற்பனை, ஸ்டாக், பில்',
+  pa: 'ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਉਹੀ ਦੁਕਾਨ: ਵਿਕਰੀ, ਸਟਾਕ, ਬਿੱਲ',
+  te: 'బ్రౌజర్‌లో అదే దుకాణం: అమ్మకం, స్టాక్, బిల్లులు',
+  mr: 'ब्राउझरमध्ये तीच दुकान: विक्री, स्टॉक, बिल',
+  kn: 'ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಅದೇ ಅಂಗಡಿ: ಮಾರಾಟ, ಸ್ಟಾಕ್, ಬಿಲ್',
+  gu: 'બ્રાઉઝરમાં એ જ દુકાન: વેચાણ, સ્ટોક, બિલ',
+  ml: 'ബ്രൗസറിൽ അതേ കട: വിൽപ്പന, സ്റ്റോക്ക്, ബില്ലുകൾ',
+  or: 'ବ୍ରାଉଜରରେ ସେହି ଦୋକାନ: ବିକ୍ରି, ଷ୍ଟକ୍, ବିଲ୍',
+};
+
 export function getLocaleSeo(locale: Locale): (LocaleSeo & { websiteDescription: string }) | undefined {
   const seo = localeSeo[locale];
   if (!seo) return undefined;
-  return { ...seo, websiteDescription: seo.description };
+  const description = `${seo.description}${browserNote[locale] ?? ''}`;
+  const feature = browserFeature[locale];
+  return {
+    ...seo,
+    description,
+    featureList: feature ? [...seo.featureList, feature] : seo.featureList,
+    websiteDescription: description,
+  };
 }

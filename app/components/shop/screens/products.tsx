@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { catalogL1Label } from '../../../lib/shop/catalog';
+import { labeledL1 } from '../../../lib/shop/catalog';
 import { inventoryCsv, downloadText } from '../../../lib/shop/csv';
 import { formatINR } from '../../../lib/shop/money';
 import type { InventoryItem } from '../../../lib/shop/types';
@@ -35,7 +35,7 @@ function matches(item: InventoryItem, filter: string) {
 }
 
 export function ProductsScreen() {
-  const { api, shop, perms, hideCost } = useShop();
+  const { api, shop, perms, hideCost, t } = useShop();
   const params = useSearchParams();
   const filter = params.get('filter') ?? 'all';
   const [q, setQ] = useState('');
@@ -55,7 +55,7 @@ export function ProductsScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Stock"
-        title="Products"
+        title={t('products.title', 'Products')}
         description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
         actions={
           <>
@@ -79,7 +79,7 @@ export function ProductsScreen() {
             <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
               <div className="shop-list-main">
                 <p className="shop-list-title">{item.product.name}</p>
-                <p className="shop-list-meta">{catalogL1Label(item.product.category)} · {formatQty(item.quantity, item.unit)} on hand</p>
+                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {formatQty(item.quantity, item.unit)} on hand</p>
               </div>
               <div className="shop-list-right flex items-center gap-4">
                 <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">Unpriced</span> : formatINR(item.product.sellingPrice)}</p>

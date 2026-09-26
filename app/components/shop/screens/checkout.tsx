@@ -24,7 +24,7 @@ function covers(tendered: number, amount: number) {
 }
 
 export function CheckoutScreen() {
-  const { api, shop, userId, premium, perms } = useShop();
+  const { api, shop, userId, premium, perms, t } = useShop();
   const router = useRouter();
   const cartApi = useCart(userId, shop?.id ?? null);
   const settings = useQuery({
@@ -214,7 +214,7 @@ export function CheckoutScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Counter"
-        title="Checkout"
+        title={t('checkout.title', 'Checkout')}
         actions={<Button href="/shop/sell" tone="quiet" size="sm">← Back to counter</Button>}
       />
 

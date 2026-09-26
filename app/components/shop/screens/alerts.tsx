@@ -16,7 +16,7 @@ const TABS = [
 ] as const;
 
 export function AlertsScreen() {
-  const { api, shop, premium, perms } = useShop();
+  const { api, shop, premium, perms, t } = useShop();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('all');
   const [error, setError] = useState<unknown>(null);
@@ -54,7 +54,7 @@ export function AlertsScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Shop"
-        title="Notifications"
+        title={t('settings.section_notifications', 'Notifications')}
         description="Out of stock, running low, and batches that are about to expire."
         actions={
           perms.canSeeReports && premium ? (

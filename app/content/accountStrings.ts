@@ -109,7 +109,7 @@ const en: AccountStrings = {
   cancelTrialButton: 'Cancel trial',
 
   ownerOnly: 'Only the shop owner can change billing for this shop.',
-  signedInAs: (email, role) => `You're signed in as ${email} (${role}). Sign in with the same account you use in the Samaan-Bol app — the shop owner's account — to subscribe.`,
+  signedInAs: (email, role) => `You're signed in as ${email} (${role}). Sign in with the shop owner's account — the same one as the phone — to subscribe.`,
   switchAccount: 'Switch account',
   openInApp: 'Open in the app',
   errorPendingSwitch: 'Unable to load the scheduled change.',

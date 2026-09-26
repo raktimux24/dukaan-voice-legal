@@ -3,7 +3,7 @@ import { getLocaleHomeSlots } from './localeHomeSlots';
 
 export type SubscriptionStrings = {
   brand: { tagline: string };
-  nav: { features: string; ai: string; pricing: string; account: string; download: string };
+  nav: { features: string; ai: string; pricing: string; account: string; download: string; laptop?: string; openShop?: string; billing?: string };
   footer: {
     product: string;
     company: string;
@@ -113,7 +113,7 @@ export type SubscriptionStrings = {
 
 const en: SubscriptionStrings = {
   brand: { tagline: 'For the kirana counter. You say what they took. The bill keeps up.' },
-  nav: { features: 'Features', ai: 'Evening hisaab', pricing: 'Pricing', account: 'Manage subscription', download: 'Download' },
+  nav: { features: 'Features', ai: 'Evening hisaab', pricing: 'Pricing', account: 'Manage subscription', download: 'Download', laptop: 'On a laptop', openShop: 'Open shop', billing: 'Billing' },
   footer: {
     product: 'Product',
     company: 'Company',
@@ -140,7 +140,7 @@ const en: SubscriptionStrings = {
   pricing: {
     heroTitle: 'Premium for ₹499/month or ₹3,999/year',
     heroLead:
-      'Subscribe on web for secure Razorpay UPI Autopay. Built for iOS users who manage billing outside the app, and useful for every shop owner who wants invoices, cancellations, and account control in one place.',
+      'Premium is for this shop, on the phone and in the browser. Subscribe here with Razorpay UPI Autopay, or later from Billing inside the shop. Invoices, cancel, and the plan stay with the shop.',
     ctaSubscribe: 'Subscribe — Sign in',
     ctaOpenInApp: 'Open in app',
     planSelectorLabel: 'Plan selector',
@@ -205,10 +205,10 @@ const en: SubscriptionStrings = {
     loadingAccount: 'Loading account...',
     signedOutHeading: 'Sign in to manage your subscription',
     signedOutLead:
-      'Use the same account you sign in with in the Samaan Bol app. This page is for managing a subscription on a shop you already have — not for starting a trial. New shops get 7 days of Premium in the app, no card.',
+      'Use the same account as the phone. This page is checkout, and the page the phone returns to after payment. Once you are in the shop, manage the plan from Billing. New shops get 7 days of Premium in the app, no card.',
     heading: 'Manage subscription',
     leadWithEmail: (email) =>
-      `Manage shop subscriptions, Razorpay checkout, invoices, cancellations, and account access for ${email}.`,
+      `Checkout, invoices, and cancellation for ${email}. Inside the shop, the same plan lives under Billing.`,
     accountFallback: 'your Samaan-Bol account',
     linkedShops: 'Linked shops',
     loadingShops: 'Loading shops...',
@@ -1488,16 +1488,16 @@ export const subscriptionStrings: Record<Locale, SubscriptionStrings> = {
 };
 
 const navOverlay: Partial<Record<Locale, Partial<SubscriptionStrings['nav']>>> = {
-  hi: { features: "फ़ीचर्स", ai: "शाम का हिसाब", pricing: "कीमत", account: "सब्सक्रिप्शन मैनेज करें", download: "डाउनलोड" },
-  bn: { features: "ফিচার", ai: "সন্ধ্যের হিসাব", pricing: "দাম", account: "সাবস্ক্রিপশন ম্যানেজ করুন", download: "ডাউনলোড" },
-  ta: { features: "அம்சங்கள்", ai: "மாலை கணக்கு", pricing: "விலை", account: "சந்தாவை நிர்வகிக்கவும்", download: "பதிவிறக்கம்" },
-  te: { features: "ఫీచర్లు", ai: "సాయంత్రం హిసాబ్", pricing: "ధర", account: "సబ్‌స్క్రిప్షన్ నిర్వహించండి", download: "డౌన్‌లోడ్" },
-  mr: { features: "फीचर्स", ai: "संध्याकाळचा हिशोब", pricing: "किंमत", account: "सबस्क्रिप्शन व्यवस्थापित करा", download: "डाउनलोड" },
-  kn: { features: "ವೈಶಿಷ್ಟ್ಯಗಳು", ai: "ಸಂಜೆಯ ಹಿಸಾಬ್", pricing: "ಬೆಲೆ", account: "ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ನಿರ್ವಹಿಸಿ", download: "ಡೌನ್‌ಲೋಡ್" },
-  gu: { features: "ફીચર્સ", ai: "સાંજનું હિસાબ", pricing: "કિંમત", account: "સબ્સ્ક્રિપ્શન મેનેજ કરો", download: "ડાઉનલોડ" },
-  ml: { features: "ഫീച്ചറുകൾ", ai: "വൈകുന്നേരത്തെ കണക്ക്", pricing: "വില", account: "സബ്‌സ്‌ക്രിപ്‌ഷൻ മാനേജ് ചെയ്യുക", download: "ഡൗൺലോഡ്" },
-  pa: { features: "ਫੀਚਰ", ai: "ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ", pricing: "ਕੀਮਤ", account: "ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਮੈਨੇਜ ਕਰੋ", download: "ਡਾਊਨਲੋਡ" },
-  or: { features: "ଫିଚର୍ସ", ai: "ସନ୍ଧ୍ୟା ହିସାବ", pricing: "ମୂଲ୍ୟ", account: "ସବ୍‌ସ୍କ୍ରିପ୍ସନ୍ ମ୍ୟାନେଜ୍ କରନ୍ତୁ", download: "ଡାଉନଲୋଡ୍" },
+  hi: { features: "फ़ीचर्स", ai: "शाम का हिसाब", pricing: "कीमत", account: "सब्सक्रिप्शन मैनेज करें", download: "डाउनलोड", laptop: "लैपटॉप पर", openShop: "दुकान खोलो", billing: "बिलिंग" },
+  bn: { features: "ফিচার", ai: "সন্ধ্যের হিসাব", pricing: "দাম", account: "সাবস্ক্রিপশন ম্যানেজ করুন", download: "ডাউনলোড", laptop: "ল্যাপটপে", openShop: "দোকান খুলুন", billing: "বিলিং" },
+  ta: { features: "அம்சங்கள்", ai: "மாலை கணக்கு", pricing: "விலை", account: "சந்தாவை நிர்வகிக்கவும்", download: "பதிவிறக்கம்", laptop: "லேப்டாப்பில்", openShop: "கடையைத் திற", billing: "பில்லிங்" },
+  te: { features: "ఫీచర్లు", ai: "సాయంత్రం హిసాబ్", pricing: "ధర", account: "సబ్‌స్క్రిప్షన్ నిర్వహించండి", download: "డౌన్‌లోడ్", laptop: "ల్యాప్‌టాప్‌లో", openShop: "దుకాణం తెరవండి", billing: "బిల్లింగ్" },
+  mr: { features: "फीचर्स", ai: "संध्याकाळचा हिशोब", pricing: "किंमत", account: "सबस्क्रिप्शन व्यवस्थापित करा", download: "डाउनलोड", laptop: "लॅपटॉपवर", openShop: "दुकान उघडा", billing: "बिलिंग" },
+  kn: { features: "ವೈಶಿಷ್ಟ್ಯಗಳು", ai: "ಸಂಜೆಯ ಹಿಸಾಬ್", pricing: "ಬೆಲೆ", account: "ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ನಿರ್ವಹಿಸಿ", download: "ಡೌನ್‌ಲೋಡ್", laptop: "ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ", openShop: "ಅಂಗಡಿ ತೆರೆಯಿರಿ", billing: "ಬಿಲ್ಲಿಂಗ್" },
+  gu: { features: "ફીચર્સ", ai: "સાંજનું હિસાબ", pricing: "કિંમત", account: "સબ્સ્ક્રિપ્શન મેનેજ કરો", download: "ડાઉનલોડ", laptop: "લેપટોપ પર", openShop: "દુકાન ખોલો", billing: "બિલિંગ" },
+  ml: { features: "ഫീച്ചറുകൾ", ai: "വൈകുന്നേരത്തെ കണക്ക്", pricing: "വില", account: "സബ്‌സ്‌ക്രിപ്‌ഷൻ മാനേജ് ചെയ്യുക", download: "ഡൗൺലോഡ്", laptop: "ലാപ്‌ടോപ്പിൽ", openShop: "കട തുറക്കൂ", billing: "ബില്ലിംഗ്" },
+  pa: { features: "ਫੀਚਰ", ai: "ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ", pricing: "ਕੀਮਤ", account: "ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਮੈਨੇਜ ਕਰੋ", download: "ਡਾਊਨਲੋਡ", laptop: "ਲੈਪਟਾਪ ’ਤੇ", openShop: "ਦੁਕਾਨ ਖੋਲ੍ਹੋ", billing: "ਬਿਲਿੰਗ" },
+  or: { features: "ଫିଚର୍ସ", ai: "ସନ୍ଧ୍ୟା ହିସାବ", pricing: "ମୂଲ୍ୟ", account: "ସବ୍‌ସ୍କ୍ରିପ୍ସନ୍ ମ୍ୟାନେଜ୍ କରନ୍ତୁ", download: "ଡାଉନଲୋଡ୍", laptop: "ଲ୍ୟାପଟପ୍‌ରେ", openShop: "ଦୋକାନ ଖୋଲନ୍ତୁ", billing: "ବିଲିଂ" },
 };
 
 const premium4: Partial<Record<Locale, string>> = {
@@ -1663,10 +1663,70 @@ const shopDayPricing: Partial<Record<Locale, {
   },
 };
 
+const pricingLead: Partial<Record<Locale, string>> = {
+  hi: 'Premium इस दुकान के लिए है — फ़ोन पर और ब्राउज़र में। Razorpay UPI Autopay से यहाँ सब्सक्राइब करें, या दुकान के अंदर Billing से। इनवॉइस, कैंसल, और प्लान दुकान के साथ रहते हैं।',
+  bn: 'Premium এই দোকানের জন্য — ফোনে এবং ব্রাউজারে। Razorpay UPI Autopay দিয়ে এখানে সাবস্ক্রাইব করুন, বা দোকানের ভিতর Billing থেকে। ইনভয়েস, ক্যানসেল, আর প্ল্যান দোকানের সাথে থাকে।',
+  ta: 'Premium இந்த கடைக்கானது — போனிலும் உலாவியிலும். Razorpay UPI Autopay மூலம் இங்கே சந்தா செய்யுங்கள், அல்லது கடையின் உள்ளே Billing-ல். இன்வாய்ஸ், ரத்து, பிளான் கடையுடன் இருக்கும்.',
+  te: 'Premium ఈ దుకాణానికి — ఫోన్‌లో మరియు బ్రౌజర్‌లో. Razorpay UPI Autopayతో ఇక్కడ సబ్‌స్క్రైబ్ చేయండి, లేదా దుకాణం లోపల Billing నుండి. ఇన్‌వాయిస్, క్యాన్సల్, ప్లాన్ దుకాణంతో ఉంటాయి.',
+  mr: 'Premium या दुकानासाठी आहे — फोनवर आणि ब्राउझरमध्ये. Razorpay UPI Autopayने इथे सब्सक्राइब करा, किंवा दुकानाच्या आत Billingमधून. इनव्हॉइस, कॅन्सल आणि प्लान दुकानाबरोबर राहतात.',
+  kn: 'Premium ಈ ಅಂಗಡಿಗೆ — ಫೋನ್‌ನಲ್ಲಿ ಮತ್ತು ಬ್ರೌಸರ್‌ನಲ್ಲಿ. Razorpay UPI Autopay ಮೂಲಕ ಇಲ್ಲಿ ಚಂದಾ ಮಾಡಿ, ಅಥವಾ ಅಂಗಡಿಯ ಒಳಗೆ Billing ನಿಂದ. ಇನ್‌ವಾಯ್ಸ್, ರದ್ದು, ಪ್ಲಾನ್ ಅಂಗಡಿಯೊಂದಿಗೆ ಇರುತ್ತವೆ.',
+  gu: 'Premium આ દુકાન માટે છે — ફોન પર અને બ્રાઉઝરમાં. Razorpay UPI Autopayથી અહીં સબ્સ્ક્રાઇબ કરો, અથવા દુકાનની અંદર Billingમાંથી. ઇન્વૉઇસ, કેન્સલ અને પ્લાન દુકાન સાથે રહે છે.',
+  ml: 'Premium ഈ കടയ്ക്കുള്ളതാണ് — ഫോണിലും ബ്രൗസറിലും. Razorpay UPI Autopay വഴി ഇവിടെ സബ്‌സ്‌ക്രൈബ് ചെയ്യൂ, അല്ലെങ്കിൽ കടയ്ക്കുള്ളിൽ Billing-ൽ നിന്ന്. ഇൻവോയ്സ്, ക്യാൻസൽ, പ്ലാൻ കടയോടൊപ്പം നിൽക്കും.',
+  pa: 'Premium ਇਸ ਦੁਕਾਨ ਲਈ ਹੈ — ਫੋਨ ’ਤੇ ਅਤੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ। Razorpay UPI Autopay ਨਾਲ ਇੱਥੇ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ, ਜਾਂ ਦੁਕਾਨ ਦੇ ਅੰਦਰ Billing ਤੋਂ। ਇਨਵੌਇਸ, ਕੈਂਸਲ ਅਤੇ ਪਲਾਨ ਦੁਕਾਨ ਨਾਲ ਰਹਿੰਦੇ ਹਨ।',
+  or: 'Premium ଏହି ଦୋକାନ ପାଇଁ — ଫୋନରେ ଓ ବ୍ରାଉଜରରେ। Razorpay UPI Autopayରେ ଏଠାରେ ସବସ୍କ୍ରାଇବ କରନ୍ତୁ, କିମ୍ବା ଦୋକାନ ଭିତରେ Billingରୁ। ଇନଭଏସ୍, କ୍ୟାନସଲ୍ ଓ ପ୍ଲାନ ଦୋକାନ ସହ ରହେ।',
+};
+
+const billingFaq: Record<Locale, { q: string; a: string }> = {
+  en: { q: 'Where do I manage the plan?', a: 'Open the shop and open Billing. This page starts checkout. The phone also returns here after payment.' },
+  hi: { q: 'प्लान कहाँ मैनेज करें?', a: 'दुकान खोलो और Billing खोलो। यह पेज चेकआउट शुरू करता है। पेमेंट के बाद फ़ोन भी यहीं लौटता है।' },
+  bn: { q: 'প্ল্যান কোথায় ম্যানেজ করব?', a: 'দোকান খুলে Billing খুলুন। এই পাতা চেকআউট শুরু করে। পেমেন্টের পর ফোনও এখানে ফেরে।' },
+  ta: { q: 'பிளானை எங்கே நிர்வகிப்பது?', a: 'கடையைத் திறந்து Billing-ஐத் திறங்கள். இந்தப் பக்கம் செக்அவுட்டைத் தொடங்கும். பணம் செலுத்திய பின் போனும் இங்கே திரும்பும்.' },
+  te: { q: 'ప్లాన్ ఎక్కడ నిర్వహించాలి?', a: 'దుకాణం తెరిచి Billing తెరవండి. ఈ పేజీ చెక్‌అవుట్ మొదలు పెడుతుంది. చెల్లింపు తర్వాత ఫోన్ కూడా ఇక్కడికి వస్తుంది.' },
+  mr: { q: 'प्लान कुठे व्यवस्थापित करायचा?', a: 'दुकान उघडा आणि Billing उघडा. हे पान चेकआउट सुरू करते. पेमेंटनंतर फोनही इथे परततो.' },
+  kn: { q: 'ಪ್ಲಾನ್ ಎಲ್ಲಿ ನಿರ್ವಹಿಸುವುದು?', a: 'ಅಂಗಡಿ ತೆರೆದು Billing ತೆರೆಯಿರಿ. ಈ ಪುಟ ಚೆಕ್‌ಔಟ್ ಆರಂಭಿಸುತ್ತದೆ. ಪಾವತಿಯ ನಂತರ ಫೋನ್ ಕೂಡ ಇಲ್ಲಿಗೆ ಬರುತ್ತದೆ.' },
+  gu: { q: 'પ્લાન ક્યાં મેનેજ કરવો?', a: 'દુકાન ખોલો અને Billing ખોલો. આ પાનું ચેકઆઉટ શરૂ કરે છે. ચુકવણી પછી ફોન પણ અહીં પાછો આવે છે.' },
+  ml: { q: 'പ്ലാൻ എവിടെ മാനേജ് ചെയ്യും?', a: 'കട തുറന്ന് Billing തുറക്കൂ. ഈ പേജ് ചെക്കൗട്ട് തുടങ്ങും. പണമടച്ച ശേഷം ഫോണും ഇവിടെ തിരിച്ചെത്തും.' },
+  pa: { q: 'ਪਲਾਨ ਕਿੱਥੇ ਮੈਨੇਜ ਕਰੀਏ?', a: 'ਦੁਕਾਨ ਖੋਲ੍ਹੋ ਅਤੇ Billing ਖੋਲ੍ਹੋ। ਇਹ ਪੰਨਾ ਚੈਕਆਉਟ ਸ਼ੁਰੂ ਕਰਦਾ ਹੈ। ਭੁਗਤਾਨ ਤੋਂ ਬਾਅਦ ਫੋਨ ਵੀ ਇੱਥੇ ਵਾਪਸ ਆਉਂਦਾ ਹੈ।' },
+  or: { q: 'ପ୍ଲାନ କେଉଁଠି ମ୍ୟାନେଜ୍ କରିବେ?', a: 'ଦୋକାନ ଖୋଲନ୍ତୁ ଓ Billing ଖୋଲନ୍ତୁ। ଏହି ପୃଷ୍ଠା ଚେକଆଉଟ୍ ଆରମ୍ଭ କରେ। ପେମେଣ୍ଟ ପରେ ଫୋନ ମଧ୍ୟ ଏଠାକୁ ଫେରେ।' },
+};
+
+const browserLine: Record<Locale, string> = {
+  en: 'The same shop in the browser: sell, stock, and bills',
+  hi: 'ब्राउज़र में वही दुकान: बिक्री, स्टॉक, और बिल',
+  bn: 'ব্রাউজারে একই দোকান: বিক্রি, স্টক, আর বিল',
+  ta: 'உலாவியில் அதே கடை: விற்பனை, ஸ்டாக், பில்',
+  te: 'బ్రౌజర్‌లో అదే దుకాణం: అమ్మకం, స్టాక్, బిల్లులు',
+  mr: 'ब्राउझरमध्ये तीच दुकान: विक्री, स्टॉक, आणि बिल',
+  kn: 'ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಅದೇ ಅಂಗಡಿ: ಮಾರಾಟ, ಸ್ಟಾಕ್, ಬಿಲ್',
+  gu: 'બ્રાઉઝરમાં એ જ દુકાન: વેચાણ, સ્ટોક, અને બિલ',
+  ml: 'ബ്രൗസറിൽ അതേ കട: വിൽപ്പന, സ്റ്റോക്ക്, ബില്ലുകൾ',
+  pa: 'ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਉਹੀ ਦੁਕਾਨ: ਵਿਕਰੀ, ਸਟਾਕ, ਅਤੇ ਬਿੱਲ',
+  or: 'ବ୍ରାଉଜରରେ ସେହି ଦୋକାନ: ବିକ୍ରି, ଷ୍ଟକ୍, ଓ ବିଲ୍',
+};
+
+const signedOutLead: Partial<Record<Locale, string>> = {
+  hi: 'वही अकाउंट जिससे फ़ोन पर साइन इन करते हो। यह पेज चेकआउट है, और पेमेंट के बाद फ़ोन यहीं लौटता है। दुकान के अंदर प्लान Billing में है। नई दुकान को ऐप में 7 दिन Premium, कार्ड नहीं।',
+  bn: 'ফোনে যে অ্যাকাউন্টে সাইন ইন করেন সেটিই। এই পাতা চেকআউট, পেমেন্টের পর ফোন এখানে ফেরে। দোকানের ভিতরে প্ল্যান Billing-এ। নতুন দোকানে অ্যাপে ৭ দিন Premium, কার্ড লাগে না।',
+  ta: 'போனில் நீங்கள் உள்நுழையும் அதே கணக்கு. இந்தப் பக்கம் செக்அவுட், பணம் செலுத்திய பின் போன் இங்கே திரும்பும். கடையின் உள்ளே பிளான் Billing-ல். புதிய கடைக்கு ஆப்பில் 7 நாள் Premium, கார்டு வேண்டாம்.',
+  te: 'ఫోన్‌లో మీరు సైన్ ఇన్ చేసే అదే ఖాతా. ఈ పేజీ చెక్‌అవుట్, చెల్లింపు తర్వాత ఫోన్ ఇక్కడికి వస్తుంది. దుకాణం లోపల ప్లాన్ Billing‌లో. కొత్త దుకాణానికి యాప్‌లో 7 రోజులు Premium, కార్డు వద్దు.',
+  mr: 'फोनवर ज्या अकाउंटने साइन इन करता तेच. हे पान चेकआउट आहे, पेमेंटनंतर फोन इथे परततो. दुकानाच्या आत प्लान Billing मध्ये आहे. नवीन दुकानाला अॅपमध्ये 7 दिवस Premium, कार्ड नाही.',
+  kn: 'ಫೋನ್‌ನಲ್ಲಿ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡುವ ಅದೇ ಖಾತೆ. ಈ ಪುಟ ಚೆಕ್‌ಔಟ್, ಪಾವತಿಯ ನಂತರ ಫೋನ್ ಇಲ್ಲಿಗೆ ಬರುತ್ತದೆ. ಅಂಗಡಿಯ ಒಳಗೆ ಪ್ಲಾನ್ Billing ನಲ್ಲಿ. ಹೊಸ ಅಂಗಡಿಗೆ ಆ್ಯಪ್‌ನಲ್ಲಿ 7 ದಿನ Premium, ಕಾರ್ಡ್ ಬೇಡ.',
+  gu: 'ફોન પર જે એકાઉન્ટથી સાઇન ઇન કરો છો તે જ. આ પાનું ચેકઆઉટ છે, ચુકવણી પછી ફોન અહીં પાછો આવે છે. દુકાનની અંદર પ્લાન Billingમાં છે. નવી દુકાનને એપમાં 7 દિવસ Premium, કાર્ડ નહીં.',
+  ml: 'ഫോണിൽ നിങ്ങൾ സൈൻ ഇൻ ചെയ്യുന്ന അതേ അക്കൗണ്ട്. ഈ പേജ് ചെക്കൗട്ടാണ്, പണമടച്ച ശേഷം ഫോൺ ഇവിടെ തിരിച്ചെത്തും. കടയ്ക്കുള്ളിൽ പ്ലാൻ Billing-ൽ. പുതിയ കടയ്ക്ക് ആപ്പിൽ 7 ദിവസം Premium, കാർഡ് വേണ്ട.',
+  pa: 'ਫੋਨ ’ਤੇ ਜਿਸ ਖਾਤੇ ਨਾਲ ਸਾਈਨ ਇਨ ਕਰਦੇ ਹੋ ਉਹੀ। ਇਹ ਪੰਨਾ ਚੈਕਆਉਟ ਹੈ, ਭੁਗਤਾਨ ਤੋਂ ਬਾਅਦ ਫੋਨ ਇੱਥੇ ਵਾਪਸ ਆਉਂਦਾ ਹੈ। ਦੁਕਾਨ ਦੇ ਅੰਦਰ ਪਲਾਨ Billing ਵਿੱਚ ਹੈ। ਨਵੀਂ ਦੁਕਾਨ ਨੂੰ ਐਪ ਵਿੱਚ 7 ਦਿਨ Premium, ਕਾਰਡ ਨਹੀਂ।',
+  or: 'ଫୋନରେ ଆପଣ ଯେଉଁ ଆକାଉଣ୍ଟରେ ସାଇନ୍ ଇନ୍ କରନ୍ତି ସେହିଟି। ଏହି ପୃଷ୍ଠା ଚେକଆଉଟ୍, ପେମେଣ୍ଟ ପରେ ଫୋନ ଏଠାକୁ ଫେରେ। ଦୋକାନ ଭିତରେ ପ୍ଲାନ Billingରେ। ନୂଆ ଦୋକାନକୁ ଆପ୍‌ରେ 7 ଦିନ Premium, କାର୍ଡ ନାହିଁ।',
+};
+
 export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
   const base = subscriptionStrings[locale] ?? en;
   const homeSlots = getLocaleHomeSlots(locale);
-  const nav = { ...base.nav, ...navOverlay[locale] };
+  const nav = {
+    laptop: 'On a laptop',
+    openShop: 'Open shop',
+    billing: 'Billing',
+    ...base.nav,
+    ...navOverlay[locale],
+  };
   const day = shopDayPricing[locale];
   const premiumFeatures = day?.premiumFeatures ?? [
     en.pricing.premiumFeatures[0],
@@ -1709,16 +1769,18 @@ export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
     },
     pricing: {
       ...base.pricing,
+      heroLead: pricingLead[locale] ?? base.pricing.heroLead,
       comparisonHeading: day?.comparisonHeading ?? base.pricing.comparisonHeading,
-      freeFeatures: day?.freeFeatures ?? en.pricing.freeFeatures,
+      freeFeatures: [browserLine[locale], ...(day?.freeFeatures ?? base.pricing.freeFeatures)],
       premiumFeatures,
       refundWindow: day?.refundWindow ?? base.pricing.refundWindow,
       trustStrip: day?.trustStrip ?? base.pricing.trustStrip,
-      faq,
+      faq: [billingFaq[locale], ...faq],
     },
     account: {
       ...base.account,
       heading: nav.account,
+      signedOutLead: signedOutLead[locale] ?? base.account.signedOutLead,
     },
   };
 }

@@ -62,7 +62,7 @@ function groups(logs: AuditLogEntry[]) {
 }
 
 export function ActivityScreen() {
-  const { api, shop } = useShop();
+  const { api, shop, t } = useShop();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('all');
   const [error, setError] = useState<unknown>(null);
   const logs = useQuery({
@@ -78,7 +78,7 @@ export function ActivityScreen() {
     <div className="shop-page">
       <PageHeader
         kicker="Insights"
-        title="Activity"
+        title={t('activity.title', 'Activity')}
         description="Every stock change, sale, void, and staff change in this shop."
         actions={
           <Button

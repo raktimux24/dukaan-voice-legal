@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { catalogL1Label, catalogL2Label } from '../../../lib/shop/catalog';
+import { labeledL1, labeledL2 } from '../../../lib/shop/catalog';
 import { useCart } from '../../../lib/shop/cart';
 import { formatDay, formatINR, formatWhen } from '../../../lib/shop/money';
 import type { AdjustmentReason, StockBatch } from '../../../lib/shop/types';
@@ -25,7 +25,7 @@ function logMentionsProduct(payload: Record<string, unknown>, productId: string)
 }
 
 export function ProductDetailScreen({ productId }: { productId: string }) {
-  const { api, shop, perms, hideCost, userId, setNotice } = useShop();
+  const { api, shop, perms, hideCost, userId, setNotice, t } = useShop();
   const params = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -120,9 +120,9 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
     <div className="shop-page">
       <PageHeader
         back={{ href: '/shop/products', label: 'Products' }}
-        kicker={catalogL1Label(product.category)}
+        kicker={labeledL1(product.category, (key) => t(key, key))}
         title={product.name}
-        description={[product.barcode ? `Barcode ${product.barcode}` : null, catalogL2Label(product.category, product.subcategory) || null].filter(Boolean).join(' · ') || undefined}
+        description={[product.barcode ? `Barcode ${product.barcode}` : null, labeledL2(product.category, product.subcategory, (key) => t(key, key)) || null].filter(Boolean).join(' · ') || undefined}
         actions={perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="ghost">Edit details</Button> : null}
       />
       <Notice error={error ?? (batches.error && !isDenied(batches.error) ? batches.error : null)} />
@@ -287,7 +287,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           {product.shortCode ? <div><dt>Short code</dt><dd>{product.shortCode}</dd></div> : null}
           <div><dt>Low-stock alert</dt><dd>{product.minStockLevel > 0 ? formatQty(product.minStockLevel, item.unit) : '—'}</dd></div>
           <div><dt>Unit</dt><dd>{item.unit}</dd></div>
-          <div><dt>Category</dt><dd>{[catalogL1Label(product.category), catalogL2Label(product.category, product.subcategory)].filter(Boolean).join(' · ')}</dd></div>
+          <div><dt>Category</dt><dd>{[labeledL1(product.category, (key) => t(key, key)), labeledL2(product.category, product.subcategory, (key) => t(key, key))].filter(Boolean).join(' · ')}</dd></div>
           <div><dt>Updated</dt><dd>{formatWhen(item.updatedAt)} · {item.updatedByName}</dd></div>
         </dl>
       </Card>

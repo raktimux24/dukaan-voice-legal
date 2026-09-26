@@ -11,7 +11,7 @@ import { PricingClient } from './PricingClient';
 export const metadata: Metadata = pageMetadata({
   title: 'Pricing — Samaan Bol Premium',
   description:
-    'Premium for ₹499/month or ₹3,999/year. New shops get 7 days of voice in the app, no card. The 7-day refund is separate — it starts from the first charge.',
+    'Premium for ₹499/month or ₹3,999/year, on the phone and in the browser. Subscribe here, or from Billing inside the shop. New shops get 7 days of voice in the app, no card.',
   path: '/pricing',
   page: 'pricing',
   keywords: ['Samaan Bol pricing', 'kirana billing pricing', 'Razorpay UPI Autopay'],

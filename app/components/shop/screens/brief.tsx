@@ -14,7 +14,7 @@ function canAct(nudge: Nudge, canEdit: boolean) {
 }
 
 export function BriefScreen() {
-  const { api, shop, perms } = useShop();
+  const { api, shop, perms, t } = useShop();
   const queryClient = useQueryClient();
   const brief = useQuery({
     queryKey: ['brief', shop?.id],
@@ -31,7 +31,7 @@ export function BriefScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader kicker="Insights" title="Daily brief" description="A short read on the day, with the actions that matter most." />
+      <PageHeader kicker="Insights" title={t('brief.title', 'Daily brief')} description="A short read on the day, with the actions that matter most." />
       {items.length === 0 ? <Card><p>No actions today. The brief is still here.</p></Card> : null}
       <Notice error={error} />
       {items.map((item) => (

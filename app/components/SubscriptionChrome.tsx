@@ -36,21 +36,15 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
               <a href={`${home}#features`}>{t.nav.features}</a>
             </li>
             <li>
-              <a href={`${home}#ai`}>{t.nav.ai}</a>
+              <a href={`${home}#web`}>{t.nav.laptop ?? 'On a laptop'}</a>
             </li>
             <li>
               <Link href={pricingHref}>{t.nav.pricing}</Link>
             </li>
             <li>
-              <Link href={accountHref}>{t.nav.account}</Link>
-            </li>
-            <li>
-              <Link href="/shop">Shop</Link>
-            </li>
-            <li>
-              <a href={appStoreLinkUrl} className="nav-cta">
-                {t.nav.download}
-              </a>
+              <Link href="/shop" className="nav-cta">
+                {t.nav.openShop ?? 'Open shop'}
+              </Link>
             </li>
           </ul>
           <span dangerouslySetInnerHTML={{ __html: switcherHtml }} />
@@ -96,22 +90,19 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
                 <a href={homeAnchor('features')}>{t.footer.features}</a>
               </li>
               <li>
-                <a href={homeAnchor('ai')}>{t.footer.ai}</a>
+                <a href={homeAnchor('web')}>{t.nav.laptop ?? 'On a laptop'}</a>
               </li>
               <li>
                 <Link href={pricingHref}>{t.footer.pricing}</Link>
+              </li>
+              <li>
+                <Link href="/shop">{t.nav.openShop ?? 'Open shop'}</Link>
               </li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>{t.footer.company}</h4>
             <ul>
-              <li>
-                <Link href={pricingHref}>{t.footer.pricing}</Link>
-              </li>
-              <li>
-                <Link href={accountHref}>{t.footer.account}</Link>
-              </li>
               <li>
                 <Link href={contactHref}>{t.footer.contact}</Link>
               </li>
@@ -121,7 +112,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
             <h4>{t.footer.support}</h4>
             <ul>
               <li>
-                <Link href={accountHref}>{t.footer.account}</Link>
+                <Link href={accountHref}>{t.nav.billing ?? 'Billing'}</Link>
               </li>
               <li>
                 <Link href={refundHref}>{t.footer.refund}</Link>

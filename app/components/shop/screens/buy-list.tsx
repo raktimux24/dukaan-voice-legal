@@ -8,7 +8,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
 
 export function BuyListScreen() {
-  const { api, shop, perms, premium } = useShop();
+  const { api, shop, perms, premium, t } = useShop();
   const router = useRouter();
   const queryClient = useQueryClient();
   const enabled = !!shop && perms.canEditProducts;
@@ -26,7 +26,7 @@ export function BuyListScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader kicker="Stock" title="Buy list" description="What to buy next. Stocking a row adds a batch to the product." />
+      <PageHeader kicker="Stock" title={t('nav.buy_list', 'Buy list')} description="What to buy next. Stocking a row adds a batch to the product." />
       <Notice error={error ?? list.error} />
       <Card>
         <form

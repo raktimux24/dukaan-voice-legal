@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { catalogL1Label } from '../../../lib/shop/catalog';
+import { labeledL1 } from '../../../lib/shop/catalog';
 import { computeTotals, useCart, type CartLine } from '../../../lib/shop/cart';
 import { formatINR } from '../../../lib/shop/money';
 import type { InventoryItem } from '../../../lib/shop/types';
@@ -16,7 +16,7 @@ import { Button, Card, Chip, Kbd, Notice, Spinner, cx, inputClass } from '../ui'
 const BARCODE = /^\d{4,}$/;
 
 export function SellScreen() {
-  const { api, shop, userId, perms, hideCost, setNotice } = useShop();
+  const { api, shop, userId, perms, hideCost, setNotice, t } = useShop();
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
   const catalog = useQuery({
@@ -45,10 +45,10 @@ export function SellScreen() {
   const categories = useMemo(() => {
     const seen = new Map<string, string>();
     for (const item of items) {
-      if (!seen.has(item.product.category)) seen.set(item.product.category, catalogL1Label(item.product.category));
+      if (!seen.has(item.product.category)) seen.set(item.product.category, labeledL1(item.product.category, (key) => t(key, key)));
     }
     return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [items]);
+  }, [items, t]);
 
   const hits = useMemo(() => {
     const q = query.trim().toLowerCase();

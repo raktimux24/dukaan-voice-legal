@@ -1413,6 +1413,18 @@ section {
   transform: translateY(-2px);
 }
 
+.store-badge.is-web {
+  background: var(--saffron);
+  border-color: var(--saffron);
+  color: #0a0a0f;
+}
+
+.store-badge.is-web .store-badge-icon,
+.store-badge.is-web .store-badge-label,
+.store-badge.is-web .store-badge-name {
+  color: #0a0a0f;
+}
+
 .store-badge-icon {
   display: flex;
   align-items: center;
@@ -1910,7 +1922,7 @@ body::after {
   overflow: hidden;
   vertical-align: baseline;
   color: var(--saffron);
-  min-width: 80px;
+  width: fit-content;
   font-weight: 600;
 }
 
@@ -2055,4 +2067,214 @@ body::after {
   .reveal { opacity: 1; transform: none; }
   .hero-text-reveal > .hindi-line,
   .hero h1 .hero-text-main span { opacity: 1; transform: none; animation: none; }
+}
+
+.hero-more {
+  margin: -36px 0 40px;
+}
+
+.hero-more a {
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.hero-more a:hover { color: var(--saffron); }
+
+.hero-stage {
+  position: relative;
+  width: min(100%, 560px);
+  height: 640px;
+  margin-left: auto;
+}
+
+.hero-stage .phone-frame {
+  position: absolute;
+  left: 0;
+  top: 24px;
+  transform: perspective(1200px) rotateY(-8deg) rotateX(3deg) scale(0.72);
+  transform-origin: top left;
+}
+
+.hero-stage .phone-frame:hover {
+  transform: perspective(1200px) rotateY(-2deg) rotateX(1deg) scale(0.74);
+}
+
+.browser-frame,
+.desk-frame {
+  background: #12121a;
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.browser-frame {
+  position: absolute;
+  right: 0;
+  bottom: 36px;
+  width: 300px;
+  z-index: 4;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.browser-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #1c1c26;
+}
+
+.browser-chrome span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3a3a44;
+}
+
+.browser-url {
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.browser-body,
+.desk-stats {
+  padding: 14px;
+}
+
+.browser-kicker {
+  color: var(--saffron);
+  font-size: 12px;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+
+.browser-search,
+.browser-row,
+.browser-customer,
+.browser-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.browser-search {
+  color: var(--text-muted);
+  border: 1px solid var(--border-dark);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.browser-row { padding: 6px 0; }
+
+.browser-bill {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-dark);
+}
+
+.browser-bill-head,
+.browser-total {
+  font-weight: 650;
+}
+
+.browser-charge {
+  margin-top: 10px;
+  background: var(--saffron);
+  color: #0a0a0f;
+  text-align: center;
+  border-radius: 10px;
+  padding: 8px;
+  font-weight: 700;
+}
+
+.web-section { padding: 80px 0; }
+
+.desk-frame { margin-top: 36px; }
+
+.desk-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.desk-stats div {
+  background: #1c1c26;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.desk-stats b {
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+}
+
+.desk-stats span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.web-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.web-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.web-card h3 { margin-bottom: 8px; }
+
+.web-card p,
+.feature--laptop p { color: var(--text-secondary); }
+
+.feature--laptop a { color: var(--saffron); }
+
+.features-grid > .feature.feature--laptop { grid-column: span 2; }
+
+@media (max-width: 1024px) {
+  .hero-stage {
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .hero-stage .phone-frame,
+  .hero-stage .phone-frame:hover {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+  }
+
+  .browser-frame {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: min(100%, 360px);
+  }
+
+  .float-card--voice { display: none; }
+}
+
+@media (max-width: 720px) {
+  .desk-stats,
+  .web-grid,
+  .features-grid > .feature.feature--laptop {
+    grid-template-columns: 1fr;
+    grid-column: auto;
+  }
 }
