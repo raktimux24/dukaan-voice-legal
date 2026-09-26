@@ -131,7 +131,7 @@ export function SellScreen() {
           {hits.map((item) => {
             const unpriced = item.product.sellingPrice == null;
             return (
-              <div key={item.id} className="shop-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-card p-3">
+              <div key={item.id} className="shop-row">
                 <div>
                   <p className="font-semibold">{item.product.name}</p>
                   <p className="text-sm text-muted">
@@ -161,7 +161,7 @@ export function SellScreen() {
           {!catalog.isLoading && hits.length === 0 ? <p className="text-muted">No products match.</p> : null}
         </div>
       </div>
-      <Card className="h-fit lg:sticky lg:top-4">
+      <Card className="h-fit lg:sticky lg:top-20">
         <h2 className="font-display text-xl">Cart</h2>
         {cartApi.cart.lines.length === 0 ? <p className="mt-3 text-muted">Nothing added yet.</p> : null}
         <div className="mt-3 grid gap-3">

@@ -24,10 +24,10 @@ export function Button({
   href?: string;
 }) {
   const className = cx(
-    'inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50',
-    tone === 'primary' && 'bg-saffron text-white hover:bg-saffron-dark',
-    tone === 'ghost' && 'border border-line bg-elevated text-ink hover:border-saffron',
-    tone === 'danger' && 'border border-danger/40 bg-danger/10 text-danger',
+    'shop-btn',
+    tone === 'primary' && 'shop-btn-primary',
+    tone === 'ghost' && 'shop-btn-ghost',
+    tone === 'danger' && 'shop-btn-danger',
   );
   if (href) return <Link className={className} href={href}>{children}</Link>;
   return (
@@ -52,11 +52,10 @@ export function Field({
   );
 }
 
-export const inputClass =
-  'w-full rounded-lg border border-line bg-elevated px-3 py-2.5 text-ink outline-none focus:border-saffron';
+export const inputClass = 'shop-field outline-none focus:border-saffron';
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <section className={cx('shop-surface rounded-xl border border-line bg-card p-4', className)}>{children}</section>;
+  return <section className={cx('shop-surface shop-card', className)}>{children}</section>;
 }
 
 export function Empty({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
@@ -111,5 +110,5 @@ export function NoAccess({ what }: { what: string }) {
 }
 
 export function Spinner({ label = 'Loading' }: { label?: string }) {
-  return <p className="text-muted">{label}…</p>;
+  return <p className="text-sm text-muted" role="status">{label}…</p>;
 }

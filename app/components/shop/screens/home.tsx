@@ -52,20 +52,31 @@ export function HomeScreen() {
     ...(perms.canEditProducts ? [{ key: 'unpriced', label: 'Unpriced', n: unpriced }] : []),
   ];
 
+  const statTone: Record<string, string> = {
+    low_stock: 'shop-stat--warn',
+    out_of_stock: 'shop-stat--danger',
+    near_expiry: 'shop-stat--warn',
+    unpriced: 'shop-stat--ok',
+  };
+
   return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl text-ink">{t('nav.home', 'Home')}</h1>
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="shop-page">
+      <div className="shop-page-head">
+        <div>
+          <p className="shop-kicker">Today’s counter</p>
+          <h1 className="shop-title">{t('nav.home', 'Home')}</h1>
+        </div>
+        <div className="shop-actions">
           <Button href="/shop/sell">New sale</Button>
           {perms.canEditProducts ? <Button href="/shop/products/new" tone="ghost">New product</Button> : null}
-          <Link href="/shop/alerts" className="rounded-full border border-line px-3 py-2 text-sm text-ink">
-            Alerts {alerts.data?.counts.total ? <span className="text-danger">{alerts.data.counts.total}</span> : null}
+          <Link href="/shop/alerts" className="shop-alert">
+            Alerts
+            {alerts.data?.counts.total ? <span className="shop-alert-count">{alerts.data.counts.total}</span> : null}
           </Link>
         </div>
       </div>
       <input
-        className="rounded-xl border border-line bg-card px-4 py-3"
+        className="shop-field"
         placeholder="Search products, bills, customers"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
@@ -98,27 +109,25 @@ export function HomeScreen() {
         </Card>
       ) : (
         <>
-          {perms.canSeeReports ? (
-            <Link href="/shop/sales">
-              <Card>
-                <p className="text-sm text-muted">Today</p>
-                <p className="font-display text-3xl">{sales.isLoading ? '…' : formatINR(sales.data?.revenue ?? 0)}</p>
-                <p className="text-muted">{sales.data?.bills ?? 0} bills</p>
+          <div className="shop-hero">
+            {perms.canSeeReports ? (
+              <Link href="/shop/sales" className="shop-hero-card">
+                <p className="shop-kicker">Today</p>
+                <p className="shop-hero-n">{sales.isLoading ? '…' : formatINR(sales.data?.revenue ?? 0)}</p>
+                <p className="shop-meta">{sales.data?.bills ?? 0} bills</p>
                 {sales.data && (sales.data.byMethod.upi || sales.data.byMethod.cash) ? (
-                  <p className="mt-2 text-xs text-faint">UPI {formatINR(sales.data.byMethod.upi)} · Cash {formatINR(sales.data.byMethod.cash)}</p>
+                  <p className="shop-meta">UPI {formatINR(sales.data.byMethod.upi)} · Cash {formatINR(sales.data.byMethod.cash)}</p>
                 ) : null}
-              </Card>
-            </Link>
-          ) : null}
-          {perms.canSeeReports && brief.data?.today ? (
-            <Link href="/shop/brief">
-              <Card>
-                <p className="text-sm text-saffron">Daily brief</p>
-                <p className="mt-1">{brief.data.today.body || brief.data.today.title}</p>
-                <p className="mt-1 text-xs text-muted">{brief.data.items.length} actions</p>
-              </Card>
-            </Link>
-          ) : null}
+              </Link>
+            ) : null}
+            {perms.canSeeReports && brief.data?.today ? (
+              <Link href="/shop/brief" className="shop-brief">
+                <p className="shop-kicker">Daily brief</p>
+                <p className="mt-2 text-ink">{brief.data.today.body || brief.data.today.title}</p>
+                <p className="shop-meta">{brief.data.items.length} actions</p>
+              </Link>
+            ) : null}
+          </div>
           {(nudges.data?.nudges ?? []).slice(0, 3).map((nudge) => {
             const action = nudge.action?.type ?? '';
             const allowed = !action || !/price|stock|product|batch/i.test(action) || perms.canEditProducts;
@@ -141,24 +150,22 @@ export function HomeScreen() {
               </Card>
             );
           })}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="shop-stats">
             {attention.map((row) => (
-              <Link key={row.key} href={`/shop/products?filter=${row.key}`}>
-                <Card>
-                  <p className={`font-display text-3xl ${row.n > 0 && row.key !== 'all' ? 'text-danger' : ''}`}>{stats.isLoading && row.key !== 'unpriced' ? '…' : row.n}</p>
-                  <p className="text-sm text-muted">{row.label}</p>
-                </Card>
+              <Link key={row.key} href={`/shop/products?filter=${row.key}`} className={`shop-stat ${statTone[row.key] ?? ''}`}>
+                <span className="shop-stat-n">{stats.isLoading && row.key !== 'unpriced' ? '…' : row.n}</span>
+                <span className="shop-stat-l">{row.label}</span>
               </Link>
             ))}
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Link href="/shop/products"><Card><p className="font-semibold">Products</p><p className="text-muted">{stats.data?.total ?? catalog.data?.length ?? 0}</p></Card></Link>
-            {perms.canEditProducts ? <Link href="/shop/buy-list"><Card><p className="font-semibold">Buy list</p></Card></Link> : null}
-            {perms.canManageCustomers ? <Link href="/shop/customers"><Card><p className="font-semibold">Customers</p><p className="text-xs text-muted">{premium ? '' : 'Premium'}</p></Card></Link> : null}
-            {perms.canSeeReports ? <Link href="/shop/reports"><Card><p className="font-semibold">Reports</p></Card></Link> : null}
-            <Link href="/shop/sell"><Card><p className="font-semibold">Sell</p></Card></Link>
-            {perms.canEditProducts ? <Link href="/shop/products/new"><Card><p className="font-semibold">Add product</p></Card></Link> : null}
-            {perms.canSeeCost ? <Link href="/shop/suppliers"><Card><p className="font-semibold">Suppliers</p></Card></Link> : null}
+          <div className="shop-shortcuts">
+            <Link href="/shop/products" className="shop-shortcut"><strong>{stats.data?.total ?? catalog.data?.length ?? 0}</strong><span>Products</span></Link>
+            {perms.canEditProducts ? <Link href="/shop/buy-list" className="shop-shortcut"><strong>Buy</strong><span>Buy list</span></Link> : null}
+            {perms.canManageCustomers ? <Link href="/shop/customers" className="shop-shortcut"><strong>{premium ? 'Open' : 'Premium'}</strong><span>Customers</span></Link> : null}
+            {perms.canSeeReports ? <Link href="/shop/reports" className="shop-shortcut"><strong>View</strong><span>Reports</span></Link> : null}
+            <Link href="/shop/sell" className="shop-shortcut"><strong>Sell</strong><span>New sale</span></Link>
+            {perms.canEditProducts ? <Link href="/shop/products/new" className="shop-shortcut"><strong>Add</strong><span>New product</span></Link> : null}
+            {perms.canSeeCost ? <Link href="/shop/suppliers" className="shop-shortcut"><strong>Stock</strong><span>Suppliers</span></Link> : null}
           </div>
           {!catalog.isLoading && (catalog.data?.length ?? 0) === 0 ? (
             <Card>

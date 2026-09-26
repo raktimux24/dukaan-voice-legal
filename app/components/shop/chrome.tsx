@@ -22,20 +22,22 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
   const showNav = !onboarding && !!shop;
 
   return (
-    <div className="md:grid md:grid-cols-[220px_1fr]">
+    <div className="shop-shell md:grid md:grid-cols-[232px_1fr]">
       {showNav ? (
         <aside className="no-print hidden min-h-screen border-r border-line bg-card p-4 md:block">
-          <Link href="/shop" className="font-display text-xl font-semibold">
-            Samaan<span className="text-saffron">Bol</span>
+          <Link href="/shop" className="shop-brand">
+            <span className="shop-mark" aria-hidden="true">S</span>
+            <span>Samaan<span className="text-saffron">Bol</span></span>
           </Link>
-          <nav className="mt-8 grid gap-1">
+          <nav className="mt-8 grid gap-1" aria-label="Shop">
             {NAV.map((item) => {
               const active = item.href === '/shop' ? pathname === '/shop' : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={cx('rounded-lg px-3 py-2 text-sm', active ? 'bg-saffron/15 text-saffron' : 'text-muted hover:bg-elevated hover:text-ink')}
+                  aria-current={active ? 'page' : undefined}
+                  className={cx('shop-nav-link', active && 'is-active')}
                 >
                   {t(item.key, item.label)}
                 </Link>
@@ -43,21 +45,21 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
             })}
           </nav>
           {perms.canManageShop ? (
-            <Link href={`/account?shopId=${shop?.id ?? ''}`} className="mt-6 block px-3 text-sm text-muted hover:text-ink">
+            <Link href={`/account?shopId=${shop?.id ?? ''}`} className="shop-nav-link mt-6">
               Billing
             </Link>
           ) : null}
         </aside>
       ) : null}
       <div className="min-h-screen pb-24 md:pb-0">
-        <header className="no-print flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3 md:px-6">
+        <header className="shop-header no-print">
           <div>
             {onboarding ? (
-              <Link href="/" className="font-display text-lg">Samaan<span className="text-saffron">Bol</span></Link>
+              <Link href="/" className="shop-brand">Samaan<span className="text-saffron">Bol</span></Link>
             ) : (
               <>
-                <p className="font-display text-lg">{shop?.name ?? 'Shop'}</p>
-                <p className="text-xs uppercase tracking-wide text-saffron">{role ? t(`role.${role.toLowerCase()}`, role.toLowerCase()) : ''}</p>
+                <p className="font-display text-lg font-semibold">{shop?.name ?? 'Shop'}</p>
+                <p className="shop-kicker">{role ? t(`role.${role.toLowerCase()}`, role.toLowerCase()) : ''}</p>
               </>
             )}
           </div>
@@ -85,11 +87,11 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">{children}</main>
       </div>
       {showNav ? (
-        <nav className="no-print fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-card md:hidden">
+        <nav className="shop-tabs no-print md:hidden" aria-label="Shop">
           {NAV.map((item) => {
             const active = item.href === '/shop' ? pathname === '/shop' : pathname.startsWith(item.href);
             return (
-              <Link key={item.href} href={item.href} className={cx('px-1 py-3 text-center text-xs', active ? 'text-saffron' : 'text-muted')}>
+              <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined} className={cx('shop-tab', active && 'is-active')}>
                 {t(item.key, item.label)}
               </Link>
             );
