@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // Production Clerk keys only accept samaanbol.space and its subdomains.
+  // Local dev is served at https://local.samaanbol.space
+  allowedDevOrigins: ['local.samaanbol.space'],
   turbopack: {
     root: __dirname,
   },

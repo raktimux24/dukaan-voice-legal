@@ -45,6 +45,9 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
               <Link href={accountHref}>{t.nav.account}</Link>
             </li>
             <li>
+              <Link href="/shop">Shop</Link>
+            </li>
+            <li>
               <a href={appStoreLinkUrl} className="nav-cta">
                 {t.nav.download}
               </a>

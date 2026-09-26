@@ -1,0 +1,66 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source './**/*.{tsx,ts}';
+@source '../components/shop/**/*.{tsx,ts}';
+
+@theme {
+  --color-shop: #0a0a0f;
+  --color-card: #15151c;
+  --color-elevated: #1e1e26;
+  --color-ink: #eaeae6;
+  --color-muted: #8a8a90;
+  --color-faint: #5a5a62;
+  --color-line: #2a2a34;
+  --color-saffron: #ff6b00;
+  --color-saffron-dark: #e85d00;
+  --color-ok: #32d583;
+  --color-warn: #ffb547;
+  --color-danger: #e85a4f;
+  --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --font-sans: Inter, ui-sans-serif, sans-serif;
+}
+
+.shop-root {
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: #eaeae6;
+  font-family: Inter, sans-serif;
+}
+
+.shop-root[data-text='small'] {
+  font-size: 14px;
+}
+.shop-root[data-text='medium'] {
+  font-size: 16px;
+}
+.shop-root[data-text='large'] {
+  font-size: 18px;
+}
+.shop-root[data-text='extra_large'] {
+  font-size: 20px;
+}
+
+.shop-root[data-contrast='high'] .shop-surface,
+.shop-root[data-contrast='high'] input,
+.shop-root[data-contrast='high'] select,
+.shop-root[data-contrast='high'] textarea,
+.shop-root[data-contrast='high'] button {
+  border-color: #f4f4f5 !important;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .shop-root {
+    background: white;
+    color: black;
+  }
+  .shop-surface {
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+}

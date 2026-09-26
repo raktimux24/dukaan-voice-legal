@@ -13,6 +13,10 @@ pnpm-debug.log*
 
 # clerk configuration (can include secrets)
 /.clerk/
+/certificates/
 
 # TypeScript incremental build cache
 tsconfig.tsbuildinfo
+
+# macOS metadata
+.DS_Store

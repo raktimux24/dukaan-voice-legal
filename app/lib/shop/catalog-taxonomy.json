@@ -1,0 +1,1344 @@
+{
+  "shopTypes": [
+    {
+      "code": "general",
+      "label": "General",
+      "helper": "Kirana, grocery, or department store. Daily household items including fresh, baby, and pet.",
+      "subtypes": [
+        {
+          "code": "kirana",
+          "label": "Kirana"
+        },
+        {
+          "code": "grocery",
+          "label": "Grocery"
+        },
+        {
+          "code": "department_store",
+          "label": "Department store"
+        }
+      ],
+      "coreL1": [
+        "staples",
+        "spices",
+        "snacks",
+        "beverages",
+        "dairy",
+        "fresh",
+        "personal-care",
+        "household",
+        "baby",
+        "pet",
+        "pooja"
+      ],
+      "extraL1BySubtype": {
+        "department_store": [
+          "kitchen-home",
+          "elec-consumable",
+          "mob-acc"
+        ]
+      }
+    },
+    {
+      "code": "food",
+      "label": "Food",
+      "helper": "Bakery, sweets, restaurant, or eatery. Food you make or plate, plus gifting packs.",
+      "subtypes": [
+        {
+          "code": "bakery",
+          "label": "Bakery"
+        },
+        {
+          "code": "sweets",
+          "label": "Sweets"
+        },
+        {
+          "code": "restaurant",
+          "label": "Restaurant"
+        },
+        {
+          "code": "eatery",
+          "label": "Eatery"
+        }
+      ],
+      "coreL1": [
+        "bakery",
+        "mithai",
+        "cakes",
+        "rte",
+        "fnb-bev",
+        "party-gift"
+      ],
+      "extraL1BySubtype": {}
+    },
+    {
+      "code": "fashion",
+      "label": "Fashion",
+      "helper": "Clothing or boutique. Apparel, footwear, accessories, innerwear, and home textiles.",
+      "subtypes": [
+        {
+          "code": "clothing",
+          "label": "Clothing"
+        },
+        {
+          "code": "boutique",
+          "label": "Boutique"
+        }
+      ],
+      "coreL1": [
+        "womens",
+        "mens",
+        "kids-wear",
+        "ethnic",
+        "footwear",
+        "accessories",
+        "innerwear",
+        "home-tex"
+      ],
+      "extraL1BySubtype": {}
+    },
+    {
+      "code": "electronics",
+      "label": "Electronics",
+      "helper": "Mobiles, gadgets, appliances, and accessories.",
+      "subtypes": [
+        {
+          "code": "mobile",
+          "label": "Mobile"
+        },
+        {
+          "code": "gadgets",
+          "label": "Gadgets"
+        },
+        {
+          "code": "other_electronics",
+          "label": "Other electronics"
+        }
+      ],
+      "coreL1": [
+        "mobiles",
+        "mob-acc",
+        "audio",
+        "computers",
+        "home-app",
+        "kitchen-app",
+        "gadgets"
+      ],
+      "extraL1BySubtype": {}
+    },
+    {
+      "code": "stationary",
+      "label": "Stationery",
+      "helper": "Books, office supplies, printing, and basic IT accessories.",
+      "subtypes": [
+        {
+          "code": "books",
+          "label": "Books"
+        },
+        {
+          "code": "office_supplies",
+          "label": "Office supplies"
+        },
+        {
+          "code": "printing",
+          "label": "Printing"
+        }
+      ],
+      "coreL1": [
+        "paper",
+        "writing",
+        "school",
+        "office",
+        "art",
+        "books",
+        "print-svc",
+        "it-basic"
+      ],
+      "extraL1BySubtype": {}
+    },
+    {
+      "code": "medical",
+      "label": "Medical",
+      "helper": "Pharmacy, chemist, or clinic. OTC, devices, wellness, baby health.",
+      "subtypes": [
+        {
+          "code": "pharmacy",
+          "label": "Pharmacy"
+        },
+        {
+          "code": "chemist",
+          "label": "Chemist"
+        },
+        {
+          "code": "clinic",
+          "label": "Clinic"
+        }
+      ],
+      "coreL1": [
+        "otc",
+        "ayurveda",
+        "devices",
+        "first-aid",
+        "nutrition",
+        "pharma-pc",
+        "baby-health"
+      ],
+      "extraL1BySubtype": {
+        "clinic": [
+          "clinic-svc"
+        ]
+      }
+    },
+    {
+      "code": "hardware",
+      "label": "Hardware",
+      "helper": "Tools, plumbing, electrical, automobile parts, and small-lot materials.",
+      "subtypes": [
+        {
+          "code": "tools",
+          "label": "Tools"
+        },
+        {
+          "code": "plumbing",
+          "label": "Plumbing"
+        },
+        {
+          "code": "electrical",
+          "label": "Electrical"
+        },
+        {
+          "code": "automobile",
+          "label": "Automobile"
+        }
+      ],
+      "coreL1": [
+        "tools",
+        "plumbing",
+        "electrical",
+        "paints",
+        "fasteners",
+        "safety",
+        "auto",
+        "building"
+      ],
+      "extraL1BySubtype": {}
+    },
+    {
+      "code": "services",
+      "label": "Services",
+      "helper": "Repairs, maintenance, professional work, and spare parts.",
+      "subtypes": [
+        {
+          "code": "repairs",
+          "label": "Repairs"
+        },
+        {
+          "code": "maintenance",
+          "label": "Maintenance"
+        },
+        {
+          "code": "professional",
+          "label": "Professional"
+        }
+      ],
+      "coreL1": [
+        "device-repair",
+        "home-maint",
+        "amc",
+        "pro-svc",
+        "install",
+        "spares"
+      ],
+      "extraL1BySubtype": {}
+    }
+  ],
+  "l1": [
+    {
+      "code": "staples",
+      "label": "Staples",
+      "l2": [
+        {
+          "code": "atta-flours",
+          "label": "Atta & Flours",
+          "itemType": "physical"
+        },
+        {
+          "code": "rice",
+          "label": "Rice",
+          "itemType": "physical"
+        },
+        {
+          "code": "dal-pulses",
+          "label": "Dal & Pulses",
+          "itemType": "physical"
+        },
+        {
+          "code": "sugar-jaggery",
+          "label": "Sugar & Jaggery",
+          "itemType": "physical"
+        },
+        {
+          "code": "salt",
+          "label": "Salt",
+          "itemType": "physical"
+        },
+        {
+          "code": "oil-ghee",
+          "label": "Cooking Oil & Ghee",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "spices",
+      "label": "Spices, Masala & Dry Fruits",
+      "l2": [
+        {
+          "code": "whole-spices",
+          "label": "Whole spices",
+          "itemType": "physical"
+        },
+        {
+          "code": "ground-masala",
+          "label": "Ground masala",
+          "itemType": "physical"
+        },
+        {
+          "code": "dry-fruits",
+          "label": "Dry fruits & nuts",
+          "itemType": "physical"
+        },
+        {
+          "code": "pickles-papad",
+          "label": "Pickles & papad",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "snacks",
+      "label": "Snacks & Packaged Food",
+      "l2": [
+        {
+          "code": "namkeen",
+          "label": "Namkeen",
+          "itemType": "physical"
+        },
+        {
+          "code": "biscuits",
+          "label": "Biscuits",
+          "itemType": "physical"
+        },
+        {
+          "code": "chocolates",
+          "label": "Chocolates",
+          "itemType": "physical"
+        },
+        {
+          "code": "instant-food",
+          "label": "Instant food",
+          "itemType": "physical"
+        },
+        {
+          "code": "cereals",
+          "label": "Breakfast cereals",
+          "itemType": "physical"
+        },
+        {
+          "code": "sauces",
+          "label": "Sauces & spreads",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "beverages",
+      "label": "Beverages",
+      "l2": [
+        {
+          "code": "tea-coffee",
+          "label": "Tea & coffee",
+          "itemType": "physical"
+        },
+        {
+          "code": "soft-drinks",
+          "label": "Soft drinks",
+          "itemType": "physical"
+        },
+        {
+          "code": "juices",
+          "label": "Juices",
+          "itemType": "physical"
+        },
+        {
+          "code": "water",
+          "label": "Water",
+          "itemType": "physical"
+        },
+        {
+          "code": "health-drinks",
+          "label": "Health drinks",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "dairy",
+      "label": "Dairy & Breakfast",
+      "l2": [
+        {
+          "code": "milk",
+          "label": "Milk",
+          "itemType": "physical"
+        },
+        {
+          "code": "curd-paneer",
+          "label": "Curd & paneer",
+          "itemType": "physical"
+        },
+        {
+          "code": "butter-cheese",
+          "label": "Butter & cheese",
+          "itemType": "physical"
+        },
+        {
+          "code": "eggs",
+          "label": "Eggs",
+          "itemType": "physical"
+        },
+        {
+          "code": "bread-packed",
+          "label": "Packed bread",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "fresh",
+      "label": "Fresh Produce",
+      "l2": [
+        {
+          "code": "vegetables",
+          "label": "Vegetables",
+          "itemType": "physical"
+        },
+        {
+          "code": "fruits",
+          "label": "Fruits",
+          "itemType": "physical"
+        },
+        {
+          "code": "herbs",
+          "label": "Herbs",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "personal-care",
+      "label": "Personal Care",
+      "l2": [
+        {
+          "code": "soap",
+          "label": "Soap & body wash",
+          "itemType": "physical"
+        },
+        {
+          "code": "hair",
+          "label": "Hair care",
+          "itemType": "physical"
+        },
+        {
+          "code": "oral",
+          "label": "Oral care",
+          "itemType": "physical"
+        },
+        {
+          "code": "skin",
+          "label": "Skin care basics",
+          "itemType": "physical"
+        },
+        {
+          "code": "grooming",
+          "label": "Men's grooming",
+          "itemType": "physical"
+        },
+        {
+          "code": "sanitary",
+          "label": "Sanitary",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "household",
+      "label": "Household & Cleaning",
+      "l2": [
+        {
+          "code": "detergent",
+          "label": "Detergent",
+          "itemType": "physical"
+        },
+        {
+          "code": "cleaners",
+          "label": "Floor / toilet / surface cleaners",
+          "itemType": "physical"
+        },
+        {
+          "code": "dishwash",
+          "label": "Dishwash",
+          "itemType": "physical"
+        },
+        {
+          "code": "tissues",
+          "label": "Tissues & disposables",
+          "itemType": "physical"
+        },
+        {
+          "code": "insect",
+          "label": "Insect killer & repellent",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "baby",
+      "label": "Baby Care",
+      "l2": [
+        {
+          "code": "diapers",
+          "label": "Diapers",
+          "itemType": "physical"
+        },
+        {
+          "code": "baby-food",
+          "label": "Baby food",
+          "itemType": "physical"
+        },
+        {
+          "code": "baby-toiletries",
+          "label": "Baby toiletries",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "pet",
+      "label": "Pet Care",
+      "l2": [
+        {
+          "code": "pet-food",
+          "label": "Pet food",
+          "itemType": "physical"
+        },
+        {
+          "code": "pet-hygiene",
+          "label": "Pet hygiene",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "pooja",
+      "label": "Pooja & Festive",
+      "l2": [
+        {
+          "code": "agarbatti",
+          "label": "Agarbatti & dhoop",
+          "itemType": "physical"
+        },
+        {
+          "code": "samagri",
+          "label": "Pooja samagri",
+          "itemType": "physical"
+        },
+        {
+          "code": "festival-packs",
+          "label": "Festival packs",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "otc-wellness",
+      "label": "OTC & Wellness",
+      "l2": [
+        {
+          "code": "first-aid-basic",
+          "label": "First aid (basic)",
+          "itemType": "physical"
+        },
+        {
+          "code": "pain-balm",
+          "label": "Pain balm & antiseptic",
+          "itemType": "physical"
+        },
+        {
+          "code": "ors-health",
+          "label": "ORS & health drinks",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "kitchen-home",
+      "label": "Kitchen & Home",
+      "l2": [
+        {
+          "code": "containers",
+          "label": "Containers & bottles",
+          "itemType": "physical"
+        },
+        {
+          "code": "utensils-basic",
+          "label": "Basic utensils",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "bakery",
+      "label": "Bakery & Breads",
+      "l2": [
+        {
+          "code": "bread-fresh",
+          "label": "Bread, pav, buns",
+          "itemType": "physical"
+        },
+        {
+          "code": "cookies-khari",
+          "label": "Cookies, khari, puff",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "mithai",
+      "label": "Sweets & Mithai",
+      "l2": [
+        {
+          "code": "bengali",
+          "label": "Bengali sweets",
+          "itemType": "physical"
+        },
+        {
+          "code": "dry-sweets",
+          "label": "Dry sweets",
+          "itemType": "physical"
+        },
+        {
+          "code": "traditional",
+          "label": "Traditional mithai",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "cakes",
+      "label": "Cakes & Desserts",
+      "l2": [
+        {
+          "code": "fresh-cakes",
+          "label": "Fresh cakes",
+          "itemType": "physical"
+        },
+        {
+          "code": "pastries",
+          "label": "Pastries & cupcakes",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "rte",
+      "label": "Ready-to-eat & Packaged meals",
+      "l2": [
+        {
+          "code": "thalis-combos",
+          "label": "Thalis & combos",
+          "itemType": "physical"
+        },
+        {
+          "code": "tiffin",
+          "label": "Tiffin / packaged meals",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "fnb-bev",
+      "label": "Beverages (F&B)",
+      "l2": [
+        {
+          "code": "hot-drinks",
+          "label": "Tea / coffee (prepared)",
+          "itemType": "physical"
+        },
+        {
+          "code": "cold-drinks-fresh",
+          "label": "Juice, shakes, lassi",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "party-gift",
+      "label": "Party & Gifting packs",
+      "l2": [
+        {
+          "code": "sweet-boxes",
+          "label": "Sweet / mithai boxes",
+          "itemType": "physical"
+        },
+        {
+          "code": "cake-sets",
+          "label": "Cake + celebration sets",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "womens",
+      "label": "Women's Clothing",
+      "l2": [
+        {
+          "code": "sarees",
+          "label": "Sarees",
+          "itemType": "physical"
+        },
+        {
+          "code": "kurtas-suits",
+          "label": "Kurtas & suits",
+          "itemType": "physical"
+        },
+        {
+          "code": "western",
+          "label": "Dresses, tops, bottoms",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "mens",
+      "label": "Men's Clothing",
+      "l2": [
+        {
+          "code": "shirts-tees",
+          "label": "Shirts & T-shirts",
+          "itemType": "physical"
+        },
+        {
+          "code": "trousers",
+          "label": "Trousers & jeans",
+          "itemType": "physical"
+        },
+        {
+          "code": "ethnic-men",
+          "label": "Men's ethnic",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "kids-wear",
+      "label": "Kids' Clothing",
+      "l2": [
+        {
+          "code": "boys",
+          "label": "Boys",
+          "itemType": "physical"
+        },
+        {
+          "code": "girls",
+          "label": "Girls",
+          "itemType": "physical"
+        },
+        {
+          "code": "infants",
+          "label": "Infants",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "ethnic",
+      "label": "Ethnic & Occasion wear",
+      "l2": [
+        {
+          "code": "lehenga",
+          "label": "Lehengas & festive sets",
+          "itemType": "physical"
+        },
+        {
+          "code": "sherwani",
+          "label": "Sherwani & festive menswear",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "footwear",
+      "label": "Footwear",
+      "l2": [
+        {
+          "code": "women-shoes",
+          "label": "Women's footwear",
+          "itemType": "physical"
+        },
+        {
+          "code": "men-shoes",
+          "label": "Men's footwear",
+          "itemType": "physical"
+        },
+        {
+          "code": "kids-shoes",
+          "label": "Kids' footwear",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "accessories",
+      "label": "Bags, Jewellery & Accessories",
+      "l2": [
+        {
+          "code": "bags",
+          "label": "Handbags & clutches",
+          "itemType": "physical"
+        },
+        {
+          "code": "jewellery",
+          "label": "Fashion jewellery",
+          "itemType": "physical"
+        },
+        {
+          "code": "other-acc",
+          "label": "Belts, scarves, hair, sunglasses",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "innerwear",
+      "label": "Innerwear & Loungewear",
+      "l2": [
+        {
+          "code": "women-inner",
+          "label": "Women's innerwear & nightwear",
+          "itemType": "physical"
+        },
+        {
+          "code": "men-inner",
+          "label": "Men's innerwear & loungewear",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "home-tex",
+      "label": "Home textiles",
+      "l2": [
+        {
+          "code": "bed-bath",
+          "label": "Bedsheets, towels, covers",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "mobiles",
+      "label": "Mobiles & Tablets",
+      "l2": [
+        {
+          "code": "smartphones",
+          "label": "Smartphones",
+          "itemType": "physical"
+        },
+        {
+          "code": "feature-phones",
+          "label": "Feature phones",
+          "itemType": "physical"
+        },
+        {
+          "code": "tablets",
+          "label": "Tablets",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "mob-acc",
+      "label": "Mobile Accessories",
+      "l2": [
+        {
+          "code": "cases",
+          "label": "Cases & covers",
+          "itemType": "physical"
+        },
+        {
+          "code": "guards",
+          "label": "Screen guards",
+          "itemType": "physical"
+        },
+        {
+          "code": "cables-chargers",
+          "label": "Cables & chargers",
+          "itemType": "physical"
+        },
+        {
+          "code": "power-banks",
+          "label": "Power banks",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "audio",
+      "label": "Audio & Wearables",
+      "l2": [
+        {
+          "code": "tws",
+          "label": "Earphones & TWS",
+          "itemType": "physical"
+        },
+        {
+          "code": "watches",
+          "label": "Smartwatches",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "computers",
+      "label": "Computers & Peripherals",
+      "l2": [
+        {
+          "code": "laptops",
+          "label": "Laptops",
+          "itemType": "physical"
+        },
+        {
+          "code": "peripherals",
+          "label": "Keyboards, mice, storage, printers",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "home-app",
+      "label": "Home Appliances",
+      "l2": [
+        {
+          "code": "small-home",
+          "label": "Fans, irons, heaters, vacuum",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "kitchen-app",
+      "label": "Kitchen Appliances",
+      "l2": [
+        {
+          "code": "mixer-induction",
+          "label": "Mixer, induction, kettle, air fryer",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "gadgets",
+      "label": "Entertainment & Gadgets",
+      "l2": [
+        {
+          "code": "speakers-tv",
+          "label": "Speakers, TV accessories, cameras",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "elec-consumable",
+      "label": "Electrical consumables",
+      "l2": [
+        {
+          "code": "batteries-bulbs",
+          "label": "Batteries, LED bulbs, extensions",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "paper",
+      "label": "Notebooks & Paper",
+      "l2": [
+        {
+          "code": "notebooks",
+          "label": "Notebooks & registers",
+          "itemType": "physical"
+        },
+        {
+          "code": "printer-paper",
+          "label": "Printer & chart paper",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "writing",
+      "label": "Writing instruments",
+      "l2": [
+        {
+          "code": "pens",
+          "label": "Pens, pencils, markers",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "school",
+      "label": "School supplies",
+      "l2": [
+        {
+          "code": "kits-bags",
+          "label": "Geometry, bags, bottles, art kits",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "office",
+      "label": "Office supplies",
+      "l2": [
+        {
+          "code": "files-desk",
+          "label": "Files, staplers, clips, desk set",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "art",
+      "label": "Art, Craft & Hobby",
+      "l2": [
+        {
+          "code": "colors-craft",
+          "label": "Colors, brushes, craft, clay",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "books",
+      "label": "Books & Publications",
+      "l2": [
+        {
+          "code": "academic",
+          "label": "Academic & exam books",
+          "itemType": "physical"
+        },
+        {
+          "code": "general-books",
+          "label": "Fiction, children, magazines",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "print-svc",
+      "label": "Printing & photocopy products",
+      "l2": [
+        {
+          "code": "print-copy",
+          "label": "Printouts & photocopy",
+          "itemType": "service"
+        },
+        {
+          "code": "bind-lam",
+          "label": "Binding, lamination, visiting cards, flex",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "it-basic",
+      "label": "IT accessories (basic)",
+      "l2": [
+        {
+          "code": "pendrive-ink",
+          "label": "Pendrive, mouse, calculator, ink/toner",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "otc",
+      "label": "OTC Medicines",
+      "l2": [
+        {
+          "code": "pain-cold",
+          "label": "Pain, cold, cough, antacid, allergy",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "rx",
+      "label": "Prescription medicines",
+      "l2": [
+        {
+          "code": "chronic-acute",
+          "label": "Chronic & acute Rx",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "ayurveda",
+      "label": "Ayurvedic & Herbal",
+      "l2": [
+        {
+          "code": "ayurvedic",
+          "label": "Ayurvedic & herbal",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "devices",
+      "label": "Health devices",
+      "l2": [
+        {
+          "code": "monitors",
+          "label": "Thermometer, BP, glucometer, oximeter",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "first-aid",
+      "label": "First aid & surgical consumables",
+      "l2": [
+        {
+          "code": "dressings",
+          "label": "Bandage, cotton, gloves, syringe, mask",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "nutrition",
+      "label": "Nutrition & supplements",
+      "l2": [
+        {
+          "code": "vitamins-protein",
+          "label": "Vitamins, protein, nutrition drinks",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "pharma-pc",
+      "label": "Personal care & hygiene (pharmacy)",
+      "l2": [
+        {
+          "code": "hygiene",
+          "label": "Sanitary, adult diapers, OTC skin",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "baby-health",
+      "label": "Baby health",
+      "l2": [
+        {
+          "code": "formula-baby-meds",
+          "label": "Formula, diapers, baby OTC",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "clinic-svc",
+      "label": "Clinic services",
+      "l2": [
+        {
+          "code": "consult",
+          "label": "Consultation & procedure fees",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "tools",
+      "label": "Hand & power tools",
+      "l2": [
+        {
+          "code": "hand-tools",
+          "label": "Spanners, screwdrivers, cutters",
+          "itemType": "physical"
+        },
+        {
+          "code": "power-tools",
+          "label": "Drills and power tools",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "plumbing",
+      "label": "Plumbing",
+      "l2": [
+        {
+          "code": "pipes-taps",
+          "label": "Pipes, fittings, taps, valves",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "electrical",
+      "label": "Electrical & wiring",
+      "l2": [
+        {
+          "code": "wires-switches",
+          "label": "Wires, switches, MCB, conduit, LED",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "paints",
+      "label": "Paints & hardware",
+      "l2": [
+        {
+          "code": "paint-locks",
+          "label": "Paints, putty, adhesives, locks, hinges",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "fasteners",
+      "label": "Fasteners & fittings",
+      "l2": [
+        {
+          "code": "screws-bolts",
+          "label": "Screws, nails, nuts, bolts, anchors",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "safety",
+      "label": "Safety equipment",
+      "l2": [
+        {
+          "code": "ppe",
+          "label": "Gloves, helmets, goggles, shoes",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "auto",
+      "label": "Automobile parts & accessories",
+      "l2": [
+        {
+          "code": "oils-parts",
+          "label": "Oils, filters, batteries, lights, covers",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "building",
+      "label": "Building materials (small-lot)",
+      "l2": [
+        {
+          "code": "cement-putty",
+          "label": "Cement, bagged sand, putty, tile lots",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "hw-appliances",
+      "label": "Electrical appliances (basic)",
+      "l2": [
+        {
+          "code": "extensions-irons",
+          "label": "Extensions, emergency lights, irons",
+          "itemType": "physical"
+        }
+      ]
+    },
+    {
+      "code": "device-repair",
+      "label": "Device repair",
+      "l2": [
+        {
+          "code": "mobile-repair",
+          "label": "Mobile / laptop / appliance repair",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "home-maint",
+      "label": "Home maintenance",
+      "l2": [
+        {
+          "code": "trade-jobs",
+          "label": "Plumbing, electrical, AC, carpenter jobs",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "amc",
+      "label": "AMC & packages",
+      "l2": [
+        {
+          "code": "amc-packs",
+          "label": "AC / RO / appliance AMC",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "pro-svc",
+      "label": "Professional services",
+      "l2": [
+        {
+          "code": "consult-slots",
+          "label": "Accounting, tax, design, tuition, salon",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "install",
+      "label": "Installation & fitting",
+      "l2": [
+        {
+          "code": "install-jobs",
+          "label": "Appliance, CCTV, modular fitting",
+          "itemType": "service"
+        }
+      ]
+    },
+    {
+      "code": "spares",
+      "label": "Spare parts (repair shop)",
+      "l2": [
+        {
+          "code": "repair-parts",
+          "label": "Mobile / appliance spares, filters",
+          "itemType": "physical"
+        }
+      ]
+    }
+  ]
+}
