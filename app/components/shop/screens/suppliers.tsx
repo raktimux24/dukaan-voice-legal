@@ -23,7 +23,7 @@ export function SuppliersScreen() {
   return (
     <div className="shop-page">
       <PageHeader
-        kicker="Stock"
+        kicker={t('reports.stock.on_hand', 'Stock')}
         title={t('suppliers.title', 'Suppliers')}
         description="Built from the supplier named on each batch. Spend is what this shop has paid them."
       />

@@ -9,6 +9,7 @@ import { formatDay, formatINR, formatWhen } from '../../../lib/shop/money';
 import type { AdjustmentReason, StockBatch } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
+import { SupplierField } from '../supplier-field';
 import { Button, Card, Field, Notice, PageHeader, Pill, Spinner, inputClass, isDenied } from '../ui';
 
 const REASONS: AdjustmentReason[] = ['damaged', 'expired', 'theft', 'correction', 'returned_to_supplier', 'personal_use', 'other'];
@@ -119,17 +120,17 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
   return (
     <div className="shop-page">
       <PageHeader
-        back={{ href: '/shop/products', label: 'Products' }}
+        back={{ href: '/shop/products', label: t('products.title', 'Products') }}
         kicker={labeledL1(product.category, (key) => t(key, key))}
         title={product.name}
         description={[product.barcode ? `Barcode ${product.barcode}` : null, labeledL2(product.category, product.subcategory, (key) => t(key, key)) || null].filter(Boolean).join(' · ') || undefined}
-        actions={perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="ghost">Edit details</Button> : null}
+        actions={perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="ghost">{t('common.edit', 'Edit details')}</Button> : null}
       />
       <Notice error={error ?? (batches.error && !isDenied(batches.error) ? batches.error : null)} />
 
       <div className="product-hero">
         <p className="product-qty">{formatQty(item.quantity, item.unit, { packSize: product.packSize, packLabel: product.packLabel })}</p>
-        <p className="party-meta">{product.sellingPrice != null ? `${formatINR(product.sellingPrice)} / ${item.unit}` : 'No selling price'}</p>
+        <p className="party-meta">{product.sellingPrice != null ? `${formatINR(product.sellingPrice)} / ${item.unit}` : t('home.unpriced', 'No selling price')}</p>
         {item.stockStatus === 'OUT' || item.stockStatus === 'LOW' ? (
           <Pill tone={item.stockStatus === 'OUT' ? 'danger' : 'warn'}>{item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out of stock') : t('home.stat_low_stock', 'Running low')}</Pill>
         ) : null}
@@ -137,35 +138,35 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       <div className="product-actions">
         <button type="button" className="product-action" onClick={() => setPanel((current) => current === 'adjust' ? null : 'adjust')}>
-          <span>Adjust stock</span>
-          <small>Remove or correct</small>
+          <span>{t('adjust.title', 'Adjust stock')}</span>
+          <small>{t('adjust.remove_qty', 'Remove or correct')}</small>
         </button>
         {perms.canEditProducts ? (
           <button type="button" className="product-action is-batch" onClick={() => setPanel((current) => current === 'batch' ? null : 'batch')}>
-            <span>Add batch</span>
-            <small>New stock in</small>
+            <span>{t('modal.product_detail.add_batch', 'Add batch')}</span>
+            <small>{t('reports.stock.units_in', 'New stock in')}</small>
           </button>
         ) : null}
         <button type="button" className="product-action is-sell" onClick={sell}>
-          <span>Sell</span>
-          <small>Add to the bill</small>
+          <span>{t('modal.product_detail.sell', 'Sell')}</span>
+          <small>{t('pos.add_to_cart', 'Add to the bill')}</small>
         </button>
       </div>
 
       {panel === 'adjust' ? (
         <Card className="stack-form">
           <h2 className="shop-section-title">{t('adjust.title', 'Adjust stock')}</h2>
-          <p className="shop-section-sub">Removing stock needs a reason. Setting the quantity replaces what is on hand.</p>
-          <Field label="Remove quantity">
+          <p className="shop-section-sub">{t('adjust.reason_label', 'Removing stock needs a reason.')}</p>
+          <Field label={t('adjust.remove_qty', 'Remove quantity')}>
             <input className={inputClass} inputMode="decimal" value={removeQty} onChange={(event) => setRemoveQty(event.target.value)} />
           </Field>
-          <Field label="Reason">
+          <Field label={t('adjust.reason_label', 'Reason')}>
             <select className={inputClass} value={reason} onChange={(event) => setReason(event.target.value as AdjustmentReason)}>
-              {REASONS.map((itemReason) => <option key={itemReason} value={itemReason}>{itemReason.replaceAll('_', ' ')}</option>)}
+              {REASONS.map((itemReason) => <option key={itemReason} value={itemReason}>{t(`adjust.reason.${itemReason}`, itemReason.replaceAll('_', ' '))}</option>)}
             </select>
           </Field>
-          <Field label="Note">
-            <input className={inputClass} value={note} onChange={(event) => setNote(event.target.value)} />
+          <Field label={t('adjust.note_placeholder', 'Note')}>
+            <input className={inputClass} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('adjust.note_placeholder', 'Optional')} />
           </Field>
           <Button
             disabled={pending || !(Number(removeQty) > 0)}
@@ -175,11 +176,11 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
               setNote('');
             })}
           >
-            Remove
+            {t('common.remove', 'Remove')}
           </Button>
           {perms.canEditProducts ? (
             <>
-              <Field label="Set on-hand quantity">
+              <Field label={t('reports.stock.on_hand', 'Set on-hand quantity')}>
                 <input className={inputClass} inputMode="decimal" value={setQty} placeholder={String(item.quantity)} onChange={(event) => setSetQty(event.target.value)} />
               </Field>
               <Button
@@ -187,7 +188,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
                 disabled={pending || setQty === '' || Number(setQty) === item.quantity}
                 onClick={() => void run(() => api.updateQuantity(shop.id, item.id, Number(setQty), hideCost).then(() => undefined))}
               >
-                Save quantity
+                {t('common.save', 'Save quantity')}
               </Button>
             </>
           ) : null}
@@ -218,14 +219,14 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
             }}
           >
             <h2 className="shop-section-title">{t('modal.product_detail.add_batch', 'Add batch')}</h2>
-            <p className="shop-section-sub">This is the stock the next sale will draw from, in {product.depletionOrder === 'fifo' ? 'first-in order' : 'soonest-expiry order'}.</p>
+            <p className="shop-section-sub">{product.depletionOrder === 'fifo' ? t('modal.product_detail.depletion_hint_fifo', 'Sold oldest first.') : t('modal.product_detail.depletion_hint_expiry', 'Sold soonest-expiry first.')}</p>
             <div className="form-grid is-2">
-              <Field label="Quantity"><input className={inputClass} inputMode="decimal" value={batchQty} onChange={(event) => setBatchQty(event.target.value)} required /></Field>
-              <Field label="Expiry"><input className={inputClass} type="date" value={expiry} onChange={(event) => setExpiry(event.target.value)} /></Field>
+              <Field label={t('modal.add_batch.quantity_label', 'Quantity')}><input className={inputClass} inputMode="decimal" value={batchQty} onChange={(event) => setBatchQty(event.target.value)} required /></Field>
+              <Field label={t('modal.add_product.expiry_date_label', 'Expiry')}><input className={inputClass} type="date" value={expiry} onChange={(event) => setExpiry(event.target.value)} /></Field>
               {!hideCost ? (
                 <>
-                  <Field label="Supplier"><input className={inputClass} value={supplier} onChange={(event) => setSupplier(event.target.value)} /></Field>
-                  <Field label="Purchase price"><input className={inputClass} inputMode="decimal" value={purchasePrice} onChange={(event) => setPurchasePrice(event.target.value)} /></Field>
+                  <SupplierField value={supplier} onChange={setSupplier} />
+                  <Field label={t('modal.add_batch.purchase_price_label', 'Purchase price')}><input className={inputClass} inputMode="decimal" value={purchasePrice} onChange={(event) => setPurchasePrice(event.target.value)} /></Field>
                 </>
               ) : null}
             </div>
@@ -277,18 +278,18 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
       <Card>
         <div className="product-batch-head">
           <h2 className="shop-section-title">{t('modal.product_detail.section_details', 'Details')}</h2>
-          {perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="quiet" size="sm">Edit</Button> : null}
+          {perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="quiet" size="sm">{t('common.edit', 'Edit')}</Button> : null}
         </div>
         <dl className="detail-list">
-          {!hideCost ? <div><dt>Last paid</dt><dd>{formatINR(product.purchasePrice)}</dd></div> : null}
-          <div><dt>Selling price</dt><dd>{product.sellingPrice == null ? '—' : formatINR(product.sellingPrice)}</dd></div>
-          <div><dt>MRP</dt><dd>{product.mrp == null ? '—' : formatINR(product.mrp)}</dd></div>
-          {!hideCost ? <div><dt>Margin on next sale</dt><dd>{margin == null || product.sellingPrice == null || product.sellingPrice <= 0 ? '—' : `${formatINR(margin)} · ${Math.round((margin / product.sellingPrice) * 100)}%`}</dd></div> : null}
-          {product.shortCode ? <div><dt>Short code</dt><dd>{product.shortCode}</dd></div> : null}
-          <div><dt>Low-stock alert</dt><dd>{product.minStockLevel > 0 ? formatQty(product.minStockLevel, item.unit) : '—'}</dd></div>
-          <div><dt>Unit</dt><dd>{item.unit}</dd></div>
-          <div><dt>Category</dt><dd>{[labeledL1(product.category, (key) => t(key, key)), labeledL2(product.category, product.subcategory, (key) => t(key, key))].filter(Boolean).join(' · ')}</dd></div>
-          <div><dt>Updated</dt><dd>{formatWhen(item.updatedAt)} · {item.updatedByName}</dd></div>
+          {!hideCost ? <div><dt>{t('modal.product_detail.detail_last_paid', 'Last paid')}</dt><dd>{formatINR(product.purchasePrice)}</dd></div> : null}
+          <div><dt>{t('modal.product_detail.detail_selling_price', 'Selling price')}</dt><dd>{product.sellingPrice == null ? '—' : formatINR(product.sellingPrice)}</dd></div>
+          <div><dt>{t('modal.product_detail.detail_mrp', 'MRP')}</dt><dd>{product.mrp == null ? '—' : formatINR(product.mrp)}</dd></div>
+          {!hideCost ? <div><dt>{t('modal.product_detail.detail_margin', 'Margin on next sale')}</dt><dd>{margin == null || product.sellingPrice == null || product.sellingPrice <= 0 ? '—' : `${formatINR(margin)} · ${Math.round((margin / product.sellingPrice) * 100)}%`}</dd></div> : null}
+          {product.shortCode ? <div><dt>{t('modal.product_detail.detail_short_code', 'Short code')}</dt><dd>{product.shortCode}</dd></div> : null}
+          <div><dt>{t('modal.product_detail.detail_min_stock', 'Low-stock alert')}</dt><dd>{product.minStockLevel > 0 ? formatQty(product.minStockLevel, item.unit) : '—'}</dd></div>
+          <div><dt>{t('modal.product_detail.detail_unit', 'Unit')}</dt><dd>{item.unit}</dd></div>
+          <div><dt>{t('modal.add_product.category_label', 'Category')}</dt><dd>{[labeledL1(product.category, (key) => t(key, key)), labeledL2(product.category, product.subcategory, (key) => t(key, key))].filter(Boolean).join(' · ')}</dd></div>
+          <div><dt>{t('modal.product_detail.detail_last_updated', 'Updated')}</dt><dd>{formatWhen(item.updatedAt)} · {item.updatedByName}</dd></div>
         </dl>
       </Card>
 
@@ -365,6 +366,7 @@ function BatchRow({
   onEdit: () => void;
   onSave: (body: Record<string, unknown>) => void;
 }) {
+  const { t } = useShop();
   const [qty, setQty] = useState(String(batch.quantity));
   const [nextSupplier, setNextSupplier] = useState(batch.supplier ?? '');
   const [nextExpiry, setNextExpiry] = useState(batch.expiryDate?.slice(0, 10) ?? '');
@@ -388,9 +390,9 @@ function BatchRow({
       </div>
       {editing ? (
         <div className="batch-edit">
-          <Field label="Quantity"><input className={inputClass} inputMode="decimal" value={qty} onChange={(event) => setQty(event.target.value)} /></Field>
-          {!hideCost ? <Field label="Supplier"><input className={inputClass} value={nextSupplier} onChange={(event) => setNextSupplier(event.target.value)} /></Field> : null}
-          <Field label="Expiry"><input className={inputClass} type="date" value={nextExpiry} onChange={(event) => setNextExpiry(event.target.value)} /></Field>
+          <Field label={t('modal.add_batch.quantity_label', 'Quantity')}><input className={inputClass} inputMode="decimal" value={qty} onChange={(event) => setQty(event.target.value)} /></Field>
+          {!hideCost ? <SupplierField value={nextSupplier} onChange={setNextSupplier} /> : null}
+          <Field label={t('modal.add_product.expiry_date_label', 'Expiry')}><input className={inputClass} type="date" value={nextExpiry} onChange={(event) => setNextExpiry(event.target.value)} /></Field>
           <Button
             size="sm"
             disabled={pending}

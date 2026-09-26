@@ -68,8 +68,8 @@ export function CustomerAttach() {
         <div className="stack-form">
           {premium && perms.canManageCustomers ? (
             <>
-              <Field label="Find a customer">
-                <input className={inputClass} placeholder="Name or phone" value={q} onChange={(event) => setQ(event.target.value)} />
+              <Field label={t('checkout.pick_customer', 'Find a customer')}>
+                <input className={inputClass} placeholder={t('customers.search', 'Name or phone')} value={q} onChange={(event) => setQ(event.target.value)} />
               </Field>
               {(customers.data?.customers ?? []).length > 0 ? (
                 <div className="shop-list">
@@ -100,10 +100,10 @@ export function CustomerAttach() {
             </>
           ) : null}
           <div className="form-grid is-2">
-            <Field label="New customer">
-              <input className={inputClass} placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} />
+            <Field label={t('customers.add_title', 'New customer')}>
+              <input className={inputClass} placeholder={t('customers.name', 'Name')} value={name} onChange={(event) => setName(event.target.value)} />
             </Field>
-            <Field label="Phone">
+            <Field label={t('checkout.phone_optional', 'Phone')}>
               <input className={inputClass} inputMode="tel" placeholder="10-digit mobile" value={phone} onChange={(event) => setPhone(event.target.value)} />
             </Field>
           </div>

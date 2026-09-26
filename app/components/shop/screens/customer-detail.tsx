@@ -37,7 +37,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
   return (
     <div className="shop-page">
       <PageHeader
-        kicker="Customer"
+        kicker={t('checkout.customer_title', 'Customer')}
         title={customer.name}
         description={customer.phone ?? undefined}
         actions={
@@ -53,21 +53,21 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
                 {t('customers.remind', 'Text reminder')}
               </Button>
             ) : null}
-            <Button href="/shop/customers" tone="quiet" size="sm">All customers</Button>
+            <Button href="/shop/customers" tone="quiet" size="sm">{t('customers.title', 'All customers')}</Button>
           </>
         }
       />
       <div className="dash-stats">
         <div className={`shop-stat ${customer.balance > 0 ? 'shop-stat--warn' : 'shop-stat--ok'}`}>
           <span className="shop-stat-n num">{formatINR(customer.balance)}</span>
-          <span className="shop-stat-l">Udhaar outstanding</span>
+          <span className="shop-stat-l">{t('customers.outstanding', 'Udhaar outstanding')}</span>
         </div>
       </div>
       <Notice error={error} />
       <Card className="grid gap-3">
         <h2 className="font-semibold">{t('customers.record_payment', 'Record payment')}</h2>
         <Field label={t('bill.amount', 'Amount')}><input className={inputClass} inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /></Field>
-        <Field label="Method">
+        <Field label={t('checkout.payment_method', 'Method')}>
           <select className={inputClass} value={method} onChange={(event) => setMethod(event.target.value as 'cash' | 'upi')}>
             <option value="cash">{t('pos.method.cash', 'Cash')}</option>
             <option value="upi">{t('pos.method.upi', 'UPI')}</option>
@@ -104,13 +104,13 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
             void api.updateCustomer(shop.id, customerId, body).then(() => queryClient.invalidateQueries({ queryKey: ['customer', shop.id, customerId] })).catch(setError);
           }}
         >
-          <Field label="Name"><input className={inputClass} value={shownName} onChange={(event) => { setReady(true); setName(event.target.value); }} /></Field>
-          <Field label="Phone"><input className={inputClass} value={shownPhone} onChange={(event) => { setReady(true); setPhone(event.target.value); }} /></Field>
+          <Field label={t('customers.name', 'Name')}><input className={inputClass} value={shownName} onChange={(event) => { setReady(true); setName(event.target.value); }} /></Field>
+          <Field label={t('pos_settings.shop_phone', 'Phone')}><input className={inputClass} value={shownPhone} onChange={(event) => { setReady(true); setPhone(event.target.value); }} /></Field>
           <Button type="submit">Save customer</Button>
         </form>
       </Card>
       <Card>
-        <h2 className="font-semibold">Ledger</h2>
+        <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
         <div className="mt-3 grid gap-2 text-sm">
           {(detail.data?.ledger ?? []).map((entry) => (
             <div key={entry.id} className="flex justify-between gap-3 border-t border-line pt-2">

@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
-import { UNITS, formatQty, isWeightOrVolume } from '../../../lib/shop/units';
+import { UNITS, formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
+import { SupplierField } from '../supplier-field';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, cx, inputClass } from '../ui';
 
 type Draft = {
@@ -182,10 +183,10 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       }}
     >
       <PageHeader
-        kicker="Catalog"
-        title={productId ? 'Edit product' : 'Add product'}
-        description={productId ? 'Changes save to the shop catalog and show on the phone after a refresh.' : 'Name, category, and a price are enough to start selling. Stock and batch details are optional.'}
-        actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">Cancel</Button>}
+        kicker={t('products.title', 'Catalog')}
+        title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
+        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : t('modal.add_product.section_initial_batch', 'Name, category, and a price are enough to start selling.')}
+        actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
       <Notice error={error} />
 
@@ -193,32 +194,32 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
         <div className="form-stack">
           <Card className="grid gap-5">
             <div>
-              <h2 className="shop-section-title">Product</h2>
-              <p className="shop-section-sub">What it is and how it is counted.</p>
+              <h2 className="shop-section-title">{t('products.title', 'Product')}</h2>
+              <p className="shop-section-sub">{t('modal.product_detail.section_details', 'What it is and how it is counted.')}</p>
             </div>
             <div className="form-grid">
-              <Field label="Name">
-                <input className="shop-field is-lg" value={form.name} onChange={(event) => set({ name: event.target.value })} required autoFocus={!productId} placeholder="e.g. Tata Salt 1 kg" />
+              <Field label={t('modal.add_product.name_label', 'Name')}>
+                <input className="shop-field is-lg" value={form.name} onChange={(event) => set({ name: event.target.value })} required autoFocus={!productId} placeholder={t('modal.add_product.name_placeholder', 'e.g. Tata Salt 1 kg')} />
               </Field>
               <div className="form-grid is-2">
-                <Field label="Category">
+                <Field label={t('modal.add_product.category_label', 'Category')}>
                   <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '' })}>
                     {l1.map((row) => <option key={row.code} value={row.code}>{labeledL1(row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
-                <Field label="Sub-category">
+                <Field label={t('modal.add_product.subcategory_label', 'Sub-category')}>
                   <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value })} required>
                     {subs.map((row) => <option key={row.code} value={row.code}>{labeledL2(form.category, row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
               </div>
               <div className="form-grid is-2">
-                <Field label="Barcode" hint="Scan into this field with a USB scanner, or type it.">
+                <Field label={t('modal.add_product.barcode_label', 'Barcode')} hint={t('modal.add_product.barcode_placeholder', 'Scan or enter barcode')}>
                   <input className={cx(inputClass, 'num')} value={form.barcode} onChange={(event) => set({ barcode: event.target.value })} inputMode="numeric" />
                 </Field>
-                <Field label="Unit" hint={isWeightOrVolume(form.unit) ? 'Sold by weight or volume; the counter accepts decimals.' : 'Sold in whole numbers.'}>
+                <Field label={t('modal.add_product.unit_label', 'Unit')}>
                   <select className={inputClass} value={form.unit} onChange={(event) => set({ unit: event.target.value })}>
-                    {UNITS.map((unit) => <option key={unit} value={unit}>{unit}</option>)}
+                    {UNITS.map((unit) => <option key={unit} value={unit}>{t(unit === 'packet' ? 'unit_picker.pack' : unit === 'L' ? 'unit_picker.liter' : unit === 'mL' ? 'unit_picker.ml' : `unit_picker.${unit}`, unit)}</option>)}
                   </select>
                 </Field>
               </div>
@@ -227,51 +228,47 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
 
           <Card className="grid gap-5">
             <div>
-              <h2 className="shop-section-title">Pricing</h2>
-              <p className="shop-section-sub">The selling price is what the counter charges. MRP prints on the bill when it is higher.</p>
+              <h2 className="shop-section-title">{t('modal.add_product.selling_price_label', 'Pricing')}</h2>
+              <p className="shop-section-sub">{t('modal.add_product.mrp_label', 'MRP prints on the bill when it is higher.')}</p>
             </div>
             <div className={cx('form-grid', hideCost ? 'is-2' : 'is-3')}>
-              {money(form.sellingPrice, (next) => set({ sellingPrice: next }), 'Selling price', 'Leave empty to price at the counter later.')}
-              {money(form.mrp, (next) => set({ mrp: next }), 'MRP')}
-              {!hideCost ? money(form.purchasePrice, (next) => set({ purchasePrice: next }), 'Purchase price', 'Your cost. Hidden from helpers.') : null}
+              {money(form.sellingPrice, (next) => set({ sellingPrice: next }), t('modal.add_product.selling_price_label', 'Selling price'), t('modal.add_product.selling_price_placeholder', 'Leave empty to price at the counter later.'))}
+              {money(form.mrp, (next) => set({ mrp: next }), t('modal.product_detail.detail_mrp', 'MRP'))}
+              {!hideCost ? money(form.purchasePrice, (next) => set({ purchasePrice: next }), t('modal.add_product.purchase_price_label', 'Purchase price'), t('modal.add_product.purchase_price_placeholder', 'Your cost. Hidden from helpers.')) : null}
             </div>
           </Card>
 
           <Card className="grid gap-5">
             <div>
-              <h2 className="shop-section-title">Stock</h2>
-              <p className="shop-section-sub">{productId ? 'Add or edit batches from the product page.' : 'Opening stock creates the first batch.'}</p>
+              <h2 className="shop-section-title">{t('reports.stock.on_hand', 'Stock')}</h2>
+              <p className="shop-section-sub">{productId ? t('modal.add_product.edit_note', 'Add or edit batches from the product page.') : t('modal.add_product.section_initial_batch', 'Opening stock creates the first batch.')}</p>
             </div>
             <div className="form-grid is-2">
               <label className="shop-toggle">
                 <span>
-                  Track stock
-                  <span className="block text-xs text-muted">Turn off for services or items you never count.</span>
+                  {t('modal.add_product.track_stock_label', 'Track stock')}
+                  <span className="block text-xs text-muted">{t('modal.add_product.track_stock_hint', 'Turn off for services or items you never count.')}</span>
                 </span>
                 <input type="checkbox" className="shop-field" checked={form.trackStock} onChange={(event) => set({ trackStock: event.target.checked })} />
               </label>
-              <Field label="Low-stock alert at" hint={`Alerts when on-hand falls to this many ${form.unit}.`}>
+              <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
                 <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
               </Field>
             </div>
             {!productId && form.trackStock ? (
               <div className="form-grid is-2">
-                <Field label="Opening stock">
+                <Field label={t('modal.add_product.quantity_label', 'Opening stock')}>
                   <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.initialStock} onChange={(event) => set({ initialStock: event.target.value })} />
                 </Field>
-                {!hideCost ? (
-                  <Field label="Supplier" hint="Suppliers are built from this field.">
-                    <input className={inputClass} value={form.supplier} onChange={(event) => set({ supplier: event.target.value })} />
-                  </Field>
-                ) : null}
-                <Field label="Batch number">
+                {!hideCost ? <SupplierField value={form.supplier} onChange={(supplier) => set({ supplier })} /> : null}
+                <Field label={t('modal.add_product.batch_number_label', 'Batch number')}>
                   <input className={inputClass} value={form.batchNumber} onChange={(event) => set({ batchNumber: event.target.value })} />
                 </Field>
                 <div className="form-grid is-2">
-                  <Field label="Purchased on">
+                  <Field label={t('modal.add_product.purchase_date_label', 'Purchased on')}>
                     <input className={inputClass} type="date" value={form.purchaseDate} onChange={(event) => set({ purchaseDate: event.target.value })} />
                   </Field>
-                  <Field label="Expires on">
+                  <Field label={t('modal.add_product.expiry_date_label', 'Expires on')}>
                     <input className={inputClass} type="date" value={form.expiryDate} onChange={(event) => set({ expiryDate: event.target.value })} />
                   </Field>
                 </div>
@@ -281,16 +278,16 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
 
           <Card>
             <details className="form-details" open={!!(form.shortCode || form.packSize || form.packLabel)}>
-              <summary>More options: short code and pack size</summary>
+              <summary>{t('modal.add_product.short_code_label', 'Short code')} · {t('modal.add_product.pack_name', 'Pack size')}</summary>
               <div className="form-grid is-3">
-                <Field label="Short code" hint="Type this at the counter to add the product.">
-                  <input className={inputClass} value={form.shortCode} onChange={(event) => set({ shortCode: event.target.value })} placeholder="e.g. TS1" />
+                <Field label={t('modal.add_product.short_code_label', 'Short code')} hint={t('modal.add_product.short_code_placeholder', 'Type this at the counter to add the product.')}>
+                  <input className={inputClass} value={form.shortCode} onChange={(event) => set({ shortCode: event.target.value })} placeholder={t('modal.add_product.short_code_placeholder', 'e.g. TS1')} />
                 </Field>
-                <Field label="Pack size" hint={`How many ${form.unit} make one pack.`}>
+                <Field label={t('modal.add_product.pack_size', '{{unit}} per pack', { unit: form.unit })} hint={t('modal.add_product.packs_hint', 'How many {{unit}} make one pack.', { unit: form.unit })}>
                   <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.packSize} onChange={(event) => set({ packSize: event.target.value })} />
                 </Field>
-                <Field label="Pack label">
-                  <input className={inputClass} value={form.packLabel} onChange={(event) => set({ packLabel: event.target.value })} placeholder="e.g. case, strip" />
+                <Field label={t('modal.add_product.pack_name', 'Pack label')}>
+                  <input className={inputClass} value={form.packLabel} onChange={(event) => set({ packLabel: event.target.value })} placeholder={t('modal.add_product.pack_name_placeholder', 'e.g. case, strip')} />
                 </Field>
               </div>
             </details>
@@ -299,29 +296,29 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
 
         <aside className="form-aside">
           <Card className="form-summary">
-            <p className="shop-kicker">{productId ? 'Saving changes to' : 'Adding'}</p>
-            <p className="form-summary-name">{form.name.trim() || 'New product'}</p>
+            <p className="shop-kicker">{productId ? t('common.saving', 'Saving changes to') : t('modal.add_product.title', 'Adding')}</p>
+            <p className="form-summary-name">{form.name.trim() || t('modal.add_product.title', 'New product')}</p>
             <div className="grid gap-2">
-              <p className="form-summary-row"><span>Category</span><b>{labeledL1(form.category, (key) => t(key, key))}{form.subcategory ? ` · ${labeledL2(form.category, form.subcategory, (key) => t(key, key))}` : ''}</b></p>
-              <p className="form-summary-row"><span>Sells at</span><b className="num">{selling == null ? 'Price at counter' : `${formatINR(selling)} / ${form.unit}`}</b></p>
-              {form.mrp !== '' ? <p className="form-summary-row"><span>MRP</span><b className="num">{formatINR(Number(form.mrp))}</b></p> : null}
+              <p className="form-summary-row"><span>{t('modal.add_product.category_label', 'Category')}</span><b>{labeledL1(form.category, (key) => t(key, key))}{form.subcategory ? ` · ${labeledL2(form.category, form.subcategory, (key) => t(key, key))}` : ''}</b></p>
+              <p className="form-summary-row"><span>{t('modal.add_product.selling_price_label', 'Sells at')}</span><b className="num">{selling == null ? t('pos.set_price', 'Price at counter') : `${formatINR(selling)} / ${form.unit}`}</b></p>
+              {form.mrp !== '' ? <p className="form-summary-row"><span>{t('modal.product_detail.detail_mrp', 'MRP')}</span><b className="num">{formatINR(Number(form.mrp))}</b></p> : null}
               {!productId ? (
-                <p className="form-summary-row"><span>Opening stock</span><b className="num">{form.trackStock ? formatQty(opening, form.unit) : 'Not tracked'}</b></p>
+                <p className="form-summary-row"><span>{t('modal.add_product.quantity_label', 'Opening stock')}</span><b className="num">{form.trackStock ? formatQty(opening, form.unit) : t('pos.no_stock_tracking', 'Not tracked')}</b></p>
               ) : null}
-              {form.barcode.trim() ? <p className="form-summary-row"><span>Barcode</span><b className="num">{form.barcode.trim()}</b></p> : null}
+              {form.barcode.trim() ? <p className="form-summary-row"><span>{t('modal.add_product.barcode_label', 'Barcode')}</span><b className="num">{form.barcode.trim()}</b></p> : null}
             </div>
             {!hideCost && marginPct != null ? (
               <div className={cx('form-margin', marginPct < 0 && 'is-negative')}>
-                <strong className="num">{marginPct.toFixed(1)}%</strong> margin · {formatINR(selling! - cost!)} per {form.unit}
+                {t('modal.add_product.margin_line', '{{pct}}% margin · {{margin}} per {{unit}}', { pct: marginPct.toFixed(1), margin: formatINR(selling! - cost!), unit: form.unit })}
               </div>
             ) : null}
             <div className="grid gap-2">
-              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? 'Saving…' : productId ? 'Save changes' : 'Save product'}</Button>
+              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
               {!productId ? (
                 <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>Save and add another</Button>
               ) : null}
             </div>
-            {!form.name.trim() ? <p className="text-center text-xs text-faint">A name is required.</p> : null}
+            {!form.name.trim() ? <p className="text-center text-xs text-faint">{t('modal.add_product.alert_name_required', 'A name is required.')}</p> : null}
           </Card>
         </aside>
       </div>

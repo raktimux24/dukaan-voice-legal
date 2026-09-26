@@ -330,7 +330,7 @@ export function ReportsScreen() {
   return (
     <div className="shop-page">
       <PageHeader
-        kicker="Insights"
+        kicker={t('reports.title', 'Insights')}
         title={t('reports.title', 'Reports')}
         description="Sales and stock for the period you pick. Switch the view without losing the dates."
         actions={
@@ -384,7 +384,7 @@ export function ReportsScreen() {
             void api.ask(shop.id, text, prefs?.appLanguage).then((result) => setAnswer(result.answer)).catch(setError).finally(() => setAsking(false));
           }}
         >
-          <Field label="Ask about this shop">
+          <Field label={t('modal.analytics.ask_placeholder', 'Ask about this shop')}>
             <textarea className={inputClass} value={question} onChange={(event) => setQuestion(event.target.value)} />
           </Field>
           {premium ? <Button type="submit" disabled={asking || !question.trim()}>{asking ? 'Asking…' : 'Ask'}</Button> : <PremiumLock shopId={shop.id} feature="analytics" />}

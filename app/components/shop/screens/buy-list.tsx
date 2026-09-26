@@ -26,7 +26,7 @@ export function BuyListScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader kicker="Stock" title={t('nav.buy_list', 'Buy list')} description="What to buy next. Stocking a row adds a batch to the product." />
+      <PageHeader kicker={t('reports.stock.on_hand', 'Stock')} title={t('nav.buy_list', 'Buy list')} description={t('buy_list.empty_subtitle', 'What to buy next. Stocking a row adds a batch to the product.')} />
       <Notice error={error ?? list.error} />
       <Card>
         <form

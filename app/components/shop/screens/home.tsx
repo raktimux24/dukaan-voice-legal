@@ -336,7 +336,7 @@ export function HomeScreen() {
 
           {(nudges.data?.nudges.length ?? 0) > 0 ? (
             <section>
-              <SectionHead title="Suggestions" sub="Based on this shop’s recent activity" />
+              <SectionHead title={t('nudge.section.for_you', 'Suggestions')} sub={t('home.section_recently_updated', 'Based on this shop’s recent activity')} />
               <Card flush>
                 {(nudges.data?.nudges ?? []).slice(0, 4).map((nudge) => {
                   const action = nudge.action?.type ?? '';

@@ -42,7 +42,7 @@ export function StaffScreen() {
     <div className="shop-page">
       <PageHeader
         back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
-        kicker="People"
+        kicker={t('customers.title', 'People')}
         title={t('modal.staff.title', 'Staff')}
         description="Members of this shop, their roles, and the invite codes they join with."
       />

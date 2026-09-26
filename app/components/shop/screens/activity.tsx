@@ -81,7 +81,7 @@ export function ActivityScreen() {
   return (
     <div className="shop-page">
       <PageHeader
-        kicker="Insights"
+        kicker={t('reports.title', 'Insights')}
         title={t('activity.title', 'Activity')}
         description="Every stock change, sale, void, and staff change in this shop."
         actions={

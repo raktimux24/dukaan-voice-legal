@@ -23,7 +23,7 @@ export function CustomersScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader kicker="People" title={t('customers.title', 'Customers')} description="Profiles and the udhaar ledger. Credit sales at checkout land here." />
+      <PageHeader kicker={t('customers.title', 'People')} title={t('customers.title', 'Customers')} description={t('customers.empty_subtitle', 'Profiles and the udhaar ledger. Credit sales at checkout land here.')} />
       <div className="dash-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
         <div className="shop-stat shop-stat--warn"><span className="shop-stat-n num">{summary.isLoading ? '…' : formatINR(summary.data?.outstandingTotal)}</span><span className="shop-stat-l">{t('customers.outstanding', 'Outstanding udhaar')}</span></div>
         <div className="shop-stat"><span className="shop-stat-n num">{summary.data?.debtorCount ?? '…'}</span><span className="shop-stat-l">{t('customers.debtors', 'People with udhaar')}</span></div>
@@ -49,7 +49,7 @@ export function CustomersScreen() {
           }}
         >
           <Field label={t('customers.name', 'Name')}><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
-          <Field label="Phone"><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" /></Field>
+          <Field label={t('pos_settings.shop_phone', 'Phone')}><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" /></Field>
           <Button type="submit" disabled={!name.trim()}>{t('checkout.add_customer', 'Add customer')}</Button>
         </form>
       </Card>

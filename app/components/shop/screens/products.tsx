@@ -63,7 +63,7 @@ export function ProductsScreen() {
   return (
     <div className="shop-page">
       <PageHeader
-        kicker="Stock"
+        kicker={t('reports.stock.on_hand', 'Stock')}
         title={t('products.title', 'Products')}
         description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
         actions={

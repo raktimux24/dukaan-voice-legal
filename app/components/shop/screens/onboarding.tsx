@@ -30,8 +30,8 @@ export function OnboardingScreen() {
 
   return (
     <div className="mx-auto grid max-w-xl gap-4">
-      <h1 className="font-display text-3xl">Open your shop</h1>
-      <p className="text-muted">Create a shop or join one with an invite code. Voice stays on the phone.</p>
+      <h1 className="font-display text-3xl">{t('onboarding.create.title', 'Open your shop')}</h1>
+      <p className="text-muted">{t('onboarding.create.subtitle', 'Create a shop or join one with an invite code.')}</p>
       <div className="flex gap-2">
         <Button tone={mode === 'create' ? 'primary' : 'ghost'} onClick={() => setMode('create')}>{t('onboarding.create.button', 'Create shop')}</Button>
         <Button tone={mode === 'join' ? 'primary' : 'ghost'} onClick={() => setMode('join')}>{t('onboarding.join.button', 'Join with code')}</Button>
@@ -60,19 +60,19 @@ export function OnboardingScreen() {
             }}
           >
             <Field label={t('onboarding.create.name_label', 'Shop name')}><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
-            <Field label="Type">
+            <Field label={t('onboarding.create.category_label', 'Type')}>
               <select className={inputClass} value={category} onChange={(event) => { setCategory(event.target.value); setSubtype(shopType(event.target.value).subtypes[0]?.code ?? ''); }}>
                 {CATALOG.shopTypes.map((type) => <option key={type.code} value={type.code}>{type.label}</option>)}
               </select>
             </Field>
-            <Field label="Subtype">
+            <Field label={t('onboarding.create.subtype_label', 'Subtype')}>
               <select className={inputClass} value={subtype} onChange={(event) => setSubtype(event.target.value)}>
                 {subtypes.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
               </select>
             </Field>
-            <Field label="Phone"><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} required inputMode="tel" /></Field>
-            <Field label="Address"><input className={inputClass} value={address} onChange={(event) => setAddress(event.target.value)} required /></Field>
-            <Field label="City"><input className={inputClass} value={city} onChange={(event) => setCity(event.target.value)} required /></Field>
+            <Field label={t('onboarding.create.phone_label', 'Phone')}><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} required inputMode="tel" placeholder={t('onboarding.create.phone_placeholder', '10-digit mobile number')} /></Field>
+            <Field label={t('onboarding.create.address_label', 'Address')}><input className={inputClass} value={address} onChange={(event) => setAddress(event.target.value)} required placeholder={t('onboarding.create.address_placeholder', 'Shop street, area, landmark')} /></Field>
+            <Field label={t('onboarding.create.city_label', 'City')}><input className={inputClass} value={city} onChange={(event) => setCity(event.target.value)} required placeholder={t('onboarding.create.city_placeholder', 'e.g. Kanpur')} /></Field>
             <Button type="submit" disabled={pending || !name.trim()}>{pending ? t('onboarding.create.button_loading', 'Creating…') : t('onboarding.create.button', 'Create shop')}</Button>
           </form>
         </Card>

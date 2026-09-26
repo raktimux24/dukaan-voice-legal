@@ -231,7 +231,7 @@ export function CheckoutScreen() {
           ) : null}
 
           <section>
-            <SectionHead title={t('checkout.payment_method', 'Payment')} sub="How is the customer paying?" />
+            <SectionHead title={t('checkout.payment_method', 'Payment')} />
             <div className="shop-seg is-wrap" role="tablist" aria-label={t('checkout.payment_method', 'Payment method')}>
               {modes.map((item) => (
                 <button key={item} type="button" role="tab" aria-selected={mode === item} className={cx(mode === item && 'is-active')} onClick={() => remember(item)}>
@@ -336,7 +336,7 @@ export function CheckoutScreen() {
           <Card className="grid gap-3">
             <div className="flex items-baseline justify-between gap-3">
               <h3 className="shop-section-title">{t('checkout.customer_title', 'Customer')}</h3>
-              <span className="text-sm text-muted">{creditPortion > 0 ? 'Required for udhaar' : 'Optional'}</span>
+              <span className="text-sm text-muted">{creditPortion > 0 ? t('checkout.upi_ref_required', 'Required for udhaar') : t('checkout.optional', 'Optional')}</span>
             </div>
             <CustomerAttach />
             {creditBlocked ? <p className="text-sm text-danger">{t('checkout.credit_needs_customer', 'Udhaar needs a customer on the bill.')}</p> : null}
@@ -344,14 +344,14 @@ export function CheckoutScreen() {
           </Card>
 
           <Card className="form-grid is-2">
-            <Field label={t('checkout.bill_discount', 'Bill discount')} hint="Applied to the whole bill, on top of any line discounts.">
+            <Field label={t('checkout.bill_discount', 'Bill discount')} hint={t('bill.discount', 'Applied to the whole bill.')}>
               <div className="shop-input-wrap">
                 <span className="shop-input-prefix">₹</span>
                 <input className={cx(inputClass, 'num')} inputMode="decimal" value={cartApi.cart.billDiscount || ''} onChange={(event) => cartApi.patch({ billDiscount: Number(event.target.value || 0) })} />
               </div>
             </Field>
             <Field label={t('checkout.note_placeholder', 'Note')}>
-              <input className={inputClass} value={cartApi.cart.note} onChange={(event) => cartApi.patch({ note: event.target.value })} placeholder="Printed on the bill" />
+              <input className={inputClass} value={cartApi.cart.note} onChange={(event) => cartApi.patch({ note: event.target.value })} placeholder={t('checkout.note_placeholder', 'Printed on the bill')} />
             </Field>
           </Card>
         </div>
