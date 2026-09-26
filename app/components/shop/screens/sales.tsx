@@ -11,6 +11,13 @@ import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, Pill, PremiumL
 
 const PERIODS = ['today', 'yesterday', 'week', 'month'] as const;
 
+function periodLabel(period: (typeof PERIODS)[number], t: (key: string, fallback: string) => string) {
+  if (period === 'today') return t('sales.period.today', 'Today');
+  if (period === 'yesterday') return t('common.time_yesterday', 'Yesterday');
+  if (period === 'week') return t('sales.period.7d', 'Week');
+  return t('sales.period.month', 'Month');
+}
+
 export function SalesScreen() {
   const { api, shop, perms, premium, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number] | 'custom'>('today');
@@ -48,7 +55,7 @@ export function SalesScreen() {
       <PageHeader
         kicker="Counter"
         title={t('sales.title', 'Sales')}
-        description={sales.data ? `${sales.data.total} ${sales.data.total === 1 ? 'bill' : 'bills'} in this range` : undefined}
+        description={sales.data ? t('reports.sales.bills_n', '{{n}} bills', { n: sales.data.total }) : undefined}
         actions={
           perms.canSeeReports ? (
             premium ? (
@@ -58,22 +65,22 @@ export function SalesScreen() {
                   void api.salesCsv(shop.id, period === 'custom' ? { from: applied.from, to: applied.to } : { period }).then((csv) => downloadText(`sales-${period}.csv`, csv)).catch(setError);
                 }}
               >
-                Export CSV
+                {t('reports.sales.export_csv', 'Export CSV')}
               </Button>
-            ) : <Button href="/shop/settings/subscription" tone="ghost">CSV needs Premium</Button>
+            ) : <Button href="/shop/settings/subscription" tone="ghost">{t('reports.sales.export_csv', 'CSV')} · {t('subscription.status.active', 'Premium')}</Button>
           ) : null
         }
       />
       <Notice error={error ?? (sales.error && !isPremiumError(sales.error) ? sales.error : null)} />
       {isPremiumError(error) || isPremiumError(sales.error) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
       <div className="pos-chips" role="tablist" aria-label="Bill type">
-        <Chip active={desk === 'all'} onClick={() => setDesk('all')}>All bills</Chip>
-        <Chip active={desk === 'udhaar'} onClick={() => setDesk('udhaar')}>Udhaar</Chip>
+        <Chip active={desk === 'all'} onClick={() => setDesk('all')}>{t('sales.status_filter.all', 'All bills')}</Chip>
+        <Chip active={desk === 'udhaar'} onClick={() => setDesk('udhaar')}>{t('reports.sales.udhaar', 'Udhaar')}</Chip>
       </div>
       <div className="flex flex-wrap items-end gap-3">
         <div className="pos-chips">
           {PERIODS.map((item) => (
-            <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{item[0].toUpperCase() + item.slice(1)}</Chip>
+            <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{periodLabel(item, t)}</Chip>
           ))}
           <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>Custom range</Chip>
         </div>
@@ -88,7 +95,7 @@ export function SalesScreen() {
           </div>
         ) : null}
       </div>
-      {sales.data?.limitedToDays ? <p className="text-sm text-muted">Showing the last {sales.data.limitedToDays} days.</p> : null}
+      {sales.data?.limitedToDays ? <p className="text-sm text-muted">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: sales.data.limitedToDays })}</p> : null}
       {sales.isLoading ? <Spinner label="Loading sales" /> : null}
       <Card flush>
         <div className="shop-list">
@@ -104,11 +111,11 @@ export function SalesScreen() {
               </div>
               <div className="shop-list-right flex items-center gap-4">
                 <p className="num font-semibold">{formatINR(sale.total)}</p>
-                {sale.status === 'voided' ? <Pill tone="danger">Voided</Pill> : sale.paymentStatus === 'credit' ? <Pill tone="warn">Udhaar</Pill> : sale.paymentStatus === 'partial' ? <Pill tone="warn">Partial</Pill> : <Pill tone="ok">Paid</Pill>}
+                {sale.status === 'voided' ? <Pill tone="danger">{t('sales.status_filter.voided', 'Voided')}</Pill> : sale.paymentStatus === 'credit' ? <Pill tone="warn">{t('reports.sales.udhaar', 'Udhaar')}</Pill> : sale.paymentStatus === 'partial' ? <Pill tone="warn">Partial</Pill> : <Pill tone="ok">{t('bill.paid', 'Paid')}</Pill>}
               </div>
             </Link>
           ))}
-          {!sales.isLoading && rows.length === 0 ? <p className="shop-list-empty">{desk === 'udhaar' ? 'No udhaar bills in this range.' : 'No bills in this range.'}</p> : null}
+          {!sales.isLoading && rows.length === 0 ? <p className="shop-list-empty">{t('sales.empty_title', 'No bills in this range.')}</p> : null}
         </div>
       </Card>
     </div>

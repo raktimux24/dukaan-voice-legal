@@ -30,10 +30,15 @@ function delta(today: number | undefined, yesterday: number | undefined) {
   return { pct, dir: pct > 0 ? ('up' as const) : pct < 0 ? ('down' as const) : ('flat' as const) };
 }
 
+function methodName(method: string, t: (key: string, fallback: string) => string) {
+  return t(`pos.method.${method}`, METHOD_LABELS[method] ?? method);
+}
+
 function SplitBar({ summary }: { summary: SalesSummary }) {
+  const { t } = useShop();
   const parts = Object.entries(summary.byMethod ?? {}).filter(([, amount]) => amount > 0);
   const total = parts.reduce((sum, [, amount]) => sum + amount, 0);
-  if (total <= 0) return <p className="text-sm text-muted">No payments yet today.</p>;
+  if (total <= 0) return <p className="text-sm text-muted">{t('sales.empty_subtitle', 'No payments yet today.')}</p>;
   return (
     <div className="dash-split">
       <div className="dash-split-bar" aria-hidden="true">
@@ -45,7 +50,7 @@ function SplitBar({ summary }: { summary: SalesSummary }) {
         {parts.map(([method, amount]) => (
           <span key={method} className="num">
             <i style={{ background: METHOD_COLORS[method] ?? '#5a5a62' }} />
-            {METHOD_LABELS[method] ?? method} {formatINR(amount)}
+            {methodName(method, t)} {formatINR(amount)}
           </span>
         ))}
       </div>
@@ -119,10 +124,10 @@ export function HomeScreen() {
   const avgBill = today.data && today.data.bills > 0 ? today.data.revenue / today.data.bills : 0;
 
   const attention = [
-    { key: 'low_stock', label: 'Low stock', n: stats.data?.lowStock, tone: 'shop-stat--warn' },
-    { key: 'out_of_stock', label: 'Out of stock', n: stats.data?.outOfStock, tone: 'shop-stat--danger' },
-    { key: 'near_expiry', label: 'Near expiry', n: stats.data?.nearExpiry, tone: 'shop-stat--warn' },
-    ...(perms.canEditProducts ? [{ key: 'unpriced', label: 'Unpriced', n: catalog.isLoading ? undefined : unpriced, tone: 'shop-stat--ok' }] : []),
+    { key: 'low_stock', label: t('home.stat_low_stock', 'Low stock'), n: stats.data?.lowStock, tone: 'shop-stat--warn' },
+    { key: 'out_of_stock', label: t('home.stat_out_of_stock', 'Out of stock'), n: stats.data?.outOfStock, tone: 'shop-stat--danger' },
+    { key: 'near_expiry', label: t('home.stat_near_expiry', 'Near expiry'), n: stats.data?.nearExpiry, tone: 'shop-stat--warn' },
+    ...(perms.canEditProducts ? [{ key: 'unpriced', label: t('home.filter_unpriced', 'Unpriced'), n: catalog.isLoading ? undefined : unpriced, tone: 'shop-stat--ok' }] : []),
   ];
 
   const searching = query.trim().length > 0;
@@ -136,21 +141,21 @@ export function HomeScreen() {
         actions={
           <>
             <Link href="/shop/alerts" className="shop-alert">
-              Alerts
+              {t('modal.alerts.title', 'Alerts')}
               {alerts.data?.counts.total ? <span className="shop-alert-count">{alerts.data.counts.total}</span> : null}
             </Link>
-            {perms.canEditProducts ? <Button href="/shop/products/new" tone="ghost">Add product</Button> : null}
-            <Button href="/shop/sell">New sale</Button>
+            {perms.canEditProducts ? <Button href="/shop/products/new" tone="ghost">{t('products.add', 'Add product')}</Button> : null}
+            <Button href="/shop/sell">{t('home.action_new_sale', 'New sale')}</Button>
           </>
         }
       />
 
       <input
         className="shop-field is-lg"
-        placeholder="Search products, bills, customers"
+        placeholder={t('home.search_placeholder', 'Search products, bills, customers')}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        aria-label="Search the shop"
+        aria-label={t('home.search_placeholder', 'Search the shop')}
       />
 
       {searching ? (
@@ -160,17 +165,17 @@ export function HomeScreen() {
               <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.product.name}</p>
-                  <p className="shop-list-meta">Product · {formatQty(item.quantity, item.unit)}</p>
+                  <p className="shop-list-meta">{t('home.search_products', 'Product')} · {formatQty(item.quantity, item.unit)}</p>
                 </div>
-                <p className="shop-list-right num">{item.product.sellingPrice == null ? 'Unpriced' : formatINR(item.product.sellingPrice)}</p>
+                <p className="shop-list-right num">{item.product.sellingPrice == null ? t('home.filter_unpriced', 'Unpriced') : formatINR(item.product.sellingPrice)}</p>
               </Link>
             ))}
             {perms.canSeeReports
               ? search.data?.sales.map((sale) => (
                   <Link key={sale.id} href={`/shop/sales/${sale.id}`} className="shop-list-row">
                     <div className="shop-list-main">
-                      <p className="shop-list-title">Bill #{sale.saleNumber}</p>
-                      <p className="shop-list-meta">{sale.customerName ?? 'Walk-in'} · {formatTime(sale.soldAt)}</p>
+                      <p className="shop-list-title">{t('home.search_bill', 'Bill #{{n}}', { n: sale.saleNumber })}</p>
+                      <p className="shop-list-meta">{sale.customerName ?? t('checkout.customer_title', 'Walk-in')} · {formatTime(sale.soldAt)}</p>
                     </div>
                     <p className="shop-list-right num">{formatINR(sale.total)}</p>
                   </Link>
@@ -181,7 +186,7 @@ export function HomeScreen() {
                   <Link key={customer.id} href={`/shop/customers/${customer.id}`} className="shop-list-row">
                     <div className="shop-list-main">
                       <p className="shop-list-title">{customer.name}</p>
-                      <p className="shop-list-meta">Customer{customer.phone ? ` · ${customer.phone}` : ''}</p>
+                      <p className="shop-list-meta">{t('customers.title', 'Customer')}{customer.phone ? ` · ${customer.phone}` : ''}</p>
                     </div>
                     <p className="shop-list-right num">{formatINR(customer.balance)}</p>
                   </Link>
@@ -192,13 +197,13 @@ export function HomeScreen() {
                   <Link key={supplier.name} href={`/shop/suppliers/${encodeURIComponent(supplier.name)}`} className="shop-list-row">
                     <div className="shop-list-main">
                       <p className="shop-list-title">{supplier.name}</p>
-                      <p className="shop-list-meta">Supplier · {supplier.products} products</p>
+                      <p className="shop-list-meta">{t('suppliers.title', 'Supplier')} · {supplier.products} {t('suppliers.stat_products', 'products')}</p>
                     </div>
                   </Link>
                 ))
               : null}
             {!localHits.length && !search.data?.sales.length && !search.data?.customers.length && !search.data?.suppliers.length ? (
-              <p className="shop-list-empty">{search.isLoading ? 'Searching…' : 'No matches.'}</p>
+              <p className="shop-list-empty">{search.isLoading ? '…' : t('home.search_empty_title', 'No matches.')}</p>
             ) : null}
           </div>
         </Card>
@@ -208,28 +213,28 @@ export function HomeScreen() {
             <div className="dash-hero">
               <section className="dash-revenue shop-surface">
                 <div>
-                  <p className="shop-kicker">Today</p>
+                  <p className="shop-kicker">{t('home.section_today', 'Today')}</p>
                   <p className="dash-revenue-n num">
                     {today.isLoading ? '…' : formatINR(today.data?.revenue ?? 0)}
                     {revenueDelta && !today.isLoading ? (
                       <span className={`dash-delta is-${revenueDelta.dir}`}>
                         {revenueDelta.dir === 'up' ? '▲' : revenueDelta.dir === 'down' ? '▼' : '•'}
-                        {revenueDelta.pct == null ? 'new' : `${Math.abs(revenueDelta.pct)}%`} vs yesterday
+                        {revenueDelta.pct == null ? '•' : `${Math.abs(revenueDelta.pct)}%`} {t('common.time_yesterday', 'vs yesterday')}
                       </span>
                     ) : null}
                   </p>
                 </div>
                 <div className="dash-facts">
                   <div>
-                    <p className="dash-fact-l">Bills</p>
+                    <p className="dash-fact-l">{t('sales.summary.bills', 'Bills')}</p>
                     <p className="dash-fact-n num">{today.isLoading ? '…' : today.data?.bills ?? 0}</p>
                   </div>
                   <div>
-                    <p className="dash-fact-l">Average bill</p>
+                    <p className="dash-fact-l">{t('sales.summary.avg_bill', 'Average bill')}</p>
                     <p className="dash-fact-n num">{today.isLoading ? '…' : formatINR(avgBill)}</p>
                   </div>
                   <div>
-                    <p className="dash-fact-l">{premium && today.data?.udhaar ? 'Udhaar given' : 'Discounts'}</p>
+                    <p className="dash-fact-l">{premium && today.data?.udhaar ? t('reports.sales.udhaar', 'Udhaar') : t('bill.discount', 'Discounts')}</p>
                     <p className="dash-fact-n num">
                       {today.isLoading ? '…' : formatINR(premium && today.data?.udhaar ? today.data.udhaar.givenInRange : today.data?.discounts ?? 0)}
                     </p>
@@ -240,9 +245,9 @@ export function HomeScreen() {
 
               <section className="dash-brief shop-surface">
                 <div>
-                  <p className="shop-kicker">Daily brief</p>
+                  <p className="shop-kicker">{t('brief.home_card', 'Daily brief')}</p>
                   <p className="dash-brief-body mt-2">
-                    {brief.isLoading ? 'Preparing today’s brief…' : brief.data?.today?.body || brief.data?.today?.title || 'Nothing pressing yet. The brief fills in as the day goes on.'}
+                    {brief.isLoading ? '…' : brief.data?.today?.body || brief.data?.today?.title || t('brief.nothing_urgent', 'Nothing pressing yet. The brief fills in as the day goes on.')}
                   </p>
                 </div>
                 {brief.data?.items.length ? (
@@ -253,7 +258,9 @@ export function HomeScreen() {
                   </div>
                 ) : null}
                 <Link href="/shop/brief" className="shop-section-link">
-                  Open brief{brief.data?.items.length ? ` · ${brief.data.items.length} actions` : ''}
+                  {brief.data?.items.length
+                    ? t(brief.data.items.length === 1 ? 'brief.n_actions_one' : 'brief.n_actions', 'Open brief', { n: brief.data.items.length })
+                    : t('brief.title', 'Open brief')}
                 </Link>
               </section>
             </div>
@@ -270,7 +277,7 @@ export function HomeScreen() {
 
           <div className="dash-columns">
             <section>
-              <SectionHead title="Recent bills" sub={perms.canSeeReports ? 'Today, newest first' : 'Your bills today'} link={{ href: '/shop/sales', label: 'All sales' }} />
+              <SectionHead title={t('sales.title', 'Recent bills')} sub={t('home.section_today', 'Today')} link={{ href: '/shop/sales', label: t('sales.title', 'All sales') }} />
               <Card flush>
                 <div className="shop-list">
                   {(recent.data?.sales ?? []).map((sale) => (
@@ -283,14 +290,14 @@ export function HomeScreen() {
                         <p className="shop-list-meta">
                           {formatTime(sale.soldAt)}
                           {sale.customerName ? ` · ${sale.customerName}` : ''}
-                          {sale.status === 'voided' ? ' · voided' : ''}
+                          {sale.status === 'voided' ? ` · ${t('sales.status_filter.voided', 'voided')}` : ''}
                         </p>
                       </div>
                       <div className="shop-list-right">
                         <p className="num font-semibold">{formatINR(sale.total)}</p>
                         <p className="mt-1 flex justify-end gap-1">
                           {sale.methods.map((method) => (
-                            <Pill key={method} tone={method === 'credit' ? 'warn' : 'neutral'}>{METHOD_LABELS[method] ?? method}</Pill>
+                            <Pill key={method} tone={method === 'credit' ? 'warn' : 'neutral'}>{methodName(method, t)}</Pill>
                           ))}
                         </p>
                       </div>
@@ -305,7 +312,7 @@ export function HomeScreen() {
             </section>
 
             <section>
-              <SectionHead title="Needs attention" sub="Out of stock and running low" link={{ href: '/shop/products?filter=low_stock', label: 'All low stock' }} />
+              <SectionHead title={t('home.attention', 'Needs attention')} sub={`${t('home.stat_out_of_stock', 'Out of stock')} · ${t('home.stat_low_stock', 'Running low')}`} link={{ href: '/shop/products?filter=low_stock', label: t('home.filter_low_stock', 'All low stock') }} />
               <Card flush>
                 <div className="shop-list">
                   {attentionItems.map((item) => (
@@ -313,11 +320,11 @@ export function HomeScreen() {
                       <div className="shop-list-main">
                         <p className="shop-list-title">{item.product.name}</p>
                         <p className="shop-list-meta">
-                          {formatQty(item.quantity, item.unit)} on hand
+                          {formatQty(item.quantity, item.unit)} {t('reports.stock.on_hand', 'on hand')}
                           {item.product.minStockLevel > 0 ? ` · min ${formatQty(item.product.minStockLevel, item.unit)}` : ''}
                         </p>
                       </div>
-                      <Pill tone={stockTone(item)}>{item.stockStatus === 'OUT' ? 'Out' : 'Low'}</Pill>
+                      <Pill tone={stockTone(item)}>{item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : t('home.stat_low_stock', 'Low')}</Pill>
                     </Link>
                   ))}
                   {catalog.isLoading ? <p className="shop-list-empty">Checking stock…</p> : null}
@@ -361,7 +368,7 @@ export function HomeScreen() {
 
           {!catalog.isLoading && (catalog.data?.length ?? 0) === 0 ? (
             <Card>
-              <h2 className="font-display text-xl">No products yet</h2>
+              <h2 className="font-display text-xl">{t('home.empty_title', 'No products yet')}</h2>
               <p className="mt-2 text-muted">Add the first product, then sell it from the counter.</p>
               {perms.canEditProducts ? <div className="mt-4"><Button href="/shop/products/new">Add product</Button></div> : null}
             </Card>

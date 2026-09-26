@@ -7,7 +7,7 @@ import { Button, Card, Field, inputClass, Notice } from '../ui';
 import { useShop } from '../context';
 
 export function OnboardingScreen() {
-  const { api, refreshShops, selectShop, shops } = useShop();
+  const { api, refreshShops, selectShop, shops, t } = useShop();
   const router = useRouter();
   const [mode, setMode] = useState<'create' | 'join'>(shops.length ? 'join' : 'create');
   const [error, setError] = useState<unknown>(null);
@@ -33,8 +33,8 @@ export function OnboardingScreen() {
       <h1 className="font-display text-3xl">Open your shop</h1>
       <p className="text-muted">Create a shop or join one with an invite code. Voice stays on the phone.</p>
       <div className="flex gap-2">
-        <Button tone={mode === 'create' ? 'primary' : 'ghost'} onClick={() => setMode('create')}>Create shop</Button>
-        <Button tone={mode === 'join' ? 'primary' : 'ghost'} onClick={() => setMode('join')}>Join with code</Button>
+        <Button tone={mode === 'create' ? 'primary' : 'ghost'} onClick={() => setMode('create')}>{t('onboarding.create.button', 'Create shop')}</Button>
+        <Button tone={mode === 'join' ? 'primary' : 'ghost'} onClick={() => setMode('join')}>{t('onboarding.join.button', 'Join with code')}</Button>
       </div>
       <Notice error={error} />
       {mode === 'create' ? (
@@ -59,7 +59,7 @@ export function OnboardingScreen() {
                 .finally(() => setPending(false));
             }}
           >
-            <Field label="Shop name"><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
+            <Field label={t('onboarding.create.name_label', 'Shop name')}><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
             <Field label="Type">
               <select className={inputClass} value={category} onChange={(event) => { setCategory(event.target.value); setSubtype(shopType(event.target.value).subtypes[0]?.code ?? ''); }}>
                 {CATALOG.shopTypes.map((type) => <option key={type.code} value={type.code}>{type.label}</option>)}
@@ -73,7 +73,7 @@ export function OnboardingScreen() {
             <Field label="Phone"><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} required inputMode="tel" /></Field>
             <Field label="Address"><input className={inputClass} value={address} onChange={(event) => setAddress(event.target.value)} required /></Field>
             <Field label="City"><input className={inputClass} value={city} onChange={(event) => setCity(event.target.value)} required /></Field>
-            <Button type="submit" disabled={pending || !name.trim()}>{pending ? 'Creating…' : 'Create shop'}</Button>
+            <Button type="submit" disabled={pending || !name.trim()}>{pending ? t('onboarding.create.button_loading', 'Creating…') : t('onboarding.create.button', 'Create shop')}</Button>
           </form>
         </Card>
       ) : (
@@ -91,8 +91,8 @@ export function OnboardingScreen() {
                 .finally(() => setPending(false));
             }}
           >
-            <Field label="Invite code"><input className={inputClass} value={code} onChange={(event) => setCode(event.target.value)} required autoCapitalize="characters" /></Field>
-            <Button type="submit" disabled={pending || !code.trim()}>{pending ? 'Joining…' : 'Join shop'}</Button>
+            <Field label={t('onboarding.join.code_label', 'Invite code')}><input className={inputClass} value={code} onChange={(event) => setCode(event.target.value)} required autoCapitalize="characters" /></Field>
+            <Button type="submit" disabled={pending || !code.trim()}>{pending ? t('onboarding.join.button_loading', 'Joining…') : t('onboarding.join.button', 'Join shop')}</Button>
           </form>
         </Card>
       )}

@@ -41,7 +41,7 @@ export function StaffScreen() {
   return (
     <div className="shop-page">
       <PageHeader
-        back={{ href: '/shop/settings', label: 'Settings' }}
+        back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
         kicker="People"
         title={t('modal.staff.title', 'Staff')}
         description="Members of this shop, their roles, and the invite codes they join with."
@@ -49,22 +49,22 @@ export function StaffScreen() {
       <Notice error={error ?? members.error} />
       <Card className="stack-form">
         <div>
-          <h2 className="shop-section-title">Invite codes</h2>
-          <p className="shop-section-sub">Managers see cost and can edit the catalog. Helpers can sell and remove stock.</p>
+          <h2 className="shop-section-title">{t('onboarding.invite.title', 'Invite codes')}</h2>
+          <p className="shop-section-sub">{t('onboarding.invite.manager_desc', 'Managers see cost and can edit the catalog.')} {t('onboarding.invite.helper_desc', 'Helpers can sell and remove stock.')}</p>
         </div>
         <div className="party-stats invite-pair">
           <div className="party-stat">
-            <span>Manager</span>
+            <span>{t('role.manager', 'Manager')}</span>
             <b className="invite-code">{shop.managerInviteCode ?? 'Hidden'}</b>
           </div>
           <div className="party-stat">
-            <span>Helper</span>
+            <span>{t('role.helper', 'Helper')}</span>
             <b className="invite-code">{shop.helperInviteCode ?? 'Hidden'}</b>
           </div>
         </div>
         <div className="shop-actions">
-          <Button tone="ghost" onClick={() => void copy(shop.managerInviteCode)}>Copy manager code</Button>
-          <Button tone="ghost" onClick={() => void copy(shop.helperInviteCode)}>Copy helper code</Button>
+          <Button tone="ghost" onClick={() => void copy(shop.managerInviteCode)}>{t('onboarding.invite.copy_link', 'Copy')} {t('role.manager', 'manager')}</Button>
+          <Button tone="ghost" onClick={() => void copy(shop.helperInviteCode)}>{t('onboarding.invite.copy_link', 'Copy')} {t('role.helper', 'helper')}</Button>
           <Button
             tone="ghost"
             disabled={pending}
@@ -89,12 +89,12 @@ export function StaffScreen() {
                   <p className="party-name">{name}</p>
                   <p className="party-meta">{member.user.email}</p>
                 </div>
-                <Pill tone={roleTone(member.role)}>{member.role.toLowerCase()}</Pill>
+                <Pill tone={roleTone(member.role)}>{t(`role.${member.role.toLowerCase()}`, member.role.toLowerCase())}</Pill>
               </div>
               <div className="party-stats">
                 <div className="party-stat"><span>Joined</span><b>{formatDay(member.joinedAt)}</b></div>
                 <div className="party-stat"><span>Last active</span><b>{formatDay(member.lastActiveAt)}</b></div>
-                <div className="party-stat"><span>Phone</span><b>{member.user.phoneNumber || '—'}</b></div>
+                <div className="party-stat"><span>{t('pos_settings.shop_phone', 'Phone')}</span><b>{member.user.phoneNumber || '—'}</b></div>
               </div>
               {member.role !== 'OWNER' ? (
                 <div className="shop-actions">
@@ -103,7 +103,7 @@ export function StaffScreen() {
                     tone="ghost"
                     onClick={() => void api.updateMemberRole(shop.id, member.id, member.role === 'MANAGER' ? 'HELPER' : 'MANAGER').then(() => queryClient.invalidateQueries({ queryKey: ['members', shop.id] })).catch(setError)}
                   >
-                    Make {member.role === 'MANAGER' ? 'helper' : 'manager'}
+                    {t('modal.staff.make_role', 'Make {{role}}', { role: t(`role.${member.role === 'MANAGER' ? 'helper' : 'manager'}`, member.role === 'MANAGER' ? 'helper' : 'manager') })}
                   </Button>
                   <Button
                     size="sm"
@@ -113,7 +113,7 @@ export function StaffScreen() {
                       void api.removeMember(shop.id, member.id).then(() => queryClient.invalidateQueries({ queryKey: ['members', shop.id] })).catch(setError);
                     }}
                   >
-                    Remove
+                    {t('common.remove', 'Remove')}
                   </Button>
                 </div>
               ) : null}
@@ -122,7 +122,7 @@ export function StaffScreen() {
         })}
       </div>
       <Card className="danger-zone stack-form">
-        <h2 className="shop-section-title">Delete shop</h2>
+        <h2 className="shop-section-title">{t('modal.shop_settings.delete_shop', 'Delete shop')}</h2>
         <p className="shop-section-sub">The subscription is cancelled first. If that fails, the shop stays.</p>
         <div className="shop-actions">
           <Button
@@ -140,7 +140,7 @@ export function StaffScreen() {
               });
             }}
           >
-            Delete shop
+            {t('modal.shop_settings.delete_shop', 'Delete shop')}
           </Button>
         </div>
       </Card>

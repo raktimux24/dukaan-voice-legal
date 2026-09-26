@@ -12,6 +12,15 @@ import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Button, Card, Chip, PageHeader, Pill, Spinner } from '../ui';
 
+function productFilterLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
+  if (id === 'all') return t('home.filter_all', fallback);
+  if (id === 'low_stock') return t('home.filter_low_stock', fallback);
+  if (id === 'out_of_stock') return t('home.filter_out_of_stock', fallback);
+  if (id === 'near_expiry') return t('home.filter_near_expiry', fallback);
+  if (id === 'unpriced') return t('home.filter_unpriced', fallback);
+  return fallback;
+}
+
 const FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'low_stock', label: 'Low stock' },
@@ -59,18 +68,18 @@ export function ProductsScreen() {
         description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
         actions={
           <>
-            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}>Export CSV</Button>
-            {perms.canEditProducts ? <Button href="/shop/products/new">Add product</Button> : null}
+            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
+            {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
           </>
         }
       />
       <div className="flex flex-wrap items-center gap-3">
         <div className="pos-chips">
           {FILTERS.filter((item) => item.id !== 'unpriced' || perms.canEditProducts).map((item) => (
-            <Chip key={item.id} active={filter === item.id} href={item.id === 'all' ? '/shop/products' : `/shop/products?filter=${item.id}`}>{item.label}</Chip>
+            <Chip key={item.id} active={filter === item.id} href={item.id === 'all' ? '/shop/products' : `/shop/products?filter=${item.id}`}>{productFilterLabel(item.id, item.label, t)}</Chip>
           ))}
         </div>
-        <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder="Filter by name or barcode" value={q} onChange={(event) => setQ(event.target.value)} aria-label="Filter products" />
+        <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder={t('products.search', 'Filter by name or barcode')} value={q} onChange={(event) => setQ(event.target.value)} aria-label={t('products.search', 'Filter products')} />
       </div>
       {catalog.isLoading ? <Spinner label="Loading products" /> : null}
       <Card flush>
@@ -79,17 +88,17 @@ export function ProductsScreen() {
             <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
               <div className="shop-list-main">
                 <p className="shop-list-title">{item.product.name}</p>
-                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {formatQty(item.quantity, item.unit)} on hand</p>
+                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {formatQty(item.quantity, item.unit)} {t('reports.stock.on_hand', 'on hand')}</p>
               </div>
               <div className="shop-list-right flex items-center gap-4">
-                <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">Unpriced</span> : formatINR(item.product.sellingPrice)}</p>
+                <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">{t('home.filter_unpriced', 'Unpriced')}</span> : formatINR(item.product.sellingPrice)}</p>
                 <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
-                  {item.stockStatus === 'OUT' ? 'Out' : item.stockStatus === 'LOW' ? 'Low' : 'In stock'}
+                  {item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : item.stockStatus === 'LOW' ? t('home.stat_low_stock', 'Low') : t('reports.stock.on_hand', 'In stock')}
                 </Pill>
               </div>
             </Link>
           ))}
-          {!catalog.isLoading && rows.length === 0 ? <p className="shop-list-empty">No products in this view.</p> : null}
+          {!catalog.isLoading && rows.length === 0 ? <p className="shop-list-empty">{t('products.empty_filtered', 'No products in this view.')}</p> : null}
         </div>
       </Card>
     </div>

@@ -131,7 +131,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
         <p className="product-qty">{formatQty(item.quantity, item.unit, { packSize: product.packSize, packLabel: product.packLabel })}</p>
         <p className="party-meta">{product.sellingPrice != null ? `${formatINR(product.sellingPrice)} / ${item.unit}` : 'No selling price'}</p>
         {item.stockStatus === 'OUT' || item.stockStatus === 'LOW' ? (
-          <Pill tone={item.stockStatus === 'OUT' ? 'danger' : 'warn'}>{item.stockStatus === 'OUT' ? 'Out of stock' : 'Running low'}</Pill>
+          <Pill tone={item.stockStatus === 'OUT' ? 'danger' : 'warn'}>{item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out of stock') : t('home.stat_low_stock', 'Running low')}</Pill>
         ) : null}
       </div>
 
@@ -154,7 +154,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       {panel === 'adjust' ? (
         <Card className="stack-form">
-          <h2 className="shop-section-title">Adjust stock</h2>
+          <h2 className="shop-section-title">{t('adjust.title', 'Adjust stock')}</h2>
           <p className="shop-section-sub">Removing stock needs a reason. Setting the quantity replaces what is on hand.</p>
           <Field label="Remove quantity">
             <input className={inputClass} inputMode="decimal" value={removeQty} onChange={(event) => setRemoveQty(event.target.value)} />
@@ -217,7 +217,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
               });
             }}
           >
-            <h2 className="shop-section-title">Add batch</h2>
+            <h2 className="shop-section-title">{t('modal.product_detail.add_batch', 'Add batch')}</h2>
             <p className="shop-section-sub">This is the stock the next sale will draw from, in {product.depletionOrder === 'fifo' ? 'first-in order' : 'soonest-expiry order'}.</p>
             <div className="form-grid is-2">
               <Field label="Quantity"><input className={inputClass} inputMode="decimal" value={batchQty} onChange={(event) => setBatchQty(event.target.value)} required /></Field>
@@ -236,7 +236,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       <Card flush>
         <div className="card-intro product-batch-head">
-          <h2 className="shop-section-title">Batches</h2>
+          <h2 className="shop-section-title">{t('modal.product_detail.section_batches', 'Batches')}</h2>
           <div className="shop-seg" role="group" aria-label="Batch list">
             <button type="button" className={!showAll ? 'is-active' : undefined} onClick={() => setShowAll(false)}>Active</button>
             <button type="button" className={showAll ? 'is-active' : undefined} onClick={() => setShowAll(true)}>All</button>
@@ -276,7 +276,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       <Card>
         <div className="product-batch-head">
-          <h2 className="shop-section-title">Details</h2>
+          <h2 className="shop-section-title">{t('modal.product_detail.section_details', 'Details')}</h2>
           {perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="quiet" size="sm">Edit</Button> : null}
         </div>
         <dl className="detail-list">
@@ -294,7 +294,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       {productLogs.length > 0 ? (
         <Card>
-          <h2 className="shop-section-title">Activity</h2>
+          <h2 className="shop-section-title">{t('modal.product_detail.section_activity', 'Activity')}</h2>
           <div className="detail-list">
             {productLogs.map((log) => (
               <div key={log.id}>

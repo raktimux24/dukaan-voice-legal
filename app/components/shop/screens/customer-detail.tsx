@@ -8,7 +8,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
 
 export function CustomerDetailScreen({ customerId }: { customerId: string }) {
-  const { api, shop, perms, premium } = useShop();
+  const { api, shop, perms, premium, t } = useShop();
   const queryClient = useQueryClient();
   const enabled = !!shop && perms.canManageCustomers && premium;
   const detail = useQuery({
@@ -50,7 +50,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
                   window.location.href = `sms:${customer.phone}?body=${encodeURIComponent(message)}`;
                 }}
               >
-                Text reminder
+                {t('customers.remind', 'Text reminder')}
               </Button>
             ) : null}
             <Button href="/shop/customers" tone="quiet" size="sm">All customers</Button>
@@ -65,12 +65,12 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
       </div>
       <Notice error={error} />
       <Card className="grid gap-3">
-        <h2 className="font-semibold">Record payment</h2>
-        <Field label="Amount"><input className={inputClass} inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /></Field>
+        <h2 className="font-semibold">{t('customers.record_payment', 'Record payment')}</h2>
+        <Field label={t('bill.amount', 'Amount')}><input className={inputClass} inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /></Field>
         <Field label="Method">
           <select className={inputClass} value={method} onChange={(event) => setMethod(event.target.value as 'cash' | 'upi')}>
-            <option value="cash">Cash</option>
-            <option value="upi">UPI</option>
+            <option value="cash">{t('pos.method.cash', 'Cash')}</option>
+            <option value="upi">{t('pos.method.upi', 'UPI')}</option>
           </select>
         </Field>
         <Button

@@ -16,13 +16,21 @@ const PERIODS = [
   { id: 'year', label: 'This year' },
 ] as const;
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+const WEEKDAY_FALLBACK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const METHODS = [
   { id: 'cash', label: 'Cash' },
   { id: 'upi', label: 'UPI' },
   { id: 'card', label: 'Card' },
   { id: 'credit', label: 'Udhaar' },
 ] as const;
+
+function periodChip(id: string, t: (key: string, fallback: string) => string) {
+  if (id === 'today') return t('sales.period.today', 'Today');
+  if (id === 'week') return t('sales.period.7d', 'This week');
+  if (id === 'month') return t('sales.period.month', 'This month');
+  return 'This year';
+}
 
 function clockLabel(hour: number) {
   const suffix = hour >= 12 ? 'pm' : 'am';
@@ -81,17 +89,17 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
   const methodTotal = METHODS.reduce((sum, method) => sum + (summary?.byMethod?.[method.id] ?? 0), 0) || 1;
   const hours = summary?.byHour ?? [];
   const series = summary?.series ?? [];
-  const week = WEEKDAYS.map((label, dow) => ({
-    label,
+  const week = WEEKDAYS.map((id, dow) => ({
+    label: t(`reports.sales.dow.${id}`, WEEKDAY_FALLBACK[dow] ?? id),
     value: report.byWeekday?.find((day) => day.dow === dow)?.revenue ?? 0,
   }));
 
   return (
     <>
-      {report.limitedToDays ? <p className="party-meta">Free plan shows the last {report.limitedToDays} days.</p> : null}
+      {report.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: report.limitedToDays })}</p> : null}
       <div className="kpi-grid">
         <div className="kpi">
-          <p className="kpi-label">Revenue</p>
+          <p className="kpi-label">{t('sales.summary.revenue', 'Revenue')}</p>
           <p className="kpi-value">{formatINR(revenue)}</p>
           {report.comparison ? (
             <p className={report.comparison.deltaPct.revenue >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
@@ -101,7 +109,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           ) : null}
         </div>
         <div className="kpi">
-          <p className="kpi-label">Bills</p>
+          <p className="kpi-label">{t('sales.summary.bills', 'Bills')}</p>
           <p className="kpi-value">{summary?.bills ?? 0}</p>
           {report.comparison ? (
             <p className={report.comparison.deltaPct.bills >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
@@ -111,18 +119,18 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           ) : null}
         </div>
         <div className="kpi">
-          <p className="kpi-label">Avg bill</p>
+          <p className="kpi-label">{t('sales.summary.avg_bill', 'Avg bill')}</p>
           <p className="kpi-value">{formatINR(summary?.avgBill)}</p>
         </div>
         <div className="kpi">
-          <p className="kpi-label">{showCost ? 'Margin' : 'Items sold'}</p>
+          <p className="kpi-label">{showCost ? t('reports.sales.margin', 'Margin') : t('reports.sales.items_sold', 'Items sold')}</p>
           <p className="kpi-value">{showCost ? (summary?.marginPct == null ? '—' : `${summary.marginPct.toFixed(1)}%`) : summary?.itemsSold ?? 0}</p>
         </div>
       </div>
       <div className="dash-columns">
         <Card>
-          <h2 className="shop-section-title">By hour</h2>
-          <p className="shop-section-sub">{report.bestHour == null ? 'No sales in this period.' : `Busiest at ${clockLabel(report.bestHour)}.`}</p>
+          <h2 className="shop-section-title">{t('reports.sales.by_hour', 'By hour')}</h2>
+          <p className="shop-section-sub">{report.bestHour == null ? t('sales.empty_title', 'No sales in this period.') : t('reports.sales.best_hour_line', 'Busiest at {{hour}}.', { hour: clockLabel(report.bestHour) })}</p>
           <ColumnChart
             columns={hours.map((value, hour) => ({
               label: hour % 3 === 0 ? clockLabel(hour) : '',
@@ -131,14 +139,14 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           />
         </Card>
         <Card>
-          <h2 className="shop-section-title">By weekday</h2>
-          <p className="shop-section-sub">Revenue across the week.</p>
+          <h2 className="shop-section-title">{t('reports.sales.busy_days', 'By weekday')}</h2>
+          <p className="shop-section-sub">{t('sales.summary.revenue', 'Revenue')}</p>
           <ColumnChart columns={week.map((day) => ({ label: day.label, bars: [{ value: day.value }] }))} />
         </Card>
       </div>
       {series.length > 0 ? (
         <Card>
-          <h2 className="shop-section-title">Over the period</h2>
+          <h2 className="shop-section-title">{t('reports.sales.by_day', 'Over the period')}</h2>
           <ColumnChart
             columns={series.map((point, index) => ({
               label: series.length > 14 && index % Math.ceil(series.length / 8) !== 0 ? '' : shortDay(point.date),
@@ -149,16 +157,16 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
       ) : null}
       <div className="dash-columns">
         <Card>
-          <h2 className="shop-section-title">How it was paid</h2>
+          <h2 className="shop-section-title">{t('reports.sales.payment_mix', 'How it was paid')}</h2>
           <ShareList
             rows={METHODS.map((method) => {
               const amount = summary?.byMethod?.[method.id] ?? 0;
-              return { key: method.id, label: method.label, pct: (amount / methodTotal) * 100, value: formatINR(amount) };
+              return { key: method.id, label: t(`pos.method.${method.id}`, method.label), pct: (amount / methodTotal) * 100, value: formatINR(amount) };
             })}
           />
         </Card>
         <Card>
-          <h2 className="shop-section-title">Categories</h2>
+          <h2 className="shop-section-title">{t('reports.sales.by_category', 'Categories')}</h2>
           <ShareList
             rows={(report.byCategory ?? []).map((row) => ({
               key: row.category,
@@ -170,28 +178,28 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
         </Card>
       </div>
       <div className="kpi-grid">
-        <div className="kpi"><p className="kpi-label">Items / bill</p><p className="kpi-value">{report.basket?.itemsPerBill?.toFixed(1) ?? '—'}</p></div>
-        <div className="kpi"><p className="kpi-label">Discounted bills</p><p className="kpi-value">{report.basket?.discountedBills ?? 0}</p></div>
-        <div className="kpi"><p className="kpi-label">Returns</p><p className="kpi-value">{formatINR(report.returns?.returnAmount)}</p></div>
-        <div className="kpi"><p className="kpi-label">Voids</p><p className="kpi-value">{report.returns?.voids ?? 0}</p></div>
+        <div className="kpi"><p className="kpi-label">{t('reports.sales.items_per_bill_label', 'Items / bill')}</p><p className="kpi-value">{report.basket?.itemsPerBill?.toFixed(1) ?? '—'}</p></div>
+        <div className="kpi"><p className="kpi-label">{t('reports.sales.bills_discounted', 'Discounted bills')}</p><p className="kpi-value">{report.basket?.discountedBills ?? 0}</p></div>
+        <div className="kpi"><p className="kpi-label">{t('sale_detail.returns', 'Returns')}</p><p className="kpi-value">{formatINR(report.returns?.returnAmount)}</p></div>
+        <div className="kpi"><p className="kpi-label">{t('sales.status_filter.voided', 'Voids')}</p><p className="kpi-value">{report.returns?.voids ?? 0}</p></div>
       </div>
       {showCost ? (
         <div className="kpi-grid">
-          <div className="kpi"><p className="kpi-label">Gross profit</p><p className="kpi-value">{formatINR(summary?.grossProfit)}</p></div>
+          <div className="kpi"><p className="kpi-label">{t('reports.sales.gross_profit', 'Gross profit')}</p><p className="kpi-value">{formatINR(summary?.grossProfit)}</p></div>
           <div className="kpi"><p className="kpi-label">Cost of goods</p><p className="kpi-value">{formatINR(summary?.cogs)}</p></div>
-          <div className="kpi"><p className="kpi-label">Cash in drawer</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p></div>
-          <div className="kpi"><p className="kpi-label">Discounts</p><p className="kpi-value">{formatINR(summary?.discounts)}</p></div>
+          <div className="kpi"><p className="kpi-label">{t('reports.sales.cash_in_drawer', 'Cash in drawer')}</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p></div>
+          <div className="kpi"><p className="kpi-label">{t('bill.discount', 'Discounts')}</p><p className="kpi-value">{formatINR(summary?.discounts)}</p></div>
         </div>
       ) : null}
       {(report.inputMethods ?? []).length > 0 ? (
         <Card>
-          <h2 className="shop-section-title">How bills were entered</h2>
+          <h2 className="shop-section-title">{t('reports.sales.input_methods', 'How bills were entered')}</h2>
           <ShareList
             rows={report.inputMethods.map((row) => ({
               key: row.method,
-              label: row.method,
+              label: t(`reports.sales.method_${row.method === 'manual' ? 'manual' : row.method === 'scan' ? 'scan' : row.method === 'voice' ? 'voice' : row.method}`, row.method),
               pct: summary?.bills ? (row.bills / summary.bills) * 100 : 0,
-              value: `${row.bills} bills`,
+              value: t('reports.sales.bills_n', '{{n}} bills', { n: row.bills }),
             }))}
           />
         </Card>
@@ -206,23 +214,23 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
   const products = onHand?.products || 1;
   const movement = report.movementByDay ?? [];
   const statuses = [
-    { key: 'OK', label: 'In stock', tone: 'is-ok' },
-    { key: 'LOW', label: 'Low', tone: 'is-warn' },
-    { key: 'OUT', label: 'Out', tone: 'is-danger' },
+    { key: 'OK', label: t('reports.stock.status_ok', 'In stock'), tone: 'is-ok' },
+    { key: 'LOW', label: t('reports.stock.status_low', 'Low'), tone: 'is-warn' },
+    { key: 'OUT', label: t('reports.stock.status_out', 'Out'), tone: 'is-danger' },
   ];
 
   return (
     <>
-      {report.limitedToDays ? <p className="party-meta">Movement covers the last {report.limitedToDays} days on this plan.</p> : null}
+      {report.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: report.limitedToDays })}</p> : null}
       <div className="kpi-grid">
-        <div className="kpi"><p className="kpi-label">Products</p><p className="kpi-value">{onHand?.products ?? 0}</p></div>
-        <div className="kpi"><p className="kpi-label">Units on hand</p><p className="kpi-value">{Math.round(onHand?.units ?? 0)}</p></div>
-        <div className="kpi"><p className="kpi-label">Retail value</p><p className="kpi-value">{formatINR(onHand?.retailValue)}</p></div>
-        {showCost ? <div className="kpi"><p className="kpi-label">Cost value</p><p className="kpi-value">{formatINR(onHand?.costValue)}</p></div> : null}
+        <div className="kpi"><p className="kpi-label">{t('reports.stock.products', 'Products')}</p><p className="kpi-value">{onHand?.products ?? 0}</p></div>
+        <div className="kpi"><p className="kpi-label">{t('reports.stock.units', 'Units on hand')}</p><p className="kpi-value">{Math.round(onHand?.units ?? 0)}</p></div>
+        <div className="kpi"><p className="kpi-label">{t('reports.stock.retail_value', 'Retail value')}</p><p className="kpi-value">{formatINR(onHand?.retailValue)}</p></div>
+        {showCost ? <div className="kpi"><p className="kpi-label">{t('reports.stock.value_at_cost', 'Cost value')}</p><p className="kpi-value">{formatINR(onHand?.costValue)}</p></div> : null}
       </div>
       <div className="dash-columns">
         <Card>
-          <h2 className="shop-section-title">Stock health</h2>
+          <h2 className="shop-section-title">{t('reports.stock.on_hand', 'Stock health')}</h2>
           <ShareList
             rows={statuses.map((status) => {
               const count = onHand?.byStatus?.[status.key]?.products ?? 0;
@@ -231,17 +239,17 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
           />
         </Card>
         <Card>
-          <h2 className="shop-section-title">Expiring</h2>
+          <h2 className="shop-section-title">{t('reports.stock.expiry', 'Expiring')}</h2>
           <div className="party-stats">
-            <div className="party-stat"><span>7 days</span><b>{report.expiry?.within7?.batches ?? 0}</b></div>
-            <div className="party-stat"><span>30 days</span><b>{report.expiry?.within30?.batches ?? 0}</b></div>
+            <div className="party-stat"><span>{t('sales.period.7d', '7 days')}</span><b>{report.expiry?.within7?.batches ?? 0}</b></div>
+            <div className="party-stat"><span>{t('sales.period.30d', '30 days')}</span><b>{report.expiry?.within30?.batches ?? 0}</b></div>
             <div className="party-stat"><span>60 days</span><b>{report.expiry?.within60?.batches ?? 0}</b></div>
           </div>
         </Card>
       </div>
       <Card>
-        <h2 className="shop-section-title">Movement</h2>
-        <p className="chart-legend"><i /> In <i className="is-ok" /> Sold</p>
+        <h2 className="shop-section-title">{t('reports.stock.movement', 'Movement')}</h2>
+        <p className="chart-legend"><i /> {t('reports.stock.units_in', 'In')} <i className="is-ok" /> {t('reports.stock.units_sold', 'Sold')}</p>
         {movement.length === 0 ? <p className="party-meta">No stock movement in this period.</p> : (
           <ColumnChart
             columns={movement.map((day, index) => ({
@@ -255,7 +263,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
         )}
       </Card>
       <Card>
-        <h2 className="shop-section-title">By category</h2>
+        <h2 className="shop-section-title">{t('reports.stock.value_by_category', 'By category')}</h2>
         <ShareList
           rows={(report.byCategory ?? []).map((row) => ({
             key: row.category,
@@ -268,7 +276,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
       {(report.expiry?.items.length ?? 0) > 0 ? (
         <Card flush>
           <div className="card-intro">
-            <h2 className="shop-section-title">Batches nearing expiry</h2>
+            <h2 className="shop-section-title">{t('reports.stock.expiry', 'Batches nearing expiry')}</h2>
           </div>
           <div className="shop-list">
             {report.expiry?.items.map((item) => (
@@ -327,17 +335,17 @@ export function ReportsScreen() {
         description="Sales and stock for the period you pick. Switch the view without losing the dates."
         actions={
           premium ? (
-            <Button tone="ghost" onClick={exportCsv}>{tab === 'sales' ? 'Sales CSV' : 'Stock movement CSV'}</Button>
-          ) : <Button href="/shop/settings/subscription" tone="ghost">CSV needs Premium</Button>
+            <Button tone="ghost" onClick={exportCsv}>{t('reports.sales.export_csv', tab === 'sales' ? 'Sales CSV' : 'Stock movement CSV')}</Button>
+          ) : <Button href="/shop/settings/subscription" tone="ghost">{t('reports.sales.export_csv', 'CSV')} · {t('subscription.status.active', 'Premium')}</Button>
         }
       />
       <div className="shop-toolbar">
         <div className="shop-seg" role="tablist" aria-label="Report">
-          <button type="button" role="tab" aria-selected={tab === 'sales'} className={tab === 'sales' ? 'is-active' : undefined} onClick={() => setTab('sales')}>Sales</button>
-          <button type="button" role="tab" aria-selected={tab === 'stock'} className={tab === 'stock' ? 'is-active' : undefined} onClick={() => setTab('stock')}>Stock</button>
+          <button type="button" role="tab" aria-selected={tab === 'sales'} className={tab === 'sales' ? 'is-active' : undefined} onClick={() => setTab('sales')}>{t('reports.tab.sales', 'Sales')}</button>
+          <button type="button" role="tab" aria-selected={tab === 'stock'} className={tab === 'stock' ? 'is-active' : undefined} onClick={() => setTab('stock')}>{t('reports.tab.stock', 'Stock')}</button>
         </div>
         <div className="pos-chips">
-          {PERIODS.map((item) => <Chip key={item.id} active={period === item.id} onClick={() => setPeriod(item.id)}>{item.label}</Chip>)}
+          {PERIODS.map((item) => <Chip key={item.id} active={period === item.id} onClick={() => setPeriod(item.id)}>{periodChip(item.id, t)}</Chip>)}
         </div>
       </div>
       <Notice error={error} />
@@ -349,7 +357,7 @@ export function ReportsScreen() {
       {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} /> : null}
       {tab === 'sales' && premium ? (
         <Card>
-          <h2 className="shop-section-title">Top products</h2>
+          <h2 className="shop-section-title">{t('reports.sales.top_products', 'Top products')}</h2>
           {top.isLoading ? <Spinner /> : null}
           <ShareList
             rows={(top.data?.products ?? []).map((product) => {

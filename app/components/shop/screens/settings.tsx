@@ -6,9 +6,11 @@ import { auditCsv, downloadText, inventoryCsv } from '../../../lib/shop/csv';
 import { useShop } from '../context';
 import { Button, Card, Field, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
+/** Values accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
 const LANGUAGES = [
   ['en', 'English'],
   ['hi', 'हिन्दी'],
+  ['hinglish', 'Hinglish'],
   ['bn', 'বাংলা'],
   ['ta', 'தமிழ்'],
   ['te', 'తెలుగు'],
@@ -16,8 +18,6 @@ const LANGUAGES = [
   ['kn', 'ಕನ್ನಡ'],
   ['gu', 'ગુજરાતી'],
   ['ml', 'മലയാളം'],
-  ['pa', 'ਪੰਜਾਬੀ'],
-  ['or', 'ଓଡ଼ିଆ'],
 ] as const;
 
 const SIZES = ['small', 'medium', 'large', 'extra_large'] as const;
@@ -37,19 +37,19 @@ export function SettingsScreen() {
         <Card flush>
           <div className="shop-list">
             <Link href="/shop/settings/shop" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.shop_settings', 'Shop profile')}</p><p className="shop-list-meta">Name, type, contact details</p></div>
+              <div className="shop-list-main"><p className="shop-list-title">{t('settings.shop_settings', 'Shop profile')}</p><p className="shop-list-meta">{t('modal.shop_settings.name_label', 'Name')}, {t('modal.shop_settings.subtype_label', 'type')}, {t('modal.shop_settings.phone_label', 'contact')}</p></div>
               <span className="text-muted">›</span>
             </Link>
             <Link href="/shop/settings/payments" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.payments_bills', 'Payments and UPI')}</p><p className="shop-list-meta">UPI ID, QR, default tender, void window</p></div>
+              <div className="shop-list-main"><p className="shop-list-title">{t('settings.payments_bills', 'Payments and UPI')}</p><p className="shop-list-meta">{t('pos_settings.upi_id', 'UPI ID')}, {t('pos_settings.bill_section', 'bills')}</p></div>
               <span className="text-muted">›</span>
             </Link>
             <Link href="/shop/settings/staff" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.manage_staff', 'Staff and invites')}</p><p className="shop-list-meta">Members, roles, invite codes</p></div>
+              <div className="shop-list-main"><p className="shop-list-title">{t('settings.manage_staff', 'Staff and invites')}</p><p className="shop-list-meta">{t('onboarding.invite.subtitle', 'Members, roles, invite codes')}</p></div>
               <span className="text-muted">›</span>
             </Link>
             <Link href="/shop/settings/subscription" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('subscription.section_title', 'Subscription')}</p><p className="shop-list-meta">{premium ? 'Premium is active' : 'Free plan'} · plans, invoices, and Razorpay</p></div>
+              <div className="shop-list-main"><p className="shop-list-title">{t('subscription.section_title', 'Subscription')}</p><p className="shop-list-meta">{premium ? t('subscription.status.active', 'Premium') : t('subscription.status.legacy_free', 'Free plan')}</p></div>
               <span className="text-muted">›</span>
             </Link>
           </div>
@@ -66,18 +66,18 @@ export function SettingsScreen() {
       ) : null}
       <Card className="grid gap-4">
         <div>
-          <h2 className="shop-section-title">Preferences</h2>
-          <p className="shop-section-sub">These apply to this shop workspace on every device you sign in on.</p>
+          <h2 className="shop-section-title">{t('settings.section_language_voice', 'Preferences')}</h2>
+          <p className="shop-section-sub">{t('settings.section_display', 'These apply to this shop workspace on every device you sign in on.')}</p>
         </div>
         <div className="form-grid is-2">
         <Field label={t('settings.app_language', 'App language')}>
-          <select className={inputClass} value={prefs?.appLanguage ?? 'en'} onChange={(event) => void savePrefs({ appLanguage: event.target.value }).catch(setError)}>
+          <select className={inputClass} value={LANGUAGES.some(([code]) => code === prefs?.appLanguage) ? prefs?.appLanguage : 'en'} onChange={(event) => void savePrefs({ appLanguage: event.target.value }).catch(setError)}>
             {LANGUAGES.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
           </select>
         </Field>
         <Field label={t('settings.text_size', 'Text size')}>
           <select className={inputClass} value={prefs?.textSize ?? 'medium'} onChange={(event) => void savePrefs({ textSize: event.target.value }).catch(setError)}>
-            {SIZES.map((size) => <option key={size} value={size}>{size.replace('_', ' ')}</option>)}
+            {SIZES.map((size) => <option key={size} value={size}>{t(`text_size.${size}`, size.replace('_', ' '))}</option>)}
           </select>
         </Field>
         <label className="shop-toggle">
@@ -94,8 +94,8 @@ export function SettingsScreen() {
       </Card>
       <Card className="grid gap-4">
         <div>
-          <h2 className="shop-section-title">Exports</h2>
-          <p className="shop-section-sub">CSV files open in Excel or Google Sheets.</p>
+          <h2 className="shop-section-title">{t('settings.export_data', 'Exports')}</h2>
+          <p className="shop-section-sub">{t('settings.export_choose', 'CSV files open in Excel or Google Sheets.')}</p>
         </div>
         <div className="shop-actions">
           <Button
@@ -108,14 +108,14 @@ export function SettingsScreen() {
           </Button>
           <Button tone="ghost" onClick={() => void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError)}>{t('settings.export_activity_log', 'Activity CSV')}</Button>
           {perms.canSeeReports ? (
-            premium ? <Button tone="ghost" onClick={() => void api.salesCsv(shop.id, { period: 'month' }).then((csv) => downloadText('sales-month.csv', csv)).catch(setError)}>{t('settings.export_sales', 'Sales CSV (this month)')}</Button> : <Button tone="ghost" href="/shop/settings/subscription">Sales CSV needs Premium</Button>
+            premium ? <Button tone="ghost" onClick={() => void api.salesCsv(shop.id, { period: 'month' }).then((csv) => downloadText('sales-month.csv', csv)).catch(setError)}>{t('settings.export_sales', 'Sales CSV (this month)')}</Button> : <Button tone="ghost" href="/shop/settings/subscription">{t('settings.export_sales', 'Sales CSV')} · {t('subscription.status.active', 'Premium')}</Button>
           ) : null}
         </div>
       </Card>
       {!perms.canManageShop ? (
         <Card className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-medium">Leave this shop</p>
+            <p className="font-medium">{t('modal.shop_settings.leave_shop', 'Leave this shop')}</p>
             <p className="text-sm text-muted">You lose access to {shop.name}. The owner can invite you again.</p>
           </div>
           <Button
@@ -125,13 +125,13 @@ export function SettingsScreen() {
               void api.leaveShop(shop.id).then(() => window.location.assign('/shop')).catch(setError);
             }}
           >
-            Leave shop
+            {t('modal.shop_settings.leave_confirm', 'Leave shop')}
           </Button>
         </Card>
       ) : null}
       <Card>
-        <h2 className="shop-section-title">Delete account</h2>
-        <p className="shop-section-sub mt-1">This removes your Samaan Bol account. Confirm twice. It does not cancel a shop subscription by itself.</p>
+        <h2 className="shop-section-title">{t('settings.delete_account', 'Delete account')}</h2>
+        <p className="shop-section-sub mt-1">{t('settings.delete_account_message', 'This removes your Samaan Bol account. Confirm twice. It does not cancel a shop subscription by itself.')}</p>
         <div className="mt-4">
           <Button
             tone="danger"
@@ -151,7 +151,7 @@ export function SettingsScreen() {
               });
             }}
           >
-            {deleting ? 'Deleting…' : confirm === 0 ? 'Delete account' : 'Confirm delete account'}
+            {deleting ? t('settings.deleting', 'Deleting…') : confirm === 0 ? t('settings.delete_account', 'Delete account') : t('settings.delete_forever', 'Confirm delete account')}
           </Button>
         </div>
       </Card>

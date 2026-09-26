@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ApiError } from '../../lib/shop/api';
+import { useShop } from './context';
 
 export function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
@@ -172,15 +173,18 @@ export function isDenied(error: unknown) {
   return error instanceof ApiError && error.status === 403;
 }
 
-export function PremiumLock({ shopId, feature }: { shopId?: string; feature?: string }) {
+export function PremiumLock({ feature }: { shopId?: string; feature?: string }) {
+  const { t } = useShop();
+  const title = feature ? t(`subscription.gate.${feature}.title`, 'Premium') : 'Premium';
+  const body = feature
+    ? t(`subscription.gate.${feature}.body`, 'This needs Premium.')
+    : t('subscription.web_only_message', 'Subscriptions are managed on the web.');
   return (
     <Card className="text-center">
-      <p className="shop-kicker">Premium</p>
-      <p className="mx-auto mt-2 max-w-md text-muted">
-        {feature ? `This needs Premium (${feature.replaceAll('_', ' ')}).` : 'This needs Premium.'} Manage the subscription on the web billing page.
-      </p>
+      <p className="shop-kicker">{t('subscription.status.active', 'Premium')}</p>
+      <p className="mx-auto mt-2 max-w-md text-muted">{title}. {body}</p>
       <div className="mt-4">
-        <Button href="/shop/settings/subscription">Manage subscription</Button>
+        <Button href="/shop/settings/subscription">{t('subscription.cta.manage', 'Manage subscription')}</Button>
       </div>
     </Card>
   );

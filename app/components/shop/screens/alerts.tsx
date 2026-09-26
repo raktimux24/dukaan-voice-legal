@@ -8,6 +8,14 @@ import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Button, Notice, PageHeader, Pill, PremiumLock, Spinner, isPremiumError } from '../ui';
 
+function alertTabLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
+  if (id === 'all') return t('home.filter_all', fallback);
+  if (id === 'stock') return t('activity.filter_stock', fallback);
+  if (id === 'expiry') return t('modal.alerts.section_expiring', fallback);
+  if (id === 'ai') return t('modal.alerts.section_ai', fallback);
+  return fallback;
+}
+
 const TABS = [
   { id: 'all', label: 'All' },
   { id: 'stock', label: 'Stock' },
@@ -55,7 +63,7 @@ export function AlertsScreen() {
       <PageHeader
         kicker="Shop"
         title={t('settings.section_notifications', 'Notifications')}
-        description="Out of stock, running low, and batches that are about to expire."
+        description={`${t('home.stat_out_of_stock', 'Out of stock')}, ${t('home.stat_low_stock', 'running low')}, ${t('reports.stock.expiry', 'batches that are about to expire')}.`}
         actions={
           perms.canSeeReports && premium ? (
             <Button tone="ghost" onClick={() => void api.generatePredictions(shop.id).then(() => queryClient.invalidateQueries({ queryKey: ['predictions', shop.id] })).catch(setError)}>Refresh predictions</Button>
@@ -65,7 +73,7 @@ export function AlertsScreen() {
       <div className="shop-seg" role="tablist" aria-label="Notifications">
         {TABS.map((item) => (
           <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'is-active' : undefined} onClick={() => setTab(item.id)}>
-            {item.label}
+            {alertTabLabel(item.id, item.label, t)}
             {item.id === 'all' && counts ? ` ${counts.total}` : null}
             {item.id === 'stock' && counts ? ` ${counts.stock}` : null}
             {item.id === 'expiry' && counts ? ` ${counts.expiry}` : null}

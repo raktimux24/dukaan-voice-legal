@@ -231,11 +231,11 @@ export function CheckoutScreen() {
           ) : null}
 
           <section>
-            <SectionHead title="Payment" sub="How is the customer paying?" />
-            <div className="shop-seg is-wrap" role="tablist" aria-label="Payment method">
+            <SectionHead title={t('checkout.payment_method', 'Payment')} sub="How is the customer paying?" />
+            <div className="shop-seg is-wrap" role="tablist" aria-label={t('checkout.payment_method', 'Payment method')}>
               {modes.map((item) => (
                 <button key={item} type="button" role="tab" aria-selected={mode === item} className={cx(mode === item && 'is-active')} onClick={() => remember(item)}>
-                  {MODE_LABELS[item]}
+                  {t(`pos.method.${item}`, MODE_LABELS[item])}
                 </button>
               ))}
             </div>
@@ -252,7 +252,7 @@ export function CheckoutScreen() {
 
           {mode === 'credit' ? (
             <Card className="grid gap-3">
-              <h3 className="shop-section-title">Udhaar</h3>
+              <h3 className="shop-section-title">{t('pos.method.credit', 'Udhaar')}</h3>
               {udhaarLocked ? <PremiumLock feature="udhaar" /> : (
                 <p className="party-meta">{hasCustomer ? `This bill goes on ${cartApi.cart.customerName}'s balance.` : 'Add a customer. Udhaar needs a name on the bill.'}</p>
               )}
@@ -261,7 +261,7 @@ export function CheckoutScreen() {
 
           {mode === 'card' ? (
             <Card>
-              <h3 className="shop-section-title">Card</h3>
+              <h3 className="shop-section-title">{t('pos.method.card', 'Card')}</h3>
               <p className="party-meta">Record {formatINR(total)} as paid by card. The terminal is outside this page.</p>
             </Card>
           ) : null}
@@ -269,13 +269,13 @@ export function CheckoutScreen() {
           {mode === 'split' ? (
             <Card className="grid gap-4">
               <div className="form-grid is-3">
-                <Field label="Cash">
+                <Field label={t('pos.method.cash', 'Cash')}>
                   <input className={inputClass} inputMode="decimal" value={split.cash} onChange={(event) => setSplit((current) => ({ ...current, cash: event.target.value }))} />
                 </Field>
-                <Field label="UPI">
+                <Field label={t('pos.method.upi', 'UPI')}>
                   <input className={inputClass} inputMode="decimal" value={split.upi} onChange={(event) => setSplit((current) => ({ ...current, upi: event.target.value }))} />
                 </Field>
-                <Field label="Udhaar">
+                <Field label={t('pos.method.credit', 'Udhaar')}>
                   <input className={inputClass} inputMode="decimal" value={split.credit} onChange={(event) => setSplit((current) => ({ ...current, credit: event.target.value }))} />
                 </Field>
               </div>
@@ -288,17 +288,17 @@ export function CheckoutScreen() {
           {mode === 'cash' || mode === 'split' ? (
             <Card className="grid gap-4">
               <div className="flex items-baseline justify-between gap-3">
-                <h3 className="shop-section-title">Cash</h3>
+                <h3 className="shop-section-title">{t('pos.method.cash', 'Cash')}</h3>
                 <span className="num text-sm text-muted">Due {formatINR(cashPortion)}</span>
               </div>
               <div className="tender-chips">
-                <Button tone="ghost" onClick={() => setTendered(String(cashPortion))}>Exact</Button>
+                <Button tone="ghost" onClick={() => setTendered(String(cashPortion))}>{t('checkout.exact', 'Exact')}</Button>
                 {CHIPS.map((chip) => (
                   <Button key={chip} tone="ghost" onClick={() => setTendered(String(roundPaise(Number(currentTendered || 0) + chip)))}>+{chip}</Button>
                 ))}
               </div>
               <div className="form-grid is-2 items-end">
-                <Field label="Cash received">
+                <Field label={t('checkout.cash_received', 'Cash received')}>
                   <input className="shop-field is-lg num" inputMode="decimal" value={currentTendered} onChange={(event) => setTendered(event.target.value)} autoFocus />
                 </Field>
                 <div className={cx('tender-change', cashShort && 'is-short')}>
@@ -312,7 +312,7 @@ export function CheckoutScreen() {
           {mode === 'upi' || mode === 'split' ? (
             <Card className="grid gap-4">
               <div className="flex items-baseline justify-between gap-3">
-                <h3 className="shop-section-title">UPI</h3>
+                <h3 className="shop-section-title">{t('pos.method.upi', 'UPI')}</h3>
                 <span className="num text-sm text-muted">Due {formatINR(upiPortion)}</span>
               </div>
               <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
@@ -323,10 +323,10 @@ export function CheckoutScreen() {
                 ) : (
                   <p className="text-sm text-muted">
                     No UPI QR is on file. The sale can still be recorded as UPI.
-                    {perms.canManageShop ? <Link className="ml-2 text-saffron" href="/shop/settings/payments">Add UPI</Link> : null}
+                    {perms.canManageShop ? <Link className="ml-2 text-saffron" href="/shop/settings/payments">{t('checkout.setup_upi', 'Add UPI')}</Link> : null}
                   </p>
                 )}
-                <Field label="UPI reference" hint="Optional. The last digits of the transaction id.">
+                <Field label={t('checkout.upi_ref', 'UPI reference')} hint={`${t('checkout.optional', 'Optional')}. The last digits of the transaction id.`}>
                   <input className={inputClass} value={upiRef} onChange={(event) => setUpiRef(event.target.value)} />
                 </Field>
               </div>
@@ -335,22 +335,22 @@ export function CheckoutScreen() {
 
           <Card className="grid gap-3">
             <div className="flex items-baseline justify-between gap-3">
-              <h3 className="shop-section-title">Customer</h3>
+              <h3 className="shop-section-title">{t('checkout.customer_title', 'Customer')}</h3>
               <span className="text-sm text-muted">{creditPortion > 0 ? 'Required for udhaar' : 'Optional'}</span>
             </div>
             <CustomerAttach />
-            {creditBlocked ? <p className="text-sm text-danger">Udhaar needs a customer on the bill.</p> : null}
+            {creditBlocked ? <p className="text-sm text-danger">{t('checkout.credit_needs_customer', 'Udhaar needs a customer on the bill.')}</p> : null}
             {udhaarLocked && mode === 'split' ? <PremiumLock feature="udhaar" /> : null}
           </Card>
 
           <Card className="form-grid is-2">
-            <Field label="Bill discount" hint="Applied to the whole bill, on top of any line discounts.">
+            <Field label={t('checkout.bill_discount', 'Bill discount')} hint="Applied to the whole bill, on top of any line discounts.">
               <div className="shop-input-wrap">
                 <span className="shop-input-prefix">₹</span>
                 <input className={cx(inputClass, 'num')} inputMode="decimal" value={cartApi.cart.billDiscount || ''} onChange={(event) => cartApi.patch({ billDiscount: Number(event.target.value || 0) })} />
               </div>
             </Field>
-            <Field label="Note">
+            <Field label={t('checkout.note_placeholder', 'Note')}>
               <input className={inputClass} value={cartApi.cart.note} onChange={(event) => cartApi.patch({ note: event.target.value })} placeholder="Printed on the bill" />
             </Field>
           </Card>
@@ -358,7 +358,7 @@ export function CheckoutScreen() {
 
         <aside className="bill shop-surface" aria-label="Bill summary">
           <div className="bill-head">
-            <h2>Bill</h2>
+            <h2>{t('bill.bill', 'Bill')}</h2>
             <span className="text-sm text-muted">{cartApi.cart.lines.length} {cartApi.cart.lines.length === 1 ? 'line' : 'lines'}</span>
           </div>
           <div className="bill-lines">
@@ -374,12 +374,12 @@ export function CheckoutScreen() {
           </div>
           <div className="bill-foot">
             <div className="bill-total-row">
-              <span>Subtotal</span>
+              <span>{t('bill.subtotal', 'Subtotal')}</span>
               <span className="num">{formatINR(totals.subtotal)}</span>
             </div>
             {totals.discount > 0 ? (
               <div className="bill-total-row">
-                <span>Discount</span>
+                <span>{t('bill.discount', 'Discount')}</span>
                 <span className="num">−{formatINR(totals.discount)}</span>
               </div>
             ) : null}
@@ -390,7 +390,7 @@ export function CheckoutScreen() {
               </div>
             ) : null}
             <div className="bill-total-row is-grand">
-              <span>Total</span>
+              <span>{t('bill.total', 'Total')}</span>
               <strong className="num">{formatINR(total)}</strong>
             </div>
             <div className="bill-charge">

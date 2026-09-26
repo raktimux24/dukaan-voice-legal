@@ -40,14 +40,14 @@ export function BuyListScreen() {
             }).catch(setError);
           }}
         >
-          <Field label="Item"><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
-          <Field label="Qty"><input className={inputClass} inputMode="decimal" value={qty} onChange={(event) => setQty(event.target.value)} /></Field>
-          <Field label="Unit">
+          <Field label={t('bill.item', 'Item')}><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
+          <Field label={t('bill.qty', 'Qty')}><input className={inputClass} inputMode="decimal" value={qty} onChange={(event) => setQty(event.target.value)} /></Field>
+          <Field label={t('modal.buy_list_item.unit_label', 'Unit')}>
             <select className={inputClass} value={unit} onChange={(event) => setUnit(event.target.value)}>
-              {UNITS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {UNITS.map((item) => <option key={item} value={item}>{t(`unit_picker.${item}`, item)}</option>)}
             </select>
           </Field>
-          <Button type="submit" disabled={!name.trim()}>Add</Button>
+          <Button type="submit" disabled={!name.trim()}>{t('buy_list.add_item', 'Add')}</Button>
         </form>
       </Card>
       {aiLocked || isPremiumError(list.error) ? <PremiumLock shopId={shop.id} feature="buy_list_ai" /> : null}
@@ -57,7 +57,7 @@ export function BuyListScreen() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-semibold">{item.itemName}</p>
-                <p className="text-sm text-muted">{item.quantity ?? ''} {item.unit ?? ''} · {item.status}{item.isAiSuggested ? ' · suggested' : ''}</p>
+                <p className="text-sm text-muted">{item.quantity ?? ''} {item.unit ? t(`unit_picker.${item.unit}`, item.unit) : ''} · {item.status === 'pending' ? t('buy_list.filter_pending', 'pending') : item.status === 'stocked' ? t('badge.stocked', 'stocked') : item.status}{item.isAiSuggested ? ` · ${t('buy_list.filter_ai_suggested', 'suggested')}` : ''}</p>
                 {item.aiReason ? <p className="text-sm text-muted">{item.aiReason}</p> : null}
               </div>
               <div className="flex gap-2">
@@ -69,10 +69,10 @@ export function BuyListScreen() {
                       else router.push(`/shop/products/new?buyListItemId=${item.id}&name=${encodeURIComponent(item.itemName)}&qty=${qtyParam}`);
                     }}
                   >
-                    Stock
+                    {t('reports.stock.on_hand', 'Stock')}
                   </Button>
                 ) : null}
-                <Button tone="ghost" onClick={() => void api.deleteBuyListItem(shop.id, item.id).then(refresh).catch(setError)}>Delete</Button>
+                <Button tone="ghost" onClick={() => void api.deleteBuyListItem(shop.id, item.id).then(refresh).catch(setError)}>{t('common.delete', 'Delete')}</Button>
               </div>
             </div>
           </Card>

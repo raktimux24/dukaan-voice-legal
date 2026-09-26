@@ -8,6 +8,14 @@ import type { AuditLogEntry } from '../../../lib/shop/types';
 import { useShop } from '../context';
 import { Button, Chip, Notice, PageHeader, Spinner } from '../ui';
 
+function activityFilterLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
+  if (id === 'all') return t('activity.filter_all', fallback);
+  if (id === 'sales') return t('activity.filter_sales', fallback);
+  if (id === 'stock') return t('activity.filter_stock', fallback);
+  if (id === 'today') return t('activity.filter_today', fallback);
+  return fallback;
+}
+
 const FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'sales', label: 'Sales' },
@@ -15,32 +23,28 @@ const FILTERS = [
   { id: 'today', label: 'Today' },
 ] as const;
 
-const LABELS: Record<string, string> = {
-  product_added: 'Product added',
-  product_updated: 'Product updated',
-  product_deleted: 'Product deleted',
-  batch_added: 'Batch added',
-  batch_updated: 'Batch updated',
-  stock_removed: 'Stock removed',
-  stock_adjusted: 'Stock adjusted',
-  sale_created: 'Sale',
-  sale_voided: 'Sale voided',
-  sale_returned: 'Sale returned',
-  member_role_changed: 'Member role changed',
-  member_removed: 'Member removed',
+const ACTION_KEYS: Record<string, [string, string]> = {
+  sale: ['activity.filter_sales', 'Sale'],
+  sale_created: ['activity.filter_sales', 'Sale'],
+  sale_void: ['sales.status_filter.voided', 'Sale voided'],
+  sale_voided: ['sales.status_filter.voided', 'Sale voided'],
+  sale_returned: ['sale_detail.returns', 'Sale returned'],
+  sale_return: ['sale_detail.returns', 'Sale returned'],
+  stock_adjusted: ['reports.stock.units_adjusted', 'Stock adjusted'],
 };
 
-function dayLabel(iso: string) {
+function dayLabel(iso: string, t: (key: string, fallback: string) => string, language: string | undefined) {
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return 'Earlier';
+  if (Number.isNaN(date.getTime())) return t('brief.earlier', 'Earlier');
   const today = new Date();
   const same = (left: Date, right: Date) =>
     left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
-  if (same(date, today)) return 'Today';
+  if (same(date, today)) return t('common.time_today', 'Today');
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  if (same(date, yesterday)) return 'Yesterday';
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  if (same(date, yesterday)) return t('common.time_yesterday', 'Yesterday');
+  const locale = language && language !== 'hinglish' ? `${language}-IN` : 'en-IN';
+  return date.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function tone(action: string) {
@@ -50,10 +54,10 @@ function tone(action: string) {
   return '';
 }
 
-function groups(logs: AuditLogEntry[]) {
+function groups(logs: AuditLogEntry[], t: (key: string, fallback: string) => string, language: string | undefined) {
   const days: { label: string; logs: AuditLogEntry[] }[] = [];
   for (const log of logs) {
-    const label = dayLabel(log.createdAt);
+    const label = dayLabel(log.createdAt, t, language);
     const last = days[days.length - 1];
     if (last?.label === label) last.logs.push(log);
     else days.push({ label, logs: [log] });
@@ -62,7 +66,7 @@ function groups(logs: AuditLogEntry[]) {
 }
 
 export function ActivityScreen() {
-  const { api, shop, t } = useShop();
+  const { api, shop, prefs, t } = useShop();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('all');
   const [error, setError] = useState<unknown>(null);
   const logs = useQuery({
@@ -72,7 +76,7 @@ export function ActivityScreen() {
   });
 
   if (!shop) return <Spinner />;
-  const days = groups(logs.data?.logs ?? []);
+  const days = groups(logs.data?.logs ?? [], t, prefs?.appLanguage);
 
   return (
     <div className="shop-page">
@@ -88,17 +92,17 @@ export function ActivityScreen() {
               void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError);
             }}
           >
-            Export CSV
+            {t('reports.sales.export_csv', 'Export CSV')}
           </Button>
         }
       />
       <div className="pos-chips">
-        {FILTERS.map((item) => <Chip key={item.id} active={filter === item.id} onClick={() => setFilter(item.id)}>{item.label}</Chip>)}
+        {FILTERS.map((item) => <Chip key={item.id} active={filter === item.id} onClick={() => setFilter(item.id)}>{activityFilterLabel(item.id, item.label, t)}</Chip>)}
       </div>
       <Notice error={error ?? logs.error} />
-      {logs.data?.limitedToDays ? <p className="party-meta">Showing the last {logs.data.limitedToDays} days.</p> : null}
+      {logs.data?.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: logs.data.limitedToDays })}</p> : null}
       {logs.isLoading ? <Spinner label="Loading activity" /> : null}
-      {!logs.isLoading && days.length === 0 ? <p className="shop-list-empty">Nothing recorded for this filter.</p> : null}
+      {!logs.isLoading && days.length === 0 ? <p className="shop-list-empty">{t('activity.empty_title', 'Nothing recorded for this filter.')}</p> : null}
       {days.map((day) => (
         <section key={day.label}>
           <h2 className="timeline-day">{day.label}</h2>
@@ -106,7 +110,7 @@ export function ActivityScreen() {
             {day.logs.map((log) => (
               <li key={log.id} className={`timeline-item ${tone(log.actionType)}`}>
                 <div>
-                  <p className="timeline-title">{LABELS[log.actionType] ?? log.actionType.replaceAll('_', ' ')}</p>
+                  <p className="timeline-title">{ACTION_KEYS[log.actionType] ? t(ACTION_KEYS[log.actionType][0], ACTION_KEYS[log.actionType][1]) : log.actionType.replaceAll('_', ' ')}</p>
                   <p className="timeline-meta">{log.description}</p>
                   <p className="timeline-meta">{log.userName} · {log.inputMethod}</p>
                 </div>

@@ -1,14 +1,18 @@
 'use client';
 
-import { SignIn, useAuth, useClerk } from '@clerk/nextjs';
+import { AuthenticateWithRedirectCallback, useAuth, useClerk } from '@clerk/nextjs';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { bindApi } from '../../lib/shop/api';
 import { permissionsFor, parseRole } from '../../lib/shop/permissions';
 import type { ShopRecord, UserPreferences } from '../../lib/shop/types';
+import { AuthScreen } from './auth-screen';
 import { ShopChrome } from './chrome';
 import { ShopContext, type ShopContextValue } from './context';
+
+/** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
+const APP_LANGUAGES = new Set(['en', 'hi', 'hinglish', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml']);
 
 function flattenStrings(value: unknown, prefix = '', out: Record<string, string> = {}) {
   if (typeof value === 'string') {
@@ -135,6 +139,9 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   const savePrefs = useCallback(
     async (partial: Partial<UserPreferences>) => {
+      if (partial.appLanguage && !APP_LANGUAGES.has(partial.appLanguage)) {
+        throw new Error('That language is not available for the shop yet.');
+      }
       await api.updatePreferences(partial);
       await prefsQuery.refetch();
     },
@@ -145,7 +152,10 @@ function ShopSession({ children }: { children: ReactNode }) {
     const translated = dict[key];
     let text = translated && translated !== key ? translated : fallback;
     if (vars) {
-      for (const [name, value] of Object.entries(vars)) text = text.replaceAll(`{${name}}`, String(value));
+      for (const [name, value] of Object.entries(vars)) {
+        const next = String(value);
+        text = text.replaceAll(`{{${name}}}`, next).replaceAll(`{${name}}`, next);
+      }
     }
     return text;
   }, [dict]);
@@ -169,14 +179,23 @@ function ShopSession({ children }: { children: ReactNode }) {
     hideCost: !perms.canSeeCost,
   };
 
+  if (pathname === '/shop/sso-callback') {
+    return (
+      <div className="shop-root auth-wait">
+        <AuthenticateWithRedirectCallback />
+        <p>Signing you in…</p>
+      </div>
+    );
+  }
+
   if (!isLoaded || (isSignedIn && shops === null && !loadError)) {
     return <div className="shop-root grid min-h-screen place-items-center text-muted">Loading your shop…</div>;
   }
 
   if (!isSignedIn) {
     return (
-      <div className="shop-root grid min-h-screen place-items-center p-6">
-        <SignIn routing="hash" forceRedirectUrl={pathname || '/shop'} signUpForceRedirectUrl={pathname || '/shop'} />
+      <div className="shop-root">
+        <AuthScreen redirectUrl={pathname || '/shop'} />
       </div>
     );
   }

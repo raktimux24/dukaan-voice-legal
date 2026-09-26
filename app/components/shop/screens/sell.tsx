@@ -217,11 +217,11 @@ export function SellScreen() {
         <div className="shop-page-head">
           <div className="shop-page-head-text">
             <p className="shop-kicker">Counter</p>
-            <h1 className="shop-title">Sell</h1>
+            <h1 className="shop-title">{t('pos.title', 'Sell')}</h1>
           </div>
           <div className="shop-actions">
-            {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">Add product</Button> : null}
-            <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? 'Close camera' : 'Scan with camera'}</Button>
+            {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">{t('products.add', 'Add product')}</Button> : null}
+            <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
           </div>
         </div>
 
@@ -243,7 +243,7 @@ export function SellScreen() {
             <input
               ref={searchRef}
               className="shop-field is-lg"
-              placeholder="Search or scan a barcode"
+              placeholder={t('pos.search_placeholder', 'Search or scan a barcode')}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={handleSearchKey}
@@ -258,7 +258,7 @@ export function SellScreen() {
           </div>
           {categories.length > 1 ? (
             <div className="pos-chips" role="tablist" aria-label="Categories">
-              <Chip active={category === 'all'} onClick={() => setCategory('all')}>All</Chip>
+              <Chip active={category === 'all'} onClick={() => setCategory('all')}>{t('products.all_categories', 'All')}</Chip>
               {categories.map(([code, label]) => (
                 <Chip key={code} active={category === code} onClick={() => setCategory(code)}>{label}</Chip>
               ))}
@@ -296,7 +296,7 @@ export function SellScreen() {
                         value={priceDraft[item.productId] ?? ''}
                         onChange={(event) => setPriceDraft((current) => ({ ...current, [item.productId]: event.target.value }))}
                       />
-                      <Button type="submit" size="sm">Save</Button>
+                      <Button type="submit" size="sm">{t('common.save', 'Save')}</Button>
                     </form>
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export function SellScreen() {
                 </p>
                 <div className="pos-tile-foot">
                   <span className={cx('pos-tile-qty', low && 'is-low', out && 'is-out')}>
-                    {tracked ? (out ? 'Out of stock' : formatQty(item.quantity, item.unit)) : 'Untracked'}
+                    {tracked ? (out ? t('home.stat_out_of_stock', 'Out of stock') : formatQty(item.quantity, item.unit)) : t('pos.no_stock_tracking', 'Untracked')}
                   </span>
                   <span className="pos-tile-price num">{unpriced ? 'No price' : formatINR(item.product.sellingPrice)}</span>
                 </div>
@@ -328,7 +328,7 @@ export function SellScreen() {
         </div>
         {!catalog.isLoading && hits.length === 0 ? (
           <Card className="text-center text-muted">
-            No products match “{query.trim()}”.
+            {t('products.empty_filtered', 'No products match')} “{query.trim()}”.
             {perms.canEditProducts ? (
               <>
                 {' '}
@@ -341,10 +341,10 @@ export function SellScreen() {
 
       <aside className="bill shop-surface" aria-label="Current bill">
         <div className="bill-head">
-          <h2>Bill</h2>
+          <h2>{t('bill.bill', 'Bill')}</h2>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted">{lineCount} {lineCount === 1 ? 'line' : 'lines'}</span>
-            {lineCount > 0 ? <button type="button" className="bill-remove" onClick={clearBill}>Clear</button> : null}
+            {lineCount > 0 ? <button type="button" className="bill-remove" onClick={clearBill}>{t('pos.clear_cart', 'Clear')}</button> : null}
           </div>
         </div>
         <div className="bill-lines">
@@ -354,7 +354,7 @@ export function SellScreen() {
                 <path d="M4 7h16l-1.5 9H5.5z" />
                 <path d="M9 7V5a3 3 0 0 1 6 0v2" />
               </svg>
-              <p>Nothing on the bill yet.</p>
+              <p>{t('pos.cart_empty', 'Nothing on the bill yet.')}</p>
               <p className="text-xs text-faint">Search above, scan a barcode, or click a product.</p>
             </div>
           ) : (
@@ -374,7 +374,7 @@ export function SellScreen() {
           )}
         </div>
         {suggestions.length > 0 ? (
-          <div className="pos-chips" aria-label="Often bought with">
+          <div className="pos-chips" aria-label={t('modal.product_detail.bought_with', 'Often bought with')}>
             {suggestions.map((nudge) => (
               <Chip
                 key={nudge.id}
@@ -390,25 +390,25 @@ export function SellScreen() {
         ) : null}
         <div className="bill-foot">
           <div className="bill-total-row">
-            <span>Subtotal</span>
+            <span>{t('bill.subtotal', 'Subtotal')}</span>
             <span className="num">{formatINR(totals.subtotal)}</span>
           </div>
           {totals.discount > 0 ? (
             <div className="bill-total-row">
-              <span>Discount</span>
+              <span>{t('bill.discount', 'Discount')}</span>
               <span className="num">−{formatINR(totals.discount)}</span>
             </div>
           ) : null}
           <div className="bill-total-row is-grand">
-            <span>Total</span>
+            <span>{t('bill.total', 'Total')}</span>
             <strong className="num">{formatINR(totals.total)}</strong>
           </div>
           <div className="bill-charge">
             <CustomerAttach />
             {lineCount === 0 ? (
-              <Button size="lg" block disabled>Charge</Button>
+              <Button size="lg" block disabled>{t('pos.charge', 'Charge')}</Button>
             ) : (
-              <Button size="lg" block href="/shop/sell/checkout">Charge {formatINR(totals.total)}</Button>
+              <Button size="lg" block href="/shop/sell/checkout">{t('pos.charge_amount', 'Charge {{amount}}', { amount: formatINR(totals.total) })}</Button>
             )}
           </div>
         </div>
@@ -420,7 +420,7 @@ export function SellScreen() {
             <p className="text-xs text-muted">{lineCount} {lineCount === 1 ? 'line' : 'lines'}</p>
             <p className="num font-display text-lg font-bold">{formatINR(totals.total)}</p>
           </div>
-          <Button href="/shop/sell/checkout">Charge</Button>
+          <Button href="/shop/sell/checkout">{t('pos.charge', 'Charge')}</Button>
         </div>
       ) : null}
     </div>
@@ -445,6 +445,7 @@ function QtyPicker({
   onAdd: () => void;
   onClose: () => void;
 }) {
+  const { t } = useShop();
   const unit = item?.unit ?? 'piece';
   const alt = altUnit(unit);
   const [displayUnit, setDisplayUnit] = useState(unit);
@@ -468,7 +469,7 @@ function QtyPicker({
             {tracked ? ` · ${formatQty(item.quantity, unit, { packSize: item.product.packSize, packLabel: item.product.packLabel })} on hand` : ' · not tracked'}
           </p>
         </div>
-        <button type="button" className="bill-remove" onClick={onClose}>Close</button>
+        <button type="button" className="bill-remove" onClick={onClose}>{t('common.close', 'Close')}</button>
       </div>
       <div className="pos-chips" role="group" aria-label="Quantities">
         {chips.map((chip) => (
@@ -478,9 +479,9 @@ function QtyPicker({
         ))}
       </div>
       <div className="pos-picker-step">
-        <button type="button" aria-label="Decrease quantity" onClick={() => onChange(clamp(value - stepFor(unit)))}>−</button>
+        <button type="button" aria-label={t('a11y.decrease', 'Decrease quantity')} onClick={() => onChange(clamp(value - stepFor(unit)))}>−</button>
         <strong>{trimQty(convert(value, unit, displayUnit))} {displayUnit}</strong>
-        <button type="button" aria-label="Increase quantity" onClick={() => onChange(clamp(value + stepFor(unit)))}>+</button>
+        <button type="button" aria-label={t('a11y.increase', 'Increase quantity')} onClick={() => onChange(clamp(value + stepFor(unit)))}>+</button>
         <span className="num">{formatINR(r3(value * price))}</span>
       </div>
       {alt ? (
@@ -489,7 +490,7 @@ function QtyPicker({
           <button type="button" className={displayUnit === alt ? 'is-active' : undefined} onClick={() => setDisplayUnit(alt)}>{alt}</button>
         </div>
       ) : null}
-      <Button onClick={onAdd} disabled={!(value > 0)}>Add {chipLabel(value, unit, item.product)}</Button>
+      <Button onClick={onAdd} disabled={!(value > 0)}>{t('pos.add_to_cart', 'Add')} {chipLabel(value, unit, item.product)}</Button>
     </div>
   );
 }
@@ -507,6 +508,7 @@ function BillLine({
   onPrice: (price: number) => void;
   onRemove: () => void;
 }) {
+  const { t } = useShop();
   const [qtyDraft, setQtyDraft] = useState<string | null>(null);
   const [priceDraft, setPriceDraft] = useState<string | null>(null);
   const step = stepFor(line.unit);
@@ -564,7 +566,7 @@ function BillLine({
           )}
         </span>
         <button type="button" className="bill-remove" onClick={onRemove} aria-label={`Remove ${line.name}`}>
-          Remove
+          {t('common.remove', 'Remove')}
         </button>
       </div>
     </div>

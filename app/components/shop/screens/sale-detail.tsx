@@ -14,7 +14,7 @@ import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass,
 const METHOD: Record<string, string> = { cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Udhaar' };
 
 export function SaleDetailScreen({ saleId }: { saleId: string }) {
-  const { api, shop, perms, hideCost, setNotice } = useShop();
+  const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const params = useSearchParams();
   const queryClient = useQueryClient();
   const saleQuery = useQuery({
@@ -176,9 +176,9 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <p className="sale-complete-total">{formatINR(sale.total)}</p>
             <p className="party-meta">{methods.join(' + ') || sale.paymentStatus}{sale.customer ? ` · ${sale.customer.name}` : ''}</p>
             <div className="shop-actions">
-              <Button onClick={() => void share()} disabled={sharing}>{sharing ? 'Sharing…' : 'Share bill'}</Button>
+              <Button onClick={() => void share()} disabled={sharing}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
               <Button tone="ghost" onClick={() => window.print()}>Print</Button>
-              {recorded ? <Button href="/shop/sell">New sale</Button> : null}
+              {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>
           {shortfalls.length ? (
@@ -190,7 +190,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         {perms.canVoidOrReturn && sale.status === 'completed' ? (
           <div className="stack-form">
             <Card className="stack-form">
-              <h2 className="shop-section-title">Void</h2>
+              <h2 className="shop-section-title">{t('sale_detail.void', 'Void')}</h2>
               <p className="shop-section-sub">
                 {withinWindow
                   ? `Open for ${windowHours ?? 'the configured'} hours after the sale.`
@@ -211,11 +211,11 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   }).finally(() => setPending(false));
                 }}
               >
-                Void bill
+                {t('sale_detail.void', 'Void bill')}
               </Button>
             </Card>
             <Card className="stack-form">
-              <h2 className="shop-section-title">Return</h2>
+              <h2 className="shop-section-title">{t('sale_return.title', 'Return')}</h2>
               <p className="shop-section-sub">Enter how much of each line comes back. Returned stock is put on the shelf again.</p>
               {returnable.length === 0 ? <p className="party-meta">Every line on this bill has already been returned.</p> : null}
               {returnable.map((item) => {
@@ -257,7 +257,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   }).catch(setError).finally(() => setPending(false));
                 }}
               >
-                Return items
+                {t('sale_detail.return_items', 'Return items')}
               </Button>
             </Card>
           </div>

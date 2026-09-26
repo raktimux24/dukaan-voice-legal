@@ -29,16 +29,16 @@ export function SuppliersScreen() {
       />
       <input
         className={`${inputClass} shop-search`}
-        placeholder="Search suppliers"
+        placeholder={t('suppliers.search', 'Search suppliers')}
         value={q}
         onChange={(event) => setQ(event.target.value)}
-        aria-label="Search suppliers"
+        aria-label={t('suppliers.search', 'Search suppliers')}
       />
       <Notice error={list.error ?? compare.error} />
       {list.isLoading ? <Spinner label="Loading suppliers" /> : null}
       {!list.isLoading && suppliers.length === 0 ? (
         <Card>
-          <p>No suppliers yet. Name a supplier when you add a batch and they show up here.</p>
+          <p>{t('suppliers.empty_title', 'No suppliers yet.')} {t('suppliers.empty_subtitle', 'Name a supplier when you add a batch and they show up here.')}</p>
         </Card>
       ) : null}
       <div className="party-grid">
@@ -47,21 +47,21 @@ export function SuppliersScreen() {
             <div className="party-card-top">
               <div>
                 <p className="party-name">{supplier.name}</p>
-                <p className="party-meta">Last purchase {formatDay(supplier.lastAt)}</p>
+                <p className="party-meta">{t('suppliers.stat_last', 'Last')} {formatDay(supplier.lastAt)}</p>
               </div>
               <p className="party-spend">{formatINR(supplier.spend)}</p>
             </div>
             <div className="party-stats">
-              <div className="party-stat"><span>Products</span><b>{supplier.products}</b></div>
-              <div className="party-stat"><span>Batches</span><b>{supplier.batches}</b></div>
-              <div className="party-stat"><span>30 days</span><b>{formatINR(supplier.spend30d)}</b></div>
+              <div className="party-stat"><span>{t('suppliers.stat_products', 'Products')}</span><b>{supplier.products}</b></div>
+              <div className="party-stat"><span>{t('modal.product_detail.section_batches', 'Batches')}</span><b>{supplier.batches}</b></div>
+              <div className="party-stat"><span>{t('sales.period.30d', '30 days')}</span><b>{formatINR(supplier.spend30d)}</b></div>
             </div>
           </Link>
         ))}
       </div>
       {compared.length > 0 ? (
         <Card>
-          <h2 className="shop-section-title">Price compare</h2>
+          <h2 className="shop-section-title">{t('suppliers.tab.compare', 'Price compare')}</h2>
           <p className="shop-section-sub">Same product, more than one supplier. The name on the right is the cheaper last price.</p>
           <div className="chart-rows">
             {compared.map((product) => (

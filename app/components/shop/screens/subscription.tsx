@@ -8,7 +8,7 @@ import { PageHeader, Spinner } from '../ui';
 export function SubscriptionScreen() {
   const { shop, t, prefs } = useShop();
   if (!shop) return <Spinner />;
-  const locale = getLocale(prefs?.appLanguage ?? 'en');
+  const locale = getLocale(prefs?.appLanguage === 'hinglish' ? 'hi' : prefs?.appLanguage ?? 'en');
 
   return (
     <div className="shop-page">
@@ -16,7 +16,7 @@ export function SubscriptionScreen() {
         back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
         kicker={t('subscription.section_title', 'Billing')}
         title={t('subscription.section_title', 'Subscription')}
-        description="Plans, payment method, and invoices for this shop. Checkout still runs through Razorpay."
+        description={t('subscription.web_only_message', 'Plans, payment method, and invoices for this shop. Checkout still runs through Razorpay.')}
       />
       <div className="shop-billing">
         <AccountDashboard locale={locale} lockedShopId={shop.id} embedded />

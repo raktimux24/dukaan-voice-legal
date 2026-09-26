@@ -44,6 +44,18 @@ function Icon({ name }: { name: IconName }) {
 type NavItem = { href: string; label: string; key: string; icon: IconName; show?: (perms: Permissions) => boolean };
 type NavGroup = { label: string; items: NavItem[] };
 
+const RAIL_GROUPS: Record<string, Record<string, string>> = {
+  hi: { Counter: 'काउंटर', Stock: 'स्टॉक', People: 'लोग', Insights: 'झलक' },
+  hinglish: { Counter: 'Counter', Stock: 'Stock', People: 'Log', Insights: 'Hisab' },
+  bn: { Counter: 'কাউন্টার', Stock: 'স্টক', People: 'মানুষ', Insights: 'ইনসাইট' },
+  ta: { Counter: 'கவுண்டர்', Stock: 'ஸ்டாக்', People: 'நபர்கள்', Insights: 'பார்வை' },
+  te: { Counter: 'కౌంటర్', Stock: 'స్టాక్', People: 'వ్యక్తులు', Insights: 'అంతర్దృష్టి' },
+  mr: { Counter: 'काउंटर', Stock: 'स्टॉक', People: 'लोक', Insights: 'आढावा' },
+  kn: { Counter: 'ಕೌಂಟರ್', Stock: 'ಸ್ಟಾಕ್', People: 'ಜನ', Insights: 'ಒಳನೋಟ' },
+  gu: { Counter: 'કાઉન્ટર', Stock: 'સ્ટોક', People: 'લોકો', Insights: 'ઝલક' },
+  ml: { Counter: 'കൗണ്ടർ', Stock: 'സ്റ്റോക്ക്', People: 'ആളുകൾ', Insights: 'ഉൾക്കാഴ്ച' },
+};
+
 const GROUPS: NavGroup[] = [
   {
     label: 'Counter',
@@ -166,7 +178,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
               if (items.length === 0) return null;
               return (
                 <div key={group.label}>
-                  <p className="shop-nav-group">{group.label}</p>
+                  <p className="shop-nav-group">{RAIL_GROUPS[prefs?.appLanguage ?? '']?.[group.label] ?? group.label}</p>
                   {items.map(renderLink)}
                 </div>
               );
