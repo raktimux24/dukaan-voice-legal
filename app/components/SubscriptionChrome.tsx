@@ -18,7 +18,7 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
   const menuLabel = getLocaleHomeSlots(locale)?.ariaMenu ?? 'Menu';
   const home = localizedPath(locale, 'home');
   const pricingHref = localizedPath(locale, 'pricing');
-  const accountHref = localizedPath(locale, 'account');
+  const laptopHref = localizedPath(locale, 'laptop');
   const switcherHtml = languageSwitcher(locale, page);
 
   return (
@@ -36,7 +36,7 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
               <a href={`${home}#features`}>{t.nav.features}</a>
             </li>
             <li>
-              <a href={`${home}#web`}>{t.nav.laptop ?? 'On a laptop'}</a>
+              <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
             </li>
             <li>
               <Link href={pricingHref}>{t.nav.pricing}</Link>
@@ -61,6 +61,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
   const t = getSubscriptionStrings(locale);
   const home = localizedPath(locale, 'home');
   const pricingHref = localizedPath(locale, 'pricing');
+  const laptopHref = localizedPath(locale, 'laptop');
   const accountHref = localizedPath(locale, 'account');
   const contactHref = localizedPath(locale, 'contact');
   const refundHref = localizedPath(locale, 'refund');
@@ -90,7 +91,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
                 <a href={homeAnchor('features')}>{t.footer.features}</a>
               </li>
               <li>
-                <a href={homeAnchor('web')}>{t.nav.laptop ?? 'On a laptop'}</a>
+                <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
               </li>
               <li>
                 <Link href={pricingHref}>{t.footer.pricing}</Link>

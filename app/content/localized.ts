@@ -20,7 +20,8 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
   const homeSlots = getLocaleHomeSlots(locale);
   const languageLabel = homeSlots?.chromeLanguage ?? 'Language';
   const selectLanguage = homeSlots?.ariaSelectLanguage ?? 'Select language';
-  const options = locales
+  const shownLocales = page === 'laptop' ? locales.filter((item) => item.code === 'en' || item.code === 'hi') : locales;
+  const options = shownLocales
     .map((item) => {
       const selected = item.code === locale ? ' aria-current="true"' : '';
       return `<a class="language-option" href="${localizedPath(item.code, page)}"${selected}>
@@ -73,7 +74,8 @@ function localizeLinks(html: string, locale: Locale) {
     .replaceAll('href="/account"', `href="${account}"`)
     .replaceAll('href="/contact"', `href="${contact}"`)
     .replaceAll('href="/refund-policy"', `href="${refund}"`)
-    .replaceAll('href="/" class="back"', `href="${home}" class="back"`);
+    .replaceAll('href="/" class="back"', `href="${home}" class="back"`)
+    .replaceAll('href="/billing-on-a-laptop"', `href="${localizedPath(locale, 'laptop')}"`);
 }
 
 function stripRemovedNavItems(html: string) {

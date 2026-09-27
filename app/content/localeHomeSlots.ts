@@ -1528,7 +1528,14 @@ function applyWebCopy(html: string, locale: Locale) {
   const copy = WEB_COPY[locale];
   const surface = surfaceNav(locale);
   let out = html;
-  out = swap(out, '<li><a href="#web">On a laptop</a></li>', `<li><a href="#web">${surface.laptop}</a></li>`);
+  out = swap(out, '<li><a href="/billing-on-a-laptop">On a laptop</a></li>', `<li><a href="/billing-on-a-laptop">${surface.laptop}</a></li>`);
+  if (locale === 'hi') {
+    out = swap(
+      out,
+      '<p class="section-sub"><a href="/billing-on-a-laptop">How kirana billing works on a laptop</a></p>',
+      '<p class="section-sub"><a href="/hi/billing-on-a-laptop">लैपटॉप पर किराना बिलिंग</a></p>',
+    );
+  }
   out = swap(out, '<li><a href="/shop">Open shop</a></li>', `<li><a href="/shop">${surface.openShop}</a></li>`);
   out = swap(out, '<a href="/shop" class="btn-primary">Open the shop</a>', `<a href="/shop" class="btn-primary">${surface.openTheShop}</a>`);
   out = swap(out, '<li><a href="/account">Billing</a></li>', `<li><a href="/account">${surface.billing}</a></li>`);
@@ -1560,11 +1567,11 @@ export function applyHomeSlots(html: string, locale: Locale) {
   out = swap(
     out,
     `        <li><a href="#features">Features</a></li>
-        <li><a href="#web">On a laptop</a></li>
+        <li><a href="/billing-on-a-laptop">On a laptop</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/shop" class="nav-cta">Open shop</a></li>`,
     `        <li><a href="#features">${slots.navFeatures ?? 'Features'}</a></li>
-        <li><a href="#web">${surfaceNav(locale).laptop}</a></li>
+        <li><a href="/billing-on-a-laptop">${surfaceNav(locale).laptop}</a></li>
         <li><a href="/pricing">${slots.navPricing ?? 'Pricing'}</a></li>
         <li><a href="/shop" class="nav-cta">${surfaceNav(locale).openShop}</a></li>`,
   );

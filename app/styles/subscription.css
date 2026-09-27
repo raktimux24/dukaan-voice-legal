@@ -162,6 +162,28 @@
   font-weight: 800;
 }
 
+.step-list {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 22px 0 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.step-list li {
+  display: flex;
+  gap: 10px;
+  color: var(--text-secondary);
+  counter-increment: step;
+}
+
+.step-list li::before {
+  content: counter(step);
+  color: var(--saffron);
+  font-weight: 800;
+}
+
 .comparison-grid,
 .subscription-grid,
 .portal-grid {

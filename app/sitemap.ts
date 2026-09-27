@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { absoluteUrl } from './seo';
-import { localizedLanguageAlternates, localizedPath, locales, type PageKind } from './i18n';
+import { laptopLanguageAlternates, localizedLanguageAlternates, localizedPath, locales, type Locale, type PageKind } from './i18n';
 
 const pages: Array<{ page: PageKind; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
   { page: 'home', changeFrequency: 'weekly', priority: 1 },
@@ -9,6 +9,8 @@ const pages: Array<{ page: PageKind; changeFrequency: 'weekly' | 'monthly'; prio
   { page: 'privacy', changeFrequency: 'monthly', priority: 0.3 },
   { page: 'terms', changeFrequency: 'monthly', priority: 0.3 },
 ];
+
+const laptopLocales: Locale[] = ['en', 'hi'];
 
 const englishPages: Array<{ path: string; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
   { path: '/refund-policy', changeFrequency: 'monthly', priority: 0.4 },
@@ -29,6 +31,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       })),
     ),
+    ...laptopLocales.map((locale) => ({
+      url: absoluteUrl(localizedPath(locale, 'laptop')),
+      lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+      alternates: {
+        languages: laptopLanguageAlternates(true, absoluteUrl),
+      },
+    })),
     ...englishPages.map(({ path, changeFrequency, priority }) => ({
       url: absoluteUrl(path),
       lastModified,

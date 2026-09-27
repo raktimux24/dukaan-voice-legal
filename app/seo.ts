@@ -48,6 +48,7 @@ export function pageMetadata({
   keywords = seoKeywords,
   noIndex = false,
   languageAlternates = true,
+  languages,
 }: {
   title: string;
   description?: string;
@@ -57,6 +58,7 @@ export function pageMetadata({
   keywords?: string[];
   noIndex?: boolean;
   languageAlternates?: boolean;
+  languages?: Record<string, string>;
 }): Metadata {
   const localeMeta = getLocaleMeta(locale);
 
@@ -72,7 +74,7 @@ export function pageMetadata({
     metadataBase: new URL(siteUrl),
     alternates: {
       canonical: path,
-      ...(languageAlternates ? { languages: localizedLanguageAlternates(page) } : {}),
+      ...(languageAlternates ? { languages: languages ?? localizedLanguageAlternates(page) } : {}),
     },
     ...(hasVerification ? { verification } : {}),
     robots: noIndex

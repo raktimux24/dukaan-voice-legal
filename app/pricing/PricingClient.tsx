@@ -18,6 +18,11 @@ export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
         <div>
           <h1>{t.pricing.heroTitle}</h1>
           <p className="subscription-lead">{t.pricing.heroLead}</p>
+          <p className="subscription-lead">
+            <Link href={localizedPath(locale === 'hi' ? 'hi' : defaultLocale, 'laptop')}>
+              {locale === 'hi' ? 'लैपटॉप पर वही दुकान कैसे चलती है' : 'How the same shop runs on a laptop'}
+            </Link>
+          </p>
           <div className="subscription-actions">
             <Link className="subscription-button" href={accountHref}>
               {t.pricing.ctaSubscribe}

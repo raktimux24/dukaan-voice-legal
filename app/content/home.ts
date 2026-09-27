@@ -47,7 +47,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
       </a>
       <ul class="nav-links">
         <li><a href="#features">Features</a></li>
-        <li><a href="#web">On a laptop</a></li>
+        <li><a href="/billing-on-a-laptop">On a laptop</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/shop" class="nav-cta">Open shop</a></li>
       </ul>
@@ -445,6 +445,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
       <div class="section-label">On a laptop</div>
       <h2 class="section-heading">The same shop, on a laptop.</h2>
       <p class="section-sub">Voice stays on the phone. The browser runs the counter, the stock, the people, and the plan.</p>
+      <p class="section-sub"><a href="/billing-on-a-laptop">How kirana billing works on a laptop</a></p>
     </div>
     <div class="desk-frame reveal">
       <div class="browser-chrome">
@@ -571,7 +572,7 @@ ${proofSectionHtml}
         <h4>Product</h4>
         <ul>
           <li><a href="#features">Features</a></li>
-          <li><a href="#web">On a laptop</a></li>
+          <li><a href="/billing-on-a-laptop">On a laptop</a></li>
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/shop">Open shop</a></li>
         </ul>

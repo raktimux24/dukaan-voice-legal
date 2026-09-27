@@ -15,7 +15,7 @@ export const locales = [
 ] as const;
 
 export type Locale = (typeof locales)[number]['code'];
-export type PageKind = 'home' | 'privacy' | 'terms' | 'pricing' | 'refund' | 'contact' | 'account' | 'subscriptionReturn';
+export type PageKind = 'home' | 'privacy' | 'terms' | 'pricing' | 'refund' | 'contact' | 'account' | 'subscriptionReturn' | 'laptop';
 
 export const translatedLocales = locales.filter((locale) => locale.code !== defaultLocale);
 
@@ -40,9 +40,21 @@ export function localizedPath(locale: Locale, page: PageKind) {
   if (page === 'refund') return `${prefix}/refund-policy` || '/refund-policy';
   if (page === 'contact') return `${prefix}/contact` || '/contact';
   if (page === 'account') return `${prefix}/account` || '/account';
+  if (page === 'laptop') return locale === 'hi' ? '/hi/billing-on-a-laptop' : '/billing-on-a-laptop';
   if (page === 'subscriptionReturn') return '/subscription/return';
 
   return prefix || '/';
+}
+
+export function laptopLanguageAlternates(absolute = false, absoluteUrl?: (path: string) => string) {
+  const english = localizedPath('en', 'laptop');
+  const hindi = localizedPath('hi', 'laptop');
+  const toUrl = (path: string) => (absolute && absoluteUrl ? absoluteUrl(path) : path);
+  return {
+    'en-IN': toUrl(english),
+    'hi-IN': toUrl(hindi),
+    'x-default': toUrl(english),
+  };
 }
 
 export function localizedLanguageAlternates(page: PageKind, absolute = false, absoluteUrl?: (path: string) => string) {
