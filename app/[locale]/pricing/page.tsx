@@ -6,6 +6,7 @@ import { LanguageSelectEffects } from '../../components/LanguageSelectEffects';
 import { SubscriptionFooter, SubscriptionNav } from '../../components/SubscriptionChrome';
 import { PricingClient } from '../../pricing/PricingClient';
 import { getLocale, isLocale, translatedLocales } from '../../i18n';
+import { localizedPageCopy } from '../../content/pageCopy';
 import { faqPageSchema, pageMetadata, pricingOfferSchema } from '../../seo';
 import { JsonLd } from '../../components/JsonLd';
 import { getSubscriptionStrings } from '../../content/subscriptionStrings';
@@ -20,13 +21,16 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   const { locale } = await params;
   if (!isLocale(locale) || locale === 'en') notFound();
 
+  const resolved = getLocale(locale);
+  const copy = localizedPageCopy(resolved, 'pricing');
+
   return pageMetadata({
-    title: 'Pricing — Samaan Bol Premium',
-    description:
-      'Premium for ₹499/month or ₹3,999/year. New shops get 7 days of voice in the app, no card. The 7-day refund is separate — it starts from the first charge.',
+    title: copy.title,
+    description: copy.description,
     path: `/${locale}/pricing`,
     page: 'pricing',
-    locale: getLocale(locale),
+    locale: resolved,
+    keywords: ['Samaan Bol pricing', 'kirana billing app price', 'kirana billing app monthly price'],
   });
 }
 

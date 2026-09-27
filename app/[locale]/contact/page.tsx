@@ -4,6 +4,7 @@ import { AmbientBackground } from '../../components/AmbientBackground';
 import { HomeEffects } from '../../components/HomeEffects';
 import { LanguageSelectEffects } from '../../components/LanguageSelectEffects';
 import { SubscriptionFooter, SubscriptionNav, supportEmail } from '../../components/SubscriptionChrome';
+import { localizedPageCopy } from '../../content/pageCopy';
 import { getSubscriptionStrings } from '../../content/subscriptionStrings';
 import { getLocale, isLocale, translatedLocales } from '../../i18n';
 import { pageMetadata } from '../../seo';
@@ -18,12 +19,16 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   const { locale } = await params;
   if (!isLocale(locale) || locale === 'en') notFound();
 
+  const resolved = getLocale(locale);
+  const copy = localizedPageCopy(resolved, 'contact');
+
   return pageMetadata({
-    title: 'Contact Support — Samaan-Bol',
-    description: 'Contact Samaan-Bol support for app help, subscription billing, refunds, invoices, and account questions.',
+    title: copy.title,
+    description: copy.description,
     path: `/${locale}/contact`,
     page: 'contact',
-    locale: getLocale(locale),
+    locale: resolved,
+    keywords: ['Samaan Bol contact', 'Samaan Bol support'],
   });
 }
 

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { AmbientBackground } from '../../components/AmbientBackground';
 import { LanguageSelectEffects } from '../../components/LanguageSelectEffects';
 import { LegalEffects } from '../../components/LegalEffects';
+import { localizedPageCopy } from '../../content/pageCopy';
 import { getLocalizedHtml } from '../../content/localized';
 import { getLocale, getLocaleMeta, isLocale, localizedPath, translatedLocales } from '../../i18n';
 import { pageMetadata } from '../../seo';
@@ -20,15 +21,14 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   if (!isLocale(locale) || locale === 'en') notFound();
 
   const resolvedLocale = getLocale(locale);
+  const copy = localizedPageCopy(resolvedLocale, 'privacy');
 
   return pageMetadata({
-    title: 'Privacy Policy — Samaan-Bol',
-    description:
-      'Read the Samaan-Bol privacy policy for voice recordings, account data, inventory data, third-party services, storage, and account deletion.',
+    title: copy.title,
+    description: copy.description,
     path: localizedPath(resolvedLocale, 'privacy'),
     page: 'privacy',
     locale: resolvedLocale,
-    keywords: ['Samaan-Bol privacy policy', 'voice inventory app privacy', 'inventory app data privacy India'],
   });
 }
 

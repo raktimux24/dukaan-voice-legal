@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import { Analytics } from './components/Analytics';
+import { getLocaleMeta, isLocale } from './i18n';
 import { defaultDescription, defaultTitle, pageMetadata } from './seo';
 import './styles/home.css';
 import './styles/legal-base.css';
@@ -37,11 +39,15 @@ const clerkAppearance = {
   },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const localeHeader = (await headers()).get('x-locale') ?? 'en';
+  const lang = getLocaleMeta(isLocale(localeHeader) ? localeHeader : 'en').hreflang;
+
   return (
     <ClerkProvider appearance={clerkAppearance}>
-      <html lang="en">
+      <html lang={lang}>
         <head>
+          <meta httpEquiv="content-language" content={lang} />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
           <link

@@ -8,26 +8,32 @@ export const appStoreUrl = 'https://apps.apple.com/in/app/samaan-bol/id675973944
 export const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.samaan.bol';
 
 export const seoKeywords = [
-  'kirana bill',
-  'udhaar',
-  'UPI QR',
-  'evening hisaab',
-  'Hindi Hinglish billing',
-  'speak the sale',
-  'bill share WhatsApp',
-  'shop counter billing',
+  'voice billing app kirana',
   'kirana billing app',
+  'kirana voice billing',
+  'speak the bill',
+  'Hindi Hinglish billing',
+  'bol ke bill',
+  'kirana store billing app',
+  'dukaan billing app',
+  'kirana billing on a laptop',
+  'udhaar app for kirana',
+  'Samaan Bol',
 ];
 
 export const defaultDescription =
-  'While the customer is still there, you say what they took on the phone, or run the same bill in the browser. Cash, UPI QR, or udhaar. Stock is not a second notebook. Voice stays on the phone. New shops get 7 days of voice in the app, no card.';
+  'Voice billing app for a kirana counter. Say what they took on the phone. Cash, UPI QR, or udhaar. The same shop runs in the browser. Voice stays on the phone.';
 
-export const defaultTitle = 'Samaan Bol — Kirana billing on the phone and in the browser';
+export const defaultTitle = 'Samaan Bol — Kirana voice billing, phone and browser';
 
 export const defaultOpenGraphImage = '/opengraph-image';
 
 export function absoluteUrl(path = '/') {
-  return new URL(path, siteUrl).toString();
+  const url = new URL(path || '/', siteUrl);
+  if (url.pathname === '/' && url.search === '' && url.hash === '') {
+    return url.origin;
+  }
+  return url.toString();
 }
 
 const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;

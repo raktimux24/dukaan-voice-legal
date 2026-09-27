@@ -125,8 +125,8 @@ const UTTERANCE = 'चावल 5 किलो बेचा';
 const HERO_ROTATE =
   '<span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">Kannada</span><span class="hero-rotate-word">Gujarati</span><span class="hero-rotate-word">Malayalam</span><span class="hero-rotate-word">Punjabi</span><span class="hero-rotate-word">Odia</span><span class="hero-rotate-word">English</span></span>';
 
-const EN_HERO_SUB = `          While the customer is still there, you say what they took in ${HERO_ROTATE}.
-          On the phone, that sentence becomes the bill. On a laptop, you search, scan, and charge the same shop. Cash, a UPI QR, or udhaar. Stock is not a second notebook.`;
+const EN_HERO_SUB = `          Voice billing for a kirana counter. While the customer is still there, you say what they took in ${HERO_ROTATE}.
+          On the phone, that sentence becomes the bill. On a laptop, you search, scan, and charge the same shop. Voice stays on the phone. Cash, a UPI QR, or udhaar. Stock is not a second notebook.`;
 
 const hi: HomeSlots = {
   navFeatures: "फ़ीचर्स",
@@ -1569,7 +1569,7 @@ export function applyHomeSlots(html: string, locale: Locale) {
         <li><a href="/shop" class="nav-cta">${surfaceNav(locale).openShop}</a></li>`,
   );
 
-  out = swap(out, '<div class="hero-eyebrow">For the kirana counter</div>', `<div class="hero-eyebrow">${slots.heroEyebrow ?? 'For the kirana counter'}</div>`);
+  out = swap(out, '<div class="hero-eyebrow">Kirana voice billing app</div>', `<div class="hero-eyebrow">${slots.heroEyebrow ?? 'Kirana voice billing app'}</div>`);
   out = swap(out, `<span class="hindi-line hindi">${TWIN}</span>`, `<span class="hindi-line hindi">${TWIN}</span>`);
   out = swap(
     out,

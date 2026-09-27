@@ -61,14 +61,14 @@ export const homeHtml = `<!-- Three.js background canvas -->
   <div class="container">
     <div class="hero-grid">
       <div>
-        <div class="hero-eyebrow">For the kirana counter</div>
+        <div class="hero-eyebrow">Kirana voice billing app</div>
         <h1 class="hero-text-reveal">
           <span class="hindi-line hindi">जो बोला, वही बिल।</span>
           <span class="hero-text-main">You already said it out loud.<br>The bill should keep up.</span>
         </h1>
         <p class="hero-sub">
-          While the customer is still there, you say what they took in <span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">Kannada</span><span class="hero-rotate-word">Gujarati</span><span class="hero-rotate-word">Malayalam</span><span class="hero-rotate-word">Punjabi</span><span class="hero-rotate-word">Odia</span><span class="hero-rotate-word">English</span></span>.
-          On the phone, that sentence becomes the bill. On a laptop, you search, scan, and charge the same shop. Cash, a UPI QR, or udhaar. Stock is not a second notebook.
+          Voice billing for a kirana counter. While the customer is still there, you say what they took in <span class="hero-rotate"><span class="hero-rotate-word active">Hindi</span><span class="hero-rotate-word">Bengali</span><span class="hero-rotate-word">Tamil</span><span class="hero-rotate-word">Telugu</span><span class="hero-rotate-word">Marathi</span><span class="hero-rotate-word">Kannada</span><span class="hero-rotate-word">Gujarati</span><span class="hero-rotate-word">Malayalam</span><span class="hero-rotate-word">Punjabi</span><span class="hero-rotate-word">Odia</span><span class="hero-rotate-word">English</span></span>.
+          On the phone, that sentence becomes the bill. On a laptop, you search, scan, and charge the same shop. Voice stays on the phone. Cash, a UPI QR, or udhaar. Stock is not a second notebook.
         </p>
         <div class="hero-actions">
           <a href="/shop" class="btn-primary">
@@ -423,17 +423,17 @@ export const homeHtml = `<!-- Three.js background canvas -->
       <p class="section-sub">Hinglish is speech, not a chip. 10 Indian languages + English, with the names you actually use at the counter. Voice and this site use these languages. The shop in the browser is in English for now.</p>
     </div>
     <div class="lang-grid reveal">
-      <div class="lang-chip lang-chip--featured">Hindi <span class="native hindi">हिन्दी</span></div>
-      <div class="lang-chip">Bengali <span class="native">বাংলা</span></div>
-      <div class="lang-chip">Tamil <span class="native">தமிழ்</span></div>
-      <div class="lang-chip">Telugu <span class="native">తెలుగు</span></div>
-      <div class="lang-chip">Marathi <span class="native">मराठी</span></div>
-      <div class="lang-chip">Kannada <span class="native">ಕನ್ನಡ</span></div>
-      <div class="lang-chip">Gujarati <span class="native">ગુજરાતી</span></div>
-      <div class="lang-chip">Malayalam <span class="native">മലയാളം</span></div>
-      <div class="lang-chip">Punjabi <span class="native">ਪੰਜਾਬੀ</span></div>
-      <div class="lang-chip">Odia <span class="native">ଓଡ଼ିଆ</span></div>
-      <div class="lang-chip">English <span class="native">English</span></div>
+      <a class="lang-chip lang-chip--featured" href="/hi">Bill in Hindi <span class="native hindi">हिन्दी</span></a>
+      <a class="lang-chip" href="/bn">Bill in Bengali <span class="native">বাংলা</span></a>
+      <a class="lang-chip" href="/ta">Bill in Tamil <span class="native">தமிழ்</span></a>
+      <a class="lang-chip" href="/te">Bill in Telugu <span class="native">తెలుగు</span></a>
+      <a class="lang-chip" href="/mr">Bill in Marathi <span class="native">मराठी</span></a>
+      <a class="lang-chip" href="/kn">Bill in Kannada <span class="native">ಕನ್ನಡ</span></a>
+      <a class="lang-chip" href="/gu">Bill in Gujarati <span class="native">ગુજરાતી</span></a>
+      <a class="lang-chip" href="/ml">Bill in Malayalam <span class="native">മലയാളം</span></a>
+      <a class="lang-chip" href="/pa">Bill in Punjabi <span class="native">ਪੰਜਾਬੀ</span></a>
+      <a class="lang-chip" href="/or">Bill in Odia <span class="native">ଓଡ଼ିଆ</span></a>
+      <a class="lang-chip" href="/">Bill in English <span class="native">English</span></a>
     </div>
   </div>
 </section>
