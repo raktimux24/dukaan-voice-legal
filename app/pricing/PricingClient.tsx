@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { defaultLocale, type Locale, localizedPath } from '../i18n';
+import { getLaptopCopy } from '../content/laptopPage';
 import { getSubscriptionStrings } from '../content/subscriptionStrings';
+import { getUdhaarCopy } from '../content/udhaarPage';
 import { planCopy, type BillingPlan } from '../lib/subscriptions';
 
 export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
@@ -18,15 +20,20 @@ export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
         <div>
           <h1>{t.pricing.heroTitle}</h1>
           <p className="subscription-lead">{t.pricing.heroLead}</p>
-          <p className="subscription-lead">
-            <Link href={localizedPath(locale === 'hi' ? 'hi' : defaultLocale, 'laptop')}>
-              {locale === 'hi' ? 'लैपटॉप पर वही दुकान कैसे चलती है' : 'How the same shop runs on a laptop'}
+          <div className="topic-link-row">
+            <Link className="topic-link" href={localizedPath(locale, 'laptop')}>
+              <span className="topic-link-copy">
+                <span className="topic-link-kicker">{t.nav.laptop}</span>
+                <span className="topic-link-title">{getLaptopCopy(locale).homeLink}</span>
+              </span>
             </Link>
-            {' · '}
-            <Link href={localizedPath(locale === 'hi' ? 'hi' : defaultLocale, 'udhaar')}>
-              {locale === 'hi' ? 'बिल पर उधार' : 'Udhaar on the bill'}
+            <Link className="topic-link" href={localizedPath(locale, 'udhaar')}>
+              <span className="topic-link-copy">
+                <span className="topic-link-kicker">{getUdhaarCopy(locale).navLabel}</span>
+                <span className="topic-link-title">{getUdhaarCopy(locale).homeLink}</span>
+              </span>
             </Link>
-          </p>
+          </div>
           <div className="subscription-actions">
             <Link className="subscription-button" href={accountHref}>
               {t.pricing.ctaSubscribe}

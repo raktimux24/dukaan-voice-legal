@@ -6,7 +6,7 @@ import { faqPageSchema } from '../seo';
 
 export function LaptopArticle({ locale }: { locale: Locale }) {
   const copy = getLaptopCopy(locale);
-  const pricingHref = localizedPath(locale === 'hi' ? 'hi' : 'en', 'pricing');
+  const pricingHref = localizedPath(locale, 'pricing');
 
   return (
     <main className="subscription-main">

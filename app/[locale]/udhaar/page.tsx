@@ -6,39 +6,38 @@ import { LanguageSelectEffects } from '../../components/LanguageSelectEffects';
 import { SubscriptionFooter, SubscriptionNav } from '../../components/SubscriptionChrome';
 import { UdhaarArticle } from '../../components/UdhaarArticle';
 import { getUdhaarCopy } from '../../content/udhaarPage';
-import { bilingualLanguageAlternates } from '../../i18n';
+import { isLocale, localizedPath, translatedLocales } from '../../i18n';
 import { pageMetadata } from '../../seo';
 
 export function generateStaticParams() {
-  return [{ locale: 'hi' }];
+  return translatedLocales.map((locale) => ({ locale: locale.code }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  if (locale !== 'hi') notFound();
+  if (!isLocale(locale) || locale === 'en') notFound();
 
-  const copy = getUdhaarCopy('hi');
+  const copy = getUdhaarCopy(locale);
   return pageMetadata({
     title: copy.title,
     description: copy.description,
-    path: '/hi/udhaar',
+    path: localizedPath(locale, 'udhaar'),
     page: 'udhaar',
-    locale: 'hi',
-    keywords: ['बिल पर उधार', 'udhaar on the bill', 'udhaar app for kirana'],
-    languages: bilingualLanguageAlternates('udhaar'),
+    locale,
+    keywords: [copy.h1, 'udhaar on the bill'],
   });
 }
 
-export default async function HindiUdhaarPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LocalizedUdhaarPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (locale !== 'hi') notFound();
+  if (!isLocale(locale) || locale === 'en') notFound();
 
   return (
     <div className="subscription-shell">
       <AmbientBackground />
-      <SubscriptionNav locale="hi" page="udhaar" />
-      <UdhaarArticle locale="hi" />
-      <SubscriptionFooter locale="hi" page="udhaar" />
+      <SubscriptionNav locale={locale} page="udhaar" />
+      <UdhaarArticle locale={locale} />
+      <SubscriptionFooter locale={locale} page="udhaar" />
       <HomeEffects />
       <LanguageSelectEffects />
     </div>

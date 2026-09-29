@@ -367,7 +367,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <div class="ai-block-tag ai-block-tag--alert">Udhaar</div>
         <h3>Whose udhaar is open</h3>
         <p>Names, not a paper slip in the drawer.</p>
-        <p><a href="/udhaar">Udhaar on the bill, not a separate khata</a></p>
+        <a class="topic-link" href="/udhaar"><span class="topic-link-copy"><span class="topic-link-kicker">Udhaar</span><span class="topic-link-title">Udhaar on the bill, not a separate khata</span></span></a>
         <div class="ai-voice-example">
           <div class="voice-bubble">
             <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
@@ -446,7 +446,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
       <div class="section-label">On a laptop</div>
       <h2 class="section-heading">The same shop, on a laptop.</h2>
       <p class="section-sub">Voice stays on the phone. The browser runs the counter, the stock, the people, and the plan.</p>
-      <p class="section-sub"><a href="/billing-on-a-laptop">How kirana billing works on a laptop</a></p>
+      <a class="topic-link" href="/billing-on-a-laptop"><span class="topic-link-copy"><span class="topic-link-kicker">On a laptop</span><span class="topic-link-title">How kirana billing works on a laptop</span></span></a>
     </div>
     <div class="desk-frame reveal">
       <div class="browser-chrome">

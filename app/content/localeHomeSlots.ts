@@ -1,4 +1,6 @@
-import type { Locale } from '../i18n';
+import { localizedPath, type Locale } from '../i18n';
+import { getLaptopCopy } from './laptopPage';
+import { getUdhaarCopy } from './udhaarPage';
 import { homeHtml } from './home';
 
 /** Shop-day locale overlay. Missing bodies stay on locked EN — do not invent. */
@@ -1524,23 +1526,33 @@ const WEB_COPY: Partial<Record<Locale, WebCopy>> = {
   },
 };
 
+function topicLink(href: string, kicker: string, title: string) {
+  return `<a class="topic-link" href="${href}"><span class="topic-link-copy"><span class="topic-link-kicker">${kicker}</span><span class="topic-link-title">${title}</span></span></a>`;
+}
+
 function applyWebCopy(html: string, locale: Locale) {
   const copy = WEB_COPY[locale];
   const surface = surfaceNav(locale);
   let out = html;
   out = swap(out, '<li><a href="/billing-on-a-laptop">On a laptop</a></li>', `<li><a href="/billing-on-a-laptop">${surface.laptop}</a></li>`);
-  if (locale === 'hi') {
+  if (locale !== 'en') {
+    const laptopCopy = getLaptopCopy(locale);
+    const udhaarCopy = getUdhaarCopy(locale);
     out = swap(
       out,
-      '<p class="section-sub"><a href="/billing-on-a-laptop">How kirana billing works on a laptop</a></p>',
-      '<p class="section-sub"><a href="/hi/billing-on-a-laptop">लैपटॉप पर किराना बिलिंग</a></p>',
+      '<a class="topic-link" href="/billing-on-a-laptop"><span class="topic-link-copy"><span class="topic-link-kicker">On a laptop</span><span class="topic-link-title">How kirana billing works on a laptop</span></span></a>',
+      topicLink(localizedPath(locale, 'laptop'), copy?.label ?? surface.laptop, laptopCopy.homeLink),
     );
     out = swap(
       out,
-      '<p><a href="/udhaar">Udhaar on the bill, not a separate khata</a></p>',
-      '<p><a href="/hi/udhaar">बिल पर उधार, अलग खता नहीं</a></p>',
+      '<a class="topic-link" href="/udhaar"><span class="topic-link-copy"><span class="topic-link-kicker">Udhaar</span><span class="topic-link-title">Udhaar on the bill, not a separate khata</span></span></a>',
+      topicLink(localizedPath(locale, 'udhaar'), udhaarCopy.navLabel, udhaarCopy.homeLink),
     );
-    out = swap(out, '<li><a href="/udhaar">Udhaar</a></li>', '<li><a href="/hi/udhaar">उधार</a></li>');
+    out = swap(
+      out,
+      '<li><a href="/udhaar">Udhaar</a></li>',
+      `<li><a href="${localizedPath(locale, 'udhaar')}">${udhaarCopy.navLabel}</a></li>`,
+    );
   }
   out = swap(out, '<li><a href="/shop">Open shop</a></li>', `<li><a href="/shop">${surface.openShop}</a></li>`);
   out = swap(out, '<a href="/shop" class="btn-primary">Open the shop</a>', `<a href="/shop" class="btn-primary">${surface.openTheShop}</a>`);

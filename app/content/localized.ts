@@ -20,8 +20,7 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
   const homeSlots = getLocaleHomeSlots(locale);
   const languageLabel = homeSlots?.chromeLanguage ?? 'Language';
   const selectLanguage = homeSlots?.ariaSelectLanguage ?? 'Select language';
-  const shownLocales = page === 'laptop' || page === 'udhaar' ? locales.filter((item) => item.code === 'en' || item.code === 'hi') : locales;
-  const options = shownLocales
+  const options = locales
     .map((item) => {
       const selected = item.code === locale ? ' aria-current="true"' : '';
       return `<a class="language-option" href="${localizedPath(item.code, page)}"${selected}>

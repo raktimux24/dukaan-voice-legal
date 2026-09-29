@@ -1,4 +1,5 @@
 import type { Locale } from '../i18n';
+import { udhaarLocales } from './udhaarLocales';
 
 export type UdhaarCopy = {
   title: string;
@@ -18,6 +19,8 @@ export type UdhaarCopy = {
   openShop: string;
   pricing: string;
   laptop: string;
+  homeLink: string;
+  navLabel: string;
 };
 
 const english: UdhaarCopy = {
@@ -69,6 +72,8 @@ const english: UdhaarCopy = {
   openShop: 'Open the shop',
   pricing: 'See pricing',
   laptop: 'Same shop on a laptop',
+  homeLink: 'Udhaar on the bill, not a separate khata',
+  navLabel: 'Udhaar',
 };
 
 const hindi: UdhaarCopy = {
@@ -120,8 +125,12 @@ const hindi: UdhaarCopy = {
   openShop: 'दुकान खोलो',
   pricing: 'कीमत देखें',
   laptop: 'लैपटॉप पर वही दुकान',
+  homeLink: 'बिल पर उधार, अलग खता नहीं',
+  navLabel: 'उधार',
 };
 
+const udhaarCopy: Partial<Record<Locale, UdhaarCopy>> = { hi: hindi, ...udhaarLocales };
+
 export function getUdhaarCopy(locale: Locale): UdhaarCopy {
-  return locale === 'hi' ? hindi : english;
+  return udhaarCopy[locale] ?? english;
 }

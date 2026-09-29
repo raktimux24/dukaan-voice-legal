@@ -40,26 +40,11 @@ export function localizedPath(locale: Locale, page: PageKind) {
   if (page === 'refund') return `${prefix}/refund-policy` || '/refund-policy';
   if (page === 'contact') return `${prefix}/contact` || '/contact';
   if (page === 'account') return `${prefix}/account` || '/account';
-  if (page === 'laptop') return locale === 'hi' ? '/hi/billing-on-a-laptop' : '/billing-on-a-laptop';
-  if (page === 'udhaar') return locale === 'hi' ? '/hi/udhaar' : '/udhaar';
+  if (page === 'laptop') return locale === defaultLocale ? '/billing-on-a-laptop' : `/${locale}/billing-on-a-laptop`;
+  if (page === 'udhaar') return locale === defaultLocale ? '/udhaar' : `/${locale}/udhaar`;
   if (page === 'subscriptionReturn') return '/subscription/return';
 
   return prefix || '/';
-}
-
-export function bilingualLanguageAlternates(page: 'laptop' | 'udhaar', absolute = false, absoluteUrl?: (path: string) => string) {
-  const english = localizedPath('en', page);
-  const hindi = localizedPath('hi', page);
-  const toUrl = (path: string) => (absolute && absoluteUrl ? absoluteUrl(path) : path);
-  return {
-    'en-IN': toUrl(english),
-    'hi-IN': toUrl(hindi),
-    'x-default': toUrl(english),
-  };
-}
-
-export function laptopLanguageAlternates(absolute = false, absoluteUrl?: (path: string) => string) {
-  return bilingualLanguageAlternates('laptop', absolute, absoluteUrl);
 }
 
 export function localizedLanguageAlternates(page: PageKind, absolute = false, absoluteUrl?: (path: string) => string) {

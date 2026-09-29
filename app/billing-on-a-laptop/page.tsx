@@ -5,7 +5,6 @@ import { LanguageSelectEffects } from '../components/LanguageSelectEffects';
 import { LaptopArticle } from '../components/LaptopArticle';
 import { SubscriptionFooter, SubscriptionNav } from '../components/SubscriptionChrome';
 import { getLaptopCopy } from '../content/laptopPage';
-import { laptopLanguageAlternates } from '../i18n';
 import { pageMetadata } from '../seo';
 
 const copy = getLaptopCopy('en');
@@ -16,7 +15,6 @@ export const metadata: Metadata = pageMetadata({
   path: '/billing-on-a-laptop',
   page: 'laptop',
   keywords: ['kirana billing on a laptop', 'browser billing for a shop', 'web billing app kirana', 'scan barcode on laptop shop'],
-  languages: laptopLanguageAlternates(),
 });
 
 export default function LaptopBillingPage() {

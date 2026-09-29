@@ -6,8 +6,8 @@ import { faqPageSchema } from '../seo';
 
 export function UdhaarArticle({ locale }: { locale: Locale }) {
   const copy = getUdhaarCopy(locale);
-  const pricingHref = localizedPath(locale === 'hi' ? 'hi' : 'en', 'pricing');
-  const laptopHref = localizedPath(locale === 'hi' ? 'hi' : 'en', 'laptop');
+  const pricingHref = localizedPath(locale, 'pricing');
+  const laptopHref = localizedPath(locale, 'laptop');
 
   return (
     <main className="subscription-main">

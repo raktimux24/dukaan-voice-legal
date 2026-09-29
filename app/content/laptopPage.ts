@@ -1,4 +1,5 @@
 import type { Locale } from '../i18n';
+import { laptopLocales } from './laptopLocales';
 
 export type LaptopCopy = {
   title: string;
@@ -15,6 +16,7 @@ export type LaptopCopy = {
   faq: Array<{ q: string; a: string }>;
   openShop: string;
   pricing: string;
+  homeLink: string;
 };
 
 const english: LaptopCopy = {
@@ -59,6 +61,7 @@ const english: LaptopCopy = {
   ],
   openShop: 'Open the shop',
   pricing: 'See pricing',
+  homeLink: 'How kirana billing works on a laptop',
 };
 
 const hindi: LaptopCopy = {
@@ -103,8 +106,11 @@ const hindi: LaptopCopy = {
   ],
   openShop: 'दुकान खोलो',
   pricing: 'कीमत देखें',
+  homeLink: 'लैपटॉप पर किराना बिलिंग',
 };
 
+const laptopCopy: Partial<Record<Locale, LaptopCopy>> = { hi: hindi, ...laptopLocales };
+
 export function getLaptopCopy(locale: Locale): LaptopCopy {
-  return locale === 'hi' ? hindi : english;
+  return laptopCopy[locale] ?? english;
 }

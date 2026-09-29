@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { defaultLocale, type Locale, type PageKind, localizedPath } from '../i18n';
 import { getSubscriptionStrings } from '../content/subscriptionStrings';
+import { getUdhaarCopy } from '../content/udhaarPage';
 import { getLocaleHomeSlots } from '../content/localeHomeSlots';
 import { languageSwitcher } from '../content/localized';
 import { appStoreUrl } from '../seo';
@@ -95,7 +96,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
                 <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
               </li>
               <li>
-                <Link href={udhaarHref}>{locale === 'hi' ? 'उधार' : 'Udhaar'}</Link>
+                <Link href={udhaarHref}>{getUdhaarCopy(locale).navLabel}</Link>
               </li>
               <li>
                 <Link href={pricingHref}>{t.footer.pricing}</Link>

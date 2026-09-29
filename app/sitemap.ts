@@ -1,17 +1,16 @@
 import type { MetadataRoute } from 'next';
 import { absoluteUrl } from './seo';
-import { bilingualLanguageAlternates, localizedLanguageAlternates, localizedPath, locales, type Locale, type PageKind } from './i18n';
+import { localizedLanguageAlternates, localizedPath, locales, type PageKind } from './i18n';
 
 const pages: Array<{ page: PageKind; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
   { page: 'home', changeFrequency: 'weekly', priority: 1 },
   { page: 'pricing', changeFrequency: 'weekly', priority: 0.8 },
+  { page: 'laptop', changeFrequency: 'weekly', priority: 0.8 },
+  { page: 'udhaar', changeFrequency: 'weekly', priority: 0.8 },
   { page: 'contact', changeFrequency: 'monthly', priority: 0.4 },
   { page: 'privacy', changeFrequency: 'monthly', priority: 0.3 },
   { page: 'terms', changeFrequency: 'monthly', priority: 0.3 },
 ];
-
-const bilingualLocales: Locale[] = ['en', 'hi'];
-const bilingualPages: Array<'laptop' | 'udhaar'> = ['laptop', 'udhaar'];
 
 const englishPages: Array<{ path: string; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
   { path: '/refund-policy', changeFrequency: 'monthly', priority: 0.4 },
@@ -29,17 +28,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority,
         alternates: {
           languages: localizedLanguageAlternates(page, true, absoluteUrl),
-        },
-      })),
-    ),
-    ...bilingualPages.flatMap((page) =>
-      bilingualLocales.map((locale) => ({
-        url: absoluteUrl(localizedPath(locale, page)),
-        lastModified,
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-        alternates: {
-          languages: bilingualLanguageAlternates(page, true, absoluteUrl),
         },
       })),
     ),

@@ -5,7 +5,6 @@ import { LanguageSelectEffects } from '../components/LanguageSelectEffects';
 import { SubscriptionFooter, SubscriptionNav } from '../components/SubscriptionChrome';
 import { UdhaarArticle } from '../components/UdhaarArticle';
 import { getUdhaarCopy } from '../content/udhaarPage';
-import { bilingualLanguageAlternates } from '../i18n';
 import { pageMetadata } from '../seo';
 
 const copy = getUdhaarCopy('en');
@@ -16,7 +15,6 @@ export const metadata: Metadata = pageMetadata({
   path: '/udhaar',
   page: 'udhaar',
   keywords: ['udhaar on the bill', 'udhaar app for kirana', 'record udhaar on bill', 'customer udhaar kirana'],
-  languages: bilingualLanguageAlternates('udhaar'),
 });
 
 export default function UdhaarPage() {
