@@ -184,6 +184,18 @@
   font-weight: 800;
 }
 
+.note-list {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 22px 0 0;
+  list-style: none;
+}
+
+.note-list li {
+  color: var(--text-secondary);
+}
+
 .comparison-grid,
 .subscription-grid,
 .portal-grid {

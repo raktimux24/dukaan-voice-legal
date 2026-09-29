@@ -1535,6 +1535,12 @@ function applyWebCopy(html: string, locale: Locale) {
       '<p class="section-sub"><a href="/billing-on-a-laptop">How kirana billing works on a laptop</a></p>',
       '<p class="section-sub"><a href="/hi/billing-on-a-laptop">लैपटॉप पर किराना बिलिंग</a></p>',
     );
+    out = swap(
+      out,
+      '<p><a href="/udhaar">Udhaar on the bill, not a separate khata</a></p>',
+      '<p><a href="/hi/udhaar">बिल पर उधार, अलग खता नहीं</a></p>',
+    );
+    out = swap(out, '<li><a href="/udhaar">Udhaar</a></li>', '<li><a href="/hi/udhaar">उधार</a></li>');
   }
   out = swap(out, '<li><a href="/shop">Open shop</a></li>', `<li><a href="/shop">${surface.openShop}</a></li>`);
   out = swap(out, '<a href="/shop" class="btn-primary">Open the shop</a>', `<a href="/shop" class="btn-primary">${surface.openTheShop}</a>`);

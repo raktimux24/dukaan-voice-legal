@@ -367,6 +367,7 @@ export const homeHtml = `<!-- Three.js background canvas -->
         <div class="ai-block-tag ai-block-tag--alert">Udhaar</div>
         <h3>Whose udhaar is open</h3>
         <p>Names, not a paper slip in the drawer.</p>
+        <p><a href="/udhaar">Udhaar on the bill, not a separate khata</a></p>
         <div class="ai-voice-example">
           <div class="voice-bubble">
             <div class="voice-bubble-avatar voice-bubble-avatar--ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
@@ -573,6 +574,7 @@ ${proofSectionHtml}
         <ul>
           <li><a href="#features">Features</a></li>
           <li><a href="/billing-on-a-laptop">On a laptop</a></li>
+          <li><a href="/udhaar">Udhaar</a></li>
           <li><a href="/pricing">Pricing</a></li>
           <li><a href="/shop">Open shop</a></li>
         </ul>

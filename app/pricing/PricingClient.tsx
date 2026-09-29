@@ -22,6 +22,10 @@ export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
             <Link href={localizedPath(locale === 'hi' ? 'hi' : defaultLocale, 'laptop')}>
               {locale === 'hi' ? 'लैपटॉप पर वही दुकान कैसे चलती है' : 'How the same shop runs on a laptop'}
             </Link>
+            {' · '}
+            <Link href={localizedPath(locale === 'hi' ? 'hi' : defaultLocale, 'udhaar')}>
+              {locale === 'hi' ? 'बिल पर उधार' : 'Udhaar on the bill'}
+            </Link>
           </p>
           <div className="subscription-actions">
             <Link className="subscription-button" href={accountHref}>

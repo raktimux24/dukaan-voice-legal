@@ -62,6 +62,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
   const home = localizedPath(locale, 'home');
   const pricingHref = localizedPath(locale, 'pricing');
   const laptopHref = localizedPath(locale, 'laptop');
+  const udhaarHref = localizedPath(locale, 'udhaar');
   const accountHref = localizedPath(locale, 'account');
   const contactHref = localizedPath(locale, 'contact');
   const refundHref = localizedPath(locale, 'refund');
@@ -92,6 +93,9 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
               </li>
               <li>
                 <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
+              </li>
+              <li>
+                <Link href={udhaarHref}>{locale === 'hi' ? 'उधार' : 'Udhaar'}</Link>
               </li>
               <li>
                 <Link href={pricingHref}>{t.footer.pricing}</Link>
