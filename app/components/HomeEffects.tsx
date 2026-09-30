@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { ThreeBackground } from './ThreeBackground';
 
 export function HomeEffects() {
   useEffect(() => {
@@ -56,36 +55,10 @@ export function HomeEffects() {
     });
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!prefersReduced) {
-      document.querySelectorAll('.hero-text-reveal .hero-text-main').forEach((el) => {
-        if (el.getAttribute('data-revealed') === 'true') return;
-        el.setAttribute('data-revealed', 'true');
-        const nodes = Array.from(el.childNodes);
-        while (el.firstChild) el.removeChild(el.firstChild);
-        let wordIndex = 0;
-        nodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'BR') {
-            el.appendChild(document.createElement('br'));
-          } else if (node.nodeType === Node.TEXT_NODE) {
-            const parts = node.textContent?.split(/(\s+)/) ?? [];
-            parts.forEach((part) => {
-              if (part.trim() === '') {
-                el.appendChild(document.createTextNode(part));
-              } else {
-                const span = document.createElement('span');
-                span.textContent = part;
-                span.style.animationDelay = (wordIndex++ * 0.08) + 's';
-                el.appendChild(span);
-              }
-            });
-          }
-        });
-      });
-    }
 
     const rotateWords = document.querySelectorAll('.hero-rotate-word');
     let current = 0;
-    const rotateInterval = rotateWords.length > 0 ? window.setInterval(() => {
+    const rotateInterval = !prefersReduced && rotateWords.length > 0 ? window.setInterval(() => {
       rotateWords[current]?.classList.remove('active');
       current = (current + 1) % rotateWords.length;
       rotateWords[current]?.classList.add('active');
@@ -132,5 +105,5 @@ export function HomeEffects() {
     };
   }, []);
 
-  return <ThreeBackground />;
+  return null;
 }

@@ -16,14 +16,17 @@ const englishPages: Array<{ path: string; changeFrequency: 'weekly' | 'monthly';
   { path: '/refund-policy', changeFrequency: 'monthly', priority: 0.4 },
 ];
 
-const lastModified = new Date('2026-09-15T18:30:00.000Z');
+// Only dates of substantive, verified content changes; omit unknown dates.
+const updatedPages = new Set<PageKind>(['home', 'laptop', 'udhaar']);
+const contentUpdated = new Date('2026-10-01T00:00:00+05:30');
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
+    { url: absoluteUrl('/guides/voice-billing-for-kirana'), lastModified: contentUpdated, changeFrequency: 'monthly', priority: 0.7 },
     ...pages.flatMap(({ page, changeFrequency, priority }) =>
       locales.map((locale) => ({
         url: absoluteUrl(localizedPath(locale.code, page)),
-        lastModified,
+        ...(updatedPages.has(page) ? { lastModified: contentUpdated } : {}),
         changeFrequency,
         priority,
         alternates: {
@@ -33,7 +36,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ),
     ...englishPages.map(({ path, changeFrequency, priority }) => ({
       url: absoluteUrl(path),
-      lastModified,
       changeFrequency,
       priority,
     })),

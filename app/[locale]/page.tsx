@@ -1,3 +1,5 @@
+import { productAnswers } from '../content/productAnswers';
+import { faqPageSchema } from '../seo';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { HomeEffects } from '../components/HomeEffects';
@@ -41,7 +43,7 @@ export default async function LocalizedHomePage({ params }: LocaleParams) {
 
   return (
     <>
-      <JsonLd data={[organizationSchema, websiteSchemaFor(locale), softwareApplicationSchemaFor(locale)]} />
+      <JsonLd data={[organizationSchema, websiteSchemaFor(locale), softwareApplicationSchemaFor(locale), ...(productAnswers(locale).length ? [faqPageSchema(productAnswers(locale))] : [])]} />
       <div lang={localeMeta.hreflang} dangerouslySetInnerHTML={{ __html: getLocalizedHtml('home', locale as Locale) }} />
       <HomeEffects />
       <LanguageSelectEffects />

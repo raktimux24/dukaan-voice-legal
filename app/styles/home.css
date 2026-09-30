@@ -29,7 +29,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter), 'Inter', sans-serif;
   background: var(--bg-deep);
   color: var(--text-primary);
   line-height: 1.6;
@@ -38,14 +38,14 @@ body {
 
 /* ── Typography ───────────────────────────────────── */
 h1, h2, h3, h4 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 .hindi {
-  font-family: 'Noto Sans Devanagari', 'Space Grotesk', sans-serif;
+  font-family: var(--font-devanagari), var(--font-display), sans-serif;
 }
 
 /* ── Container ────────────────────────────────────── */
@@ -107,7 +107,7 @@ h1, h2, h3, h4 {
 }
 
 .logo-text {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 20px;
   color: var(--text-primary);
@@ -242,7 +242,7 @@ h1, h2, h3, h4 {
   background: linear-gradient(135deg, var(--saffron), var(--saffron-light));
   border-radius: 6px;
   box-shadow: 0 5px 14px rgba(255, 107, 0, 0.18);
-  font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+  font-family: var(--font-devanagari), var(--font-inter), sans-serif;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0;
@@ -446,7 +446,7 @@ h1, h2, h3, h4 {
   color: var(--bg-deep);
   padding: 14px 32px;
   border-radius: 10px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-weight: 600;
   font-size: 16px;
   text-decoration: none;
@@ -468,7 +468,7 @@ h1, h2, h3, h4 {
   color: var(--text-primary);
   padding: 14px 28px;
   border-radius: 10px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-weight: 500;
   font-size: 16px;
   text-decoration: none;
@@ -492,7 +492,7 @@ h1, h2, h3, h4 {
 }
 
 .hero-stat-number {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-weight: 700;
   font-size: 28px;
   color: var(--text-primary);
@@ -565,7 +565,7 @@ h1, h2, h3, h4 {
 }
 
 .phone-greeting {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.2;
@@ -666,7 +666,7 @@ h1, h2, h3, h4 {
 .phone-stat-card--activity::before { background: #32D583; }
 
 .phone-stat-number {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-size: 22px;
   font-weight: 700;
   line-height: 1;
@@ -746,7 +746,7 @@ h1, h2, h3, h4 {
 }
 
 .phone-product-qty-num {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-size: 15px;
   font-weight: 700;
 }
@@ -913,7 +913,7 @@ section {
 }
 
 .step-number {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-size: 64px;
   font-weight: 700;
   color: rgba(255, 107, 0, 0.18);
@@ -1173,7 +1173,7 @@ section {
   gap: 6px;
   background: var(--bg-card);
   padding: 24px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
@@ -1471,7 +1471,7 @@ footer {
   max-width: 280px;
 }
 
-.footer-col h4 {
+.footer-col h2 {
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1541,7 +1541,7 @@ footer {
   .hero-sub { margin-left: auto; margin-right: auto; }
   .hero-actions { justify-content: center; }
   .hero-stats { justify-content: center; }
-  .hero-visual { order: -1; }
+  .hero-visual { order: initial; }
 
   .phone-frame {
     transform: none;
@@ -2048,7 +2048,7 @@ body::after {
 
 .section-label {
   letter-spacing: 0.2em;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
 }
 
 .hero-stat-number {
@@ -2210,7 +2210,7 @@ body::after {
 
 .desk-stats b {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-size: 22px;
 }
 
@@ -2277,7 +2277,7 @@ body::after {
 
 .topic-link-title {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
   font-weight: 600;
   font-size: 16px;
   line-height: 1.35;
@@ -2365,3 +2365,34 @@ body::after {
   .topic-link { transition: none; }
   .topic-link:hover { transform: none; }
 }
+
+/* Acquisition: text and store choices are available on the first paint. */
+.hero-text-reveal > .hindi-line, .hero h1 .hero-text-main span {
+  opacity: 1; transform: none; animation: none;
+}
+.reveal { opacity: 1; transform: none; }
+.aurora-bg::before, .aurora-bg::after, .aurora-orb { animation: none; }
+.app-download-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.app-download-links a { border: 1px solid var(--border-dark); border-radius: 8px; padding: 10px 16px; color: var(--text-primary); }
+.app-download-links a:hover { border-color: var(--saffron); }
+@media (max-width: 768px) {
+  .hero-visual { order: initial; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+}
+
+.product-answers { padding: 72px 0; }
+.product-answers h2 { margin-bottom: 24px; }
+.product-answers .faq-list { max-width: 850px; }
+
+.guide-discovery { padding: 24px 0 56px; }
+.guide-discovery a { display: block; padding: 24px; border: 1px solid var(--border-dark); border-radius: 12px; color: var(--text-primary); }
+.guide-discovery a:hover { border-color: var(--saffron); }
+.guide-byline { color: var(--text-secondary); margin-bottom: 16px; }
+.guide-main p + p { margin-top: 16px; }
+.guide-main .app-download-links { margin-bottom: 20px; }
+.guide-main p a, .guide-main nav a { color: var(--saffron-light); text-decoration: underline; text-underline-offset: 3px; }
+.guide-table { overflow-x: auto; }
+.guide-table table { width: 100%; border-collapse: collapse; }
+.guide-table caption { text-align: left; margin-bottom: 12px; }
+.guide-table th, .guide-table td { padding: 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border-dark); }
+.language-support-note { margin: 20px 0; padding: 14px; border-left: 3px solid var(--saffron); color: var(--text-primary); background: var(--bg-card); }

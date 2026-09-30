@@ -1,5 +1,6 @@
 import { defaultLocale, type Locale, type PageKind, localizedPath, locales } from '../i18n';
 import { homeHtml, proofSectionHtml } from './home';
+import { productAnswersHtml } from './productAnswers';
 import { privacyHtml } from './privacy';
 import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
@@ -34,7 +35,7 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
     .join('');
 
   return `<div class="language-switcher" data-language-switcher>
-    <button class="language-button" type="button" data-language-button aria-haspopup="true" aria-expanded="false" aria-label="${selectLanguage}">
+    <button class="language-button" type="button" data-language-button aria-expanded="false" aria-label="${selectLanguage}">
       <span class="language-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false">
           <circle cx="12" cy="12" r="9"></circle>
@@ -51,7 +52,7 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
         <svg viewBox="0 0 20 20" focusable="false"><path d="M5.5 7.5 10 12l4.5-4.5"></path></svg>
       </span>
     </button>
-    <div class="language-menu" data-language-menu role="menu" aria-label="Languages">
+    <div class="language-menu" data-language-menu role="group" aria-label="Languages">
       ${options}
     </div>
   </div>`;
@@ -156,7 +157,40 @@ function adaptHome(html: string, locale: Locale) {
     locale,
   );
 
-  return transformed.replace(
+  const storeActions = `<div class="hero-actions" data-store-placement="hero">
+    <a href="${playStoreUrl}" class="btn-primary" data-store-placement="hero" aria-label="Samaan Bol — Google Play">Google Play</a>
+    <a href="${appStoreUrl}" class="btn-secondary" data-store-placement="hero" aria-label="Samaan Bol — App Store">App Store</a>
+  </div>`;
+  // Customer quote approval is not documented in this repository. Keep the
+  // source intact, but omit attributed testimonials until they are verified.
+  let acquisitionHtml = transformed
+    .replace(/<section class="testimonials">[\s\S]*?<\/section>/, '')
+    .replace(/<div class="hero-actions">[\s\S]*?<\/div>/, storeActions)
+    .replace(/<canvas[^>]*id="bgCanvas"[^>]*><\/canvas>/, '')
+    .replace(/<span class="hero-rotate-word">(?:Punjabi|Odia)<\/span>/g, '')
+    .replaceAll('10 Indian languages + English', '8 Indian languages + English')
+    .replaceAll('Malayalam, Punjabi, Odia, English.', 'Malayalam, English.')
+    .replace(/(<section class="languages-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${getLocaleHomeSlots(locale)?.f2Body ?? 'Voice: Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam and English, including Hinglish. Read this website in your preferred language below. The browser shop is currently in English.'}${after}`)
+
+    .replace(/<div class="lang-grid reveal">[\s\S]*?<\/div>/, `<div class="lang-grid reveal">${locales.map(item => `<a class="lang-chip" href="${localizedPath(item.code, 'home')}" lang="${item.hreflang}">${item.nativeLabel}</a>`).join('')}</div>`)
+
+    .replace('</nav>', '</nav><main id="main-content">')
+    .replace('<footer>', `${productAnswersHtml(locale)}<section class="guide-discovery"><div class="container"><a href="/guides/voice-billing-for-kirana" lang="en">How to use voice billing in your kirana store${locale === 'en' ? '' : ' (English guide)'} →</a></div></section></main><footer>`)
+    .replace(/<h4>/g, '<h2>').replace(/<\/h4>/g, '</h2>');
+
+  if (locale === 'en') {
+    acquisitionHtml = acquisitionHtml
+      .replace('You already said it out loud.<br>The bill should keep up.', 'Voice billing for your kirana.')
+      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Samaan Bol turns a spoken sale into a bill on your phone. Review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the sale. Speak in 8 Indian languages or English, including Hinglish. Use the same shop on a laptop.</p>');
+  }
+
+  if (locale === 'pa' || locale === 'or') {
+    const note = locale === 'pa'
+      ? 'ਇਹ ਵੈੱਬਸਾਈਟ ਪੰਜਾਬੀ ਵਿੱਚ ਪੜ੍ਹ ਸਕਦੇ ਹੋ। ਐਪ ਵਿੱਚ ਪੰਜਾਬੀ ਵੌਇਸ ਚੋਣ ਅਜੇ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਹਿੰਦੀ, Hinglish ਜਾਂ ਹੋਰ ਸਮਰਥਿਤ ਭਾਸ਼ਾ ਚੁਣੋ।'
+      : 'ଏହି ୱେବସାଇଟ୍ ଓଡ଼ିଆରେ ପଢ଼ିପାରିବେ। ଆପ୍‌ରେ ଓଡ଼ିଆ ଭଏସ୍ ବିକଳ୍ପ ଏବେ ଉପଲବ୍ଧ ନାହିଁ। ହିନ୍ଦୀ, Hinglish କିମ୍ବା ଅନ୍ୟ ସମର୍ଥିତ ଭାଷା ବାଛନ୍ତୁ।';
+    acquisitionHtml = acquisitionHtml.replace('<div class="hero-actions"', `<p class="language-support-note">${note}</p><div class="hero-actions"`);
+  }
+  return acquisitionHtml.replace(
     '</ul>\n      <button class="mobile-menu-btn"',
     `</ul>\n      ${switcher}\n      <button class="mobile-menu-btn"`,
   );

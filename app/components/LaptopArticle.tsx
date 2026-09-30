@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AppDownloadLinks } from './SubscriptionChrome';
 import { JsonLd } from './JsonLd';
 import { getLaptopCopy } from '../content/laptopPage';
 import { localizedPath, type Locale } from '../i18n';
@@ -14,6 +15,7 @@ export function LaptopArticle({ locale }: { locale: Locale }) {
       <section className="subscription-section">
         <h1>{copy.h1}</h1>
         <p className="subscription-lead">{copy.lead}</p>
+        <AppDownloadLinks />
         <div className="subscription-actions">
           <Link className="subscription-button" href="/shop">
             {copy.openShop}
