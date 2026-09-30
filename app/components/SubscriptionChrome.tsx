@@ -4,7 +4,7 @@ import { getSubscriptionStrings } from '../content/subscriptionStrings';
 import { getUdhaarCopy } from '../content/udhaarPage';
 import { getLocaleHomeSlots } from '../content/localeHomeSlots';
 import { languageSwitcher } from '../content/localized';
-import { appStoreUrl } from '../seo';
+import { appStoreUrl, playStoreUrl } from '../seo';
 
 export const appStoreLinkUrl = appStoreUrl;
 export const supportEmail = 'meetslimshady07@gmail.com';
@@ -12,9 +12,9 @@ export const supportEmail = 'meetslimshady07@gmail.com';
 const stencilSvg = (id: string) =>
   `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="${id}"><rect x="0" y="0" width="100" height="100" fill="white"/><rect x="24" y="18" width="52" height="8" rx="4" fill="black"/><rect x="38" y="18" width="24" height="36" rx="12" fill="black"/><path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/><rect x="46" y="72" width="8" height="10" rx="4" fill="black"/><rect x="36" y="32" width="28" height="4" fill="white"/><rect x="36" y="44" width="28" height="4" fill="white"/></mask></defs><circle cx="50" cy="50" r="50" fill="#ea580c" mask="url(#${id})"/></svg>`;
 
-type ChromeProps = { locale?: Locale; page: PageKind };
+type ChromeProps = { locale?: Locale; page: PageKind; showLanguageSwitcher?: boolean };
 
-export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
+export function SubscriptionNav({ locale = defaultLocale, page, showLanguageSwitcher = true }: ChromeProps) {
   const t = getSubscriptionStrings(locale);
   const menuLabel = getLocaleHomeSlots(locale)?.ariaMenu ?? 'Menu';
   const home = localizedPath(locale, 'home');
@@ -48,7 +48,7 @@ export function SubscriptionNav({ locale = defaultLocale, page }: ChromeProps) {
               </Link>
             </li>
           </ul>
-          <span dangerouslySetInnerHTML={{ __html: switcherHtml }} />
+          {showLanguageSwitcher ? <span dangerouslySetInnerHTML={{ __html: switcherHtml }} /> : null}
           <button type="button" className="mobile-menu-btn" aria-label={menuLabel}>
             ☰
           </button>
@@ -85,9 +85,10 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
               </div>
             </Link>
             <p>{t.brand.tagline}</p>
+            <AppDownloadLinks />
           </div>
           <div className="footer-col">
-            <h4>{t.footer.product}</h4>
+            <h2>{t.footer.product}</h2>
             <ul>
               <li>
                 <a href={homeAnchor('features')}>{t.footer.features}</a>
@@ -95,6 +96,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
               <li>
                 <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
               </li>
+              <li><Link href="/guides/voice-billing-for-kirana">Voice billing guide{locale === 'en' ? '' : ' (English)'}</Link></li>
               <li>
                 <Link href={udhaarHref}>{getUdhaarCopy(locale).navLabel}</Link>
               </li>
@@ -107,7 +109,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
             </ul>
           </div>
           <div className="footer-col">
-            <h4>{t.footer.company}</h4>
+            <h2>{t.footer.company}</h2>
             <ul>
               <li>
                 <Link href={contactHref}>{t.footer.contact}</Link>
@@ -115,7 +117,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
             </ul>
           </div>
           <div className="footer-col">
-            <h4>{t.footer.support}</h4>
+            <h2>{t.footer.support}</h2>
             <ul>
               <li>
                 <Link href={accountHref}>{t.nav.billing ?? 'Billing'}</Link>
@@ -144,7 +146,8 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
 export function AppDownloadLinks() {
   return (
     <div className="app-download-links">
-      <a href={appStoreUrl}>App Store</a>
+      <a href={playStoreUrl} data-store-placement="shared_download">Google Play</a>
+      <a href={appStoreUrl} data-store-placement="shared_download">App Store</a>
     </div>
   );
 }

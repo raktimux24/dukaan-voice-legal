@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
+import { Inter, Space_Grotesk, Noto_Sans_Devanagari } from 'next/font/google';
 import { headers } from 'next/headers';
-import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
 import { Analytics } from './components/Analytics';
 import { getLocaleMeta, isLocale } from './i18n';
 import { defaultDescription, defaultTitle, pageMetadata } from './seo';
@@ -9,57 +8,29 @@ import './styles/home.css';
 import './styles/legal-base.css';
 import './styles/subscription.css';
 
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
+const displayFont = Space_Grotesk({ subsets: ['latin'], display: 'swap', variable: '--font-display' });
+const devanagari = Noto_Sans_Devanagari({ subsets: ['devanagari'], display: 'swap', variable: '--font-devanagari', preload: false });
+
 export const metadata: Metadata = pageMetadata({
   title: defaultTitle,
   description: defaultDescription,
   path: '/',
 });
 
-const clerkAppearance = {
-  baseTheme: dark,
-  variables: {
-    colorPrimary: '#FF6B00',
-    colorPrimaryForeground: '#FFFFFF',
-    colorBackground: '#15151C',
-    colorForeground: '#EAEAE6',
-    colorMutedForeground: '#A8A8AE',
-    colorInput: '#1E1E26',
-    colorInputForeground: '#EAEAE6',
-    colorNeutral: '#EAEAE6',
-    colorRing: 'rgba(255, 107, 0, 0.42)',
-    borderRadius: '8px',
-    fontFamily: 'Inter, sans-serif',
-  },
-  elements: {
-    socialButtonsBlockButton: { color: '#EAEAE6' },
-    socialButtonsBlockButtonText: { color: '#EAEAE6' },
-    formFieldLabel: { color: '#EAEAE6' },
-    dividerText: { color: '#A8A8AE' },
-    footerActionText: { color: '#A8A8AE' },
-  },
-};
-
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const localeHeader = (await headers()).get('x-locale') ?? 'en';
   const lang = getLocaleMeta(isLocale(localeHeader) ? localeHeader : 'en').hreflang;
 
   return (
-    <ClerkProvider appearance={clerkAppearance}>
-      <html lang={lang}>
-        <head>
-          <meta httpEquiv="content-language" content={lang} />
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-          />
-        </head>
-        <body>
-          {children}
-          <Analytics />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang={lang} className={`${inter.variable} ${displayFont.variable} ${devanagari.variable}`}>
+      <head>
+        <meta httpEquiv="content-language" content={lang} />
+      </head>
+      <body>
+        {children}
+        <Analytics />
+      </body>
+    </html>
   );
 }

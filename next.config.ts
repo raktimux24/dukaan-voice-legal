@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      { source: "/:locale(hi|bn|ta|te|mr|kn|gu|ml|pa|or)/refund-policy", destination: "/refund-policy", permanent: true },
       { source: '/index.html', destination: '/', permanent: true },
       { source: '/privacy-policy.html', destination: '/privacy-policy', permanent: true },
       { source: '/terms-of-service.html', destination: '/terms-of-service', permanent: true },

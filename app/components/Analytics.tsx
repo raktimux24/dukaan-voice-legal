@@ -1,4 +1,5 @@
 import Script from 'next/script';
+import { StoreClickTracking } from './StoreClickTracking';
 
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -7,6 +8,7 @@ export function Analytics() {
 
   return (
     <>
+      <StoreClickTracking />
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
         strategy="afterInteractive"

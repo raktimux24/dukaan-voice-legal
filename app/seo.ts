@@ -126,6 +126,7 @@ export function pageMetadata({
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': absoluteUrl('/#organization'),
   name: 'Samaan Bol',
   url: siteUrl,
   logo: absoluteUrl('/opengraph-image'),
@@ -136,14 +137,16 @@ export const softwareApplicationSchema = {
   '@context': 'https://schema.org',
   '@type': ['SoftwareApplication', 'MobileApplication', 'WebApplication'],
   name: 'Samaan Bol',
+  '@id': absoluteUrl('/#application'),
+  publisher: { '@id': absoluteUrl('/#organization') },
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'iOS, Android, Web',
   url: siteUrl,
-  downloadUrl: appStoreUrl,
-  installUrl: appStoreUrl,
+  downloadUrl: [appStoreUrl, playStoreUrl],
+  installUrl: [appStoreUrl, playStoreUrl],
   offers: {
     '@type': 'Offer',
-    name: 'Samaan Bol on the App Store',
+    name: 'Free app download; Premium features sold separately',
     price: '0',
     priceCurrency: 'INR',
     url: appStoreUrl,
@@ -167,7 +170,7 @@ export const softwareApplicationSchema = {
     '@type': 'Country',
     name: 'India',
   },
-  inLanguage: ['en-IN', 'hi-IN', 'bn-IN', 'ta-IN', 'te-IN', 'mr-IN', 'kn-IN', 'gu-IN', 'ml-IN', 'pa-IN', 'or-IN'],
+  inLanguage: ['en-IN', 'hi-IN', 'bn-IN', 'ta-IN', 'te-IN', 'mr-IN', 'kn-IN', 'gu-IN', 'ml-IN'],
 };
 
 export function softwareApplicationSchemaFor(locale: Locale = defaultLocale) {
@@ -177,7 +180,7 @@ export function softwareApplicationSchemaFor(locale: Locale = defaultLocale) {
     ...softwareApplicationSchema,
     description: seo.description,
     featureList: seo.featureList,
-    inLanguage: [getLocaleMeta(locale).hreflang],
+    inLanguage: softwareApplicationSchema.inLanguage,
   };
 }
 
@@ -212,6 +215,7 @@ export const pricingOfferSchema = {
       '@type': 'Offer',
       name: 'Premium — Monthly',
       price: '499',
+      priceSpecification: { '@type': 'UnitPriceSpecification', price: '499', priceCurrency: 'INR', billingDuration: 'P1M' },
       priceCurrency: 'INR',
       url: absoluteUrl('/pricing'),
     },
@@ -219,6 +223,7 @@ export const pricingOfferSchema = {
       '@type': 'Offer',
       name: 'Premium — Annual',
       price: '3999',
+      priceSpecification: { '@type': 'UnitPriceSpecification', price: '3999', priceCurrency: 'INR', billingDuration: 'P1Y' },
       priceCurrency: 'INR',
       url: absoluteUrl('/pricing'),
     },

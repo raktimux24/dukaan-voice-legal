@@ -37,7 +37,7 @@ export function localizedPath(locale: Locale, page: PageKind) {
   if (page === 'privacy') return `${prefix}/privacy-policy` || '/privacy-policy';
   if (page === 'terms') return `${prefix}/terms-of-service` || '/terms-of-service';
   if (page === 'pricing') return `${prefix}/pricing` || '/pricing';
-  if (page === 'refund') return `${prefix}/refund-policy` || '/refund-policy';
+  if (page === 'refund') return '/refund-policy';
   if (page === 'contact') return `${prefix}/contact` || '/contact';
   if (page === 'account') return `${prefix}/account` || '/account';
   if (page === 'laptop') return locale === defaultLocale ? '/billing-on-a-laptop' : `/${locale}/billing-on-a-laptop`;
