@@ -44,6 +44,7 @@ with ThreadPoolExecutor(max_workers=4) as pool:
 for route in ['/account','/hi/account','/shop','/subscription/return']:
  _,_,html=get(route);p=Page(html)
  assert any('clerk' in a.get('src','') for a in p.find('script')),(route,'missing auth provider')
+ assert any(a.get('src','').startswith('https://clerk.samaanbol.space/') for a in p.find('script')),(route,'invalid Clerk script host; check build environment')
  assert any(a.get('name')=='robots' and 'noindex' in a.get('content','') for a in p.find('meta')),(route,'noindex')
  print('PASS auth metadata',route)
 _,_,guide=get('/guides/voice-billing-for-kirana')
