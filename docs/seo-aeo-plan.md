@@ -57,6 +57,6 @@ Single Lighthouse runs on different hosts; these are lab indicators, not measure
 
 Auth runtime QA on local.samaanbol.space:8443 is limited by Clerk production-origin rejection. Provider scripts and noindex are present on the expected routes, but this does not prove successful sign-in. Port 443 could not be bound without additional system privileges. No auth security settings were changed. Verify account/shop/payment-return entry on the production host during release.
 
-A final tablet order correction is local only and follows this draft: keep the hero text/store choices before the illustration at widths up to 1024 px. It still needs the next build/deploy.
+Final draft including the tablet correction: https://6abd76f24e8265279d985c63--samaan-bol.netlify.app/ . At an actual 820 x 1180 browser viewport, store actions start at y=441 and the illustration at y=711. Build/deploy succeeded. The performance report above measures the preceding draft; the final change only adjusts tablet ordering.
 
 Full hosted sitemap check: all 79 public URLs return HTTP 200, have the exact production canonical, one H1 and no page-level noindex. Evidence: docs/seo-evidence/sitemap-verification.json.
