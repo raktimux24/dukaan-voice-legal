@@ -9,7 +9,7 @@ Qualified visits to the App Store and Google Play from the website. `app_store_c
 Property used by the site: measurement ID `G-VJV74F6STP`. Ownership/access and event receipt remain unverified.
 
 1. Open the correct property's Realtime/DebugView after release.
-2. Visit the homepage and click a store link. Confirm `app_store_click` arrives once with `store`, `placement`, `page_path`, and `language`.
+2. Visit the homepage and click a store link. Confirm `app_store_click` arrives once with `store`, `placement`, `page_path`, and `site_language`.
 3. Repeat from the voice guide and a translated homepage. Test both stores and keyboard activation.
 4. Register the relevant event-scoped custom dimensions. Mark the event as a key event if outbound store visits are the agreed conversion. Avoid counting it as an app install.
 5. Build an exploration: organic landing-page sessions, sessions with a store click, click-through rate, store, locale, and source/medium. Use comparable 28-day periods and retain volume denominators.
@@ -27,3 +27,9 @@ Keep a dated record of exact queries, engine/model, country/language, response a
 ## Next content decisions
 
 Use search impressions and customer questions to prioritize original guides. Add real screenshots and approved customer evidence when available. Review translations with fluent speakers before expanding answer content across all locales. Avoid thin keyword pages or invented accuracy/market-share claims.
+
+## Page language versus visitor language
+
+Use event-scoped **Site language**, parameter `site_language`, to group outbound store clicks by the rendered page language. GA4 built-in Language describes the visitor browser/device. Do not override it with the page locale. Register Site language after the parameter is received and allow processing before using it in standard reports. Historical events using `language` do not backfill this new dimension.
+
+Reference: https://support.google.com/analytics/table/13594742?hl=en

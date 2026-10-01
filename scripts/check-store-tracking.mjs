@@ -27,11 +27,18 @@ assert.equal(window.dataLayer.length,2,'Only our two store links should queue ev
 for (const [index, store] of ['google_play','app_store'].entries()) {
  const event=Array.from(window.dataLayer[index]);
  assert.equal(event[0],'event');assert.equal(event[1],'app_store_click');
- assert.equal(event[2].store,store);assert.equal(event[2].page_path,'/hi');assert.equal(event[2].language,'hi-IN');
+ assert.equal(event[2].store,store);assert.equal(event[2].page_path,'/hi');assert.equal(event[2].site_language,'hi-IN');
  assert.equal(event[2].placement,'hero');assert.equal(event[2].transport_type,'beacon');
- assert.deepEqual(Object.keys(event[2]).sort(),['language','page_path','placement','store','transport_type']);
+ assert.deepEqual(Object.keys(event[2]).sort(),['page_path','placement','site_language','store','transport_type']);
 }
 click('https://play.google.com/store/apps/details?id=com.samaan.bol','auxclick',1);
 assert.equal(window.dataLayer.length,3,'Middle click queues exactly one event');
+document.documentElement.lang = 'en';
+window.location.pathname = '/guides/voice-billing-for-kirana';
+click('https://apps.apple.com/in/app/samaan-bol/id6759739444');
+const englishEvent = Array.from(window.dataLayer[3])[2];
+assert.equal(englishEvent.site_language, 'en', 'Read the current page language for each click');
+assert.equal(englishEvent.page_path, '/guides/voice-billing-for-kirana');
+assert.equal('language' in englishEvent, false, 'Do not override the built-in browser-language dimension');
 cleanup();assert.equal(handlers.size,0,'Listeners clean up across route changes');
 console.log('PASS store event dispatch, store allowlist, locale/path, middle click and listener cleanup');
