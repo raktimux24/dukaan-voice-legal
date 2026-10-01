@@ -26,7 +26,8 @@ export function StoreClickTracking() {
         store,
         placement,
         page_path: window.location.pathname,
-        language: document.documentElement.lang,
+        // GA4 language describes the visitor browser/device, not this page.
+        site_language: document.documentElement.lang,
         transport_type: 'beacon',
       });
       // Never block the store visit, including when analytics is unavailable.
