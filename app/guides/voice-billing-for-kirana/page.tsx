@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { JsonLd } from '../../components/JsonLd';
 import { SubscriptionNav, SubscriptionFooter, AppDownloadLinks } from '../../components/SubscriptionChrome';
 import { HomeEffects } from '../../components/HomeEffects';
@@ -50,6 +51,26 @@ export default function VoiceBillingGuide() {
             <li><strong>Share and review.</strong> Share the bill on WhatsApp if the customer wants it. Check today’s sales and stock after completion. The stock change belongs to the sale; you do not need to record it again as a separate stock removal.</li>
           </ol>
           <p>This is an example workflow, not a claim that every spoken sentence will be recognized correctly. Shop noise, product names and pronunciation can affect the result.</p>
+        </section>
+        <section className="subscription-section">
+          <h2>A real checkout, from cart to stock update</h2>
+          <p>These Hindi screenshots show Samaan Bol v1.0.10 on an iPhone simulator, captured on 1 October 2026 using demo-shop data. We selected the product manually for this example; the screenshots demonstrate checkout and stock updates, not speech recognition.</p>
+          <p>Two kilograms of Sona Masoori Rice at ₹76/kg made a ₹152 cash bill. After completing it once, bill #91 appeared in sales and the available stock fell from 26.25 kg to 24.25 kg.</p>
+          <div className="billing-demo-grid">
+            {[
+              { file: 'cart', title: '1. Review the cart', alt: 'Hindi cart with 2 kg Sona Masoori Rice at 76 rupees per kilogram, total 152 rupees.', caption: 'Check the product, quantity and price before continuing.' },
+              { file: 'payment', title: '2. Choose the payment record', alt: 'Hindi checkout showing cash, UPI, udhaar and split payment options for a 152 rupee bill.', caption: 'This example uses cash. Confirm the amount received before completing the bill.' },
+              { file: 'sale', title: '3. Verify the saved sale', alt: 'Today’s sales showing completed cash bill 91 for 152 rupees and one bill in total.', caption: 'The completed bill appears in today’s sales. This is demo data, not customer revenue.' },
+              { file: 'stock', title: '4. Check remaining stock', alt: 'Sona Masoori Rice product search showing 24.25 kilograms remaining after the two kilogram sale.', caption: 'Stock changed by 2 kg, from 26.25 kg to 24.25 kg, without a separate stock-removal entry.' },
+            ].map(({file,title,alt,caption}) => <figure key={file}>
+              <h3>{title}</h3>
+              <a href={`/images/billing-demo/${file}.png`} aria-label={`Open full screenshot: ${title}`}>
+                <Image src={`/images/billing-demo/${file}.png`} alt={alt} width={792} height={1704} sizes="(max-width: 640px) 90vw, 360px" />
+              </a>
+              <figcaption>{caption}</figcaption>
+            </figure>)}
+          </div>
+          <AppDownloadLinks />
         </section>
         <section className="subscription-section">
           <h2>Choose the right payment record</h2>
