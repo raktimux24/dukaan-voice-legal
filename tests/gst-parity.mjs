@@ -62,3 +62,9 @@ assert.throws(()=>assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:[{p
 assert.throws(()=>attachCatalogTaxSnapshot([{product:{id:product}}],{...timeline,products:[]},shop));
 const html=documentHtml({outerHTML:'<article>ONLY SELECTED INVOICE</article>'},'<unsafe title>');assert.match(html,/ONLY SELECTED INVOICE/);assert.ok(!html.includes('<unsafe title>'));assert.match(html,/table-header-group/);
 console.log('Web parity tests passed: browser hashes, RSP package review, mixed invoice rendering, rounded credits, cumulative returns, scope/tamper rejection, tax timelines and selected-document print output.');
+
+const legacyLine={net:450,tax:0,cgst:0,sgst:0,utgst:0,igst:0,total:450,taxable:450,gross:450,discount:0,billDiscount:0,category:'taxable',codeType:'hsn',code:'1006',rate:0,profileVersion:randomUUID()};
+const legacyCredit={type:'credit_note',originalNumber:'26-3-001',payload:{original:{invoiceNumber:'26-3-001',context:original.payload.context},items:[{name:'QA book',unit:'piece',quantity:1,tax:legacyLine}],net:450,tax:0,total:450,settlement:{creditReduction:'0.00',moneyRefund:'450.00',total:'450.00'}}};
+assert.equal(documentView(legacyCredit).total,450);assert.equal(documentView(legacyCredit).moneyRefund,450);
+assert.throws(()=>documentView({...legacyCredit,payload:{...legacyCredit.payload,total:449}}),/inconsistent/);
+assert.throws(()=>documentView({...legacyCredit,originalNumber:'wrong'}),/inconsistent/);

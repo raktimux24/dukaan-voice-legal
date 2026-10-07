@@ -66,7 +66,14 @@ export function documentView(doc: FiscalDocument | Signed):DocumentView {
   return summed(original.context,lines);
  }
  if(p.format!==undefined)return invalid();
- const context=p.context as GstContext|undefined,items=p.items as {name:string;unit:string;quantity:number;tax:LineTax}[]|undefined;
+ const legacyCredit=doc.type==='credit_note'&&p.original&&typeof p.original==='object'?p.original as Record<string,unknown>:null;
+ const context=(p.context??legacyCredit?.context) as GstContext|undefined,items=p.items as {name:string;unit:string;quantity:number;tax:LineTax}[]|undefined;
  if(!context||!items?.length)return invalid();
- return {...summed(context,items.map(ordinaryLine)),reason:typeof p.reason==='string'?p.reason:undefined};
+ const view=summed(context,items.map(ordinaryLine));
+ if(legacyCredit){
+  if(legacyCredit.invoiceNumber!==doc.originalNumber||!items.every(i=>Number.isFinite(i.quantity)&&i.quantity>0&&i.tax&&[i.tax.net,i.tax.tax,i.tax.total].every(n=>Number.isFinite(n)&&n>=0)&&Math.abs(i.tax.net+i.tax.tax-i.tax.total)<0.001)||[['net',view.net],['tax',view.tax],['total',view.total]].some(([key,expected])=>typeof p[key as string]!=='number'||Math.abs(Number(p[key as string])-Number(expected))>0.001))return invalid();
+  const settlement=p.settlement as {creditReduction?:string;moneyRefund?:string;total?:string}|undefined;
+  if(settlement){if(![settlement.creditReduction,settlement.moneyRefund,settlement.total].every(n=>typeof n==='string'&&/^\d+\.\d{2}$/.test(n))||Math.abs(Number(settlement.creditReduction)+Number(settlement.moneyRefund)-view.total)>0.001||Number(settlement.total)!==view.total)return invalid();view.creditReduction=Number(settlement.creditReduction);view.moneyRefund=Number(settlement.moneyRefund);}
+ }
+ return {...view,reason:typeof p.reason==='string'?p.reason:undefined};
 }

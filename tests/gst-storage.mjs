@@ -133,6 +133,12 @@ await assert.rejects(
   ),
   /earlier request/,
 );
+const rejected = bindGstApi(async (path) => {
+  if (path.endsWith('/outcome')) return {status:'not_found'};
+  throw Error('return_settlement_total_mismatch');
+});
+await assert.rejects(rejected.financial(scope.shopId,'/rejected-return',{clientId:'rejected-return'},v=>v,'/rejected-return/outcome'),/return_settlement_total_mismatch/);
+assert.equal((await storage.retainedRequests(scope)).find(r=>r.id==='rejected-return').state,'pending');
 const switched = bindGstApi(async () => {
   storage.setFinancialScope({ ...scope, actorId: "different-actor" });
   return { ok: true };
