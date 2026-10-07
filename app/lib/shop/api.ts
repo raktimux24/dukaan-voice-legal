@@ -1,3 +1,4 @@
+import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
 import { bindGstApi } from './gst-api';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
@@ -291,7 +292,7 @@ export function bindApi(getToken: TokenGetter) {
       );
       return { items: (res.items ?? []).map((item) => mapItem(item, hideCost)), total: res.total, hasMore: res.hasMore };
     },
-    getAllInventory: async (shopId: string, hideCost = false) => {
+    getAllInventory: async (shopId: string, hideCost = false, coherentTax = false) => {
       const all: InventoryItem[] = [];
       let offset = 0;
       let hasMore = true;
@@ -305,8 +306,11 @@ export function bindApi(getToken: TokenGetter) {
         offset += 100;
         guard += 1;
       }
+      if (hasMore) throw Error("The catalog is incomplete. Refresh before billing.");
+      if(coherentTax){const snapshot=await send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:"POST",body:JSON.stringify({productIds:all.map(item=>item.product.id)})});return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
     },
+    getTaxSnapshot: (shopId:string,productIds:string[]) => send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:"POST",body:JSON.stringify({productIds})}),
     getInventoryStats: async (shopId: string) => {
       const stats = await send<InventoryStats>(`/api/shops/${shopId}/inventory/stats`);
       return { ...stats, stockValue: Number(stats.stockValue ?? 0), total: Number(stats.total ?? 0), lowStock: Number(stats.lowStock ?? 0), outOfStock: Number(stats.outOfStock ?? 0), nearExpiry: Number(stats.nearExpiry ?? 0) };

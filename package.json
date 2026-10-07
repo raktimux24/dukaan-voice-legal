@@ -26,6 +26,7 @@
   "dependencies": {
     "@clerk/nextjs": "^7.3.3",
     "@clerk/themes": "^2.4.57",
+    "@noble/hashes": "^2.4.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@tanstack/react-query": "^5.104.0",
     "barcode-detector": "^3.2.2",

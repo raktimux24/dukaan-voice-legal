@@ -190,5 +190,161 @@
     "source": "server/src/lib/rsp-profile-request.ts",
     "sourceSha256": "684b86ee066c96bea3838b5a67ce788458e156b2c65db857b3b1d0128a81ea77",
     "vendoredSha256": "bc2a0eb9508d13926b469f329e9191b67f8da323e5844536401ff9f31df9dc5e"
+  },
+  {
+    "file": "mixed-gst-fiscal.ts",
+    "source": "server/src/lib/mixed-gst-fiscal.ts",
+    "sourceSha256": "faef4e30634ffe76ab7d60587d2d377becf52e2336c065c582662300642ae563",
+    "vendoredSha256": "78bcf5a4f975032daa1bc8d5e22775fe24626441e629ca4246c223de8c8af6f7"
+  },
+  {
+    "file": "mixed-gst-projection.ts",
+    "source": "server/src/lib/mixed-gst-projection.ts",
+    "sourceSha256": "e5182114ceafd834c3c2cec6fd42ccfe635dba03b1dd4a54a73aca9776905392",
+    "vendoredSha256": "34908254daf8bdfbaf6d8d706d512b12f0df3e52a49937cd9541ae11bd66ec20"
+  },
+  {
+    "file": "rsp-invoice-projection.ts",
+    "source": "server/src/lib/rsp-invoice-projection.ts",
+    "sourceSha256": "3a771e16b87917c10d6981d83f211216939e5b8edac46fb2926d77c053509630",
+    "vendoredSha256": "11c2aaa7a50c7f55660c21dac97f23b873513b8b2d27a870a6d728f74b8cedf9"
+  },
+  {
+    "file": "mixed-gst-integrity.ts",
+    "source": "server/src/lib/mixed-gst-integrity.ts",
+    "sourceSha256": "6b2f2197543facdc351a3647542b8670ef7bd13d65ed6ff8454096b12b76d03f",
+    "vendoredSha256": "2f2f78f6bb8257093cf2ba0daae93e488d94b76a8ae0b3799b5fc72dd05108aa"
+  },
+  {
+    "file": "rsp-return-calculation.ts",
+    "source": "server/src/lib/rsp-return-calculation.ts",
+    "sourceSha256": "02fb95185136234dff61a3d3a95f8ad89b891e251bdcd96402e8c23d50b7e9a6",
+    "vendoredSha256": "351f92f3d8fc97a8b4ae3cb88a11ecd8d808c6d6ea9fad65c128ba771e793249"
+  },
+  {
+    "file": "fiscal-integrity.ts",
+    "source": "server/src/lib/fiscal-integrity.ts",
+    "sourceSha256": "b17eb1e76157a3058634922f160d3c114e3e4c67b939b89c649785ca7ea9b95b",
+    "vendoredSha256": "25dab829abb5f3019a3f89e1fc7aaf5e978c68495cbfae819de4de8a71113e91"
+  },
+  {
+    "file": "mixed-credit-fiscal.ts",
+    "source": "server/src/lib/mixed-credit-fiscal.ts",
+    "sourceSha256": "db3070761c17911a6bbf576a5c4676ece9f776e7d7e213646f3caf081b9e4168",
+    "vendoredSha256": "b5811f8bd151ffd8128bcaf7c554253df350722115d1e94f0df00a9f234ccf2b"
+  },
+  {
+    "file": "mixed-gst-return.ts",
+    "source": "server/src/lib/mixed-gst-return.ts",
+    "sourceSha256": "9a0298d07df160dd5692723372eff48ba3e88d442d577e4603861275eb7596e4",
+    "vendoredSha256": "d8b907acca1d79ba1cb37735344f936988e77ad903fdb947225a4806748b7e7b"
+  },
+  {
+    "file": "return-settlement-integrity.ts",
+    "source": "server/src/lib/return-settlement-integrity.ts",
+    "sourceSha256": "79c4312e2a6d95b9dbfac25536b4ab50e91a85c9e0f1782e2eaf532ace159b09",
+    "vendoredSha256": "79c4312e2a6d95b9dbfac25536b4ab50e91a85c9e0f1782e2eaf532ace159b09"
+  },
+  {
+    "file": "payable-rounding-fiscal.ts",
+    "source": "server/src/lib/payable-rounding-fiscal.ts",
+    "sourceSha256": "f9ea39a1b96f5e6c048e4018a511ae99a8eae7b07e901d644d4ef3edcbc98e7f",
+    "vendoredSha256": "6aa629d017109fce70abe629d1f10e1caaaff07432a57f093d403750bc029539"
+  },
+  {
+    "file": "invoice-integrity.ts",
+    "source": "server/src/lib/invoice-integrity.ts",
+    "sourceSha256": "7e7fd9833a15f73c8e5b6e3ae5d9cc24a6a8b447643d6eb526e52c3148229346",
+    "vendoredSha256": "d902bbe04f465ecbef660d48154689b3b29928d0d0593f4c2ac2378b61a6340b"
+  },
+  {
+    "file": "payable-rounding-evidence.ts",
+    "source": "server/src/lib/payable-rounding-evidence.ts",
+    "sourceSha256": "aa14a7a31c1aa0422d8c4ea4a049a04a341b6967f810c2163c7cc9a83c90daf1",
+    "vendoredSha256": "5736cace38eea9cb9165858dab4e550cb24d293e498797f2134f4deaf7ccd522"
+  },
+  {
+    "file": "payable-rounding-credit-fiscal.ts",
+    "source": "server/src/lib/payable-rounding-credit-fiscal.ts",
+    "sourceSha256": "e7ad183ad02c98f7e88445e21dd2bcef5d5ca3fe9172390b3f9d25ad2ce4704e",
+    "vendoredSha256": "7079eb0a4a38c59587c475cc14f8260ebdc2b0e7cc9467ce91ba87f941f2b400"
+  },
+  {
+    "file": "ordinary-credit-fiscal.ts",
+    "source": "server/src/lib/ordinary-credit-fiscal.ts",
+    "sourceSha256": "1a6bc15578801f3c781cfedb2378bf9d27cf529de0e30bebd8cce330ce50a319",
+    "vendoredSha256": "08866e705d32d5e9e5c74f87211d9cb7a7a3773a38dd4c74fb7c29097923f315"
+  },
+  {
+    "file": "payable-rounding-return-evidence.ts",
+    "source": "server/src/lib/payable-rounding-return-evidence.ts",
+    "sourceSha256": "14c8643c906b757d5b7be3638b6bcee749f5ace0a0ae924dfdd879e17f24c23a",
+    "vendoredSha256": "695e39b6d25a9adaf4fc1e5fc741d4a0fc9009c902268d3eb5b39857263202a9"
+  },
+  {
+    "file": "payable-rounding-return-settlement.ts",
+    "source": "server/src/lib/payable-rounding-return-settlement.ts",
+    "sourceSha256": "56b5243b50f056decc077c9b0fd8df1532c2646865199028d60ba66e2cec81db",
+    "vendoredSha256": "bfe99a2359217658761f2f42e4eed96e0769e75fcd08f96967297a504311ad00"
+  },
+  {
+    "file": "fiscal-line-particulars.ts",
+    "source": "server/src/lib/fiscal-line-particulars.ts",
+    "sourceSha256": "9da511d1c3255868ebe8bc7f2f08f4e6ce14b32fe09bb0375fb8d6793ef73604",
+    "vendoredSha256": "33d59e8c5c0f80f0703eed190f36a4ba0c6c716c4d10c09244abc37b884c21b5"
+  },
+  {
+    "file": "mixed-sale-amounts.ts",
+    "source": "server/src/lib/mixed-sale-amounts.ts",
+    "sourceSha256": "a33e05109e3ed0a4d973acdbdce23081f049b4a813e8bba2230d505bff966027",
+    "vendoredSha256": "42cba4c2eea11d7216843a93152c1a1c7a3ef30a43e3b1958eed2c5b5b491058"
+  },
+  {
+    "file": "gst-rsp-cache.ts",
+    "source": "server/src/lib/gst-rsp-cache.ts",
+    "sourceSha256": "65c40f95d44dca02c161f160a512521c26e8eb41bc3397e2d6bfb9b0cb5c4fca",
+    "vendoredSha256": "6df9b951ed115ea939e2372894574164b16960667d248b3d08cad9dbfdbe850a"
+  },
+  {
+    "file": "rsp-preview-prices.ts",
+    "source": "server/src/lib/rsp-preview-prices.ts",
+    "sourceSha256": "bd583373202a12c26321d8a0abcf404b2ec96c9a57b3cf940541daf66bc83f20",
+    "vendoredSha256": "bd583373202a12c26321d8a0abcf404b2ec96c9a57b3cf940541daf66bc83f20"
+  },
+  {
+    "file": "payable-rounding-issuance-grant.ts",
+    "source": "server/src/lib/payable-rounding-issuance-grant.ts",
+    "sourceSha256": "4b96e2bfeb49f2b3cd58447f88d6fed8d688fdb92b065783a66019c8e4a9aa0a",
+    "vendoredSha256": "a309ce56cbb338f23d371167c322da951d10b7b6072958fc15d9741982bc9b30"
+  },
+  {
+    "file": "sale-return-settlement.ts",
+    "source": "server/src/lib/sale-return-settlement.ts",
+    "sourceSha256": "6757abed595afe4d93295bb6bff0a433058c778dd6ab0190bb61b10dacc32ee5",
+    "vendoredSha256": "39e27a849a554e032f5556826bf569fcc49d4e94ae21c495e996e6e226d5b317"
+  },
+  {
+    "file": "gst-tax-cache.ts",
+    "source": "server/src/lib/gst-tax-cache.ts",
+    "sourceSha256": "76d7528a278635ee33781df0ac68ff0b80ad61b00ecb5c72c973cff5cdc0b8e7",
+    "vendoredSha256": "6010ffa616497e8c4041956e423c0691f0402f2a09d792ca2fccdcfab8d872b1"
+  },
+  {
+    "file": "payable-rounding-quote.ts",
+    "source": "server/src/lib/payable-rounding-quote.ts",
+    "sourceSha256": "18eb73b6fd60c3c86d67e3aed76c25445664d0e91feaeaeff297724098e92269",
+    "vendoredSha256": "ecb14b207fe768ad81a90d2ac3ec1ea036916cd4619a21d3e4cae0d4f1e11da7"
+  },
+  {
+    "file": "payable-rounding-payments.ts",
+    "source": "server/src/lib/payable-rounding-payments.ts",
+    "sourceSha256": "96ccc7ca0bda2cc96f637e73461ff3244ce149429b8dd722b5e7f2b59d0c4e41",
+    "vendoredSha256": "88c4b753ba422d37b780a47913aead3ac5e3e1696db502e0b743da582bfb1cb4"
+  },
+  {
+    "file": "payable-rounding-report.ts",
+    "source": "server/src/lib/payable-rounding-report.ts",
+    "sourceSha256": "d97d407573812733288eb006be53400c826bdc1a7308d7f2a955ee2fcdbd2632",
+    "vendoredSha256": "1b561e597d2c5d7ab9f93695e542f324a0b78995ab5b99ba462de0f7a04ddfea"
   }
 ]

@@ -1,4 +1,9 @@
 'use client';
+import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from '../../../lib/shop/gst-core/gst-tax-cache';
+import {RspCheckoutControls} from '../gst-rsp-checkout';
+import {checkoutPayable} from '../../../lib/shop/checkout-payable';
+import {assertRoundingSelection,roundingSelectionCurrent} from '../../../lib/shop/gst-core/payable-rounding-request';
+import {cachedRspProductAt} from '../../../lib/shop/gst-core/gst-rsp-cache';
 
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -37,6 +42,21 @@ export function CheckoutScreen() {
     enabled: !!shop?.id,
     queryFn: () => api.getPosSettings(shop!.id),
   });
+  const taxRequired=settings.data?.gstAvailable===true&&settings.data.gstSettings?.registration==='regular';
+  const productIds=cartApi.cart.lines.map(line=>line.productId);
+  const taxSnapshot=useQuery({queryKey:['checkout-tax-snapshot',shop?.id,userId,...productIds],enabled:!!shop?.id&&taxRequired&&productIds.length>0,queryFn:()=>api.getTaxSnapshot(shop!.id,productIds)});
+  const adoptedSnapshot=useRef<unknown>(null);
+  useEffect(()=>{
+    if(!shop||!taxSnapshot.data||adoptedSnapshot.current===taxSnapshot.data)return;
+    const attached=attachCatalogTaxSnapshot(cartApi.cart.lines.map(line=>({product:{id:line.productId,...line}})),taxSnapshot.data,shop.id);
+    const lines=cartApi.cart.lines.map((line,index)=>({...line,gstConfig:line.rsp?null:attached[index].product.gstConfig,gstTaxSnapshot:attached[index].product.gstTaxSnapshot,gstRspSnapshot:attached[index].product.gstRspSnapshot}));
+    adoptedSnapshot.current=taxSnapshot.data;cartApi.patch({lines});
+  },[taxSnapshot.data,cartApi,shop]);
+  const [previewAt,setPreviewAt]=useState(()=>new Date().toISOString());
+  const [previewNow,setPreviewNow]=useState(()=>Date.now());
+  const roundingEnabled=settings.data?.gstPayableRoundingAvailable===true;
+  const rounding=useQuery({queryKey:['gst-rounding-selection',shop?.id,previewAt,userId],enabled:!!shop?.id&&roundingEnabled,queryFn:async()=>assertRoundingSelection(shop!.id,previewAt,await api.gst.roundingSelection(shop!.id,previewAt))});
+  useEffect(()=>{if(!roundingEnabled)return;const timer=setInterval(()=>{const now=Date.now();setPreviewNow(now);if(rounding.data&&!roundingSelectionCurrent(rounding.data,now))setPreviewAt(new Date(now).toISOString());},1000);return()=>clearInterval(timer);},[roundingEnabled,rounding.data]);
   const [mode, setMode] = useState<TenderMode | null>(null);
   const [cashTendered, setCashTendered] = useState('');
   const [upiRef, setUpiRef] = useState('');
@@ -70,7 +90,16 @@ export function CheckoutScreen() {
   }, [offlineSaved]);
 
   const gstContext:GstContext|null=settings.data?.gstSettings&&['regular','composition'].includes(settings.data.gstSettings.registration)?{settings:settings.data.gstSettings,priceMode:settings.data.gstSettings.priceMode,placeOfSupply:settings.data.gstSettings.stateCode,...cartApi.cart.buyer?{buyer:cartApi.cart.buyer}:{}}:null;
-  let gstError:unknown=null;let totals;try{totals=computeTotals(cartApi.cart,gstContext);if(gstContext)validateContext(gstContext,totals.total);}catch(e){gstError=e;totals=computeTotals(cartApi.cart);}
+  let gstError:unknown=null;let totals;let roundOff=0;
+  try{
+    if(taxRequired){if(taxSnapshot.error||!taxSnapshot.data||adoptedSnapshot.current!==taxSnapshot.data)throw taxSnapshot.error??Error('Refreshing product tax details.');assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:cartApi.cart.lines},shop!.id,new Date().toISOString());}
+    if(gstContext?.settings.registration==='regular')for(const line of cartApi.cart.lines){if(line.gstRspSnapshot?.profiles.length&&!line.rsp){let active=false;try{cachedRspProductAt(line.gstRspSnapshot,shop!.id,line.productId,new Date().toISOString());active=true;}catch{/* An inactive review does not enable RSP. */}if(active)throw Error('Review package details below before charging this product.');}}
+    if(cartApi.cart.lines.some(line=>line.rsp)&&settings.data?.gstRspBillingAvailable!==true)throw Error('RSP billing is unavailable for this shop.');
+    totals=computeTotals(cartApi.cart,gstContext);if(gstContext)validateContext(gstContext,totals.total);
+    if(roundingEnabled&&(rounding.error||!rounding.data||!roundingSelectionCurrent(rounding.data,previewNow)))throw rounding.error??Error('Loading the current rounding policy.');
+    const payable=checkoutPayable(totals.total,shop?.id??'',gstContext,roundingEnabled,rounding.data?.selection?.policy,previewAt);
+    roundOff=payable.roundOff;totals={...totals,total:payable.total};
+  }catch(e){gstError=e;totals=computeTotals(cartApi.cart);}
   const total = totals.total;
 
   useEffect(() => {
@@ -124,10 +153,12 @@ export function CheckoutScreen() {
       : null;
     return {
       gstContext,
+      mixedDiscountReview:cartApi.cart.mixedDiscountReview,
       soldAt,
       inputMethod: 'manual',
       items: cartApi.cart.lines.map((line) => ({
         gstConfig: line.gstConfig,
+        rsp:line.rsp,
         listPrice: line.listPrice,
         productId: line.productId,
         name: line.name,
@@ -230,6 +261,7 @@ export function CheckoutScreen() {
             </Card>
           ) : null}
 
+          <RspCheckoutControls available={settings.data?.gstRspBillingAvailable===true} regular={gstContext?.settings.registration==='regular'}/>
           <section>
             <SectionHead title={t('checkout.payment_method', 'Payment')} />
             <div className="shop-seg is-wrap" role="tablist" aria-label={t('checkout.payment_method', 'Payment method')}>
@@ -343,6 +375,7 @@ export function CheckoutScreen() {
             {udhaarLocked && mode === 'split' ? <PremiumLock feature="udhaar" /> : null}
           </Card>
 
+          {cartApi.cart.lines.some(line=>line.rsp)&&cartApi.cart.billDiscount>0?<Card className="grid gap-3"><Field label={text('Discount review reference')}><input className={inputClass} value={cartApi.cart.mixedDiscountReview?.evidenceReference??''} onChange={e=>cartApi.patch({mixedDiscountReview:e.target.value.trim()?{policy:'commercial_amount_proportional_v1',reviewed:true,evidenceReference:e.target.value}:undefined})}/></Field><p className="text-sm text-muted">{text('The bill discount is shared between products in proportion to their selling value. Confirm the review reference before charging.')}</p></Card>:null}
           <Card className="form-grid is-2">
             <Field label={t('checkout.bill_discount', 'Bill discount')} hint={t('bill.discount', 'Applied to the whole bill.')}>
               <div className="shop-input-wrap">
@@ -378,6 +411,8 @@ export function CheckoutScreen() {
               <span className="num">{formatINR(totals.subtotal)}</span>
             </div>
             {totals.tax?<div className="bill-total-row"><span>{text('GST')} · {text(gstContext?.priceMode==='inclusive'?'GST included':'GST added')}</span><span>{formatINR(totals.tax.tax)}</span></div>:null}
+            {totals.mixed?<div className="bill-total-row"><span>{text('GST')}</span><span>{formatINR(Number(totals.mixed.tax))}</span></div>:null}
+            {roundingEnabled&&!gstError?<div className="bill-total-row"><span>{text('Round off')}</span><span>{formatINR(roundOff)}</span></div>:null}
             {totals.discount > 0 ? (
               <div className="bill-total-row">
                 <span>{t('bill.discount', 'Discount')}</span>

@@ -11,6 +11,7 @@ import {
   useGstText,
 } from "./gst-ui";
 import { useGstQuery, useGstAction, ReadState } from "./gst-workspace";
+import {specialReturnPreview,verifiedReturnDocuments} from "../../lib/shop/gst-return-preview";
 import { returnTax } from "../../lib/shop/gst-core/gst";
 import type { Sale } from "../../lib/shop/types";
 import { formatINR } from "../../lib/shop/money";
@@ -40,15 +41,25 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
     () => api.gst.debitBalance(shop!.id, debitId!),
     !!debitId,
   );
-  const mode = sale.gstSnapshot?.context.priceMode ?? "inclusive";
+  const special=!!sale.mixedGstSnapshot||!!sale.roundingEvidence;
+  const documents=useGstQuery(["return-documents",sale.id],async()=>verifiedReturnDocuments(shop!.id,sale.id,await api.gst.fiscalDocuments(shop!.id,sale.id)),special&&perms.canVoidOrReturn);
+  const [requestId,setRequestId]=useState(()=>crypto.randomUUID());
+  const mode = sale.gstSnapshot?.context.priceMode ?? sale.mixedGstSnapshot?.context.priceMode ?? "inclusive";
   const reset = () => {
     setConfirmed(false);
     setPreview(null);
+    setRequestId(crypto.randomUUID());
   };
   const items = sale.items.filter((i) => Number(quantities[i.id]) > 0);
   let returnTotal = 0;
+  let specialPlan:ReturnType<typeof specialReturnPreview>=null;
+  let returnError:unknown=null;
   try {
-    for (const item of items) {
+    if(special){
+      if(!documents.data||capacity.data?.status!=='ready')throw Error('Loading verified return evidence.');
+      specialPlan=specialReturnPreview(sale,documents.data,quantities,requestId,capacity.data.unpaidCredit);
+      returnTotal=specialPlan?.total??0;
+    }else for (const item of items) {
       if (!item.taxSnapshot) throw Error("Missing retained tax profile");
       const basis = item.returnTaxBasis;
       const tax = basis?.tax ?? item.taxSnapshot;
@@ -60,7 +71,8 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
       ).total;
     }
     returnTotal = Math.round(returnTotal * 100) / 100;
-  } catch {
+  } catch(e) {
+    returnError=e;
     returnTotal = NaN;
   }
   async function submit() {
@@ -86,11 +98,11 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
     if (
       kind !== "debit" &&
       (!/^\d+(\.\d{1,2})?$/.test(credit) ||
-        Number(credit) < 0 ||
+        (specialPlan?.creditReduction??Number(credit)) < 0 ||
         total == null ||
-        Number(credit) > total ||
-        Number(credit) > Number(capacity.data?.unpaidCredit ?? 0) ||
-        Math.round((total - Number(credit)) * 100) >
+        (specialPlan?.creditReduction??Number(credit)) > total ||
+        (specialPlan?.creditReduction??Number(credit)) > Number(capacity.data?.unpaidCredit ?? 0) ||
+        Math.round((total - (specialPlan?.creditReduction??Number(credit))) * 100) >
           Math.round(Number(capacity.data?.refundableMoney ?? 0) * 100))
     )
       throw Error(
@@ -110,7 +122,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
     if (kind === "return") {
       const total = returnTotal;
       const input = {
-        requestId: crypto.randomUUID(),
+        requestId,
         items: items.map((i) => ({
           saleItemId: i.id,
           quantity: Number(quantities[i.id]),
@@ -118,8 +130,8 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
         })),
         reason,
         settlement: {
-          creditReduction: Number(credit),
-          moneyRefund: Math.round((total - Number(credit)) * 100) / 100,
+          creditReduction: (specialPlan?.creditReduction??Number(credit)),
+          moneyRefund: Math.round((total - (specialPlan?.creditReduction??Number(credit))) * 100) / 100,
           method,
           evidenceReference: reference,
         },
@@ -131,8 +143,8 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
         api.gst.manualCredit(shop!.id, sale.id, {
           ...common,
           settlement: {
-            creditReduction: Number(credit),
-            moneyRefund: Math.round((total - Number(credit)) * 100) / 100,
+            creditReduction: (specialPlan?.creditReduction??Number(credit)),
+            moneyRefund: Math.round((total - (specialPlan?.creditReduction??Number(credit))) * 100) / 100,
             method,
             evidenceReference: reference,
           },
@@ -148,6 +160,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
     retained.current = null;
     setConfirmed(false);
     setQuantities({});
+    setRequestId(crypto.randomUUID());
     setPreview(null);
   }
   if (!perms.canVoidOrReturn) return null;
@@ -170,6 +183,8 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
         ) : null}
       </ReadState>
       {action.notice}
+      {special?<ReadState query={documents}>{null}</ReadState>:null}
+      {returnError&&items.length?<p className="text-danger">{returnError instanceof Error?returnError.message:text('The retained return evidence needs review.')}</p>:null}
       <fieldset disabled={action.busy || !!retained.current}>
         <SelectField
           label={text("Adjustment type")}
@@ -180,8 +195,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
           }}
           options={[
             ["return", text("Return goods")],
-            ["credit", text("Reduce invoice value (no stock movement)")],
-            ["debit", text("Additional invoice value (no stock movement)")],
+            ...!special?[["credit", text("Reduce invoice value (no stock movement)")],["debit", text("Additional invoice value (no stock movement)")]] as [string,string][]:[],
           ]}
         />
         <TextField
@@ -270,7 +284,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
         ) : null}
         {kind !== "debit" ? (
           <>
-            <TextField
+            {sale.roundingEvidence?<Stats items={[{label:text('Credit reduction'),value:formatINR(specialPlan?.creditReduction??0)},{label:text('Money refund'),value:formatINR(specialPlan?.moneyRefund??0)}]}/>:<TextField
               label={text("Reduce unpaid customer credit (₹)")}
               type="number"
               value={credit}
@@ -279,6 +293,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
                 setConfirmed(false);
               }}
             />
+            }
             <SelectField
               label={text("Refund method")}
               value={method}
@@ -320,7 +335,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
               sale.gstIntegrity !== "verified" ||
               (kind === "return" &&
                 (!Number.isFinite(returnTotal) ||
-                  returnTotal <= 0 ||
+                  returnTotal < 0 ||
                   capacity.data?.status !== "ready")) ||
               (kind === "credit" && preview == null) ||
               (kind === "debit" && !sale.customerId)))

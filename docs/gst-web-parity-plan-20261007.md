@@ -2,9 +2,9 @@
 
 ## Scope and evidence
 
-Bring the Samaan Bol web shop to functional parity with the current mobile GST experience, including existing screens, new pages, tax fields, connected customer/supplier workflows, retained documents and recovery. Implementation is now present locally in the web repository. The original gaps below describe the baseline; they are not a current inventory of missing screens. Authenticated acceptance and publication remain outstanding.
+Bring the Samaan Bol web shop to functional parity with the current mobile GST experience, including existing screens, new pages, tax fields, connected customer/supplier workflows, retained documents and recovery. The first web GST release is live at main commit `0a14223` (PR #25). The continuation closes special checkout, document and return gaps. The original gaps below describe the baseline; they are not a current inventory of missing screens. Authenticated acceptance of the continuation is recorded below.
 
-The production web app was opened in the Codex in-app browser at https://samaanbol.space/shop. The existing production browser is authenticated as Suresh Stationary Store. It still shows the older checkout and a GST request-protocol update warning. That deployment cannot validate the new local implementation. The local HTTPS preview is rejected by the production Clerk hostname rules. Findings below are grounded in the current source of both repositories, not assumed from screenshot labels or earlier deployment reports.
+The production web app was opened in the Codex in-app browser at https://samaanbol.space/shop. The existing production browser is authenticated as Suresh Stationary Store. The deployed GST hub has loaded saved checks successfully for this account. Earlier protocol warnings described the pre-release baseline. The local HTTPS preview is rejected by the production Clerk hostname rules. Findings below are grounded in the current source of both repositories, not assumed from screenshot labels or earlier deployment reports.
 
 Web baseline: `c4f6872e423022cbbef25db260dd0c4b71aaafa7` in `dukaan-voice-legal`. Mobile/server reference: current `dukaan_voice_mobile` checkout, including the GST localization work. Existing unrelated SEO edits in the web repository are outside this plan.
 
@@ -23,7 +23,7 @@ Remaining completion gates:
 - Supplier filtering currently narrows the invoice list. Reconciliation totals and purchase exports remain shop-wide, clearly stated in the UI. Supplier-filtered totals/exports require a backend contract extension; they are not implemented.
 - Ordinary retained GST document rendering is implemented. Special mixed/RSP/rounded payloads require complete dedicated print/adjustment acceptance; unsupported invoice payloads fail closed and retain original JSON export rather than displaying invented zero totals.
 - RSP and rounding review tools do not enable special billing; real server capabilities control availability. Provider status is read-only.
-- Publish only after the authenticated acceptance gate, then verify critical live flows. No web commit, push or deployment has been performed during this implementation pass. Unrelated existing SEO work has been preserved.
+- Publish only after the authenticated acceptance gate, then verify critical live flows. PR #25 has been merged and its exact commit was confirmed published by Netlify. The continuation will be released separately after checks. Unrelated existing SEO work has been preserved.
 
 This plan is therefore **implemented in substantial part, with acceptance and the explicit scope gaps above still open**. It must not be labelled complete or mobile-equivalent based on the build alone.
 
@@ -174,3 +174,21 @@ Web: `app/lib/shop/{api,types,cart,share-bill,permissions}.ts`, `app/components/
 Mobile: `app/(modals)/{pos-settings,add-product,gst-health,gst-monitor,gst-allocations,gst-recovery,gst-exports,gst-periods,gst-turnover,gst-catalog,gst-supplier,purchases,purchase-new,purchase-detail,supplier-detail,sale-detail,sale-return}.tsx`, fiscal adjustment/review screens, `src/api/{gst,purchases,sales,inventory,pos-settings}.ts`, `src/lib/pos/`, GST controls and the new localization bundle.
 
 Backend: `server/src/lib/{gst,purchase-gst,gst-core-capabilities,fiscal-date}.ts` and related pure fiscal/outcome contracts; `server/src/routes/{pos-settings,purchases,gst-exports}.ts` plus sales/inventory/party/adjustment routes. Determine permission/capability details from these current routes when implementing each operation.
+
+
+## Parity continuation — 8 October 2026
+
+Implemented in the isolated `codex/gst-web-parity-completion` worktree:
+
+- Coherent, complete tax/RSP timelines after catalog pagination; checkout refresh and exact issue-time checks, including scheduled boundaries and account/shop scope.
+- Reviewed RSP package inputs and mixed-cart projections, reviewed proportional discounts, actual reservation-time package evidence, and mixed-sale receipt replay.
+- Current rounding selection, durable authenticated grant requests, grant scope/expiry/version checks, recomputation of final payable/tenders, immutable rounding evidence, and rounded-sale receipt verification.
+- Mixed/RSP/rounded invoice and credit-note renderers that replay retained fiscal contracts. Unknown, inconsistent and tampered formats fail closed. Printing isolates the selected document in an A4 frame, with repeating table headings and row-break protection.
+- Mixed and rounded returns use original retained documents plus cumulative credit history. Rounded returns preserve original rounding residuals and determine credit reduction/refund; unsupported value corrections are hidden for special invoices.
+- New UI labels added to every bundled web language catalog.
+
+Validation: production build/type check, shared-contract drift checks and browser journal tests; added synthetic browser tests for RSP quantities, scope checks, mixed projections, nested rounded documents/credits, cumulative return history, rehashed mathematical tampering, unknown formats and selected-document HTML.
+
+The supplier filter remains list-only because this is also the mobile/backend contract. Totals and exports are explicitly shop-wide; supplier-specific reports are an additional cross-platform feature, not an unimplemented web equivalent. Government filing, e-invoice submission and provider activation remain outside both clients' supported billing scope.
+
+Authenticated release acceptance and available capability checks are recorded in `docs/gst-web-parity-acceptance-20261008.md`. Source parity does not by itself establish native or browser end-to-end acceptance.

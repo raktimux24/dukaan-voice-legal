@@ -140,6 +140,8 @@ export function bindGstApi(
       ),
     revoke: (s: string, id: string, reason: string) =>
       post(`${base(s)}/pos-settings/gst-devices/${id}/revoke`, { reason }),
+    roundingSelection: (s:string,issuedAt:string) => post<unknown>(`${base(s)}/pos-settings/rounding-selection`,{issuedAt}),
+    roundingGrant: (s:string,body:{requestId:string;allocationId:string;deviceEpoch:string}) => post<unknown>(`${base(s)}/pos-settings/gst-rounding-grant`,body),
     provision: (s: string, body: { deviceEpoch: string; gstVersion: string }) =>
       post<Allocation>(`${base(s)}/pos-settings/gst-allocation`, body),
     parties: (s: string, q = "") =>

@@ -19,10 +19,12 @@ export function SellScreen() {
   const { api, shop, userId, perms, hideCost, setNotice, t } = useShop();
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
+  const posSettings=useQuery({queryKey:["pos",shopId],enabled:!!shopId,queryFn:()=>api.getPosSettings(shopId)});
+  const coherentTax=posSettings.data?.gstAvailable===true&&posSettings.data.gstSettings?.registration==="regular";
   const catalog = useQuery({
-    queryKey: ['catalog', shopId, hideCost],
-    enabled: !!shopId,
-    queryFn: () => api.getAllInventory(shopId, hideCost),
+    queryKey: ['catalog', shopId, hideCost, coherentTax],
+    enabled: !!shopId&&!!posSettings.data,
+    queryFn: () => api.getAllInventory(shopId, hideCost, coherentTax),
   });
   const boughtWith = useQuery({
     queryKey: ['nudges', shopId, 'checkout'],

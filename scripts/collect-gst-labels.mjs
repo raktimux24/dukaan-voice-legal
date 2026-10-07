@@ -2,6 +2,8 @@ import ts from "typescript";
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 const files = [
   "app/components/shop/gst-ui.tsx",
+  "app/components/shop/gst-rsp-checkout.tsx",
+  "app/components/shop/screens/checkout.tsx",
   "app/components/shop/gst-workspace.tsx",
   "app/components/shop/gst-documents.tsx",
   "app/components/shop/gst-supplier.tsx",
