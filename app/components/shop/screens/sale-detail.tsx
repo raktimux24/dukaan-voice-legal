@@ -3,6 +3,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { GstDocuments } from '../gst-documents';
+import { GstSaleAdjustments } from '../gst-sale-adjustments';
 import { ApiError } from '../../../lib/shop/api';
 import { formatINR, formatWhen } from '../../../lib/shop/money';
 import type { PaymentMethod } from '../../../lib/shop/types';
@@ -82,6 +84,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
       }),
       footer: pos?.billFooter,
     };
+    if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error("Use the verified GST document above to print or download this bill."));return;}
     setSharing(true);
     try {
       const result = await shareBill(payload);
@@ -102,8 +105,9 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         />
       </div>
       <Notice error={error} />
+      {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{sale.gstSnapshot?<GstSaleAdjustments sale={sale}/>:null}</>:null}
       <div className="sale-stage">
-        <article className="receipt" aria-label={`Bill ${sale.saleNumber}`}>
+        <article className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={`Bill ${sale.saleNumber}`}>
           <header className="receipt-head">
             <p className="receipt-shop">{pos?.shopName || shop.name}</p>
             {pos?.shopAddress ? <p>{pos.shopAddress}</p> : null}
@@ -176,8 +180,8 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <p className="sale-complete-total">{formatINR(sale.total)}</p>
             <p className="party-meta">{methods.join(' + ') || sale.paymentStatus}{sale.customer ? ` · ${sale.customer.name}` : ''}</p>
             <div className="shop-actions">
-              <Button onClick={() => void share()} disabled={sharing}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
-              <Button tone="ghost" onClick={() => window.print()}>Print</Button>
+              <Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
+              <Button tone="ghost" disabled={!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={() => window.print()}>Print</Button>
               {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>
@@ -187,7 +191,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
               {shortfalls.map((item) => <p key={item.id} className="party-meta">{item.name}: short by {formatQty(item.shortfall ?? 0, item.unit)}</p>)}
             </Card>
           ) : null}
-        {perms.canVoidOrReturn && sale.status === 'completed' ? (
+        {perms.canVoidOrReturn && !sale.gstSnapshot && !sale.mixedGstSnapshot && sale.status === 'completed' ? (
           <div className="stack-form">
             <Card className="stack-form">
               <h2 className="shop-section-title">{t('sale_detail.void', 'Void')}</h2>
