@@ -1,0 +1,194 @@
+[
+  {
+    "file": "collection-review-outcome.ts",
+    "source": "src/lib/pos/collection-review-outcome.ts",
+    "sourceSha256": "9a67894344da407c55ce05380a1f4924be8b1ced1bb59ee517af01511b44fe09",
+    "vendoredSha256": "9a67894344da407c55ce05380a1f4924be8b1ced1bb59ee517af01511b44fe09"
+  },
+  {
+    "file": "debit-note-outcome.ts",
+    "source": "src/lib/pos/debit-note-outcome.ts",
+    "sourceSha256": "83bd9a279681df86d9b5bd4752b78c5e3967ef6e635b8cad1a29e9e3d9b1310d",
+    "vendoredSha256": "83bd9a279681df86d9b5bd4752b78c5e3967ef6e635b8cad1a29e9e3d9b1310d"
+  },
+  {
+    "file": "debit-settlement-outcome.ts",
+    "source": "src/lib/pos/debit-settlement-outcome.ts",
+    "sourceSha256": "3797534a079291aabc9e3fe579a0bcf8f422a3f547bb19b9cc478302f21e333b",
+    "vendoredSha256": "3797534a079291aabc9e3fe579a0bcf8f422a3f547bb19b9cc478302f21e333b"
+  },
+  {
+    "file": "financial-request-shape.ts",
+    "source": "server/src/lib/financial-request-shape.ts",
+    "sourceSha256": "0a438592996965f9b428c70198e93d1770baba7ba87429656c4efa422485d5de",
+    "vendoredSha256": "0a438592996965f9b428c70198e93d1770baba7ba87429656c4efa422485d5de"
+  },
+  {
+    "file": "fiscal-date.ts",
+    "source": "server/src/lib/fiscal-date.ts",
+    "sourceSha256": "d119b4100f3721a1cfe26abcdd7fa3c4a025d90cebfcde0d6309122a7dd11da2",
+    "vendoredSha256": "d119b4100f3721a1cfe26abcdd7fa3c4a025d90cebfcde0d6309122a7dd11da2"
+  },
+  {
+    "file": "fiscal-render-version.ts",
+    "source": "server/src/lib/fiscal-render-version.ts",
+    "sourceSha256": "74a62635e102394640ff9dd544c1aeb0e5f30339bab763e47b79834e557e8268",
+    "vendoredSha256": "74a62635e102394640ff9dd544c1aeb0e5f30339bab763e47b79834e557e8268"
+  },
+  {
+    "file": "fiscal-totals-integrity.ts",
+    "source": "server/src/lib/fiscal-totals-integrity.ts",
+    "sourceSha256": "edbf53dcfe7ae09c919dddc6ffad20bd174c1a40f819e485e2fe775549e26834",
+    "vendoredSha256": "425cae877eeef251b26198889c69aaebe2b8ea1df4894778e3a613385369d251"
+  },
+  {
+    "file": "gst-turnover-review.ts",
+    "source": "server/src/lib/gst-turnover-review.ts",
+    "sourceSha256": "723b2eecb8b2c2c8a8fa847ce2311a9f3a215cac10c35ad7cd6626754d37a509",
+    "vendoredSha256": "7ce06eef75acf23ebc9e6201f957a45e6ec133f5a5aa150d823ccc09b36956b1"
+  },
+  {
+    "file": "gst.ts",
+    "source": "server/src/lib/gst.ts",
+    "sourceSha256": "0e113983116f1e8074cab9fa66826b6632221378ab3abbf28fd22a16da406b6e",
+    "vendoredSha256": "0e113983116f1e8074cab9fa66826b6632221378ab3abbf28fd22a16da406b6e"
+  },
+  {
+    "file": "manual-credit-outcome.ts",
+    "source": "src/lib/pos/manual-credit-outcome.ts",
+    "sourceSha256": "fbdfd28f8184084e0d2f016ad9ba04a0a081057d4b90c33f837d6b5ead2e2b9f",
+    "vendoredSha256": "fbdfd28f8184084e0d2f016ad9ba04a0a081057d4b90c33f837d6b5ead2e2b9f"
+  },
+  {
+    "file": "payable-rounding-policy.ts",
+    "source": "server/src/lib/payable-rounding-policy.ts",
+    "sourceSha256": "ffd8456387afd7609653e4948f2b2313fd5febb07a5f7a94e79f711b8d315140",
+    "vendoredSha256": "16f8bbe33fab1e79f328891fbb43118a3d8db53906efab3fe0fc45c5be3cff31"
+  },
+  {
+    "file": "payable-rounding-snapshot.ts",
+    "source": "server/src/lib/payable-rounding-snapshot.ts",
+    "sourceSha256": "61fd150c2b70997082c60df0f5063800e4c6cc12cc7eee76b35af03eaf5e6282",
+    "vendoredSha256": "73cea373738a62211f1062c1ebfedd229545f7a7643756105233169b4cabce86"
+  },
+  {
+    "file": "payable-rounding.ts",
+    "source": "server/src/lib/payable-rounding.ts",
+    "sourceSha256": "3cd4e95558f7fa162411497bedfcd109befbb7da92056aa1ff13803d9d514e68",
+    "vendoredSha256": "3cd4e95558f7fa162411497bedfcd109befbb7da92056aa1ff13803d9d514e68"
+  },
+  {
+    "file": "period-outcome.ts",
+    "source": "src/lib/pos/period-outcome.ts",
+    "sourceSha256": "6748408c2049d260f4fb855f3427b854bea300c3a9271fce325ba31dd6feb52d",
+    "vendoredSha256": "6748408c2049d260f4fb855f3427b854bea300c3a9271fce325ba31dd6feb52d"
+  },
+  {
+    "file": "product-gross-price.ts",
+    "source": "src/lib/product-gross-price.ts",
+    "sourceSha256": "9e238136e0198c753341304d09dde4049a7cd488d8efe14652bb832069ee34e5",
+    "vendoredSha256": "9e238136e0198c753341304d09dde4049a7cd488d8efe14652bb832069ee34e5"
+  },
+  {
+    "file": "purchase-gst.ts",
+    "source": "server/src/lib/purchase-gst.ts",
+    "sourceSha256": "99d7aa0a342a482c900ffc5041007cdce069f6e70494f3f077b420c67b296839",
+    "vendoredSha256": "91c36d6bde1f0cb0dd067f2d436e3b9364f1769f4395a8fb93d0f7435f6c9bb6"
+  },
+  {
+    "file": "purchase-outcome.ts",
+    "source": "src/lib/pos/purchase-outcome.ts",
+    "sourceSha256": "3c337c70695b385618635c3892242686fd195a110dfd331853ace737cd605004",
+    "vendoredSha256": "1a560f9eff1c6207f7fdc2b350c5887cfeceb59b8bda2479d5cdfd061825edfe"
+  },
+  {
+    "file": "purchase-request-shape.ts",
+    "source": "server/src/lib/purchase-request-shape.ts",
+    "sourceSha256": "fbf8a6b2a683b8ce40972efbebe68d3c50425e4ca4918f58333fda46b4007b0b",
+    "vendoredSha256": "fbf8a6b2a683b8ce40972efbebe68d3c50425e4ca4918f58333fda46b4007b0b"
+  },
+  {
+    "file": "purchase-review-draft.ts",
+    "source": "src/lib/purchase-review-draft.ts",
+    "sourceSha256": "c924aedc8238c0604fa485dbdc6ed46b5af1dc3b4639ed2e4eee50d66aa31f5f",
+    "vendoredSha256": "41ba303d3cb748e6a46da0b1645b0cc0840ab8a11ab79418905b8425d4ba5394"
+  },
+  {
+    "file": "report-decimal.ts",
+    "source": "server/src/lib/report-decimal.ts",
+    "sourceSha256": "64436b855d4fa444fe79c845218544906bc2f460386d787c0aa844703056f742",
+    "vendoredSha256": "64436b855d4fa444fe79c845218544906bc2f460386d787c0aa844703056f742"
+  },
+  {
+    "file": "report-period.ts",
+    "source": "src/lib/pos/report-period.ts",
+    "sourceSha256": "c8936a933d9b47f3c6169ac29274e354425fff835bda14fcfdfd33d053c5d29c",
+    "vendoredSha256": "1272c1b45624ef5ee13d456127114e12118a2be1b605550c6e914c95102e25e1"
+  },
+  {
+    "file": "sale-request-canonical.ts",
+    "source": "server/src/lib/sale-request-canonical.ts",
+    "sourceSha256": "13a1bac709fadcca717741d08d251d86624b687f5fd4a30a8a1c1d2585a322a2",
+    "vendoredSha256": "13a1bac709fadcca717741d08d251d86624b687f5fd4a30a8a1c1d2585a322a2"
+  },
+  {
+    "file": "sale-return-outcome.ts",
+    "source": "src/lib/pos/sale-return-outcome.ts",
+    "sourceSha256": "0d9e2a79574ea0ec50f49fb8578ce2485afd23ab17bed0b1f297e14f9ea2c934",
+    "vendoredSha256": "45d98b7eda7373675d7ea7c4ce72840403e3bc244eb5b20dcbf3c500ab48d088"
+  },
+  {
+    "file": "tax-import-outcome.ts",
+    "source": "src/lib/pos/tax-import-outcome.ts",
+    "sourceSha256": "eef969ef8e5da362acdd013f328cf86e6f9b61e72e5c447eaf8d859c33a6516c",
+    "vendoredSha256": "eef969ef8e5da362acdd013f328cf86e6f9b61e72e5c447eaf8d859c33a6516c"
+  },
+  {
+    "file": "turnover-outcome.ts",
+    "source": "src/lib/pos/turnover-outcome.ts",
+    "sourceSha256": "d3214eed09c138a9003f8d5d6483333e9b04829d3c9b395ce2fbf81a33b85f80",
+    "vendoredSha256": "12bcc9113b99861058819049849758641a82fefefd429190da86e7c57b0af8e7"
+  },
+  {
+    "file": "payable-rounding-request.ts",
+    "source": "server/src/lib/payable-rounding-request.ts",
+    "sourceSha256": "38f8a92612236854d856f16e9dbcf98c8c5abce27e5a83e6cb0ecb018c53667c",
+    "vendoredSha256": "5be6c158e45e5b07d01d696738d52691356e5a93d4aef24e53615b2f23d0db56"
+  },
+  {
+    "file": "rsp-goods-coverage.ts",
+    "source": "server/src/lib/rsp-goods-coverage.ts",
+    "sourceSha256": "36243b8665b666c0a6bd21d86372635ae71fc41288dab6d06536ce9aaf81ba1f",
+    "vendoredSha256": "beeb60ee2cde9e8606a2b58d31b52bbe562518ecc867ce4b1f88ad0030263472"
+  },
+  {
+    "file": "rsp-valuation-input.ts",
+    "source": "server/src/lib/rsp-valuation-input.ts",
+    "sourceSha256": "a9fad20fb2a2ba476fbbc06a54a3721291c196e28b0100dc4cc8b9fe4a87709e",
+    "vendoredSha256": "c0cad0ad5a67be495ca96b8a838ea17e6ca4901883bff926a1efe5a7a6f966d3"
+  },
+  {
+    "file": "rsp-tax-basis.ts",
+    "source": "server/src/lib/rsp-tax-basis.ts",
+    "sourceSha256": "df58bd72ef08a843086f8cc8d67a7822da6576768575f0b95ee43f0c73b38385",
+    "vendoredSha256": "42f9c12bb1a462af49f217889bcb15112351696024ce80c31a1578be601728c3"
+  },
+  {
+    "file": "rsp-commercial-calculation.ts",
+    "source": "server/src/lib/rsp-commercial-calculation.ts",
+    "sourceSha256": "07dc7dd90fc4109fe23e52457ab2b3e2059b8c6d2a83b0dce03a57929e755bc8",
+    "vendoredSha256": "c4a8ab3ad04307f6f17617a7ff2dcf673b1d9c9204e81a8c419cabbe0e0bee15"
+  },
+  {
+    "file": "rsp-profile-contract.ts",
+    "source": "server/src/lib/rsp-profile-contract.ts",
+    "sourceSha256": "2969f4e178a5d8110f2b6b1756f48c2ebeebcb6ac83c1c2fd2e67c6465c58b8b",
+    "vendoredSha256": "627b35e85ad5e539742e7a0bc87ec5c1f918183328b035adae0cac194600814e"
+  },
+  {
+    "file": "rsp-profile-request.ts",
+    "source": "server/src/lib/rsp-profile-request.ts",
+    "sourceSha256": "684b86ee066c96bea3838b5a67ce788458e156b2c65db857b3b1d0128a81ea77",
+    "vendoredSha256": "bc2a0eb9508d13926b469f329e9191b67f8da323e5844536401ff9f31df9dc5e"
+  }
+]

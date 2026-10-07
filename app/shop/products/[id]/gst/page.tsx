@@ -1,0 +1,2 @@
+import { GstProductHistoryScreen } from '../../../../components/shop/screens/gst-products';
+export default async function Page({params}:{params:Promise<{id:string}>}){const {id}=await params;return <GstProductHistoryScreen id={id}/>;}

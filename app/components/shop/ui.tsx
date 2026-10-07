@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import {useContext, type ReactNode} from 'react';
 import { ApiError } from '../../lib/shop/api';
-import { useShop } from './context';
+import { useShop,ShopContext } from './context';
+import {EN_FALLBACK} from '../../lib/shop/en-fallback';
 
 export function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
@@ -156,8 +157,13 @@ export function Empty({ title, body, action }: { title: string; body: string; ac
 }
 
 export function Notice({ error }: { error: unknown }) {
+  const context=useContext(ShopContext);
   if (!error) return null;
-  const message = error instanceof Error ? error.message : 'Something went wrong.';
+  const raw=error instanceof Error?error.message:'Something went wrong.';
+  const code=error instanceof ApiError?error.code:raw;
+  const fallback=(EN_FALLBACK as Record<string,string>)['gst.error.'+code]??(/^[a-z]+(?:_[a-z0-9]+)+$/.test(code)?EN_FALLBACK['gst.error.action_failed']:undefined);
+  const key=fallback?((EN_FALLBACK as Record<string,string>)['gst.error.'+code]?'gst.error.'+code:'gst.error.action_failed'):'web.gst.'+raw.toLowerCase().replace(/[^a-z0-9]+/g,'_');
+  const message=context?context.t(key,fallback??raw):fallback??raw;
   return (
     <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
       {message}

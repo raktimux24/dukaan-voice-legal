@@ -1,5 +1,6 @@
 'use client';
 
+import { GstCollectionReview } from '../gst-collection-review';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { formatINR, formatWhen } from '../../../lib/shop/money';
@@ -109,6 +110,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           <Button type="submit">Save customer</Button>
         </form>
       </Card>
+      <GstCollectionReview customerId={customerId}/>
       <Card>
         <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
         <div className="mt-3 grid gap-2 text-sm">

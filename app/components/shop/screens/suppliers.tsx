@@ -1,21 +1,41 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { useState } from 'react';
-import { formatDay, formatINR } from '../../../lib/shop/money';
-import { useShop } from '../context';
-import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { SupplierPicker, SupplierEditor } from "../gst-supplier";
+import { useGstPages, More, ReadState } from "../gst-workspace";
+import type { GstSupplier } from "../../../lib/shop/gst-types";
+import { useState } from "react";
+import { formatDay, formatINR } from "../../../lib/shop/money";
+import { useShop } from "../context";
+import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from "../ui";
 
 export function SuppliersScreen() {
   const { api, shop, perms, t } = useShop();
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState("");
+  const [editing, setEditing] = useState<GstSupplier | null>(null);
+  const directory = useGstPages(
+    ["suppliers", q],
+    (cursor) => api.gst.suppliers(shop!.id, q, cursor),
+    perms.canSeeCost,
+  );
   const enabled = !!shop && perms.canSeeCost;
-  const list = useQuery({ queryKey: ['suppliers', shop?.id, q], enabled, queryFn: () => api.getSuppliers(shop!.id, q.trim() || undefined) });
-  const compare = useQuery({ queryKey: ['supplier-compare', shop?.id], enabled, queryFn: () => api.compareSuppliers(shop!.id) });
+  const list = useQuery({
+    queryKey: ["suppliers", shop?.id, q],
+    enabled,
+    queryFn: () => api.getSuppliers(shop!.id, q.trim() || undefined),
+  });
+  const compare = useQuery({
+    queryKey: ["supplier-compare", shop?.id],
+    enabled,
+    queryFn: () => api.compareSuppliers(shop!.id),
+  });
 
   if (!shop) return <Spinner />;
-  if (!perms.canSeeCost) return <NoAccess what="Suppliers show purchase prices, so helpers cannot open them." />;
+  if (!perms.canSeeCost)
+    return (
+      <NoAccess what="Suppliers show purchase prices, so helpers cannot open them." />
+    );
 
   const suppliers = list.data?.suppliers ?? [];
   const compared = compare.data?.products ?? [];
@@ -23,54 +43,129 @@ export function SuppliersScreen() {
   return (
     <div className="shop-page">
       <PageHeader
-        kicker={t('reports.stock.on_hand', 'Stock')}
-        title={t('suppliers.title', 'Suppliers')}
-        description="Built from the supplier named on each batch. Spend is what this shop has paid them."
+        kicker={t("reports.stock.on_hand", "Stock")}
+        title={t("suppliers.title", "Suppliers")}
+        description={t(
+          "web.gst.supplier_directory",
+          "Keep supplier billing details and stock history together. Stock spend comes from recorded buying costs.",
+        )}
       />
+      <Card>
+        <SupplierPicker value={editing} onChange={setEditing} />
+      </Card>
+      <ReadState
+        query={directory}
+        empty={!directory.data?.pages.some((page) => page.items.length)}
+      >
+        <div className="party-grid">
+          {directory.data?.pages
+            .flatMap((page) => page.items)
+            .map((supplier) => (
+              <Link
+                key={supplier.id}
+                href={"/shop/suppliers/records/" + supplier.id}
+                className="party-card"
+              >
+                <p className="party-name">{supplier.identity.name}</p>
+                <p className="party-meta">
+                  {supplier.identity.gstin ??
+                    t("gst.registration.unregistered", "Not registered")}
+                </p>
+                <p className="party-meta">{supplier.identity.address}</p>
+              </Link>
+            ))}
+        </div>
+      </ReadState>
+      <More query={directory} />
+      {editing ? (
+        <SupplierEditor
+          key={editing.id}
+          initial={editing}
+          onSaved={() => setEditing(null)}
+        />
+      ) : null}
+      <h2 className="shop-section-title">
+        {t("suppliers.stock_history", "Stock supplier history")}
+      </h2>
       <input
         className={`${inputClass} shop-search`}
-        placeholder={t('suppliers.search', 'Search suppliers')}
+        placeholder={t("suppliers.search", "Search suppliers")}
         value={q}
         onChange={(event) => setQ(event.target.value)}
-        aria-label={t('suppliers.search', 'Search suppliers')}
+        aria-label={t("suppliers.search", "Search suppliers")}
       />
       <Notice error={list.error ?? compare.error} />
       {list.isLoading ? <Spinner label="Loading suppliers" /> : null}
       {!list.isLoading && suppliers.length === 0 ? (
         <Card>
-          <p>{t('suppliers.empty_title', 'No suppliers yet.')} {t('suppliers.empty_subtitle', 'Name a supplier when you add a batch and they show up here.')}</p>
+          <p>
+            {t("suppliers.empty_title", "No suppliers yet.")}{" "}
+            {t(
+              "suppliers.empty_subtitle",
+              "Name a supplier when you add a batch and they show up here.",
+            )}
+          </p>
         </Card>
       ) : null}
       <div className="party-grid">
         {suppliers.map((supplier) => (
-          <Link key={supplier.name} href={`/shop/suppliers/${encodeURIComponent(supplier.name)}`} className="party-card">
+          <Link
+            key={supplier.name}
+            href={`/shop/suppliers/${encodeURIComponent(supplier.name)}`}
+            className="party-card"
+          >
             <div className="party-card-top">
               <div>
                 <p className="party-name">{supplier.name}</p>
-                <p className="party-meta">{t('suppliers.stat_last', 'Last')} {formatDay(supplier.lastAt)}</p>
+                <p className="party-meta">
+                  {t("suppliers.stat_last", "Last")}{" "}
+                  {formatDay(supplier.lastAt)}
+                </p>
               </div>
               <p className="party-spend">{formatINR(supplier.spend)}</p>
             </div>
             <div className="party-stats">
-              <div className="party-stat"><span>{t('suppliers.stat_products', 'Products')}</span><b>{supplier.products}</b></div>
-              <div className="party-stat"><span>{t('modal.product_detail.section_batches', 'Batches')}</span><b>{supplier.batches}</b></div>
-              <div className="party-stat"><span>{t('sales.period.30d', '30 days')}</span><b>{formatINR(supplier.spend30d)}</b></div>
+              <div className="party-stat">
+                <span>{t("suppliers.stat_products", "Products")}</span>
+                <b>{supplier.products}</b>
+              </div>
+              <div className="party-stat">
+                <span>
+                  {t("modal.product_detail.section_batches", "Batches")}
+                </span>
+                <b>{supplier.batches}</b>
+              </div>
+              <div className="party-stat">
+                <span>{t("sales.period.30d", "30 days")}</span>
+                <b>{formatINR(supplier.spend30d)}</b>
+              </div>
             </div>
           </Link>
         ))}
       </div>
       {compared.length > 0 ? (
         <Card>
-          <h2 className="shop-section-title">{t('suppliers.tab.compare', 'Price compare')}</h2>
-          <p className="shop-section-sub">Same product, more than one supplier. The name on the right is the cheaper last price.</p>
+          <h2 className="shop-section-title">
+            {t("suppliers.tab.compare", "Price compare")}
+          </h2>
+          <p className="shop-section-sub">
+            Same product, more than one supplier. The name on the right is the
+            cheaper last price.
+          </p>
           <div className="chart-rows">
             {compared.map((product) => (
               <div key={product.productId} className="chart-row is-compare">
                 <span>{product.name}</span>
                 <span className="party-meta">
-                  {product.suppliers.map((row) => `${row.name} ${formatINR(row.price)}`).join(' · ')}
+                  {product.suppliers
+                    .map((row) => `${row.name} ${formatINR(row.price)}`)
+                    .join(" · ")}
                 </span>
-                <b>{product.savingPct > 0 ? `${Math.round(product.savingPct)}% less at ${product.cheapest}` : product.cheapest}</b>
+                <b>
+                  {product.savingPct > 0
+                    ? `${Math.round(product.savingPct)}% less at ${product.cheapest}`
+                    : product.cheapest}
+                </b>
               </div>
             ))}
           </div>

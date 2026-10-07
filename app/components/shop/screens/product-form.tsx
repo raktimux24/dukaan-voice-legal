@@ -1,4 +1,9 @@
 'use client';
+import { TaxFields, Check, TextField, useGstText } from '../gst-ui';
+import type { ProductTax } from '../../../lib/shop/gst-types';
+import { discountedBuyingPrice, productPriceBreakdown } from '../../../lib/shop/gst-core/product-gross-price';
+import { validateProductTaxDraft } from '../../../lib/shop/gst-core/gst';
+
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -58,6 +63,11 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
 export function ProductFormScreen({ productId }: { productId?: string }) {
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const router = useRouter();
+  const text=useGstText();
+  const [gstDraft,setGstDraft]=useState<ProductTax|null|undefined>(undefined);
+  const [buyingDiscount,setBuyingDiscount]=useState('');
+  const [autoMrp,setAutoMrp]=useState(false);
+  const pos=useQuery({queryKey:['pos',shop?.id],enabled:!!shop,queryFn:()=>api.getPosSettings(shop!.id)});
   const params = useSearchParams();
   const queryClient = useQueryClient();
   const existing = useQuery({
@@ -106,19 +116,26 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
 
   const subs = l2ForL1(form.category);
   const set = (partial: Partial<Draft>) => setDraft({ ...form, ...partial });
-  const dirty = initial ? JSON.stringify(form) !== JSON.stringify(initial) : true;
+  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp;
   const selling = form.sellingPrice === '' ? null : Number(form.sellingPrice);
-  const cost = form.purchasePrice === '' ? null : Number(form.purchasePrice);
-  const marginPct = selling != null && cost != null && selling > 0 ? ((selling - cost) / selling) * 100 : null;
+  const gstConfig=gstDraft===undefined?item?.product.gstConfig??null:gstDraft;
+  const priceBreakdown=productPriceBreakdown(form.sellingPrice,gstConfig,pos.data?.gstSettings);
+  const cost = discountedBuyingPrice(form.purchasePrice,buyingDiscount);
+  const netSelling=priceBreakdown?.net??selling;
+  const marginPct = netSelling != null && cost != null && netSelling > 0 ? ((netSelling - cost) / netSelling) * 100 : null;
   const opening = Number(form.initialStock || 0);
-  const canSave = !pending && !!form.name.trim() && !!form.subcategory && dirty;
+  const canSave = !pending && !!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error;
 
   const handleSubmit = async (addAnother = false) => {
     if (!isAllowedL2(shop.category, shop.subtype, form.category, form.subcategory)) {
       setError(new Error('That category is not available for this shop.'));
       return;
     }
+    if(!hideCost && form.purchasePrice!=='' && cost===null){setError(Error(text('Enter a valid buying price and a discount between 0 and 100%.')));return;}
+    if(autoMrp&&!priceBreakdown){setError(Error(text('Confirm selling price and GST before calculating MRP.')));return;}
     const buyListItemId = params.get('buyListItemId');
+    if(gstConfig){try{validateProductTaxDraft(gstConfig);}catch(e){setError(e);return;}}
+    if(form.mrp&&priceBreakdown&&priceBreakdown.gross>Number(form.mrp)&&!autoMrp){setError(new Error(text('Selling price including GST must not exceed MRP.')));return;}
     const body: Record<string, unknown> = {
       name: form.name.trim(),
       barcode: form.barcode.trim() || null,
@@ -127,13 +144,14 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       unit: form.unit,
       minStockLevel: Number(form.minStockLevel || 0),
       sellingPrice: form.sellingPrice === '' ? null : Number(form.sellingPrice),
-      mrp: form.mrp === '' ? null : Number(form.mrp),
+      gstConfig,
+      mrp: autoMrp&&priceBreakdown?priceBreakdown.gross:form.mrp === '' ? null : Number(form.mrp),
       trackStock: form.trackStock,
       shortCode: form.shortCode.trim() || null,
       packSize: form.packSize === '' ? null : Number(form.packSize),
       packLabel: form.packLabel.trim() || null,
     };
-    if (!hideCost && form.purchasePrice !== '') body.purchasePrice = Number(form.purchasePrice);
+    if (!hideCost && form.purchasePrice !== '') body.purchasePrice = cost;
     setPending(true);
     setError(null);
     try {
@@ -153,7 +171,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
       if (addAnother) {
         setNotice(`${created.product.name} added.`);
-        setDraft(blank(form.category, form.subcategory, { unit: form.unit }));
+        setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
         window.scrollTo({ top: 0 });
         return;
       }
@@ -227,15 +245,19 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
           </Card>
 
           <Card className="grid gap-5">
-            <div>
-              <h2 className="shop-section-title">{t('modal.add_product.selling_price_label', 'Pricing')}</h2>
-              <p className="shop-section-sub">{t('modal.add_product.mrp_label', 'MRP prints on the bill when it is higher.')}</p>
-            </div>
-            <div className={cx('form-grid', hideCost ? 'is-2' : 'is-3')}>
-              {money(form.sellingPrice, (next) => set({ sellingPrice: next }), t('modal.add_product.selling_price_label', 'Selling price'), t('modal.add_product.selling_price_placeholder', 'Leave empty to price at the counter later.'))}
-              {money(form.mrp, (next) => set({ mrp: next }), t('modal.product_detail.detail_mrp', 'MRP'))}
-              {!hideCost ? money(form.purchasePrice, (next) => set({ purchasePrice: next }), t('modal.add_product.purchase_price_label', 'Purchase price'), t('modal.add_product.purchase_price_placeholder', 'Your cost. Hidden from helpers.')) : null}
-            </div>
+            <h2 className="shop-section-title">{text('Prices & GST')}</h2>
+            {!hideCost?<div className="form-grid is-2">
+              {money(form.purchasePrice,next=>set({purchasePrice:next}),text('Buying price'),text('Your cost before the buying discount.'))}
+              <TextField label={text('Buying discount (%)')} type="number" value={buyingDiscount} onChange={setBuyingDiscount}/>
+              {cost!=null?<p className="shop-hint">{text('Effective buying cost')}: {formatINR(cost)}</p>:null}
+            </div>:null}
+            {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),text('GST is calculated on this selling price after discounts.'))}
+            <Notice error={pos.error}/>
+            <p className="shop-hint">{text(pos.data?.gstSettings?.priceMode==='exclusive'?'GST is added to the selling price.':'The selling price includes GST.')}</p>
+            <TaxFields value={gstConfig} onChange={setGstDraft}/>
+            {priceBreakdown?<div className="gst-price-preview"><span>{text('Before GST')} <b>{formatINR(priceBreakdown.net)}</b></span><span>{text('GST')} <b>{formatINR(priceBreakdown.tax)}</b></span><span>{text('Customer pays')} <b>{formatINR(priceBreakdown.gross)}</b></span></div>:<p className="shop-hint">{text('Set up shop GST and confirm the product tax details to see the GST calculation.')}</p>}
+            <Check label={text('Calculate MRP from selling price and GST')} checked={autoMrp} onChange={setAutoMrp}/>
+            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),text('MRP'),text('Selling price including GST must not exceed MRP.'))}
           </Card>
 
           <Card className="grid gap-5">
@@ -309,7 +331,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
             </div>
             {!hideCost && marginPct != null ? (
               <div className={cx('form-margin', marginPct < 0 && 'is-negative')}>
-                {t('modal.add_product.margin_line', '{{pct}}% margin · {{margin}} per {{unit}}', { pct: marginPct.toFixed(1), margin: formatINR(selling! - cost!), unit: form.unit })}
+                {t('modal.add_product.margin_line', '{{pct}}% margin · {{margin}} per {{unit}}', { pct: marginPct.toFixed(1), margin: formatINR(netSelling! - cost!), unit: form.unit })}
               </div>
             ) : null}
             <div className="grid gap-2">

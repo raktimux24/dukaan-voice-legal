@@ -1,9 +1,13 @@
 'use client';
 
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { issueSale } from '../../../lib/shop/gst-issuance';
+import { validateContext, type GstContext } from '../../../lib/shop/gst-core/gst';
+import { useGstText } from '../gst-ui';
 import { ApiError } from '../../../lib/shop/api';
 import { computeTotals, readPending, saleFingerprint, useCart, writePending } from '../../../lib/shop/cart';
 import { formatINR, roundPaise } from '../../../lib/shop/money';
@@ -25,6 +29,7 @@ function covers(tendered: number, amount: number) {
 
 export function CheckoutScreen() {
   const { api, shop, userId, premium, perms, t } = useShop();
+  const text=useGstText();
   const router = useRouter();
   const cartApi = useCart(userId, shop?.id ?? null);
   const settings = useQuery({
@@ -64,7 +69,8 @@ export function CheckoutScreen() {
     return () => window.removeEventListener('online', retry);
   }, [offlineSaved]);
 
-  const totals = computeTotals(cartApi.cart);
+  const gstContext:GstContext|null=settings.data?.gstSettings&&['regular','composition'].includes(settings.data.gstSettings.registration)?{settings:settings.data.gstSettings,priceMode:settings.data.gstSettings.priceMode,placeOfSupply:settings.data.gstSettings.stateCode,...cartApi.cart.buyer?{buyer:cartApi.cart.buyer}:{}}:null;
+  let gstError:unknown=null;let totals;try{totals=computeTotals(cartApi.cart,gstContext);if(gstContext)validateContext(gstContext,totals.total);}catch(e){gstError=e;totals=computeTotals(cartApi.cart);}
   const total = totals.total;
 
   useEffect(() => {
@@ -82,7 +88,7 @@ export function CheckoutScreen() {
   const hasCustomer = !!(cartApi.cart.customerId || cartApi.cart.customerName?.trim());
   const udhaarLocked = creditPortion > 0 && !premium;
   const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
-  const canCharge = !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
+  const canCharge = !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
 
   const upiText = useMemo(() => {
     const vpa = settings.data?.upiVpa;
@@ -117,9 +123,12 @@ export function CheckoutScreen() {
       ? { name: draftName, phone: phone && phone !== 'invalid' ? phone : null, clientId: customerClientId ?? crypto.randomUUID() }
       : null;
     return {
+      gstContext,
       soldAt,
       inputMethod: 'manual',
       items: cartApi.cart.lines.map((line) => ({
+        gstConfig: line.gstConfig,
+        listPrice: line.listPrice,
         productId: line.productId,
         name: line.name,
         unit: line.unit,
@@ -142,7 +151,6 @@ export function CheckoutScreen() {
       setError(new Error('Enter a valid Indian mobile number.'));
       return;
     }
-    const lockKey = `samaan-charge-lock:${userId}:${shop.id}`;
     const existing = fresh ? null : readPending(userId, shop.id);
     let customerClientId = cartApi.cart.customerClientId;
     if (!cartApi.cart.customerId && cartApi.cart.customerName?.trim() && !customerClientId) {
@@ -152,45 +160,37 @@ export function CheckoutScreen() {
     const soldAt = existing?.payload.soldAt ?? new Date().toISOString();
     const body = buildBody(soldAt, customerClientId);
     const fingerprint = saleFingerprint(body);
-    if (existing && existing.fingerprint !== fingerprint && Date.now() - existing.startedAt < 20_000) {
+    if (existing && existing.fingerprint !== fingerprint) {
       setError(new Error('Another bill is being charged. Wait a moment, then retry that bill.'));
       return;
     }
     const clientId = existing?.fingerprint === fingerprint ? existing.clientId : crypto.randomUUID();
-    const held = localStorage.getItem(lockKey);
-    const heldId = held?.split(':')[1];
-    if (held && Date.now() - Number(held.split(':')[0]) < 20_000 && heldId && heldId !== clientId) {
-      setError(new Error('Another bill is being charged in this browser.'));
-      return;
-    }
     const payload: CreateSalePayload = { ...body, clientId };
     charging.current = true;
     setBusy(true);
     setError(null);
+    try {
     writePending(userId, shop.id, {
       clientId,
       payload,
       fingerprint,
       startedAt: existing?.fingerprint === fingerprint ? existing.startedAt : Date.now(),
     });
-    localStorage.setItem(lockKey, `${Date.now()}:${clientId}`);
-    try {
-      const result = await api.createSale(shop.id, payload);
-      localStorage.removeItem(lockKey);
-      if (mode) localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, mode);
+
+      const result = await issueSale(api,shop.id,payload);
+      try {if (mode) localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, mode);} catch {/* A preference failure must not undo a verified bill. */}
       wentToBill.current = true;
       const recorded = result.deduplicated ? 'again' : 'new';
       router.replace(`/shop/sales/${result.sale.id}?recorded=${recorded}`);
       cartApi.clear();
     } catch (caught) {
       const offline = caught instanceof TypeError || (caught instanceof ApiError && caught.status === 0) || (caught instanceof DOMException && caught.name === 'TimeoutError');
-      localStorage.removeItem(lockKey);
       if (offline) {
         setOfflineSaved(true);
         setError(new Error('No connection. This bill stays on this browser and sends again when you are back online.'));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
       else {
-        writePending(userId, shop.id, null);
+        // Retain the original uncertain or rejected request for recovery.
         if (caught instanceof ApiError && (caught.code === 'product_archived' || caught.code === 'product_not_found')) {
           await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
         }
@@ -220,12 +220,12 @@ export function CheckoutScreen() {
 
       <div className="pos">
         <div className="pos-catalog">
-          <Notice error={error} />
+          <Notice error={gstError ?? error} />
           {confirmOld ? (
             <Card>
               <p>This bill was started too long ago. Charging it now creates a new bill only after you confirm.</p>
               <div className="mt-3">
-                <Button onClick={() => { writePending(userId, shop.id, null); setConfirmOld(false); void handleCharge(true); }}>Charge as a new bill</Button>
+                <Button href="/shop/settings/gst/recovery">Review saved bill</Button>
               </div>
             </Card>
           ) : null}
@@ -338,7 +338,7 @@ export function CheckoutScreen() {
               <h3 className="shop-section-title">{t('checkout.customer_title', 'Customer')}</h3>
               <span className="text-sm text-muted">{creditPortion > 0 ? t('checkout.upi_ref_required', 'Required for udhaar') : t('checkout.optional', 'Optional')}</span>
             </div>
-            <CustomerAttach />
+            <CustomerAttach gst />
             {creditBlocked ? <p className="text-sm text-danger">{t('checkout.credit_needs_customer', 'Udhaar needs a customer on the bill.')}</p> : null}
             {udhaarLocked && mode === 'split' ? <PremiumLock feature="udhaar" /> : null}
           </Card>
@@ -377,6 +377,7 @@ export function CheckoutScreen() {
               <span>{t('bill.subtotal', 'Subtotal')}</span>
               <span className="num">{formatINR(totals.subtotal)}</span>
             </div>
+            {totals.tax?<div className="bill-total-row"><span>{text('GST')} · {text(gstContext?.priceMode==='inclusive'?'GST included':'GST added')}</span><span>{formatINR(totals.tax.tax)}</span></div>:null}
             {totals.discount > 0 ? (
               <div className="bill-total-row">
                 <span>{t('bill.discount', 'Discount')}</span>

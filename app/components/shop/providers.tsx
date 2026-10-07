@@ -3,7 +3,11 @@
 import { AuthenticateWithRedirectCallback, useAuth, useClerk } from '@clerk/nextjs';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { setFinancialScope } from '../../lib/shop/gst-storage';
+import gstWebLocales from '../../lib/shop/gst-web-locales.json';
+import gstLocales from '../../lib/shop/gst-locales.json';
+import { EN_FALLBACK } from '../../lib/shop/en-fallback';
 import { bindApi } from '../../lib/shop/api';
 import { permissionsFor, parseRole } from '../../lib/shop/permissions';
 import type { ShopRecord, UserPreferences } from '../../lib/shop/types';
@@ -81,6 +85,7 @@ function ShopSession({ children }: { children: ReactNode }) {
   );
 
   const shop = shops?.find((item) => item.id === shopId) ?? null;
+  useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
   const role = parseRole(shop?.role);
   const perms = permissionsFor(role);
 
@@ -149,7 +154,9 @@ function ShopSession({ children }: { children: ReactNode }) {
   );
 
   const t = useCallback((key: string, fallback: string, vars?: Record<string, string | number>) => {
-    const translated = dict[key];
+    const bundled = (gstLocales as Record<string, Record<string,string>>)[prefs?.appLanguage ?? 'en'];
+    const webBundled=(gstWebLocales as Record<string,Record<string,string>>)[prefs?.appLanguage??'en'];
+    const translated = webBundled?.[key] ?? bundled?.[key] ?? dict[key] ?? (EN_FALLBACK as Record<string,string>)[key];
     let text = translated && translated !== key ? translated : fallback;
     if (vars) {
       for (const [name, value] of Object.entries(vars)) {
@@ -158,7 +165,7 @@ function ShopSession({ children }: { children: ReactNode }) {
       }
     }
     return text;
-  }, [dict]);
+  }, [dict, prefs?.appLanguage]);
 
   const value: ShopContextValue = {
     userId: userId ?? null,
