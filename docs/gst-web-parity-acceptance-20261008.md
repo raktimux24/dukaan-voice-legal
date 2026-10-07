@@ -28,3 +28,11 @@ Remaining acceptance boundaries: RSP and payable-rounding live issuance require 
 ## Scope
 
 The server's RSP and payable-rounding capability flags remain authoritative, as on mobile. The client does not activate unreviewed tax profiles or provider filing. Supplier filtering applies to invoice lists; both mobile and web reconciliation/exports use the shop-wide backend contract, explicitly labelled in the UI.
+
+## Final live readback
+
+- Web commit `e2c4b8330c9d1248437c653af6352b7457175327` published/ready on Netlify deploy `6ac6c2bd37bca600081a1214`.
+- Reloaded sale after this deployment renders retained ordinary credit note CN26-1, original bill 26-3-001, quantity 1, ₹450 total, ₹0 credit reduction, ₹450 refund, reason and shop context. Screenshot captured at `/private/tmp/gst-web-parity-live-credit.png`.
+- Purchase list shows WQA-261008-01 and totals ₹10.50 / tax ₹0.50.
+- Prepared purchase register for 1–8 Oct inclusive IST. Report `26852655-1ca8-4982-8e2f-e33768600bfe` appears in saved history. Download saved report produced CSV; verified its WQA-261008-01 row with net 10.00, tax 0.50, gross 10.50 and recorded_not_filed status. Local output `/Users/lifecycle/Downloads/samaan-purchases-26852655-1ca8-4982-8e2f-e33768600bfe.csv`.
+- Final web tests, type checking and production build passed; shared mobile contract manifest matches all 58 contracts.
