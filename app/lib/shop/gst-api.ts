@@ -93,12 +93,16 @@ export function bindGstApi(
       assertScope(active);
       try {
         let value: unknown;
+        let originalFailure: unknown;
         try {
           value = await post(path, input);
         } catch (original) {
           if (!outcomePath) throw original;
+          originalFailure = original;
         }
         if (outcomePath) value = await post(outcomePath, input);
+        // Preserve the actionable rejection while keeping the request pending.
+        if (originalFailure && value && typeof value === "object" && "status" in value && value.status === "not_found") throw originalFailure;
         assertScope(active);
         const result = await verify(value);
         assertScope(active);
