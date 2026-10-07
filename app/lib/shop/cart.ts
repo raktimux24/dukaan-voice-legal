@@ -1,11 +1,13 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import { calculateTax, type GstContext, type Buyer, type ProductTax } from './gst-core/gst';
 import { roundPaise } from './money';
 import { r3 } from './units';
 import type { CreateSalePayload, InventoryItem } from './types';
 
 export type CartLine = {
+  gstConfig?:ProductTax|null;
   key: string;
   productId: string;
   name: string;
@@ -21,6 +23,7 @@ export type CartLine = {
 };
 
 export type Cart = {
+  buyer?:Buyer;
   lines: CartLine[];
   billDiscount: number;
   note: string;
@@ -175,7 +178,7 @@ export function lineDiscount(line: CartLine) {
   return roundPaise(Math.min(lineGross(line), priceGap + Math.max(0, line.discount)));
 }
 
-export function computeTotals(cart: Cart) {
+export function computeTotals(cart: Cart, context?:GstContext|null) {
   const subtotal = roundPaise(cart.lines.reduce((sum, line) => sum + lineGross(line), 0));
   const lineDiscounts = roundPaise(cart.lines.reduce((sum, line) => sum + lineDiscount(line), 0));
   const billDiscount = roundPaise(Math.min(Math.max(0, cart.billDiscount), Math.max(0, subtotal - lineDiscounts)));
@@ -185,7 +188,8 @@ export function computeTotals(cart: Cart) {
     lineDiscounts,
     billDiscount,
     discount,
-    total: roundPaise(Math.max(0, subtotal - discount)),
+    tax: context?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context):null,
+    total: context?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context).total:roundPaise(Math.max(0, subtotal - discount)),
     itemCount: cart.lines.length,
   };
 }
@@ -232,6 +236,7 @@ export function useCart(userId: string | null, shopId: string | null) {
       }
       if (nextQty <= 0) return { ok: false, capped: false, message: `${item.product.name} is out of stock.` };
       const line: CartLine = {
+        gstConfig: item.product.gstConfig,
         key: existing?.key ?? crypto.randomUUID(),
         productId: item.productId,
         name: item.product.name,

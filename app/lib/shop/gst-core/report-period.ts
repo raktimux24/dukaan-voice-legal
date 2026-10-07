@@ -1,0 +1,4 @@
+import {indianCalendarDate,validIndianDocumentDate} from './fiscal-date';
+export function nextCalendarDay(day:string){if(!validIndianDocumentDate(day))throw new Error('Choose a valid calendar date.');return new Date(Date.parse(day+'T00:00:00Z')+86400000).toISOString().slice(0,10);}
+export function reportPeriod(from:string,through:string){if(!validIndianDocumentDate(from)||!validIndianDocumentDate(through)||from>through)throw new Error('Choose a valid start and end date.');const to=nextCalendarDay(through),start=from+'T00:00:00+05:30',end=to+'T00:00:00+05:30';if(Date.parse(end)-Date.parse(start)>366*86400000)throw new Error('Choose a period of no more than 366 days.');return {from:start,to:end,calendarFrom:from,calendarTo:to};}
+export function currentReportMonth(){const today=indianCalendarDate();return {from:today.slice(0,7)+'-01',through:today};}

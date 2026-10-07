@@ -1,3 +1,5 @@
+import { bindGstApi } from './gst-api';
+import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
 import { parseRole } from './permissions';
 import type {
@@ -34,6 +36,7 @@ export class ApiError extends Error {
   status: number;
   code: string;
   feature?: string;
+  requestId?: string;
 
   constructor(message: string, status: number, code = '', feature?: string) {
     super(message);
@@ -99,7 +102,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? '';
 
-export async function apiSend<T>(path: string, getToken: TokenGetter, init?: RequestInit, attempt = 0): Promise<T> {
+export async function apiSend<T>(path: string, getToken: TokenGetter, init?: RequestInit, attempt = 0, metadata?:{id?:string;hash?:string}): Promise<T> {
   if (!apiBaseUrl) throw new ApiError('NEXT_PUBLIC_API_BASE_URL is not configured.', 0, 'missing_api');
   const token = await getToken(attempt > 0 ? { skipCache: true } : undefined);
   const response = await fetch(`${apiBaseUrl}${path}`, {
@@ -108,11 +111,12 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
     headers: {
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      'X-Samaan-GST-Protocol': '2',
       ...init?.headers,
     },
   });
 
-  if (response.status === 401 && attempt === 0) return apiSend<T>(path, getToken, init, 1);
+  if (response.status === 401 && attempt === 0) return apiSend<T>(path, getToken, init, 1,metadata);
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
@@ -130,9 +134,12 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
     if (typeof window !== 'undefined' && (code === 'Not a member of this shop' || message === 'Not a member of this shop')) {
       window.dispatchEvent(new CustomEvent('samaan-not-member'));
     }
-    throw new ApiError(ERROR_MESSAGES[code] ?? (message || code || `Request failed with status ${response.status}`), response.status, code, feature);
+    const error = new ApiError(ERROR_MESSAGES[code] ?? (message || code || `Request failed with status ${response.status}`), response.status, code, feature);
+    error.requestId = response.headers.get('X-Request-Id') ?? undefined;
+    throw error;
   }
 
+  if(metadata){metadata.id=response.headers.get('X-GST-Export-ID')??undefined;metadata.hash=response.headers.get('X-GST-Export-SHA256')??undefined;}
   if (response.status === 204) return undefined as T;
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/csv') || contentType.includes('text/plain')) return (await response.text()) as T;
@@ -174,6 +181,7 @@ type ServerInventoryItem = {
   updatedBy: string | null;
   updatedByName: string;
   product: {
+    gstConfig?: ProductTax | null;
     id: string;
     shopId: string;
     name: string;
@@ -211,6 +219,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     updatedBy: item.updatedBy || '',
     updatedByName: item.updatedByName,
     product: {
+      gstConfig: item.product.gstConfig,
       id: item.product.id,
       shopId: item.product.shopId,
       name: item.product.name,
@@ -249,11 +258,12 @@ export function bindApi(getToken: TokenGetter) {
   const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init);
 
   return {
+    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};}),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
     },
-    createShop: (input: { name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string }) =>
+    createShop: (input: { name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
       send<{ shop: ShopRecord }>('/api/shops', { method: 'POST', body: JSON.stringify(input) }),
     getShop: (shopId: string) => send<{ shop: ShopRecord; role: string }>(`/api/shops/${shopId}`),
     updateShop: (shopId: string, input: Record<string, unknown>) =>

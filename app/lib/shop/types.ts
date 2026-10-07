@@ -1,3 +1,4 @@
+import type { GstContext, GstSettings, ProductTax, TaxTotals, LineTax, Buyer } from './gst-types';
 import type { Role } from './permissions';
 
 export type ShopRecord = {
@@ -28,6 +29,7 @@ export type Member = {
 };
 
 export type Product = {
+  gstConfig?: ProductTax | null;
   id: string;
   shopId: string;
   name: string;
@@ -102,6 +104,8 @@ export type AdjustmentReason =
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'credit';
 
 export type SaleItemInput = {
+  gstConfig?: ProductTax | null;
+  listPrice?: number | null;
   productId?: string | null;
   name?: string;
   unit?: string;
@@ -118,6 +122,7 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  gstContext?: GstContext | null;
   clientId: string;
   soldAt: string;
   items: SaleItemInput[];
@@ -130,6 +135,7 @@ export type CreateSalePayload = {
 };
 
 export type SaleItem = {
+  taxSnapshot?: LineTax | null;
   id: string;
   productId: string | null;
   name: string;
@@ -140,10 +146,15 @@ export type SaleItem = {
   lineTotal: number;
   costTotal: number | null;
   returnedQuantity: number;
+  returnTaxBasis?: {quantity:number;tax:LineTax}|null;
   shortfall?: number;
 };
 
 export type Sale = {
+  requestHash?: string;
+  gstIntegrity?: string;
+  mixedGstSnapshot?:Record<string,unknown>|null;
+  gstSnapshot?: { invoiceNumber:string;renderVersion?:string;context:GstContext;totals:TaxTotals } | null;
   id: string;
   shopId: string;
   saleNumber: number;
@@ -212,6 +223,8 @@ export type SalesSummary = {
 };
 
 export type Customer = {
+  billingPartyId?: string | null;
+  billingParty?: {id:string;buyer:Buyer} | null;
   id: string;
   clientId: string | null;
   name: string;
@@ -251,6 +264,16 @@ export type BuyListItem = {
 };
 
 export type PosSettings = {
+  gstSettings?: GstSettings | null;
+  gstProtocol?: number;
+  gstAvailable?: boolean;
+  gstSetupAvailable?: boolean;
+  gstPurchasesAvailable?: boolean;
+  gstPurchaseRequestClosureAvailable?: boolean;
+  gstTaxSchedulingAvailable?: boolean;
+  gstRspProfileReviewsAvailable?: boolean;
+  gstRspBillingAvailable?: boolean;
+  gstPayableRoundingReviewsAvailable?: boolean;
   shopId: string;
   shopName: string;
   saleCounter: number;

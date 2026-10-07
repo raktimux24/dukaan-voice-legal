@@ -2830,3 +2830,44 @@ a.party-card:hover {
 .shop-root .auth-captcha:empty {
   display: none;
 }
+
+/* GST workspaces use the existing surface and saffron tokens. */
+.gst-section { border:1px solid var(--color-line,#38383f); border-radius:16px; background:var(--color-surface,#1e1e26); overflow:hidden; }
+.gst-section > summary { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; cursor:pointer; font-weight:600; gap:16px; list-style:none; min-height:64px; }
+.gst-section > summary::-webkit-details-marker { display:none; }
+.gst-section > summary small { display:block; color:var(--color-muted,#9999a3); font-weight:400; font-size:13px; margin-top:5px; }
+.gst-section > summary > span:last-child { color:#FF6B00; }
+.gst-section[open] > summary { border-bottom:1px solid #38383f; }
+.gst-section-body { padding:24px; display:grid; gap:20px; }
+.gst-section-body .shop-btn, .gst-section-body .shop-field { max-width:100%; }
+.gst-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; }
+.gst-navigation { display:grid; gap:0; }
+.gst-nav-row { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:24px 4px; border-bottom:1px solid #38383f; min-height:80px; }
+.gst-nav-row:hover { color:#FF6B00; }
+.gst-nav-row b { display:block; font-size:17px; }
+.gst-nav-row small { display:block; color:#9999a3; margin-top:8px; }
+.gst-table-wrap { overflow-x:auto; }
+.gst-table { width:100%; border-collapse:collapse; text-align:left; }
+.gst-table th { color:#9999a3; font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+.gst-table th,.gst-table td { padding:16px 12px; border-bottom:1px solid #38383f; vertical-align:top; }
+.gst-table td a { color:#FF6B00; }
+.gst-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid #38383f; }
+.gst-row p,.gst-row small { flex-basis:100%; color:#9999a3; }
+.gst-price-preview { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; background:#15151b; padding:18px; border-radius:12px; }
+.gst-price-preview span { color:#9999a3; font-size:13px; }
+.gst-price-preview b { display:block; color:#f5f5f7; font-size:20px; margin-top:8px; }
+.gst-picker { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; }
+.gst-picker button { text-align:left; border:1px solid #38383f; border-radius:12px; padding:16px; }
+.gst-picker button[aria-pressed=true] { border-color:#FF6B00; background:#FF6B0018; }
+.gst-picker small,.gst-choice small { display:block; color:#9999a3; font-size:12px; margin-top:5px; }
+.gst-choice { display:flex; align-items:center; gap:14px; padding:16px 0; border-bottom:1px solid #38383f; }
+.gst-choice > span { flex:1; }
+.gst-choice a { color:#FF6B00; }
+.gst-two-columns { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr); gap:24px; align-items:start; }
+.shop-page > fieldset { display:grid; gap:24px; min-width:0; }
+.gst-section-body fieldset { display:grid; gap:20px; min-width:0; }
+.shop-page fieldset:disabled { opacity:.6; }
+.gst-section .shop-toggle { gap:16px; }
+.gst-section .form-grid { gap:20px; }
+@media (max-width:760px) { .gst-two-columns { grid-template-columns:1fr; } .gst-section > summary,.gst-section-body { padding:18px; } .gst-table th,.gst-table td { padding:12px 8px; } }
+@media print { .gst-section { border-color:#ccc; background:white; color:black; } .gst-table { color:black; } .gst-document { break-before:page; } .gst-table tr { break-inside:avoid; } }

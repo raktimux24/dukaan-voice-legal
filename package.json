@@ -7,7 +7,9 @@
     "dev:shop": "next dev --experimental-https --experimental-https-key ./certificates/local.samaanbol.space-key.pem --experimental-https-cert ./certificates/local.samaanbol.space.pem --hostname 127.0.0.1 --port 443",
     "build": "next build",
     "start": "next start",
-    "indexnow:ping": "node scripts/indexnow-ping.mjs"
+    "indexnow:ping": "node scripts/indexnow-ping.mjs",
+    "test:gst": "node scripts/test-gst.mjs",
+    "check:gst-core": "node scripts/check-gst-core.mjs"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "19.2.14",
     "@types/three": "0.128.0",
+    "fake-indexeddb": "^6.2.5",
     "typescript": "6.0.3"
   }
 }

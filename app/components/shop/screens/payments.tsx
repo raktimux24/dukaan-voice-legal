@@ -1,6 +1,10 @@
 'use client';
 
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { SettingsFields, Section, emptySettings, useGstText } from '../gst-ui';
+import type { GstSettings } from '../../../lib/shop/gst-types';
+import { validateSettings } from '../../../lib/shop/gst-core/gst';
 import { useState } from 'react';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
@@ -11,6 +15,8 @@ const MAX_QR = 1_500_000;
 export function PaymentsScreen() {
   const { api, shop, perms, t } = useShop();
   const queryClient = useQueryClient();
+  const text=useGstText();
+  const [gstDraft,setGstDraft]=useState<GstSettings|null>(null);
   const settings = useQuery({ queryKey: ['pos', shop?.id], enabled: !!shop && perms.canManageShop, queryFn: () => api.getPosSettings(shop!.id) });
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
@@ -26,7 +32,8 @@ export function PaymentsScreen() {
 
   if (!shop) return <Spinner />;
   if (!perms.canManageShop) return <NoAccess what="Only the owner can change payments." />;
-  if (settings.isLoading || !settings.data) return <Spinner label="Loading payments" />;
+  if (settings.isLoading) return <Spinner label="Loading payments" />;
+  if (!settings.data) return <><Notice error={settings.error}/><Button onClick={()=>void settings.refetch()}>{text('Retry')}</Button></>;
   const current = settings.data;
   const form = {
     upiVpa: vpa ?? current.upiVpa ?? '',
@@ -47,7 +54,7 @@ export function PaymentsScreen() {
     <div className="shop-page">
       <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments')} description={t('pos_settings.upi_explainer', 'The UPI ID and QR shown at checkout.')} />
       <Notice error={error ?? settings.error} />
-      <Card>
+      <Section title={text('Payment and bill preferences')} summary={current.upiVpa ?? text('Set up payments')}>
         <form
           className="grid gap-3"
           onSubmit={(event) => {
@@ -86,8 +93,8 @@ export function PaymentsScreen() {
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.cardEnabled} onChange={(event) => setCard(event.target.checked)} /> Accept card</label>
           <Button type="submit" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</Button>
         </form>
-      </Card>
-      <Card>
+      </Section>
+      <Section title={text('UPI QR image')}>
         <h2 className="font-semibold">{t('pos_settings.upload_qr', 'UPI QR image')}</h2>
         {current.upiQrImage ? <img src={current.upiQrImage} alt="Saved UPI QR" className="mt-3 w-40 rounded-lg bg-white p-2" /> : <p className="mt-2 text-sm text-muted">No image uploaded. A VPA still generates a QR at checkout.</p>}
         <input
@@ -111,7 +118,13 @@ export function PaymentsScreen() {
             reader.readAsDataURL(file);
           }}
         />
-      </Card>
+      </Section>
+      <Section title={text('GST setup')} summary={current.gstSettings?.registration ?? text('Set up later')}>
+        <Notice error={error}/><SettingsFields value={gstDraft??current.gstSettings??emptySettings()} onChange={setGstDraft}/>
+        <Button disabled={pending||current.gstSetupAvailable!==true} onClick={()=>{const config=gstDraft??current.gstSettings??emptySettings();try{if(config.registration==='unknown')throw Error(text('Choose your actual GST registration before saving.'));validateSettings({...config,version:config.version||crypto.randomUUID()});}catch(e){setError(e);return;}setPending(true);void api.updatePosSettings(shop.id,{gstSettings:config}).then(()=>{setGstDraft(null);return settings.refetch();}).catch(setError).finally(()=>setPending(false));}}>{text('Save GST settings')}</Button>
+        {current.gstSetupAvailable!==true?<p className="shop-hint">{text('GST setup is unavailable on this server.')}</p>:null}
+      </Section>
+      <Card><h2 className="shop-section-title">{text('GST records & invoice numbers')}</h2><p className="shop-section-sub">{text('Review saved bills, product tax settings and reports.')}</p><div className="shop-actions"><Button href="/shop/settings/gst" tone="ghost">{text('GST records & invoice numbers')}</Button><Button href="/shop/purchases" tone="ghost">{text('Supplier invoices & purchase tax')}</Button></div></Card>
     </div>
   );
 }
