@@ -29,6 +29,8 @@ export type Member = {
 };
 
 export type Product = {
+  gstTaxSnapshot?:import("./gst-core/gst-tax-cache").ProductTaxSnapshot;
+  gstRspSnapshot?:import("./gst-core/gst-rsp-cache").ProductRspSnapshot;
   gstConfig?: ProductTax | null;
   id: string;
   shopId: string;
@@ -104,6 +106,7 @@ export type AdjustmentReason =
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'credit';
 
 export type SaleItemInput = {
+  rsp?: {profile: Parameters<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>[0];valuation: Parameters<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>[1]["valuation"];rounding: Parameters<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>[1]["rounding"]};
   gstConfig?: ProductTax | null;
   listPrice?: number | null;
   productId?: string | null;
@@ -122,6 +125,9 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  mixedDiscountReview?:{policy:"commercial_amount_proportional_v1";reviewed:true;evidenceReference:string};
+  roundingSnapshot?:import("./gst-core/payable-rounding-snapshot").PayableRoundingSnapshot;
+  roundingGrant?:import("./rounding-grant").RetainedRoundingGrant;
   gstContext?: GstContext | null;
   clientId: string;
   soldAt: string;
@@ -135,6 +141,8 @@ export type CreateSalePayload = {
 };
 
 export type SaleItem = {
+  rspSnapshot?:ReturnType<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>|null;
+  netSales?:number|null;
   taxSnapshot?: LineTax | null;
   id: string;
   productId: string | null;
@@ -153,8 +161,12 @@ export type SaleItem = {
 export type Sale = {
   requestHash?: string;
   gstIntegrity?: string;
-  mixedGstSnapshot?:Record<string,unknown>|null;
-  gstSnapshot?: { invoiceNumber:string;renderVersion?:string;context:GstContext;totals:TaxTotals } | null;
+  mixedGstSnapshot?:import("./gst-core/mixed-gst-fiscal").MixedFiscalPayload|null;
+  netSales?:number|null;taxTotal?:number|null;
+  roundingGrant?:import("./rounding-grant").RetainedRoundingGrant|null;
+  roundingEvidence?:import("./gst-core/payable-rounding-evidence").PayableRoundingEvidence|null;
+  returnPlanningError?:string|null;
+  gstSnapshot?: { invoiceNumber:string;documentType?:string;renderVersion?:string;context:GstContext;totals:TaxTotals } | null;
   id: string;
   shopId: string;
   saleNumber: number;
@@ -274,6 +286,8 @@ export type PosSettings = {
   gstRspProfileReviewsAvailable?: boolean;
   gstRspBillingAvailable?: boolean;
   gstPayableRoundingReviewsAvailable?: boolean;
+  gstPayableRoundingAvailable?:boolean;
+  gstRoundingPolicy?:import("./gst-core/payable-rounding-policy").PayableRoundingPolicy|null;
   shopId: string;
   shopName: string;
   saleCounter: number;

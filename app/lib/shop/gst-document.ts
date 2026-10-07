@@ -1,3 +1,4 @@
+import { documentView } from "./gst-document-view";
 import { canonicalJson } from "./gst-core/sale-request-canonical";
 import { sha256 } from "./gst-storage";
 import { fiscalTotalsConsistent } from "./gst-core/fiscal-totals-integrity";
@@ -39,6 +40,10 @@ export async function verifyDocument(
   )
     throw Error("This saved document could not be verified.");
   fiscalRenderVersion(doc.payload.renderVersion);
+  if (typeof doc.payload.format === "string") {
+    documentView(doc);
+    return doc;
+  }
   if (doc.payload.totals && !fiscalTotalsConsistent(doc.payload.totals))
     throw Error("The retained document totals do not reconcile.");
   if (

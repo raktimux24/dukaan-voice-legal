@@ -105,7 +105,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         />
       </div>
       <Notice error={error} />
-      {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{sale.gstSnapshot?<GstSaleAdjustments sale={sale}/>:null}</>:null}
+      {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{<GstSaleAdjustments sale={sale}/>}</>:null}
       <div className="sale-stage">
         <article className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={`Bill ${sale.saleNumber}`}>
           <header className="receipt-head">

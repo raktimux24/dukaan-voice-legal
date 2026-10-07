@@ -2,11 +2,16 @@
 
 import { useSyncExternalStore } from 'react';
 import { calculateTax, type GstContext, type Buyer, type ProductTax } from './gst-core/gst';
+import {cartLineWithQuantity} from './rsp-cart-quantity';
+import {mixedCartProjection} from './mixed-cart-projection';
 import { roundPaise } from './money';
 import { r3 } from './units';
 import type { CreateSalePayload, InventoryItem } from './types';
 
 export type CartLine = {
+  rsp?:import("./types").SaleItemInput["rsp"];
+  gstTaxSnapshot?:import("./gst-core/gst-tax-cache").ProductTaxSnapshot;
+  gstRspSnapshot?:import("./gst-core/gst-rsp-cache").ProductRspSnapshot;
   gstConfig?:ProductTax|null;
   key: string;
   productId: string;
@@ -23,6 +28,7 @@ export type CartLine = {
 };
 
 export type Cart = {
+  mixedDiscountReview?:import("./types").CreateSalePayload["mixedDiscountReview"];
   buyer?:Buyer;
   lines: CartLine[];
   billDiscount: number;
@@ -183,13 +189,16 @@ export function computeTotals(cart: Cart, context?:GstContext|null) {
   const lineDiscounts = roundPaise(cart.lines.reduce((sum, line) => sum + lineDiscount(line), 0));
   const billDiscount = roundPaise(Math.min(Math.max(0, cart.billDiscount), Math.max(0, subtotal - lineDiscounts)));
   const discount = roundPaise(lineDiscounts + billDiscount);
+  const mixed=context&&cart.lines.some(line=>line.rsp)?mixedCartProjection(cart.lines,context,billDiscount,cart.mixedDiscountReview):null;
+  const tax=context&&!mixed?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context):null;
   return {
+    mixed,
     subtotal,
     lineDiscounts,
     billDiscount,
     discount,
-    tax: context?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context):null,
-    total: context?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context).total:roundPaise(Math.max(0, subtotal - discount)),
+    tax,
+    total: mixed?Number(mixed.payable):tax?tax.total:roundPaise(Math.max(0, subtotal - discount)),
     itemCount: cart.lines.length,
   };
 }
@@ -237,6 +246,9 @@ export function useCart(userId: string | null, shopId: string | null) {
       if (nextQty <= 0) return { ok: false, capped: false, message: `${item.product.name} is out of stock.` };
       const line: CartLine = {
         gstConfig: item.product.gstConfig,
+        gstTaxSnapshot:item.product.gstTaxSnapshot,
+        gstRspSnapshot:item.product.gstRspSnapshot,
+        rsp:existing?.rsp?cartLineWithQuantity(existing,nextQty).rsp:undefined,
         key: existing?.key ?? crypto.randomUUID(),
         productId: item.productId,
         name: item.product.name,
@@ -266,7 +278,7 @@ export function useCart(userId: string | null, shopId: string | null) {
             next = r3(line.available);
             capped = true;
           }
-          return { ...line, quantity: next };
+          return next>0?cartLineWithQuantity(line,next):{...line,quantity:next};
         })
         .filter((line) => line.quantity > 0);
       update({ ...current, lines });
