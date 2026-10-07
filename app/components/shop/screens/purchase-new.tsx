@@ -105,7 +105,10 @@ export function PurchaseNewScreen() {
     discount: Number(discount),
     declaredTotal: Number(declared),
     recipient,
-    lines: lines.map(({ key, name, stockMode, ...line }) => line),
+    lines: lines.map(({ key, name, stockMode, ...line }) => ({
+      ...line,
+      tax: {...line.tax, version: line.tax.version || "purchase-manual-v1"},
+    })),
     evidenceReference: reference,
     reviewed,
   };
@@ -391,6 +394,7 @@ export function PurchaseNewScreen() {
                   </>
                 ) : null}
                 <TaxFields
+                  required
                   value={line.tax}
                   onChange={(v) =>
                     updateLine(line.key, { tax: v ?? emptyTax() }, true)

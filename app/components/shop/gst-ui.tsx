@@ -226,9 +226,11 @@ export function BuyerFields({
 export function TaxFields({
   value,
   onChange,
+  required = false,
 }: {
   value: ProductTax | null;
   onChange: (v: ProductTax | null) => void;
+  required?: boolean;
 }) {
   const text = useGstText();
   const tax = value ?? emptyTax();
@@ -236,11 +238,11 @@ export function TaxFields({
     onChange({ ...tax, ...p, reviewed: false });
   return (
     <div className="grid gap-4">
-      <Check
+      {!required && <Check
         label={text("Product tax settings")}
         checked={!!value}
         onChange={(v) => onChange(v ? emptyTax() : null)}
-      />
+      />}
       {value ? (
         <>
           <div className="form-grid is-2">
