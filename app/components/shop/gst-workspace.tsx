@@ -1,4 +1,6 @@
 "use client";
+
+import { useGstText as useUiText } from "./gst-ui";
 import { useState, useRef, type ReactNode } from "react";
 import {
   useQuery,
@@ -140,11 +142,12 @@ export function GstAccess({
   children: ReactNode;
   owner?: boolean;
 }) {
+  const uiText = useUiText();
   const { shop, perms, role } = useShop();
   if (!shop) return <Spinner />;
   if (owner ? role !== "OWNER" : !perms.canSeeReports)
     return (
-      <NoAccess what="Only authorized shop administrators can review these records." />
+      <NoAccess what={uiText("Only authorized shop administrators can review these records.")} />
     );
   return <>{children}</>;
 }

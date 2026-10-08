@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,6 +18,7 @@ import { Button, Card, Chip, Kbd, Notice, Spinner, cx, inputClass } from '../ui'
 const BARCODE = /^\d{4,}$/;
 
 export function SellScreen() {
+  const uiText = useUiText();
   const { api, shop, userId, perms, hideCost, setNotice, t } = useShop();
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
@@ -79,7 +82,7 @@ export function SellScreen() {
     return () => window.clearTimeout(timer);
   }, [api, hits.length, query, shopId]);
 
-  if (!shop) return <Spinner label="Loading shop" />;
+  if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
   const totals = computeTotals(cartApi.cart);
   const lineCount = cartApi.cart.lines.length;
@@ -218,7 +221,7 @@ export function SellScreen() {
       <div className="pos-catalog">
         <div className="shop-page-head">
           <div className="shop-page-head-text">
-            <p className="shop-kicker">Counter</p>
+            <p className="shop-kicker">{uiText("Counter")}</p>
             <h1 className="shop-title">{t('pos.title', 'Sell')}</h1>
           </div>
           <div className="shop-actions">
@@ -229,8 +232,8 @@ export function SellScreen() {
 
         {cartApi.pending ? (
           <Card tight className="flex flex-wrap items-center justify-between gap-3">
-            <p>A bill is waiting to finish.</p>
-            <Button href="/shop/sell/checkout" tone="ghost" size="sm">Return to checkout</Button>
+            <p>{uiText("A bill is waiting to finish.")}</p>
+            <Button href="/shop/sell/checkout" tone="ghost" size="sm">{uiText("Return to checkout")}</Button>
           </Card>
         ) : null}
         <Notice error={error} />
@@ -249,17 +252,17 @@ export function SellScreen() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={handleSearchKey}
-              aria-label="Find a product to sell"
+              aria-label={uiText("Find a product to sell")}
               autoComplete="off"
               autoFocus
             />
             <div className="pos-search-hint">
               <Kbd>↑↓</Kbd>
-              <Kbd>Enter</Kbd>
+              <Kbd>{uiText("Enter")}</Kbd>
             </div>
           </div>
           {categories.length > 1 ? (
-            <div className="pos-chips" role="tablist" aria-label="Categories">
+            <div className="pos-chips" role="tablist" aria-label={uiText("Categories")}>
               <Chip active={category === 'all'} onClick={() => setCategory('all')}>{t('products.all_categories', 'All')}</Chip>
               {categories.map(([code, label]) => (
                 <Chip key={code} active={category === code} onClick={() => setCategory(code)}>{label}</Chip>
@@ -268,9 +271,9 @@ export function SellScreen() {
           ) : null}
         </div>
 
-        {catalog.isLoading ? <Spinner label="Loading products" /> : null}
+        {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
         {picker ? <QtyPicker key={picker.productId} item={items.find((row) => row.productId === picker.productId) ?? null} value={picker.value} onChange={(value) => setPicker({ productId: picker.productId, value })} onAdd={commitPicker} onClose={() => setPicker(null)} /> : null}
-        <div className="pos-grid" role="listbox" aria-label="Products">
+        <div className="pos-grid" role="listbox" aria-label={uiText("Products")}>
           {hits.map((item, index) => {
             const unpriced = item.product.sellingPrice == null;
             const tracked = item.product.trackStock !== false;
@@ -282,7 +285,7 @@ export function SellScreen() {
                 <div key={item.id} className={cx('pos-tile', index === highlight && query && 'is-highlight')}>
                   <p className="pos-tile-name">{item.product.name}</p>
                   <div className="grid gap-2">
-                    <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} · no price</p>
+                    <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} {uiText("· no price")}</p>
                     <form
                       className="pos-tile-price-form"
                       onSubmit={(event) => {
@@ -334,14 +337,14 @@ export function SellScreen() {
             {perms.canEditProducts ? (
               <>
                 {' '}
-                <Link href={`/shop/products/new?name=${encodeURIComponent(query.trim())}`} className="text-saffron">Add it</Link>.
+                <Link href={`/shop/products/new?name=${encodeURIComponent(query.trim())}`} className="text-saffron">{uiText("Add it")}</Link>.
               </>
             ) : null}
           </Card>
         ) : null}
       </div>
 
-      <aside className="bill shop-surface" aria-label="Current bill">
+      <aside className="bill shop-surface" aria-label={uiText("Current bill")}>
         <div className="bill-head">
           <h2>{t('bill.bill', 'Bill')}</h2>
           <div className="flex items-center gap-3">
@@ -357,7 +360,7 @@ export function SellScreen() {
                 <path d="M9 7V5a3 3 0 0 1 6 0v2" />
               </svg>
               <p>{t('pos.cart_empty', 'Nothing on the bill yet.')}</p>
-              <p className="text-xs text-faint">Search above, scan a barcode, or click a product.</p>
+              <p className="text-xs text-faint">{uiText("Search above, scan a barcode, or click a product.")}</p>
             </div>
           ) : (
             cartApi.cart.lines.map((line) => (
@@ -447,6 +450,7 @@ function QtyPicker({
   onAdd: () => void;
   onClose: () => void;
 }) {
+  const uiText = useUiText();
   const { t } = useShop();
   const unit = item?.unit ?? 'piece';
   const alt = altUnit(unit);
@@ -473,7 +477,7 @@ function QtyPicker({
         </div>
         <button type="button" className="bill-remove" onClick={onClose}>{t('common.close', 'Close')}</button>
       </div>
-      <div className="pos-chips" role="group" aria-label="Quantities">
+      <div className="pos-chips" role="group" aria-label={uiText("Quantities")}>
         {chips.map((chip) => (
           <Chip key={chip} active={Math.abs(value - chip) < 1e-9} onClick={() => onChange(clamp(chip))}>
             {chipLabel(chip, unit, item.product)}
@@ -487,7 +491,7 @@ function QtyPicker({
         <span className="num">{formatINR(r3(value * price))}</span>
       </div>
       {alt ? (
-        <div className="shop-seg" role="group" aria-label="Unit">
+        <div className="shop-seg" role="group" aria-label={uiText("Unit")}>
           <button type="button" className={displayUnit === unit ? 'is-active' : undefined} onClick={() => setDisplayUnit(unit)}>{unit}</button>
           <button type="button" className={displayUnit === alt ? 'is-active' : undefined} onClick={() => setDisplayUnit(alt)}>{alt}</button>
         </div>
@@ -576,6 +580,7 @@ function BillLine({
 }
 
 function CameraScan({ onCode }: { onCode: (code: string) => void }) {
+  const uiText = useUiText();
   const [message, setMessage] = useState<string | null>(null);
   const onCodeRef = useRef(onCode);
   onCodeRef.current = onCode;
@@ -626,7 +631,7 @@ function CameraScan({ onCode }: { onCode: (code: string) => void }) {
   return (
     <Card tight>
       <div id="sell-camera">
-        {message ? <p className="text-sm text-muted">{message}</p> : <p className="text-sm text-muted">Point the camera at a barcode.</p>}
+        {message ? <p className="text-sm text-muted">{message}</p> : <p className="text-sm text-muted">{uiText("Point the camera at a barcode.")}</p>}
       </div>
     </Card>
   );

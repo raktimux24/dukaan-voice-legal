@@ -1,4 +1,6 @@
 'use client';
+
+import { useGstText as useUiText } from "../gst-ui";
 import { TaxFields, Check, TextField, useGstText } from '../gst-ui';
 import type { ProductTax } from '../../../lib/shop/gst-types';
 import { discountedBuyingPrice, productPriceBreakdown } from '../../../lib/shop/gst-core/product-gross-price';
@@ -61,6 +63,7 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
 }
 
 export function ProductFormScreen({ productId }: { productId?: string }) {
+  const uiText = useUiText();
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const router = useRouter();
   const text=useGstText();
@@ -109,9 +112,9 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
   const form = draft ?? initial;
 
   if (!shop) return <Spinner />;
-  if (!perms.canEditProducts) return <NoAccess what="Only an owner or manager can add or edit products." />;
-  if (productId && existing.isLoading) return <Spinner label="Loading product" />;
-  if (productId && !item) return <Card><p>That product was not found.</p></Card>;
+  if (!perms.canEditProducts) return <NoAccess what={uiText("Only an owner or manager can add or edit products.")} />;
+  if (productId && existing.isLoading) return <Spinner label={uiText("Loading product")} />;
+  if (productId && !item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
   if (!form) return <Spinner />;
 
   const subs = l2ForL1(form.category);
@@ -337,7 +340,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
             <div className="grid gap-2">
               <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
               {!productId ? (
-                <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>Save and add another</Button>
+                <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>{uiText("Save and add another")}</Button>
               ) : null}
             </div>
             {!form.name.trim() ? <p className="text-center text-xs text-faint">{t('modal.add_product.alert_name_required', 'A name is required.')}</p> : null}

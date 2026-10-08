@@ -1,5 +1,7 @@
 "use client";
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { SupplierPicker, SupplierEditor } from "../gst-supplier";
@@ -11,6 +13,7 @@ import { useShop } from "../context";
 import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from "../ui";
 
 export function SuppliersScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, t } = useShop();
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<GstSupplier | null>(null);
@@ -34,7 +37,7 @@ export function SuppliersScreen() {
   if (!shop) return <Spinner />;
   if (!perms.canSeeCost)
     return (
-      <NoAccess what="Suppliers show purchase prices, so helpers cannot open them." />
+      <NoAccess what={uiText("Suppliers show purchase prices, so helpers cannot open them.")} />
     );
 
   const suppliers = list.data?.suppliers ?? [];
@@ -95,7 +98,7 @@ export function SuppliersScreen() {
         aria-label={t("suppliers.search", "Search suppliers")}
       />
       <Notice error={list.error ?? compare.error} />
-      {list.isLoading ? <Spinner label="Loading suppliers" /> : null}
+      {list.isLoading ? <Spinner label={uiText("Loading suppliers")} /> : null}
       {!list.isLoading && suppliers.length === 0 ? (
         <Card>
           <p>
@@ -148,10 +151,7 @@ export function SuppliersScreen() {
           <h2 className="shop-section-title">
             {t("suppliers.tab.compare", "Price compare")}
           </h2>
-          <p className="shop-section-sub">
-            Same product, more than one supplier. The name on the right is the
-            cheaper last price.
-          </p>
+          <p className="shop-section-sub"> {uiText("Same product, more than one supplier. The name on the right is the cheaper last price.")} </p>
           <div className="chart-rows">
             {compared.map((product) => (
               <div key={product.productId} className="chart-row is-compare">

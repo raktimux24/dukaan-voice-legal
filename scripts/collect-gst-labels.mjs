@@ -10,7 +10,7 @@ const files = [
   "app/components/shop/gst-sale-adjustments.tsx",
   "app/components/shop/gst-collection-review.tsx",
   ...readdirSync("app/components/shop/screens")
-    .filter((n) => /^(gst-|purchase)/.test(n))
+    .filter((n) => n.endsWith(".tsx"))
     .map((n) => "app/components/shop/screens/" + n),
   ...readdirSync("app/lib/shop")
     .filter((n) => /^gst-.*\.ts$/.test(n))
@@ -105,13 +105,8 @@ for (const [key, value] of Object.entries(catalog)) {
   )
     delete catalog[key];
 }
-old.en = catalog;
-for (const [lang, entries] of Object.entries(old)) {
-  if (lang !== "en")
-    for (const key of Object.keys(entries)) {
-      if (!catalog[key]) delete entries[key];
-    }
-}
+// Preserve web labels from shared screens; this collector must never delete translated coverage.
+old.en = { ...old.en, ...catalog };
 writeFileSync(
   "app/lib/shop/gst-web-locales.json",
   JSON.stringify(old, null, 2) + "\n",

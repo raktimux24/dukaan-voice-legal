@@ -1,5 +1,7 @@
 "use client";
 
+import { useGstText as useUiText } from "./gst-ui";
+
 import { ReadState, useGstQuery, useGstAction } from "./gst-workspace";
 import { useQuery } from "@tanstack/react-query";
 import { BuyerFields, emptyBuyer, useGstText } from "./gst-ui";
@@ -11,6 +13,7 @@ import { useShop } from "./context";
 import { Button, Field, inputClass } from "./ui";
 
 export function CustomerAttach({ gst = false }: { gst?: boolean }) {
+  const uiText = useUiText();
   const text = useGstText();
   const { api, shop, userId, premium, perms, t } = useShop();
   const cartApi = useCart(userId, shop?.id ?? null);
@@ -78,9 +81,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
             type="button"
             className="text-sm text-saffron"
             onClick={clear}
-          >
-            Remove
-          </button>
+          > {uiText("Remove")} </button>
         </div>
       ) : (
         <button
@@ -199,7 +200,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
               <input
                 className={inputClass}
                 inputMode="tel"
-                placeholder="10-digit mobile"
+                placeholder={uiText("10-digit mobile")}
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
               />
@@ -208,9 +209,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
           {phoneError ? (
             <p className="text-sm text-danger">{phoneError}</p>
           ) : null}
-          <Button type="button" disabled={!name.trim()} onClick={saveNew}>
-            Use this customer
-          </Button>
+          <Button type="button" disabled={!name.trim()} onClick={saveNew}> {uiText("Use this customer")} </Button>
         </div>
       ) : null}
       {gst ? (

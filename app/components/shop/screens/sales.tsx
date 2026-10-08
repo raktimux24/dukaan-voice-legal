@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -19,6 +21,7 @@ function periodLabel(period: (typeof PERIODS)[number], t: (key: string, fallback
 }
 
 export function SalesScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, premium, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number] | 'custom'>('today');
   const [desk, setDesk] = useState<'all' | 'udhaar'>('all');
@@ -46,7 +49,7 @@ export function SalesScreen() {
   }, [sales.error]);
 
   if (!shop) return <Spinner />;
-  if (!perms.canSell) return <NoAccess what="You cannot view sales." />;
+  if (!perms.canSell) return <NoAccess what={uiText("You cannot view sales.")} />;
 
   const rows = (sales.data?.sales ?? []).filter((sale) => desk === 'all' || sale.creditTotal > 0 || sale.paymentStatus === 'credit' || sale.paymentStatus === 'partial');
 
@@ -73,7 +76,7 @@ export function SalesScreen() {
       />
       <Notice error={error ?? (sales.error && !isPremiumError(sales.error) ? sales.error : null)} />
       {isPremiumError(error) || isPremiumError(sales.error) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
-      <div className="pos-chips" role="tablist" aria-label="Bill type">
+      <div className="pos-chips" role="tablist" aria-label={uiText("Bill type")}>
         <Chip active={desk === 'all'} onClick={() => setDesk('all')}>{t('sales.status_filter.all', 'All bills')}</Chip>
         <Chip active={desk === 'udhaar'} onClick={() => setDesk('udhaar')}>{t('reports.sales.udhaar', 'Udhaar')}</Chip>
       </div>
@@ -82,21 +85,21 @@ export function SalesScreen() {
           {PERIODS.map((item) => (
             <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{periodLabel(item, t)}</Chip>
           ))}
-          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>Custom range</Chip>
+          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>{uiText("Custom range")}</Chip>
         </div>
         {period === 'custom' ? (
           <div className="flex flex-wrap items-end gap-3">
-            <Field label="From"><input className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
-            <Field label="To"><input className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
+            <Field label={uiText("From")}><input className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
+            <Field label={uiText("To")}><input className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
             <Button tone="ghost" onClick={() => {
               setError(null);
               setApplied({ from, to });
-            }}>Apply</Button>
+            }}>{uiText("Apply")}</Button>
           </div>
         ) : null}
       </div>
       {sales.data?.limitedToDays ? <p className="text-sm text-muted">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: sales.data.limitedToDays })}</p> : null}
-      {sales.isLoading ? <Spinner label="Loading sales" /> : null}
+      {sales.isLoading ? <Spinner label={uiText("Loading sales")} /> : null}
       <Card flush>
         <div className="shop-list">
           {rows.map((sale) => (
@@ -111,7 +114,7 @@ export function SalesScreen() {
               </div>
               <div className="shop-list-right flex items-center gap-4">
                 <p className="num font-semibold">{formatINR(sale.total)}</p>
-                {sale.status === 'voided' ? <Pill tone="danger">{t('sales.status_filter.voided', 'Voided')}</Pill> : sale.paymentStatus === 'credit' ? <Pill tone="warn">{t('reports.sales.udhaar', 'Udhaar')}</Pill> : sale.paymentStatus === 'partial' ? <Pill tone="warn">Partial</Pill> : <Pill tone="ok">{t('bill.paid', 'Paid')}</Pill>}
+                {sale.status === 'voided' ? <Pill tone="danger">{t('sales.status_filter.voided', 'Voided')}</Pill> : sale.paymentStatus === 'credit' ? <Pill tone="warn">{t('reports.sales.udhaar', 'Udhaar')}</Pill> : sale.paymentStatus === 'partial' ? <Pill tone="warn">{uiText("Partial")}</Pill> : <Pill tone="ok">{t('bill.paid', 'Paid')}</Pill>}
               </div>
             </Link>
           ))}

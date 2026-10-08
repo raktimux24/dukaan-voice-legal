@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -24,6 +26,7 @@ const TABS = [
 ] as const;
 
 export function AlertsScreen() {
+  const uiText = useUiText();
   const { api, shop, premium, perms, t } = useShop();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('all');
@@ -66,11 +69,11 @@ export function AlertsScreen() {
         description={`${t('home.stat_out_of_stock', 'Out of stock')}, ${t('home.stat_low_stock', 'running low')}, ${t('reports.stock.expiry', 'batches that are about to expire')}.`}
         actions={
           perms.canSeeReports && premium ? (
-            <Button tone="ghost" onClick={() => void api.generatePredictions(shop.id).then(() => queryClient.invalidateQueries({ queryKey: ['predictions', shop.id] })).catch(setError)}>Refresh predictions</Button>
+            <Button tone="ghost" onClick={() => void api.generatePredictions(shop.id).then(() => queryClient.invalidateQueries({ queryKey: ['predictions', shop.id] })).catch(setError)}>{uiText("Refresh predictions")}</Button>
           ) : null
         }
       />
-      <div className="shop-seg" role="tablist" aria-label="Notifications">
+      <div className="shop-seg" role="tablist" aria-label={uiText("Notifications")}>
         {TABS.map((item) => (
           <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'is-active' : undefined} onClick={() => setTab(item.id)}>
             {alertTabLabel(item.id, item.label, t)}
@@ -81,17 +84,17 @@ export function AlertsScreen() {
         ))}
       </div>
       <Notice error={error ?? alerts.error} />
-      {alerts.isLoading ? <Spinner label="Loading notifications" /> : null}
+      {alerts.isLoading ? <Spinner label={uiText("Loading notifications")} /> : null}
 
       {(tab === 'all' || tab === 'stock') && stock.length > 0 ? (
         <section className="alert-group">
-          {tab === 'all' ? <h2 className="timeline-day">Stock</h2> : null}
+          {tab === 'all' ? <h2 className="timeline-day">{uiText("Stock")}</h2> : null}
           {stock.map((row) => (
             <article key={row.productId} className={row.tone === 'out' ? 'alert-card is-out' : 'alert-card is-low'}>
               <div>
                 <Link href={`/shop/products/${row.productId}`} className="shop-list-title">{row.productName}</Link>
                 <p className="shop-list-meta">
-                  {row.tone === 'out' ? `0 ${row.unit}` : formatQty(row.quantity, row.unit)} · alert at {formatQty(row.minStockLevel, row.unit)}
+                  {row.tone === 'out' ? `0 ${row.unit}` : formatQty(row.quantity, row.unit)} {uiText("· alert at")} {formatQty(row.minStockLevel, row.unit)}
                 </p>
               </div>
               {perms.canEditProducts ? (
@@ -106,12 +109,12 @@ export function AlertsScreen() {
 
       {(tab === 'all' || tab === 'expiry') && expiry.length > 0 ? (
         <section className="alert-group">
-          {tab === 'all' ? <h2 className="timeline-day">Expiry</h2> : null}
+          {tab === 'all' ? <h2 className="timeline-day">{uiText("Expiry")}</h2> : null}
           {expiry.map((row) => (
             <article key={`${row.productId}-${row.expiryDate}`} className={row.daysRemaining <= 7 ? 'alert-card is-out' : 'alert-card is-low'}>
               <div>
                 <Link href={`/shop/products/${row.productId}`} className="shop-list-title">{row.productName}</Link>
-                <p className="shop-list-meta">{formatQty(row.quantity, row.unit)} · expires {formatDay(row.expiryDate)}</p>
+                <p className="shop-list-meta">{formatQty(row.quantity, row.unit)} {uiText("· expires")} {formatDay(row.expiryDate)}</p>
               </div>
               <div className="alert-side">
                 <Pill tone={row.daysRemaining <= 7 ? 'danger' : 'warn'}>{row.daysRemaining <= 0 ? 'Expired' : `${row.daysRemaining}d`}</Pill>
@@ -130,7 +133,7 @@ export function AlertsScreen() {
         premium ? (
           isPremiumError(predictions.error) ? <PremiumLock feature="predictions" /> : (
             <section className="alert-group">
-              {ai.length === 0 ? <p className="shop-list-empty">No predictions yet.</p> : null}
+              {ai.length === 0 ? <p className="shop-list-empty">{uiText("No predictions yet.")}</p> : null}
               {ai.map((row) => (
                 <article key={row.id} className="alert-card">
                   <div>
@@ -140,7 +143,7 @@ export function AlertsScreen() {
                   <Button size="sm" tone="ghost" onClick={() => void api.dismissPrediction(shop.id, row.id).then(() => {
                     void queryClient.invalidateQueries({ queryKey: ['predictions', shop.id] });
                     void queryClient.invalidateQueries({ queryKey: ['alerts', shop.id] });
-                  }).catch(setError)}>Dismiss</Button>
+                  }).catch(setError)}>{uiText("Dismiss")}</Button>
                 </article>
               ))}
             </section>
@@ -149,10 +152,10 @@ export function AlertsScreen() {
       ) : null}
 
       {!alerts.isLoading && tab === 'all' && stock.length === 0 && expiry.length === 0 ? (
-        <p className="shop-list-empty">Nothing needs attention.</p>
+        <p className="shop-list-empty">{uiText("Nothing needs attention.")}</p>
       ) : null}
-      {!alerts.isLoading && tab === 'stock' && stock.length === 0 ? <p className="shop-list-empty">Stock looks fine.</p> : null}
-      {!alerts.isLoading && tab === 'expiry' && expiry.length === 0 ? <p className="shop-list-empty">Nothing is close to expiry.</p> : null}
+      {!alerts.isLoading && tab === 'stock' && stock.length === 0 ? <p className="shop-list-empty">{uiText("Stock looks fine.")}</p> : null}
+      {!alerts.isLoading && tab === 'expiry' && expiry.length === 0 ? <p className="shop-list-empty">{uiText("Nothing is close to expiry.")}</p> : null}
     </div>
   );
 }

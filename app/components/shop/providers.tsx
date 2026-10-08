@@ -5,9 +5,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import { setFinancialScope } from '../../lib/shop/gst-storage';
-import gstWebLocales from '../../lib/shop/gst-web-locales.json';
-import gstLocales from '../../lib/shop/gst-locales.json';
-import { EN_FALLBACK } from '../../lib/shop/en-fallback';
+import { loadBundledLanguage, translateUi } from '../../lib/shop/translations';
 import { bindApi } from '../../lib/shop/api';
 import { permissionsFor, parseRole } from '../../lib/shop/permissions';
 import type { ShopRecord, UserPreferences } from '../../lib/shop/types';
@@ -44,7 +42,7 @@ function ShopSession({ children }: { children: ReactNode }) {
   const [shopId, setShopId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [dict, setDict] = useState<Record<string, string>>({});
+  const [catalog, setCatalog] = useState<{ language: string; entries: Record<string, string> }>({ language: 'en', entries: {} });
 
   const api = useMemo(() => bindApi(async (opts) => getToken(opts)), [getToken]);
 
@@ -103,23 +101,18 @@ function ShopSession({ children }: { children: ReactNode }) {
   const prefs = prefsQuery.data?.preferences ?? null;
 
   useEffect(() => {
-    const lang = prefs?.appLanguage;
-    if (!lang || lang === 'en') {
-      setDict({});
-      return;
-    }
+    const language = prefs?.appLanguage ?? 'en';
     let cancelled = false;
-    api
-      .getTranslations(lang)
-      .then((payload) => {
-        if (!cancelled) setDict(flattenStrings(payload));
-      })
-      .catch(() => {
-        if (!cancelled) setDict({});
-      });
-    return () => {
-      cancelled = true;
-    };
+    void loadBundledLanguage(language).catch(() => ({})).then(async (bundled) => {
+      if (cancelled) return;
+      setCatalog({ language, entries: bundled });
+      if (language === 'en') return;
+      try {
+        const fresh = flattenStrings(await api.getTranslations(language));
+        if (!cancelled) setCatalog({ language, entries: { ...bundled, ...fresh } });
+      } catch { /* Bundled mobile catalogs remain available when the server cannot be reached. */ }
+    });
+    return () => { cancelled = true; };
   }, [api, prefs?.appLanguage]);
 
   useEffect(() => {
@@ -154,18 +147,9 @@ function ShopSession({ children }: { children: ReactNode }) {
   );
 
   const t = useCallback((key: string, fallback: string, vars?: Record<string, string | number>) => {
-    const bundled = (gstLocales as Record<string, Record<string,string>>)[prefs?.appLanguage ?? 'en'];
-    const webBundled=(gstWebLocales as Record<string,Record<string,string>>)[prefs?.appLanguage??'en'];
-    const translated = webBundled?.[key] ?? bundled?.[key] ?? dict[key] ?? (EN_FALLBACK as Record<string,string>)[key];
-    let text = translated && translated !== key ? translated : fallback;
-    if (vars) {
-      for (const [name, value] of Object.entries(vars)) {
-        const next = String(value);
-        text = text.replaceAll(`{{${name}}}`, next).replaceAll(`{${name}}`, next);
-      }
-    }
-    return text;
-  }, [dict, prefs?.appLanguage]);
+    const language = prefs?.appLanguage ?? 'en';
+    return translateUi(language, catalog.language === language ? catalog.entries : {}, key, fallback, vars);
+  }, [catalog, prefs?.appLanguage]);
 
   const value: ShopContextValue = {
     userId: userId ?? null,
@@ -190,13 +174,13 @@ function ShopSession({ children }: { children: ReactNode }) {
     return (
       <div className="shop-root auth-wait">
         <AuthenticateWithRedirectCallback />
-        <p>Signing you in…</p>
+        <p>{t('web.gst.signing_you_in_', 'Signing you in…')}</p>
       </div>
     );
   }
 
   if (!isLoaded || (isSignedIn && shops === null && !loadError)) {
-    return <div className="shop-root grid min-h-screen place-items-center text-muted">Loading your shop…</div>;
+    return <div className="shop-root grid min-h-screen place-items-center text-muted">{t('web.gst.loading_your_shop_', 'Loading your shop…')}</div>;
   }
 
   if (!isSignedIn) {
@@ -213,7 +197,7 @@ function ShopSession({ children }: { children: ReactNode }) {
         <div className="max-w-md text-center">
           <p role="alert" className="text-danger">{loadError}</p>
           <button className="mt-4 rounded-lg bg-saffron px-4 py-2 font-semibold text-white" type="button" onClick={() => void refreshShops()}>
-            Try again
+            {t('common.retry', 'Try again')}
           </button>
         </div>
       </div>
@@ -224,13 +208,14 @@ function ShopSession({ children }: { children: ReactNode }) {
     <ShopContext.Provider value={value}>
       <div
         className="shop-root"
+        lang={prefs?.appLanguage === 'hinglish' ? 'hi-Latn' : prefs?.appLanguage || 'en'}
         data-text={prefs?.textSize || 'medium'}
         data-contrast={prefs?.highContrastMode ? 'high' : 'normal'}
       >
         <ShopChrome onSignOut={() => void signOut({ redirectUrl: '/' })}>{children}</ShopChrome>
         {notice ? (
           <div className="shop-toast no-print" role="status">
-            {notice}
+            {t('web.gst.' + notice.toLowerCase().replace(/[^a-z0-9]+/g, '_'), notice)}
           </div>
         ) : null}
       </div>
