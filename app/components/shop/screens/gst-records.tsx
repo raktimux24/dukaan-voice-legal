@@ -41,7 +41,6 @@ export function GstRecordsScreen() {
   const { api, shop } = useShop(),
     text = useGstText();
   const health = useGstQuery(["health"], () => api.gst.health(shop!.id)),
-    ready = useGstQuery(["readiness"], () => api.gst.readiness(shop!.id)),
     settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id));
   return (
     <GstAccess>
@@ -49,8 +48,8 @@ export function GstRecordsScreen() {
         <PageHeader
           title={text("GST records & invoice numbers")}
           back={{
-            href: "/shop/settings/payments",
-            label: text("Payments & bills"),
+            href: "/shop/settings",
+            label: text("Settings"),
           }}
           description={text(
             "Review saved bills, invoice numbers and records that need attention.",
@@ -84,22 +83,6 @@ export function GstRecordsScreen() {
             />
           ) : null}
         </ReadState>
-        <ReadState query={ready}>
-          {ready.data ? (
-            <Card>
-              <h2 className="shop-section-title">
-                {text(
-                  ready.data.configurationReady
-                    ? "GST setup reviewed"
-                    : "GST setup needs attention",
-                )}
-              </h2>
-              <Button tone="quiet" href="/shop/products/gst">
-                {text("Review product GST settings")}
-              </Button>
-            </Card>
-          ) : null}
-        </ReadState>
         <div className="gst-navigation">
           {[
             [
@@ -118,60 +101,36 @@ export function GstRecordsScreen() {
               "Review synchronized and unconfirmed invoice numbers.",
             ],
             [
-              base + "/devices",
-              "Billing installations",
-              "Review users and browser installations.",
-            ],
-            [
               base + "/checks",
               "GST record checks",
               "Find saved records that need attention.",
             ],
+            ...(settings.data?.gstPayableRoundingReviewsAvailable ? [[base + "/rounding", "Payable rounding review", "Review rounding policy and retained evidence."]] : []),
             [
               base + "/exports",
               "GST export history",
               "Prepare registers and reopen saved files.",
             ],
-            [
-              "/shop/purchases",
-              "Supplier invoices & purchase tax",
-              "Record purchases and review input tax.",
-            ],
-            [
-              base + "/periods",
-              "GST period review",
-              "Close or reopen a reporting review.",
-            ],
-            [
-              base + "/turnover",
-              "Business turnover review",
-              "Retain business-wide turnover evidence.",
-            ],
           ].map(([href, title, description]) => (
-            <Link key={href} href={href} className="gst-nav-row">
+            <Link key={href} href={href} className="shop-list-row">
               <span>
-                <b>{text(title)}</b>
-                <small>{text(description)}</small>
+                <b className="shop-list-title">{text(title)}</b>
+                <small className="shop-list-meta block">{text(description)}</small>
               </span>
-              <span aria-hidden="true">↗</span>
+              <span aria-hidden="true">›</span>
             </Link>
           ))}
         </div>
-        <Section title={text("More review tools")}>
-          {settings.data?.gstPayableRoundingReviewsAvailable ? (
-            <Button href={base + "/rounding"} tone="ghost">
-              {text("Payable rounding review")}
-            </Button>
-          ) : null}
-          <Button href={base + "/providers"} tone="ghost">
-            {text("GST provider status")}
-          </Button>
+        <Section title={text("Billing installations")}>
+          <GstDevicesScreen embedded />
+        </Section>
+        <Section title={text("GST provider status")}>
+          <Button href={base + "/providers"} tone="ghost">{text("GST provider status")}</Button>
         </Section>
         <Button
           tone="ghost"
           onClick={() => {
             void health.refetch();
-            void ready.refetch();
           }}
         >
           {text("Refresh report")}
@@ -442,7 +401,7 @@ export function GstNumbersScreen() {
     </GstAccess>
   );
 }
-export function GstDevicesScreen() {
+export function GstDevicesScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const { api, shop, role } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
@@ -454,14 +413,14 @@ export function GstDevicesScreen() {
   const [reason, setReason] = useState("");
   return (
     <GstAccess>
-      <div className="shop-page">
-        <PageHeader
+      <div className={embedded ? "grid gap-4" : "shop-page"}>
+        {!embedded ? <PageHeader
           title={text("Billing installations")}
           back={{ href: base, label: text("GST records") }}
           description={text(
             "An installation identifies a browser’s billing storage. Last seen does not confirm that every bill has synchronized.",
           )}
-        />
+        /> : null}
         {action.notice}
         <ReadState query={q} empty={!rows.length}>
           {rows.map((row) => (
