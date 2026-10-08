@@ -56,7 +56,7 @@ export function PaymentsScreen() {
     <div className="shop-page">
       <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments & bills')} description={t('pos_settings.upi_explainer', 'The UPI ID and QR shown at checkout.')} />
       <Notice error={error ?? settings.error} />
-        <form
+        <form id="payment-preferences"
           className="grid gap-4"
           onSubmit={(event) => {
             event.preventDefault();
@@ -121,7 +121,7 @@ export function PaymentsScreen() {
           {hoursInvalid ? <p className="text-sm text-danger">The void window must be between 1 and 720 hours.</p> : null}
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.cardEnabled} onChange={(event) => setCard(event.target.checked)} /> Accept card</label>
           </Section>
-          <Button type="submit" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</Button>
+
         </form>
 
       <Section title={t('pos_settings.gst_checks_section', 'GST checks')} summary={t('pos_settings.gst_checks_summary', 'Review billing readiness and product tax details')}>
@@ -136,6 +136,7 @@ export function PaymentsScreen() {
         <Button disabled={pending||current.gstSetupAvailable!==true} onClick={()=>{const config=gstDraft??current.gstSettings??emptySettings();try{if(config.registration==='unknown')throw Error(text('Choose your actual GST registration before saving.'));validateSettings({...config,version:config.version||crypto.randomUUID()});}catch(e){setError(e);return;}setPending(true);void api.updatePosSettings(shop.id,{gstSettings:config}).then(()=>{setGstDraft(null);void readiness.refetch(); return settings.refetch();}).catch(setError).finally(()=>setPending(false));}}>{text('Save GST settings')}</Button>
         {current.gstSetupAvailable!==true?<p className="shop-hint">{text('GST setup is unavailable on this server.')}</p>:null}
       </Section>
+      <button form="payment-preferences" type="submit" className="shop-btn shop-btn-primary" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</button>
     </div>
   );
 }
