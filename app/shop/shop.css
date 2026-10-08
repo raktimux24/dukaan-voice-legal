@@ -2864,6 +2864,7 @@ a.party-card:hover {
 .gst-choice > span { flex:1; }
 .gst-choice a { color:#FF6B00; }
 .gst-two-columns { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr); gap:24px; align-items:start; }
+.shop-page fieldset { border:0; padding:0; margin:0; min-width:0; }
 .shop-page > fieldset { display:grid; gap:24px; min-width:0; }
 .gst-section-body fieldset { display:grid; gap:20px; min-width:0; }
 .shop-page fieldset:disabled { opacity:.6; }
@@ -2881,3 +2882,12 @@ a.party-card:hover {
 .gst-section > summary:focus-visible { outline:2px solid var(--color-saffron); outline-offset:-3px; }
 .gst-section > summary > span:last-child { transition:transform .15s ease; }
 .gst-section[open] > summary > span:last-child { transform:rotate(180deg); }
+
+.customer-directory { display:grid; gap:12px; }
+.customer-directory-card { display:flex; align-items:center; gap:20px; min-height:88px; }
+.customer-directory-name { display:block; font-weight:600; overflow-wrap:anywhere; }
+.customer-directory-phone { display:block; margin-top:6px; }
+.customer-directory-balance { font-weight:600; white-space:nowrap; }
+.customer-directory-chevron { color:var(--color-muted); font-size:24px; }
+.customer-directory-card:focus-visible { outline:2px solid var(--color-saffron); outline-offset:3px; }
+@media (max-width:560px) { .customer-directory-card { padding:18px; gap:12px; } }

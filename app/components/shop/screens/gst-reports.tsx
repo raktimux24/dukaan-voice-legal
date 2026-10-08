@@ -136,7 +136,7 @@ export function GstExportsScreen() {
             "Prepare a register for a period or reopen its exact saved file. Reports are for filing elsewhere.",
           )}
         />
-        <Card>
+        <Card className="stack-form">
           <div className="form-grid is-2">
             <SelectField
               label={text("Register")}
