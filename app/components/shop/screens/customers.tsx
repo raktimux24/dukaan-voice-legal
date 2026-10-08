@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -9,6 +11,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass } from '../ui';
 
 export function CustomersScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, premium, t } = useShop();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -18,7 +21,7 @@ export function CustomersScreen() {
   const list = useQuery({ queryKey: ['customers', shop?.id], enabled, queryFn: () => api.getCustomers(shop!.id, { limit: 100 }) });
 
   if (!shop) return <Spinner />;
-  if (!perms.canManageCustomers) return <NoAccess what="Customers are for the owner and managers." />;
+  if (!perms.canManageCustomers) return <NoAccess what={uiText("Customers are for the owner and managers.")} />;
   if (!premium) return <PremiumLock shopId={shop.id} feature="udhaar" />;
 
   return (

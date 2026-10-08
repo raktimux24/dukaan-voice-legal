@@ -9,7 +9,8 @@
     "start": "next start",
     "indexnow:ping": "node scripts/indexnow-ping.mjs",
     "test:gst": "node scripts/test-gst.mjs",
-    "check:gst-core": "node scripts/check-gst-core.mjs"
+    "check:gst-core": "node scripts/check-gst-core.mjs",
+    "test:translations": "node scripts/test-translations.mjs"
   },
   "repository": {
     "type": "git",

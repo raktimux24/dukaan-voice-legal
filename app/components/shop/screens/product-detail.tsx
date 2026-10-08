@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -26,6 +28,7 @@ function logMentionsProduct(payload: Record<string, unknown>, productId: string)
 }
 
 export function ProductDetailScreen({ productId }: { productId: string }) {
+  const uiText = useUiText();
   const { api, shop, perms, hideCost, userId, setNotice, t } = useShop();
   const params = useSearchParams();
   const router = useRouter();
@@ -72,8 +75,8 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
   const [pending, setPending] = useState(false);
 
   if (!shop) return <Spinner />;
-  if (catalog.isLoading) return <Spinner label="Loading product" />;
-  if (!item) return <Card><p>That product was not found.</p></Card>;
+  if (catalog.isLoading) return <Spinner label={uiText("Loading product")} />;
+  if (!item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
 
   const product = item.product;
   const onBuyList = (buyList.data ?? []).some((row) => row.productId === productId && row.status === 'pending');
@@ -230,7 +233,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
                 </>
               ) : null}
             </div>
-            <Button type="submit" disabled={pending || !(Number(batchQty) > 0)}>Add batch</Button>
+            <Button type="submit" disabled={pending || !(Number(batchQty) > 0)}>{uiText("Add batch")}</Button>
           </form>
         </Card>
       ) : null}
@@ -238,13 +241,13 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
       <Card flush>
         <div className="card-intro product-batch-head">
           <h2 className="shop-section-title">{t('modal.product_detail.section_batches', 'Batches')}</h2>
-          <div className="shop-seg" role="group" aria-label="Batch list">
-            <button type="button" className={!showAll ? 'is-active' : undefined} onClick={() => setShowAll(false)}>Active</button>
-            <button type="button" className={showAll ? 'is-active' : undefined} onClick={() => setShowAll(true)}>All</button>
+          <div className="shop-seg" role="group" aria-label={uiText("Batch list")}>
+            <button type="button" className={!showAll ? 'is-active' : undefined} onClick={() => setShowAll(false)}>{uiText("Active")}</button>
+            <button type="button" className={showAll ? 'is-active' : undefined} onClick={() => setShowAll(true)}>{uiText("All")}</button>
           </div>
         </div>
         <p className="product-batch-note">{product.depletionOrder === 'fifo' ? 'The first batch is the one the next sale uses.' : 'The soonest expiry is the one the next sale uses.'}</p>
-        {batches.isLoading ? <p className="shop-list-empty">Loading batches</p> : null}
+        {batches.isLoading ? <p className="shop-list-empty">{uiText("Loading batches")}</p> : null}
         {!batches.isLoading && (batches.data?.length ?? 0) === 0 ? (
           <p className="shop-list-empty">{showAll ? 'No batches yet.' : 'No active batches. Add one to put stock on the shelf.'}</p>
         ) : null}
@@ -268,10 +271,10 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       {perms.canSeeReports && sales.data && (sales.data.units > 0 || sales.data.bills > 0) ? (
         <div className="kpi-grid">
-          <div className="kpi"><p className="kpi-label">Sold · {sales.data.days}d</p><p className="kpi-value">{formatQty(sales.data.units, item.unit)}</p></div>
-          <div className="kpi"><p className="kpi-label">Revenue</p><p className="kpi-value">{formatINR(sales.data.revenue)}</p></div>
-          <div className="kpi"><p className="kpi-label">Cover</p><p className="kpi-value">{sales.data.daysOfCover == null ? '—' : `${sales.data.daysOfCover}d`}</p></div>
-          <div className="kpi"><p className="kpi-label">Last sold</p><p className="kpi-value is-compact">{formatWhen(sales.data.lastSoldAt)}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Sold ·")} {sales.data.days}d</p><p className="kpi-value">{formatQty(sales.data.units, item.unit)}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Revenue")}</p><p className="kpi-value">{formatINR(sales.data.revenue)}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Cover")}</p><p className="kpi-value">{sales.data.daysOfCover == null ? '—' : `${sales.data.daysOfCover}d`}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Last sold")}</p><p className="kpi-value is-compact">{formatWhen(sales.data.lastSoldAt)}</p></div>
         </div>
       ) : null}
 
@@ -336,9 +339,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
                 router.push('/shop/products');
               });
             }}
-          >
-            Archive
-          </Button>
+          > {uiText("Archive")} </Button>
         </div>
       ) : null}
     </div>
@@ -366,6 +367,7 @@ function BatchRow({
   onEdit: () => void;
   onSave: (body: Record<string, unknown>) => void;
 }) {
+  const uiText = useUiText();
   const { t } = useShop();
   const [qty, setQty] = useState(String(batch.quantity));
   const [nextSupplier, setNextSupplier] = useState(batch.supplier ?? '');
@@ -384,8 +386,8 @@ function BatchRow({
         {!hideCost && batch.purchasePrice != null ? <p className="shop-list-meta">{formatINR(batch.purchasePrice)} / {unit}</p> : null}
       </div>
       <div className="batch-row-side">
-        {nextOut ? <Pill tone="saffron">Next out</Pill> : null}
-        {depleted ? <Pill>Depleted</Pill> : null}
+        {nextOut ? <Pill tone="saffron">{uiText("Next out")}</Pill> : null}
+        {depleted ? <Pill>{uiText("Depleted")}</Pill> : null}
         {canEdit ? <Button size="sm" tone="quiet" onClick={onEdit}>{editing ? 'Close' : 'Edit'}</Button> : null}
       </div>
       {editing ? (
@@ -404,9 +406,7 @@ function BatchRow({
               if (Object.keys(body).length === 0) return;
               onSave(body);
             }}
-          >
-            Save batch
-          </Button>
+          > {uiText("Save batch")} </Button>
         </div>
       ) : null}
     </article>

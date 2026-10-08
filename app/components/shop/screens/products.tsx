@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -44,6 +46,7 @@ function matches(item: InventoryItem, filter: string) {
 }
 
 export function ProductsScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, hideCost, t } = useShop();
   const params = useSearchParams();
   const filter = params.get('filter') ?? 'all';
@@ -58,7 +61,7 @@ export function ProductsScreen() {
     return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.includes(text)));
   }, [catalog.data, filter, q]);
 
-  if (!shop) return <Spinner label="Loading products" />;
+  if (!shop) return <Spinner label={uiText("Loading products")} />;
 
   return (
     <div className="shop-page">
@@ -81,7 +84,7 @@ export function ProductsScreen() {
         </div>
         <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder={t('products.search', 'Filter by name or barcode')} value={q} onChange={(event) => setQ(event.target.value)} aria-label={t('products.search', 'Filter products')} />
       </div>
-      {catalog.isLoading ? <Spinner label="Loading products" /> : null}
+      {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
       <Card flush>
         <div className="shop-list">
           {rows.map((item) => (

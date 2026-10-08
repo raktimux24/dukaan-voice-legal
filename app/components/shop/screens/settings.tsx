@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import Link from 'next/link';
 import { useState } from 'react';
 import { auditCsv, downloadText, inventoryCsv } from '../../../lib/shop/csv';
@@ -23,6 +25,7 @@ const LANGUAGES = [
 const SIZES = ['small', 'medium', 'large', 'extra_large'] as const;
 
 export function SettingsScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, role, prefs, savePrefs, premium, hideCost, setNotice, t } = useShop();
   const [error, setError] = useState<unknown>(null);
   const [confirm, setConfirm] = useState(0);
@@ -31,7 +34,7 @@ export function SettingsScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader back={{ href: '/shop', label: t('nav.home', 'Home') }} kicker={shop.name} title={t('settings.title', 'Settings')} description={`You are signed in as ${role ? t(`role.${role.toLowerCase()}`, role.toLowerCase()) : 'a member'} of this shop.`} />
+      <PageHeader back={{ href: '/shop', label: t('nav.home', 'Home') }} kicker={shop.name} title={t('settings.title', 'Settings')} description={uiText('You are signed in as {{role}} of this shop.', { role: role ? t(`role.${role.toLowerCase()}`, role.toLowerCase()) : uiText('a member') })} />
       <Notice error={error} />
       {perms.canManageShop ? (
         <Card flush>
@@ -66,10 +69,10 @@ export function SettingsScreen() {
       {role === 'MANAGER' && shop.helperInviteCode ? (
         <Card className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="font-medium">Helper invite code</p>
-            <p className="text-sm text-muted">Share this with a new helper. They join from the phone or at /shop/onboarding.</p>
+            <p className="font-medium">{uiText("Helper invite code")}</p>
+            <p className="text-sm text-muted">{uiText("Share this with a new helper. They join from the phone or at /shop/onboarding.")}</p>
           </div>
-          <Button tone="ghost" onClick={() => void navigator.clipboard.writeText(shop.helperInviteCode || '')}>Copy {shop.helperInviteCode}</Button>
+          <Button tone="ghost" onClick={() => void navigator.clipboard.writeText(shop.helperInviteCode || '')}>{uiText("Copy")} {shop.helperInviteCode}</Button>
         </Card>
       ) : null}
       <Card className="grid gap-4">
@@ -89,12 +92,12 @@ export function SettingsScreen() {
           </select>
         </Field>
         <label className="shop-toggle">
-          <span>{t('settings.high_contrast', 'High contrast')}<span className="block text-xs text-muted">Stronger borders inside the shop workspace.</span></span>
+          <span>{t('settings.high_contrast', 'High contrast')}<span className="block text-xs text-muted">{uiText("Stronger borders inside the shop workspace.")}</span></span>
           <input type="checkbox" className="shop-field" checked={!!prefs?.highContrastMode} onChange={(event) => void savePrefs({ highContrastMode: event.target.checked }).catch(setError)} />
         </label>
         {role === 'OWNER' ? (
           <label className="shop-toggle">
-            <span>{t('settings.daily_recap', 'Daily recap')}<span className="block text-xs text-muted">Sent to the phone each evening.</span></span>
+            <span>{t('settings.daily_recap', 'Daily recap')}<span className="block text-xs text-muted">{uiText("Sent to the phone each evening.")}</span></span>
             <input type="checkbox" className="shop-field" checked={!!prefs?.dailyRecapEnabled} onChange={(event) => void savePrefs({ dailyRecapEnabled: event.target.checked }).catch(setError)} />
           </label>
         ) : null}
@@ -124,7 +127,7 @@ export function SettingsScreen() {
         <Card className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="font-medium">{t('modal.shop_settings.leave_shop', 'Leave this shop')}</p>
-            <p className="text-sm text-muted">You lose access to {shop.name}. The owner can invite you again.</p>
+            <p className="text-sm text-muted">{uiText("You lose access to")} {shop.name}{uiText(". The owner can invite you again.")}</p>
           </div>
           <Button
             tone="danger"

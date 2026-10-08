@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { GstCollectionReview } from '../gst-collection-review';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -9,6 +11,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
 
 export function CustomerDetailScreen({ customerId }: { customerId: string }) {
+  const uiText = useUiText();
   const { api, shop, perms, premium, t } = useShop();
   const queryClient = useQueryClient();
   const enabled = !!shop && perms.canManageCustomers && premium;
@@ -25,13 +28,13 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
   const [error, setError] = useState<unknown>(null);
 
   if (!shop) return <Spinner />;
-  if (!perms.canManageCustomers) return <NoAccess what="Customers are for the owner and managers." />;
+  if (!perms.canManageCustomers) return <NoAccess what={uiText("Customers are for the owner and managers.")} />;
   if (!premium) return <PremiumLock shopId={shop.id} feature="udhaar" />;
-  if (detail.isLoading) return <Spinner label="Loading customer" />;
-  if (isDenied(detail.error)) return <NoAccess what="You cannot open this customer." />;
+  if (detail.isLoading) return <Spinner label={uiText("Loading customer")} />;
+  if (isDenied(detail.error)) return <NoAccess what={uiText("You cannot open this customer.")} />;
   if (detail.error) return <Notice error={detail.error} />;
   const customer = detail.data?.customer;
-  if (!customer) return <Card><p>That customer was not found.</p></Card>;
+  if (!customer) return <Card><p>{uiText("That customer was not found.")}</p></Card>;
   const shownName = ready ? name : customer.name;
   const shownPhone = ready ? phone : (customer.phone ?? '');
 
@@ -83,9 +86,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
               await queryClient.invalidateQueries({ queryKey: ['customer', shop.id, customerId] });
             }).catch(setError);
           }}
-        >
-          Save payment
-        </Button>
+        > {uiText("Save payment")} </Button>
       </Card>
       <Card>
         <form
@@ -107,7 +108,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         >
           <Field label={t('customers.name', 'Name')}><input className={inputClass} value={shownName} onChange={(event) => { setReady(true); setName(event.target.value); }} /></Field>
           <Field label={t('pos_settings.shop_phone', 'Phone')}><input className={inputClass} value={shownPhone} onChange={(event) => { setReady(true); setPhone(event.target.value); }} /></Field>
-          <Button type="submit">Save customer</Button>
+          <Button type="submit">{uiText("Save customer")}</Button>
         </form>
       </Card>
       <GstCollectionReview customerId={customerId}/>

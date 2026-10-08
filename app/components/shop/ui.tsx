@@ -6,6 +6,13 @@ import { ApiError } from '../../lib/shop/api';
 import { useShop,ShopContext } from './context';
 import {EN_FALLBACK} from '../../lib/shop/en-fallback';
 
+function useOptionalUiText() {
+  const context = useContext(ShopContext);
+  return (value: ReactNode): ReactNode => typeof value === 'string' && context
+    ? context.t('web.gst.' + value.toLowerCase().replace(/[^a-z0-9]+/g, '_'), value)
+    : value;
+}
+
 export function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
 }
@@ -33,6 +40,7 @@ export function Button({
   className?: string;
   title?: string;
 }) {
+  const display = useOptionalUiText();
   const classes = cx(
     'shop-btn',
     tone === 'primary' && 'shop-btn-primary',
@@ -44,10 +52,10 @@ export function Button({
     block && 'is-block',
     className,
   );
-  if (href) return <Link className={classes} href={href} title={title}>{children}</Link>;
+  if (href) return <Link className={classes} href={href} title={title}>{display(children)}</Link>;
   return (
     <button className={classes} type={type} onClick={onClick} disabled={disabled} title={title}>
-      {children}
+      {display(children)}
     </button>
   );
 }
@@ -65,17 +73,18 @@ export function PageHeader({
   actions?: ReactNode;
   back?: { href: string; label: string };
 }) {
+  const display = useOptionalUiText();
   return (
     <header className="shop-page-head">
       {back ? (
         <Link href={back.href} className="shop-back">
-          ← {back.label}
+          ← {display(back.label)}
         </Link>
       ) : null}
       <div className="shop-page-head-text">
         {kicker ? <p className="shop-kicker">{kicker}</p> : null}
-        <h1 className="shop-title">{title}</h1>
-        {description ? <p className="shop-page-desc">{description}</p> : null}
+        <h1 className="shop-title">{display(title)}</h1>
+        {description ? <p className="shop-page-desc">{display(description)}</p> : null}
       </div>
       {actions ? <div className="shop-actions">{actions}</div> : null}
     </header>
@@ -91,13 +100,14 @@ export function SectionHead({
   sub?: string;
   link?: { href: string; label: string };
 }) {
+  const display = useOptionalUiText();
   return (
     <div className="shop-section-head">
       <div>
-        <h2 className="shop-section-title">{title}</h2>
-        {sub ? <p className="shop-section-sub">{sub}</p> : null}
+        <h2 className="shop-section-title">{display(title)}</h2>
+        {sub ? <p className="shop-section-sub">{display(sub)}</p> : null}
       </div>
-      {link ? <Link href={link.href} className="shop-section-link">{link.label}</Link> : null}
+      {link ? <Link href={link.href} className="shop-section-link">{display(link.label)}</Link> : null}
     </div>
   );
 }
@@ -113,11 +123,12 @@ export function Field({
   children: ReactNode;
   className?: string;
 }) {
+  const display = useOptionalUiText();
   return (
     <label className={cx('block', className)}>
-      <span className="shop-label">{label}</span>
+      <span className="shop-label">{display(label)}</span>
       {children}
-      {hint ? <span className="shop-hint block">{hint}</span> : null}
+      {hint ? <span className="shop-hint block">{display(hint)}</span> : null}
     </label>
   );
 }
@@ -133,11 +144,12 @@ export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone
 }
 
 export function Chip({ active, onClick, children, href }: { active?: boolean; onClick?: () => void; children: ReactNode; href?: string }) {
+  const display = useOptionalUiText();
   const classes = cx('shop-chip', active && 'is-active');
-  if (href) return <Link href={href} className={classes} aria-current={active ? 'page' : undefined}>{children}</Link>;
+  if (href) return <Link href={href} className={classes} aria-current={active ? 'page' : undefined}>{display(children)}</Link>;
   return (
     <button type="button" className={classes} onClick={onClick} aria-pressed={active}>
-      {children}
+      {display(children)}
     </button>
   );
 }
@@ -147,10 +159,11 @@ export function Kbd({ children }: { children: ReactNode }) {
 }
 
 export function Empty({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+  const display = useOptionalUiText();
   return (
     <Card>
-      <h2 className="font-display text-xl text-ink">{title}</h2>
-      <p className="mt-2 text-muted">{body}</p>
+      <h2 className="font-display text-xl text-ink">{display(title)}</h2>
+      <p className="mt-2 text-muted">{display(body)}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </Card>
   );
@@ -197,14 +210,16 @@ export function PremiumLock({ feature }: { shopId?: string; feature?: string }) 
 }
 
 export function NoAccess({ what }: { what: string }) {
+  const display = useOptionalUiText();
   return (
     <Card>
-      <h2 className="font-display text-xl">You do not have access</h2>
-      <p className="mt-2 text-muted">{what}</p>
+      <h2 className="font-display text-xl">{display('You do not have access')}</h2>
+      <p className="mt-2 text-muted">{display(what)}</p>
     </Card>
   );
 }
 
 export function Spinner({ label = 'Loading' }: { label?: string }) {
-  return <p className="text-sm text-muted" role="status">{label}…</p>;
+  const display = useOptionalUiText();
+  return <p className="text-sm text-muted" role="status">{display(label)}…</p>;
 }

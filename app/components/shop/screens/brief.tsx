@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { Nudge } from '../../../lib/shop/types';
@@ -14,6 +16,7 @@ function canAct(nudge: Nudge, canEdit: boolean) {
 }
 
 export function BriefScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, t } = useShop();
   const queryClient = useQueryClient();
   const brief = useQuery({
@@ -23,16 +26,16 @@ export function BriefScreen() {
   });
   const [error, setError] = useState<unknown>(null);
   if (!shop) return <Spinner />;
-  if (!perms.canSeeReports) return <NoAccess what="The daily brief is for the owner and managers." />;
-  if (brief.isLoading) return <Spinner label="Loading brief" />;
+  if (!perms.canSeeReports) return <NoAccess what={uiText("The daily brief is for the owner and managers.")} />;
+  if (brief.isLoading) return <Spinner label={uiText("Loading brief")} />;
   if (brief.error) return <Notice error={brief.error} />;
 
   const items = [brief.data?.today, ...(brief.data?.items ?? [])].filter((item): item is Nudge => !!item);
 
   return (
     <div className="shop-page">
-      <PageHeader kicker="Insights" title={t('brief.title', 'Daily brief')} description="A short read on the day, with the actions that matter most." />
-      {items.length === 0 ? <Card><p>No actions today. The brief is still here.</p></Card> : null}
+      <PageHeader kicker="Insights" title={t('brief.title', 'Daily brief')} description={uiText("A short read on the day, with the actions that matter most.")} />
+      {items.length === 0 ? <Card><p>{uiText("No actions today. The brief is still here.")}</p></Card> : null}
       <Notice error={error} />
       {items.map((item) => (
         <Card key={item.id}>
@@ -45,9 +48,7 @@ export function BriefScreen() {
                   void api.nudgeEvent(shop.id, item.id, 'tapped').catch(() => undefined);
                   void api.actNudge(shop.id, item.id, item.action?.params ?? {}).then(() => queryClient.invalidateQueries({ queryKey: ['brief', shop.id] })).catch(setError);
                 }}
-              >
-                Do this
-              </Button>
+              > {uiText("Do this")} </Button>
             </div>
           ) : null}
         </Card>

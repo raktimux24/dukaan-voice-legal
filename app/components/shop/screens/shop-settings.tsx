@@ -1,14 +1,17 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useState } from 'react';
 import { CATALOG, remapShopCategory, remapShopSubtype, shopType } from '../../../lib/shop/catalog';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 export function ShopSettingsScreen() {
+  const uiText = useUiText();
   const { shop, perms } = useShop();
   if (!shop) return <Spinner />;
-  if (!perms.canManageShop) return <NoAccess what="Only the owner can change the shop." />;
+  if (!perms.canManageShop) return <NoAccess what={uiText("Only the owner can change the shop.")} />;
   return <ShopSettingsForm key={shop.id} />;
 }
 

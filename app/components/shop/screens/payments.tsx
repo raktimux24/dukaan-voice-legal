@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SettingsFields, Section, emptySettings, useGstText } from '../gst-ui';
@@ -14,6 +16,7 @@ const VPA = /^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/;
 const MAX_QR = 1_500_000;
 
 export function PaymentsScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, t } = useShop();
   const queryClient = useQueryClient();
   const text=useGstText();
@@ -33,8 +36,8 @@ export function PaymentsScreen() {
   const [card, setCard] = useState<boolean | null>(null);
 
   if (!shop) return <Spinner />;
-  if (!perms.canManageShop) return <NoAccess what="Only the owner can change payments." />;
-  if (settings.isLoading) return <Spinner label="Loading payments" />;
+  if (!perms.canManageShop) return <NoAccess what={uiText("Only the owner can change payments.")} />;
+  if (settings.isLoading) return <Spinner label={uiText("Loading payments")} />;
   if (!settings.data) return <><Notice error={settings.error}/><Button onClick={()=>void settings.refetch()}>{text('Retry')}</Button></>;
   const current = settings.data;
   const form = {
@@ -77,16 +80,16 @@ export function PaymentsScreen() {
           }}
         >
           <Section title={t('pos_settings.upi_section', 'UPI payments')} summary={form.upiVpa || t('pos_settings.not_set', 'Not set')}>
-          <Field label={t('pos_settings.upi_id', 'UPI ID')}><input className={inputClass} value={form.upiVpa} onChange={(event) => setVpa(event.target.value)} placeholder="name@bank" /></Field>
+          <Field label={t('pos_settings.upi_id', 'UPI ID')}><input className={inputClass} value={form.upiVpa} onChange={(event) => setVpa(event.target.value)} placeholder={uiText("name@bank")} /></Field>
           {vpaInvalid ? <p className="text-sm text-danger">{t('pos_settings.upi_id', 'Enter a UPI ID like name@bank.')}</p> : null}
           <Field label={t('pos_settings.payee_name', 'Payee name')}><input className={inputClass} value={form.upiPayeeName} onChange={(event) => setPayee(event.target.value)} /></Field>
         <h2 className="font-semibold">{t('pos_settings.upload_qr', 'UPI QR image')}</h2>
-        {current.upiQrImage ? <img src={current.upiQrImage} alt="Saved UPI QR" className="mt-3 w-40 rounded-lg bg-white p-2" /> : <p className="mt-2 text-sm text-muted">No image uploaded. A VPA still generates a QR at checkout.</p>}
+        {current.upiQrImage ? <img src={current.upiQrImage} alt="Saved UPI QR" className="mt-3 w-40 rounded-lg bg-white p-2" /> : <p className="mt-2 text-sm text-muted">{uiText("No image uploaded. A VPA still generates a QR at checkout.")}</p>}
         <input
           className="mt-3 block text-sm"
           type="file"
           accept="image/*"
-          aria-label="Upload UPI QR"
+          aria-label={uiText("Upload UPI QR")}
           onChange={(event) => {
             const file = event.target.files?.[0];
             if (!file) return;
@@ -118,8 +121,8 @@ export function PaymentsScreen() {
             </select>
           </Field>
           <Field label={t('pos_settings.void_window', 'Void window (hours)', { hours: form.voidWindowHours || '—' })}><input className={inputClass} inputMode="numeric" value={form.voidWindowHours} onChange={(event) => setHours(event.target.value)} /></Field>
-          {hoursInvalid ? <p className="text-sm text-danger">The void window must be between 1 and 720 hours.</p> : null}
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.cardEnabled} onChange={(event) => setCard(event.target.checked)} /> Accept card</label>
+          {hoursInvalid ? <p className="text-sm text-danger">{uiText("The void window must be between 1 and 720 hours.")}</p> : null}
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.cardEnabled} onChange={(event) => setCard(event.target.checked)} /> {uiText("Accept card")}</label>
           </Section>
 
         </form>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ApiError } from '../../../lib/shop/api';
@@ -21,6 +23,7 @@ function roleTone(role: Role): 'saffron' | 'ok' | 'neutral' {
 }
 
 export function StaffScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, refreshShops, userId, t } = useShop();
   const queryClient = useQueryClient();
   const members = useQuery({
@@ -31,7 +34,7 @@ export function StaffScreen() {
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   if (!shop) return <Spinner />;
-  if (!perms.canManageStaff) return <NoAccess what="Only the owner can manage staff." />;
+  if (!perms.canManageStaff) return <NoAccess what={uiText("Only the owner can manage staff.")} />;
 
   const copy = async (value: string | null) => {
     if (!value) return;
@@ -44,7 +47,7 @@ export function StaffScreen() {
         back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
         kicker={t('customers.title', 'People')}
         title={t('modal.staff.title', 'Staff')}
-        description="Members of this shop, their roles, and the invite codes they join with."
+        description={uiText("Members of this shop, their roles, and the invite codes they join with.")}
       />
       <Notice error={error ?? members.error} />
       <Card className="stack-form">
@@ -72,12 +75,10 @@ export function StaffScreen() {
               setPending(true);
               void api.regenerateInvite(shop.id).then(() => refreshShops()).catch(setError).finally(() => setPending(false));
             }}
-          >
-            New codes
-          </Button>
+          > {uiText("New codes")} </Button>
         </div>
       </Card>
-      {members.isLoading ? <Spinner label="Loading staff" /> : null}
+      {members.isLoading ? <Spinner label={uiText("Loading staff")} /> : null}
       <div className="party-grid">
         {(members.data ?? []).map((member) => {
           const name = member.user.fullName || member.user.email || 'Staff';
@@ -92,8 +93,8 @@ export function StaffScreen() {
                 <Pill tone={roleTone(member.role)}>{t(`role.${member.role.toLowerCase()}`, member.role.toLowerCase())}</Pill>
               </div>
               <div className="party-stats">
-                <div className="party-stat"><span>Joined</span><b>{formatDay(member.joinedAt)}</b></div>
-                <div className="party-stat"><span>Last active</span><b>{formatDay(member.lastActiveAt)}</b></div>
+                <div className="party-stat"><span>{uiText("Joined")}</span><b>{formatDay(member.joinedAt)}</b></div>
+                <div className="party-stat"><span>{uiText("Last active")}</span><b>{formatDay(member.lastActiveAt)}</b></div>
                 <div className="party-stat"><span>{t('pos_settings.shop_phone', 'Phone')}</span><b>{member.user.phoneNumber || '—'}</b></div>
               </div>
               {member.role !== 'OWNER' ? (
@@ -123,7 +124,7 @@ export function StaffScreen() {
       </div>
       <Card className="danger-zone stack-form">
         <h2 className="shop-section-title">{t('modal.shop_settings.delete_shop', 'Delete shop')}</h2>
-        <p className="shop-section-sub">The subscription is cancelled first. If that fails, the shop stays.</p>
+        <p className="shop-section-sub">{uiText("The subscription is cancelled first. If that fails, the shop stays.")}</p>
         <div className="shop-actions">
           <Button
             tone="danger"

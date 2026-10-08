@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "./gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import { useId, useMemo, useRef, useState } from 'react';
 import { useShop } from './context';
@@ -15,6 +17,7 @@ export function SupplierField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const uiText = useUiText();
   const { api, shop, t } = useShop();
   const canonical=useGstPages(['suppliers','product-picker'],cursor=>api.gst.suppliers(shop!.id,'',cursor));
   const [add,setAdd]=useState(false);
@@ -100,7 +103,7 @@ export function SupplierField({
       </div>
       <button type="button" className="shop-section-link" onClick={()=>setAdd(!add)}>{t("gst.add_supplier","Add supplier with GST details")}</button>
       {add?<SupplierEditor onSaved={row=>{onChange(row.identity.inventorySupplierName||row.identity.name);setAdd(false);}}/>:null}
-      {canonical.hasNextPage?<button type="button" onClick={()=>void canonical.fetchNextPage()}>Load more suppliers</button>:null}
+      {canonical.hasNextPage?<button type="button" onClick={()=>void canonical.fetchNextPage()}>{uiText("Load more suppliers")}</button>:null}
     </div>
   );
 }

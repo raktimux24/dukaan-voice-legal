@@ -1,4 +1,6 @@
 'use client';
+
+import { useGstText as useUiText } from "../gst-ui";
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from '../../../lib/shop/gst-core/gst-tax-cache';
 import {RspCheckoutControls} from '../gst-rsp-checkout';
 import {checkoutPayable} from '../../../lib/shop/checkout-payable';
@@ -33,6 +35,7 @@ function covers(tendered: number, amount: number) {
 }
 
 export function CheckoutScreen() {
+  const uiText = useUiText();
   const { api, shop, userId, premium, perms, t } = useShop();
   const text=useGstText();
   const router = useRouter();
@@ -131,7 +134,7 @@ export function CheckoutScreen() {
     return `upi://pay?${params.toString()}`;
   }, [settings.data?.upiPayeeName, settings.data?.upiVpa, shop?.name, total, upiPortion]);
 
-  if (!shop || !userId) return <Spinner label="Loading checkout" />;
+  if (!shop || !userId) return <Spinner label={uiText("Loading checkout")} />;
 
   const remember = (next: TenderMode) => {
     setMode(next);
@@ -246,7 +249,7 @@ export function CheckoutScreen() {
       <PageHeader
         kicker="Counter"
         title={t('checkout.title', 'Checkout')}
-        actions={<Button href="/shop/sell" tone="quiet" size="sm">← Back to counter</Button>}
+        actions={<Button href="/shop/sell" tone="quiet" size="sm">{uiText("← Back to counter")}</Button>}
       />
 
       <div className="pos">
@@ -254,9 +257,9 @@ export function CheckoutScreen() {
           <Notice error={gstError ?? error} />
           {confirmOld ? (
             <Card>
-              <p>This bill was started too long ago. Charging it now creates a new bill only after you confirm.</p>
+              <p>{uiText("This bill was started too long ago. Charging it now creates a new bill only after you confirm.")}</p>
               <div className="mt-3">
-                <Button href="/shop/settings/gst/recovery">Review saved bill</Button>
+                <Button href="/shop/settings/gst/recovery">{uiText("Review saved bill")}</Button>
               </div>
             </Card>
           ) : null}
@@ -275,7 +278,7 @@ export function CheckoutScreen() {
 
           {offlineSaved ? (
             <Card>
-              <p>This bill is saved on this browser.</p>
+              <p>{uiText("This bill is saved on this browser.")}</p>
               <div className="mt-3">
                 <Button onClick={() => void handleCharge(false)} disabled={busy}>{busy ? 'Sending…' : 'Send bill now'}</Button>
               </div>
@@ -294,7 +297,7 @@ export function CheckoutScreen() {
           {mode === 'card' ? (
             <Card>
               <h3 className="shop-section-title">{t('pos.method.card', 'Card')}</h3>
-              <p className="party-meta">Record {formatINR(total)} as paid by card. The terminal is outside this page.</p>
+              <p className="party-meta">{uiText("Record")} {formatINR(total)} {uiText("as paid by card. The terminal is outside this page.")}</p>
             </Card>
           ) : null}
 
@@ -321,7 +324,7 @@ export function CheckoutScreen() {
             <Card className="grid gap-4">
               <div className="flex items-baseline justify-between gap-3">
                 <h3 className="shop-section-title">{t('pos.method.cash', 'Cash')}</h3>
-                <span className="num text-sm text-muted">Due {formatINR(cashPortion)}</span>
+                <span className="num text-sm text-muted">{uiText("Due")} {formatINR(cashPortion)}</span>
               </div>
               <div className="tender-chips">
                 <Button tone="ghost" onClick={() => setTendered(String(cashPortion))}>{t('checkout.exact', 'Exact')}</Button>
@@ -345,7 +348,7 @@ export function CheckoutScreen() {
             <Card className="grid gap-4">
               <div className="flex items-baseline justify-between gap-3">
                 <h3 className="shop-section-title">{t('pos.method.upi', 'UPI')}</h3>
-                <span className="num text-sm text-muted">Due {formatINR(upiPortion)}</span>
+                <span className="num text-sm text-muted">{uiText("Due")} {formatINR(upiPortion)}</span>
               </div>
               <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
                 {settings.data?.upiVpa ? (
@@ -353,9 +356,7 @@ export function CheckoutScreen() {
                 ) : settings.data?.upiQrImage ? (
                   <img src={settings.data.upiQrImage} alt="Uploaded UPI QR" className="w-52 rounded-lg bg-white p-2" />
                 ) : (
-                  <p className="text-sm text-muted">
-                    No UPI QR is on file. The sale can still be recorded as UPI.
-                    {perms.canManageShop ? <Link className="ml-2 text-saffron" href="/shop/settings/payments">{t('checkout.setup_upi', 'Add UPI')}</Link> : null}
+                  <p className="text-sm text-muted"> {uiText("No UPI QR is on file. The sale can still be recorded as UPI.")} {perms.canManageShop ? <Link className="ml-2 text-saffron" href="/shop/settings/payments">{t('checkout.setup_upi', 'Add UPI')}</Link> : null}
                   </p>
                 )}
                 <Field label={t('checkout.upi_ref', 'UPI reference')} hint={`${t('checkout.optional', 'Optional')}. The last digits of the transaction id.`}>
@@ -389,7 +390,7 @@ export function CheckoutScreen() {
           </Card>
         </div>
 
-        <aside className="bill shop-surface" aria-label="Bill summary">
+        <aside className="bill shop-surface" aria-label={uiText("Bill summary")}>
           <div className="bill-head">
             <h2>{t('bill.bill', 'Bill')}</h2>
             <span className="text-sm text-muted">{cartApi.cart.lines.length} {cartApi.cart.lines.length === 1 ? 'line' : 'lines'}</span>
@@ -421,7 +422,7 @@ export function CheckoutScreen() {
             ) : null}
             {mode ? (
               <div className="bill-total-row">
-                <span>Paying by</span>
+                <span>{uiText("Paying by")}</span>
                 <span>{MODE_LABELS[mode]}</span>
               </div>
             ) : null}
@@ -434,7 +435,7 @@ export function CheckoutScreen() {
                 {busy ? 'Charging…' : `Charge ${formatINR(total)}`}
               </Button>
             </div>
-            <p className="text-center text-xs text-faint">One bill per charge. A retry after a network drop reuses the same bill.</p>
+            <p className="text-center text-xs text-faint">{uiText("One bill per charge. A retry after a network drop reuses the same bill.")}</p>
           </div>
         </aside>
       </div>
@@ -443,6 +444,7 @@ export function CheckoutScreen() {
 }
 
 function UpiQr({ text, label }: { text: string; label: string }) {
+  const uiText = useUiText();
   const [src, setSrc] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -455,7 +457,7 @@ function UpiQr({ text, label }: { text: string; label: string }) {
   }, [text]);
   return (
     <div>
-      {src ? <img src={src} alt={`UPI QR for ${label}`} width={200} height={200} className="rounded-lg bg-white p-2" /> : <p className="text-muted">Preparing QR…</p>}
+      {src ? <img src={src} alt={`UPI QR for ${label}`} width={200} height={200} className="rounded-lg bg-white p-2" /> : <p className="text-muted">{uiText("Preparing QR…")}</p>}
       <p className="mt-2 text-center text-sm text-muted">{label}</p>
     </div>
   );

@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { labeledL1 } from '../../../lib/shop/catalog';
@@ -66,7 +68,8 @@ function ColumnChart({ columns }: { columns: { label: string; bars: { value: num
 }
 
 function ShareList({ rows }: { rows: { key: string; label: string; pct: number; value: string; tone?: string }[] }) {
-  if (rows.length === 0) return <p className="party-meta">Nothing in this period.</p>;
+  const uiText = useUiText();
+  if (rows.length === 0) return <p className="party-meta">{uiText("Nothing in this period.")}</p>;
   return (
     <div className="chart-rows">
       {rows.map((row) => (
@@ -83,6 +86,7 @@ function ShareList({ rows }: { rows: { key: string; label: string; pct: number; 
 }
 
 function SalesView({ report, showCost }: { report: SalesReport; showCost: boolean }) {
+  const uiText = useUiText();
   const { t } = useShop();
   const summary = report.summary;
   const revenue = summary?.revenue ?? 0;
@@ -186,7 +190,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
       {showCost ? (
         <div className="kpi-grid">
           <div className="kpi"><p className="kpi-label">{t('reports.sales.gross_profit', 'Gross profit')}</p><p className="kpi-value">{formatINR(summary?.grossProfit)}</p></div>
-          <div className="kpi"><p className="kpi-label">Cost of goods</p><p className="kpi-value">{formatINR(summary?.cogs)}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Cost of goods")}</p><p className="kpi-value">{formatINR(summary?.cogs)}</p></div>
           <div className="kpi"><p className="kpi-label">{t('reports.sales.cash_in_drawer', 'Cash in drawer')}</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p></div>
           <div className="kpi"><p className="kpi-label">{t('bill.discount', 'Discounts')}</p><p className="kpi-value">{formatINR(summary?.discounts)}</p></div>
         </div>
@@ -209,6 +213,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
 }
 
 function StockView({ report, showCost }: { report: StockReport; showCost: boolean }) {
+  const uiText = useUiText();
   const { t } = useShop();
   const onHand = report.onHand;
   const products = onHand?.products || 1;
@@ -243,14 +248,14 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
           <div className="party-stats">
             <div className="party-stat"><span>{t('sales.period.7d', '7 days')}</span><b>{report.expiry?.within7?.batches ?? 0}</b></div>
             <div className="party-stat"><span>{t('sales.period.30d', '30 days')}</span><b>{report.expiry?.within30?.batches ?? 0}</b></div>
-            <div className="party-stat"><span>60 days</span><b>{report.expiry?.within60?.batches ?? 0}</b></div>
+            <div className="party-stat"><span>{uiText("60 days")}</span><b>{report.expiry?.within60?.batches ?? 0}</b></div>
           </div>
         </Card>
       </div>
       <Card>
         <h2 className="shop-section-title">{t('reports.stock.movement', 'Movement')}</h2>
         <p className="chart-legend"><i /> {t('reports.stock.units_in', 'In')} <i className="is-ok" /> {t('reports.stock.units_sold', 'Sold')}</p>
-        {movement.length === 0 ? <p className="party-meta">No stock movement in this period.</p> : (
+        {movement.length === 0 ? <p className="party-meta">{uiText("No stock movement in this period.")}</p> : (
           <ColumnChart
             columns={movement.map((day, index) => ({
               label: movement.length > 14 && index % Math.ceil(movement.length / 8) !== 0 ? '' : shortDay(day.date),
@@ -302,6 +307,7 @@ function formatDaySafe(value: string) {
 }
 
 export function ReportsScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, premium, prefs, hideCost, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['id']>('week');
   const [tab, setTab] = useState<'sales' | 'stock'>('sales');
@@ -315,7 +321,7 @@ export function ReportsScreen() {
   const top = useQuery({ queryKey: ['top', shop?.id, period], enabled: enabled && premium && tab === 'sales', queryFn: () => api.getTopProducts(shop!.id, { period }) });
 
   if (!shop) return <Spinner />;
-  if (!perms.canSeeReports) return <NoAccess what="Reports are for the owner and managers." />;
+  if (!perms.canSeeReports) return <NoAccess what={uiText("Reports are for the owner and managers.")} />;
 
   const activeError = tab === 'sales' ? sales.error : stock.error;
   const showCost = (tab === 'sales' ? sales.data?.showCost : stock.data?.showCost) !== false && !hideCost;
@@ -332,7 +338,7 @@ export function ReportsScreen() {
       <PageHeader
         kicker={t('reports.title', 'Insights')}
         title={t('reports.title', 'Reports')}
-        description="Sales and stock for the period you pick. Switch the view without losing the dates."
+        description={uiText("Sales and stock for the period you pick. Switch the view without losing the dates.")}
         actions={
           premium ? (
             <Button tone="ghost" onClick={exportCsv}>{t('reports.sales.export_csv', tab === 'sales' ? 'Sales CSV' : 'Stock movement CSV')}</Button>
@@ -340,7 +346,7 @@ export function ReportsScreen() {
         }
       />
       <div className="shop-toolbar">
-        <div className="shop-seg" role="tablist" aria-label="Report">
+        <div className="shop-seg" role="tablist" aria-label={uiText("Report")}>
           <button type="button" role="tab" aria-selected={tab === 'sales'} className={tab === 'sales' ? 'is-active' : undefined} onClick={() => setTab('sales')}>{t('reports.tab.sales', 'Sales')}</button>
           <button type="button" role="tab" aria-selected={tab === 'stock'} className={tab === 'stock' ? 'is-active' : undefined} onClick={() => setTab('stock')}>{t('reports.tab.stock', 'Stock')}</button>
         </div>
@@ -351,8 +357,8 @@ export function ReportsScreen() {
       <Notice error={error} />
       {isPremiumError(activeError) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
       {activeError && !isPremiumError(activeError) ? <Notice error={activeError} /> : null}
-      {tab === 'sales' && sales.isLoading ? <Spinner label="Loading sales" /> : null}
-      {tab === 'stock' && stock.isLoading ? <Spinner label="Loading stock" /> : null}
+      {tab === 'sales' && sales.isLoading ? <Spinner label={uiText("Loading sales")} /> : null}
+      {tab === 'stock' && stock.isLoading ? <Spinner label={uiText("Loading stock")} /> : null}
       {tab === 'sales' && sales.data && !isPremiumError(sales.error) ? <SalesView report={sales.data} showCost={showCost} /> : null}
       {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} /> : null}
       {tab === 'sales' && premium ? (
