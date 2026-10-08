@@ -16,6 +16,7 @@ export function ShopSettingsScreen() {
 }
 
 function ShopSettingsForm() {
+  const uiText = useUiText();
   const { api, shop, refreshShops, t } = useShop();
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
@@ -31,7 +32,7 @@ function ShopSettingsForm() {
 
   return (
     <div className="shop-page">
-    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={t('modal.shop_settings.card_title', 'The name and contact details printed on bills and shown to staff.')} />
+    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={uiText('The name and contact details printed on bills and shown to staff.')} />
     <Card className="max-w-2xl">
       <form
         className="grid gap-4"

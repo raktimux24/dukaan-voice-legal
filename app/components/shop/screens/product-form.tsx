@@ -206,7 +206,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       <PageHeader
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
-        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : t('modal.add_product.section_initial_batch', 'Name, category, and a price are enough to start selling.')}
+        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : uiText('Name, category, and a price are enough to start selling.')}
         actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
       <Notice error={error} />
