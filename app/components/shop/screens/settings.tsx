@@ -78,7 +78,7 @@ export function SettingsScreen() {
       <Card className="grid gap-4">
         <div>
           <h2 className="shop-section-title">{t('settings.section_language_voice', 'Preferences')}</h2>
-          <p className="shop-section-sub">{t('settings.section_display', 'These apply to this shop workspace on every device you sign in on.')}</p>
+          <p className="shop-section-sub">{uiText('These apply to this shop workspace on every device you sign in on.')}</p>
         </div>
         <div className="form-grid is-2">
         <Field label={t('settings.app_language', 'App language')}>
