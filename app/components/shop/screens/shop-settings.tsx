@@ -16,6 +16,7 @@ export function ShopSettingsScreen() {
 }
 
 function ShopSettingsForm() {
+  const uiText = useUiText();
   const { api, shop, refreshShops, t } = useShop();
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
