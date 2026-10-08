@@ -15,6 +15,17 @@ for (const language of languages) {
   }
   for (const key of Object.keys(mobile[language])) assert.ok(general[key] || mobile[language][key]);
 }
+// Native-language labels must not accidentally inherit another language's script.
+const scripts = { hi: [0x900, 0x97f], mr: [0x900, 0x97f], bn: [0x980, 0x9ff], gu: [0xa80, 0xaff], ta: [0xb80, 0xbff], te: [0xc00, 0xc7f], kn: [0xc80, 0xcff], ml: [0xd00, 0xd7f], hinglish: [0, 0] };
+for (const [language, [start, end]] of Object.entries(scripts)) {
+  for (const [key, value] of Object.entries(web[language])) {
+    const foreign = [...value].some(character => {
+      const code = character.codePointAt(0);
+      return /[\p{L}\p{M}]/u.test(character) && code >= 0x900 && code <= 0xd7f && (code < start || code > end);
+    });
+    assert.equal(foreign, false, `${language}: unexpected script in ${key}`);
+  }
+}
 const require = createRequire(new URL('../app/lib/shop/translations.ts', import.meta.url));
 const loadTs = (filename) => {
   const exports = {};

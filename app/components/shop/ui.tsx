@@ -40,7 +40,6 @@ export function Button({
   className?: string;
   title?: string;
 }) {
-  const display = useOptionalUiText();
   const classes = cx(
     'shop-btn',
     tone === 'primary' && 'shop-btn-primary',
@@ -52,10 +51,10 @@ export function Button({
     block && 'is-block',
     className,
   );
-  if (href) return <Link className={classes} href={href} title={title}>{display(children)}</Link>;
+  if (href) return <Link className={classes} href={href} title={title}>{children}</Link>;
   return (
     <button className={classes} type={type} onClick={onClick} disabled={disabled} title={title}>
-      {display(children)}
+      {children}
     </button>
   );
 }
@@ -144,12 +143,11 @@ export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone
 }
 
 export function Chip({ active, onClick, children, href }: { active?: boolean; onClick?: () => void; children: ReactNode; href?: string }) {
-  const display = useOptionalUiText();
   const classes = cx('shop-chip', active && 'is-active');
-  if (href) return <Link href={href} className={classes} aria-current={active ? 'page' : undefined}>{display(children)}</Link>;
+  if (href) return <Link href={href} className={classes} aria-current={active ? 'page' : undefined}>{children}</Link>;
   return (
     <button type="button" className={classes} onClick={onClick} aria-pressed={active}>
-      {display(children)}
+      {children}
     </button>
   );
 }

@@ -31,7 +31,7 @@ function periodChip(id: string, t: (key: string, fallback: string) => string) {
   if (id === 'today') return t('sales.period.today', 'Today');
   if (id === 'week') return t('sales.period.7d', 'This week');
   if (id === 'month') return t('sales.period.month', 'This month');
-  return 'This year';
+  return t('web.gst.this_year', 'This year');
 }
 
 function clockLabel(hour: number) {
