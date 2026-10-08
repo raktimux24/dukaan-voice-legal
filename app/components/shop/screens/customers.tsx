@@ -53,11 +53,12 @@ export function CustomersScreen() {
           <Button type="submit" disabled={!name.trim()}>{t('checkout.add_customer', 'Add customer')}</Button>
         </form>
       </Card>
-      <div className="grid gap-2">
+      <div className="customer-directory">
         {(list.data?.customers ?? []).map((customer) => (
-          <Link key={customer.id} href={`/shop/customers/${customer.id}`} className="shop-surface flex justify-between rounded-xl border border-line bg-card p-3">
-            <span>{customer.name}<span className="block text-sm text-muted">{customer.phone}</span></span>
-            <span>{formatINR(customer.balance)}</span>
+          <Link key={customer.id} href={`/shop/customers/${customer.id}`} className="shop-surface shop-card customer-directory-card">
+            <span className="shop-list-main"><span className="customer-directory-name">{customer.name}</span>{customer.phone && <span className="shop-list-meta customer-directory-phone">{customer.phone}</span>}</span>
+            <span className="customer-directory-balance num">{formatINR(customer.balance)}</span>
+            <span className="customer-directory-chevron" aria-hidden="true">›</span>
           </Link>
         ))}
       </div>
