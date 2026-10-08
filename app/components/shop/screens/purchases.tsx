@@ -48,8 +48,8 @@ export function PurchasesScreen() {
         <PageHeader
           title={text("Supplier invoices & purchase tax")}
           back={{
-            href: "/shop/settings/payments",
-            label: text("Payments & bills"),
+            href: "/shop/settings",
+            label: text("Settings"),
           }}
           description={text(
             "Record supplier invoices and review purchase tax. Recording an invoice does not claim or file ITC.",

@@ -41,7 +41,7 @@ export function SettingsScreen() {
               <span className="text-muted">›</span>
             </Link>
             <Link href="/shop/settings/payments" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.payments_bills', 'Payments and UPI')}</p><p className="shop-list-meta">{t('pos_settings.upi_id', 'UPI ID')}, {t('pos_settings.bill_section', 'bills')}</p></div>
+              <div className="shop-list-main"><p className="shop-list-title">{t('settings.payments_bills', 'Payments & bills')}</p><p className="shop-list-meta">{t('pos_settings.upi_id', 'UPI ID')}, {t('pos_settings.bill_section', 'bills')}</p></div>
               <span className="text-muted">›</span>
             </Link>
             <Link href="/shop/settings/staff" className="shop-list-row">
@@ -52,6 +52,14 @@ export function SettingsScreen() {
               <div className="shop-list-main"><p className="shop-list-title">{t('subscription.section_title', 'Subscription')}</p><p className="shop-list-meta">{premium ? t('subscription.status.active', 'Premium') : t('subscription.status.legacy_free', 'Free plan')}</p></div>
               <span className="text-muted">›</span>
             </Link>
+          </div>
+        </Card>
+      ) : null}
+      {perms.canSeeReports || perms.canSeeCost ? (
+        <Card flush>
+          <div className="shop-list">
+            {perms.canSeeReports ? <Link href="/shop/settings/gst" className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{t('gst.health_title', 'GST records & invoice numbers')}</p><p className="shop-list-meta">{t('gst.health_intro', 'Check retained bills, invoice numbers and billing installations for this shop.')}</p></div><span aria-hidden="true">›</span></Link> : null}
+            {perms.canSeeCost ? <Link href="/shop/purchases" className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{t('purchase.title', 'Supplier invoices & purchase tax')}</p><p className="shop-list-meta">{t('purchase.new', 'Record supplier invoice')}</p></div><span aria-hidden="true">›</span></Link> : null}
           </div>
         </Card>
       ) : null}
