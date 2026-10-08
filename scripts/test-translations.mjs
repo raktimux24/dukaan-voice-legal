@@ -23,6 +23,7 @@ const loadTs = (filename) => {
   return exports;
 };
 const { translateUi } = loadTs('app/lib/shop/translations.ts');
+assert.equal(translateUi('hi', { 'sale_complete.new_sale': 'छूट' }, 'sale_complete.new_sale', 'New sale'), 'नई बिक्री');
 assert.equal(translateUi('hi', {}, 'missing.alias', 'GST setup'), web.hi['web.gst.gst_setup']);
 assert.equal(translateUi('hi', {}, 'missing.alias', 'You are signed in as {{role}} of this shop.', { role: 'OWNER' }).includes('{{role}}'), false);
 assert.equal(translateUi('en', {}, 'missing', 'Keep {{name}}', { name: 'Suresh' }), 'Keep Suresh');

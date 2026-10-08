@@ -83,8 +83,8 @@ export function PageHeader({
       ) : null}
       <div className="shop-page-head-text">
         {kicker ? <p className="shop-kicker">{kicker}</p> : null}
-        <h1 className="shop-title">{display(title)}</h1>
-        {description ? <p className="shop-page-desc">{display(description)}</p> : null}
+        <h1 className="shop-title">{title}</h1>
+        {description ? <p className="shop-page-desc">{description}</p> : null}
       </div>
       {actions ? <div className="shop-actions">{actions}</div> : null}
     </header>
