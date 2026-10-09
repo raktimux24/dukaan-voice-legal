@@ -45,6 +45,11 @@ for (const language of languages) {
   assert.notEqual(translated, fallback, `${language}: duplicate purchase conflict must be translated`);
 }
 
+for (const language of languages) {
+  const fallback = web.en['bill.use_verified_gst_document'];
+  assert.notEqual(translateUi(language, {}, 'bill.use_verified_gst_document', fallback), fallback, `${language}: GST bill guidance must be translated`);
+}
+
 assert.equal(translateUi('kn', { arbitrary: 'ಕನ್ನಡ' }, 'arbitrary', 'A label'), 'ಕನ್ನಡ');
 // Web actions must not inherit differently scoped mobile copy for the same key.
 assert.equal(translateUi('bn', { 'settings.export_sales': 'বিক্রয় (গত 30 দিন)' }, 'settings.export_sales', 'Sales CSV (this month)'), 'বিক্রির CSV (এই মাসের)');
