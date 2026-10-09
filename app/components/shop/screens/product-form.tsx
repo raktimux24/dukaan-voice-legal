@@ -5,6 +5,7 @@ import { TaxFields, Check, TextField, useGstText } from '../gst-ui';
 import type { ProductTax } from '../../../lib/shop/gst-types';
 import { discountedBuyingPrice, productPriceBreakdown } from '../../../lib/shop/gst-core/product-gross-price';
 import { validateProductTaxDraft } from '../../../lib/shop/gst-core/gst';
+import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -260,7 +261,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
             </div>:null}
             {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),text('GST is calculated on this selling price after discounts.'))}
             <Notice error={pos.error}/>
-            <p className="shop-hint">{text(pos.data?.gstSettings?.priceMode==='exclusive'?'GST is added to the selling price.':'The selling price includes GST.')}</p>
+            <p className="shop-hint">{text(EN_FALLBACK[!pos.data?.gstSettings || pos.data.gstSettings.registration === 'unknown' ? 'gst.product_price_unknown' : pos.data.gstSettings.registration !== 'regular' ? 'gst.product_price_no_collection' : pos.data.gstSettings.priceMode === 'exclusive' ? 'gst.product_price_exclusive' : 'gst.product_price_inclusive'])}</p>
             <TaxFields value={gstConfig} onChange={setGstDraft}/>
             {priceBreakdown?<div className="gst-price-preview"><span>{text('Before GST')} <b>{formatINR(priceBreakdown.net)}</b></span><span>{text('GST')} <b>{formatINR(priceBreakdown.tax)}</b></span><span>{text('Customer pays')} <b>{formatINR(priceBreakdown.gross)}</b></span></div>:<p className="shop-hint">{text('Set up shop GST and confirm the product tax details to see the GST calculation.')}</p>}
             <Check label={text('Calculate MRP from selling price and GST')} checked={autoMrp} onChange={setAutoMrp}/>
