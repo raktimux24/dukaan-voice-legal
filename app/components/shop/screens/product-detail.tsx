@@ -116,7 +116,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
     }
     const result = cart.addProduct(item, 1);
     if (!result.ok) {
-      setNotice(result.message === 'unpriced' ? 'Set a selling price first.' : result.message ?? 'Could not add this to the bill.');
+      setNotice(result.message === 'unpriced' ? 'Set a selling price first.' : result.message === 'out_of_stock' ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: product.name }) : 'Could not add this to the bill.');
       return;
     }
     router.push('/shop/sell');
@@ -325,7 +325,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
                 category: product.category,
                 productId,
               });
-              setNotice(`${product.name} is on the buy list.`);
+              setNotice(t('modal.product_detail.toast_added_buy_list', '{{name}} added to Buy List', { name: product.name }));
             })}
           >
             {onBuyList ? 'Already on the buy list' : 'Add to buy list'}
