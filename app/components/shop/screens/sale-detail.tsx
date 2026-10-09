@@ -8,7 +8,8 @@ import { useState } from 'react';
 import { GstDocuments } from '../gst-documents';
 import { GstSaleAdjustments } from '../gst-sale-adjustments';
 import { ApiError } from '../../../lib/shop/api';
-import { formatINR, formatWhen } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { PaymentMethod } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { shareBill, type ShareBillInput } from '../../../lib/shop/share-bill';
@@ -19,6 +20,7 @@ const METHOD: Record<string, string> = { cash: 'Cash', upi: 'UPI', card: 'Card',
 
 export function SaleDetailScreen({ saleId }: { saleId: string }) {
   const uiText = useUiText();
+  const { formatWhen } = useShopDates();
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const params = useSearchParams();
   const queryClient = useQueryClient();

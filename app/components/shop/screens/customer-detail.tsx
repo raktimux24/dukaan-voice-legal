@@ -5,13 +5,15 @@ import { useGstText as useUiText } from "../gst-ui";
 import { GstCollectionReview } from '../gst-collection-review';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { formatINR, formatWhen } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import { normalizeIndianMobile } from '../../../lib/shop/phone';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
 
 export function CustomerDetailScreen({ customerId }: { customerId: string }) {
   const uiText = useUiText();
+  const { formatWhen } = useShopDates();
   const { api, shop, perms, premium, t } = useShop();
   const queryClient = useQueryClient();
   const enabled = !!shop && perms.canManageCustomers && premium;

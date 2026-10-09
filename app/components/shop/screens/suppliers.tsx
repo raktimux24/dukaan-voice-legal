@@ -8,12 +8,14 @@ import { SupplierPicker, SupplierEditor } from "../gst-supplier";
 import { useGstPages, More, ReadState } from "../gst-workspace";
 import type { GstSupplier } from "../../../lib/shop/gst-types";
 import { useState } from "react";
-import { formatDay, formatINR } from "../../../lib/shop/money";
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import { useShop } from "../context";
 import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from "../ui";
 
 export function SuppliersScreen() {
   const uiText = useUiText();
+  const { formatDay } = useShopDates();
   const { api, shop, perms, t } = useShop();
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<GstSupplier | null>(null);

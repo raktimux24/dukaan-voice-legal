@@ -202,6 +202,7 @@ export type Sale = {
 };
 
 export type SaleListRow = {
+  invoiceNumber?: string | null;
   id: string;
   saleNumber: number;
   status: 'completed' | 'voided';
@@ -471,3 +472,15 @@ export type UnifiedAlerts = {
   predictions: { id: string; title: string; description: string; severity: string; productId: string | null }[];
   counts: { total: number; stock: number; expiry: number; ai: number };
 };
+
+export type ProductTaxAuthorization = { id: string; shopId: string; memberId: string; managerId: string; ownerId: string; authorized: boolean; createdAt: string };
+export type ProductTaxAuthorizationEntry = { managerId: string; memberId: string; authorization: ProductTaxAuthorization | null };
+export type SaleReturnListRow = {
+  id: string; saleId: string; saleNumber: number; invoiceNumber?: string | null; createdAt: string;
+  refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
+  itemCount: number; firstItem: string | null; customerName: string | null;
+  settlement?: {creditReduction: string; moneyRefund: string} | null;
+};
+export type ReturnsListSummary = { count: number; amount: number; byMethod: Record<string, number> };
+
+export type SpokenAnswer = {answer:string;intent:string|null;transcript?:string;ttsAudioBase64?:string;ttsJobId?:string};

@@ -7,7 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { labeledL1, labeledL2 } from '../../../lib/shop/catalog';
 import { useCart } from '../../../lib/shop/cart';
-import { formatDay, formatINR, formatWhen } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { AdjustmentReason, StockBatch } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
@@ -29,6 +30,7 @@ function logMentionsProduct(payload: Record<string, unknown>, productId: string)
 
 export function ProductDetailScreen({ productId }: { productId: string }) {
   const uiText = useUiText();
+  const { formatDay, formatWhen } = useShopDates();
   const { api, shop, perms, hideCost, userId, setNotice, t } = useShop();
   const params = useSearchParams();
   const router = useRouter();
@@ -368,6 +370,7 @@ function BatchRow({
   onSave: (body: Record<string, unknown>) => void;
 }) {
   const uiText = useUiText();
+  const { formatDay, formatWhen } = useShopDates();
   const { t } = useShop();
   const [qty, setQty] = useState(String(batch.quantity));
   const [nextSupplier, setNextSupplier] = useState(batch.supplier ?? '');

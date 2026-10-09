@@ -1,9 +1,11 @@
+import { collectPages } from './pagination';
 import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
 import { bindGstApi } from './gst-api';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
 import { parseRole } from './permissions';
 import type {
+  SpokenAnswer,
   AuditLogEntry,
   BriefResponse,
   BuyListItem,
@@ -19,6 +21,10 @@ import type {
   Product,
   Sale,
   SaleListRow,
+  SaleReturnListRow,
+  ReturnsListSummary,
+  ProductTaxAuthorization,
+  ProductTaxAuthorizationEntry,
   SalesReport,
   SalesSummary,
   ShopRecord,
@@ -293,20 +299,12 @@ export function bindApi(getToken: TokenGetter) {
       return { items: (res.items ?? []).map((item) => mapItem(item, hideCost)), total: res.total, hasMore: res.hasMore };
     },
     getAllInventory: async (shopId: string, hideCost = false, coherentTax = false) => {
-      const all: InventoryItem[] = [];
-      let offset = 0;
-      let hasMore = true;
-      let guard = 0;
-      while (hasMore && guard < 50) {
-        const page = await send<{ items: ServerInventoryItem[]; total: number; hasMore: boolean }>(
-          `/api/shops/${shopId}/inventory${queryString({ limit: 100, offset })}`,
+      const all = await collectPages(async offset => {
+        const page = await send<{items: ServerInventoryItem[]; hasMore: boolean}>(
+          `/api/shops/${shopId}/inventory${queryString({limit: 100, offset})}`,
         );
-        all.push(...(page.items ?? []).map((item) => mapItem(item, hideCost)));
-        hasMore = page.hasMore;
-        offset += 100;
-        guard += 1;
-      }
-      if (hasMore) throw Error("The catalog is incomplete. Refresh before billing.");
+        return {rows: (page.items ?? []).map(item => mapItem(item, hideCost)), hasMore: page.hasMore};
+      });
       if(coherentTax){const snapshot=await send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:"POST",body:JSON.stringify({productIds:all.map(item=>item.product.id)})});return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
     },
@@ -353,6 +351,12 @@ export function bindApi(getToken: TokenGetter) {
       send<{ sale: Sale; deduplicated: boolean }>(`/api/shops/${shopId}/sales`, { method: 'POST', body: JSON.stringify(payload) }),
     getSales: (shopId: string, params: Record<string, string | number | undefined>) =>
       send<{ sales: SaleListRow[]; total: number; hasMore: boolean; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
+    getReturns: async (shopId: string, params: Record<string, string | number | undefined>) => {
+      const page = await send<{ refunds?: SaleReturnListRow[]; returns?: SaleReturnListRow[]; total: number; hasMore: boolean; limitedToDays: number | null; summary: ReturnsListSummary }>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);
+      return { ...page, refunds: page.refunds ?? page.returns ?? [] };
+    },
+    getProductTaxAuthorizations: (shopId: string) => send<{ managers: ProductTaxAuthorizationEntry[] }>(`/api/shops/${shopId}/pos-settings/gst-product-confirmation-authorizations`),
+    setProductTaxAuthorization: (shopId: string, input: { managerId: string; authorized: boolean; requestId: string; expectedMemberId: string; expectedEventId: string | null }) => send<{authorization: ProductTaxAuthorization}>(`/api/shops/${shopId}/pos-settings/gst-product-confirmation-authorizations`, {method: 'PUT', body: JSON.stringify(input)}),
     getSale: (shopId: string, saleId: string) => send<Sale>(`/api/shops/${shopId}/sales/${saleId}`),
     getProductSales: (shopId: string, productId: string, days = 30) =>
       send<{ days: number; units: number; revenue: number; bills: number; lastSoldAt: string | null; daysOfCover: number | null }>(
@@ -387,16 +391,10 @@ export function bindApi(getToken: TokenGetter) {
       send<{ customer: Customer; entry: LedgerEntry }>(`/api/shops/${shopId}/customers/${customerId}/payments`, { method: 'POST', body: JSON.stringify(body) }),
 
     getBuyList: async (shopId: string) => {
-      const all: BuyListItem[] = [];
-      let offset = 0;
-      let hasMore = true;
-      while (hasMore && offset < 2000) {
-        const page = await send<{ items: BuyListItem[]; hasMore: boolean }>(`/api/shops/${shopId}/buy-list${queryString({ limit: 100, offset })}`);
-        all.push(...(page.items ?? []));
-        hasMore = page.hasMore;
-        offset += 100;
-      }
-      return all;
+      return collectPages(async offset => {
+        const page = await send<{items: BuyListItem[]; hasMore: boolean}>(`/api/shops/${shopId}/buy-list${queryString({limit: 100, offset})}`);
+        return {rows: page.items ?? [], hasMore: page.hasMore};
+      });
     },
     addBuyListItem: (shopId: string, input: Record<string, unknown>) =>
       send<{ item: BuyListItem }>(`/api/shops/${shopId}/buy-list`, { method: 'POST', body: JSON.stringify(input) }),
@@ -413,11 +411,15 @@ export function bindApi(getToken: TokenGetter) {
     getSalesReport: (shopId: string, period: string) => send<SalesReport>(`/api/shops/${shopId}/reports/sales?period=${period}`),
     getStockReport: (shopId: string, period: string) => send<StockReport>(`/api/shops/${shopId}/reports/stock?period=${period}`),
     stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken),
-    ask: (shopId: string, question: string, language?: string) =>
-      send<{ answer: string; intent: string | null }>(`/api/shops/${shopId}/analytics/ask`, {
+    ask: (shopId: string, question: string, language?: string, voiceFeedbackEnabled = false) =>
+      send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask`, {
         method: 'POST',
-        body: JSON.stringify({ question, language, voiceFeedbackEnabled: false, ttsAsync: false }),
+        body: JSON.stringify({ question, language, voiceFeedbackEnabled, ttsAsync: false }),
       }),
+
+    askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
+      send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
+    getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),
 
     search: (shopId: string, q: string) =>
       send<{
@@ -440,16 +442,10 @@ export function bindApi(getToken: TokenGetter) {
         `/api/shops/${shopId}/audit-log${queryString({ filter, limit: 50, offset })}`,
       ),
     getAllAudit: async (shopId: string) => {
-      const all: AuditLogEntry[] = [];
-      let offset = 0;
-      let hasMore = true;
-      while (hasMore && offset < 5000) {
-        const page = await send<{ logs: AuditLogEntry[]; hasMore: boolean }>(`/api/shops/${shopId}/audit-log${queryString({ filter: 'all', limit: 100, offset })}`);
-        all.push(...(page.logs ?? []));
-        hasMore = page.hasMore;
-        offset += 100;
-      }
-      return all;
+      return collectPages(async offset => {
+        const page = await send<{logs: AuditLogEntry[]; hasMore: boolean}>(`/api/shops/${shopId}/audit-log${queryString({filter: 'all', limit: 100, offset})}`);
+        return {rows: page.logs ?? [], hasMore: page.hasMore};
+      });
     },
 
     getPreferences: () => send<{ preferences: UserPreferences | null }>('/api/preferences'),

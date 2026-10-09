@@ -29,6 +29,10 @@ try {
     "6.0",
     "--skipLibCheck",
     "app/lib/shop/gst-api.ts",
+    "app/lib/shop/api.ts",
+    "app/lib/shop/browser-audio.ts",
+    "app/lib/shop/pagination.ts",
+    "app/lib/shop/money.ts",
     "app/lib/shop/gst-storage.ts",
     "app/lib/shop/gst-return-preview.ts",
     "app/lib/shop/gst-issuance.ts",
@@ -49,6 +53,9 @@ try {
     GST_TEST_BUILD: join(folder,"shop"),
   });
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/browser-audio.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/shop-parity-api.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/pagination.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("scripts/check-gst-core.mjs"), []);
 } finally {
   rmSync(folder, { recursive: true, force: true });

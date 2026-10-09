@@ -9,23 +9,23 @@ export function formatINR(value: number | null | undefined) {
   }).format(value);
 }
 
-export function formatWhen(value: string | null | undefined) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+export function dateLocale(language?: string | null) {
+  return ({hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN', kn: 'kn-IN', ml: 'ml-IN', mr: 'mr-IN', gu: 'gu-IN'} as Record<string,string>)[language ?? ''] ?? 'en-IN';
 }
 
-export function formatTime(value: string | null | undefined) {
+function dateText(value: string | null | undefined, language: string | null | undefined, options: Intl.DateTimeFormatOptions) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-IN', { timeStyle: 'short' }).format(date);
+  return new Intl.DateTimeFormat(dateLocale(language), { ...options, timeZone: 'Asia/Kolkata' }).format(date);
 }
 
-export function formatDay(value: string | null | undefined) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(date);
+export function formatWhen(value: string | null | undefined, language?: string | null) {
+  return dateText(value, language, {dateStyle: 'medium', timeStyle: 'short'});
+}
+export function formatTime(value: string | null | undefined, language?: string | null) {
+  return dateText(value, language, {timeStyle: 'short'});
+}
+export function formatDay(value: string | null | undefined, language?: string | null) {
+  return dateText(value, language, {dateStyle: 'medium'});
 }

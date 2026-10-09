@@ -5,7 +5,8 @@ import { useGstText as useUiText } from "../gst-ui";
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { formatINR, formatTime } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { InventoryItem, SalesSummary } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
@@ -68,6 +69,7 @@ function stockTone(item: InventoryItem): 'danger' | 'warn' | 'neutral' {
 
 export function HomeScreen() {
   const uiText = useUiText();
+  const { formatTime } = useShopDates();
   const { api, shop, perms, premium, t } = useShop();
   const shopId = shop?.id ?? '';
   const [query, setQuery] = useState('');

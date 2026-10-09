@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import { useShop } from "./context";
+import { useShopDates } from "./use-shop-dates";
 import { EN_FALLBACK } from "../../lib/shop/en-fallback";
 import { GST_STATES, localizedGstStates } from "../../lib/shop/gst-states";
 import {
@@ -432,27 +433,7 @@ export function Stats({
   );
 }
 export function useFiscalDate() {
-  const { prefs } = useShop();
-  const locale = useMemo(
-    () =>
-      ({
-        hi: "hi-IN",
-        bn: "bn-IN",
-        ta: "ta-IN",
-        te: "te-IN",
-        kn: "kn-IN",
-        ml: "ml-IN",
-        mr: "mr-IN",
-        gu: "gu-IN",
-      })[prefs?.appLanguage ?? ""] ?? "en-IN",
-    [prefs?.appLanguage],
-  );
-  return (value: string) =>
-    new Date(value).toLocaleString(locale, {
-      timeZone: "Asia/Kolkata",
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+  return useShopDates().formatWhen;
 }
 
 function StructuredBuyerAddress({

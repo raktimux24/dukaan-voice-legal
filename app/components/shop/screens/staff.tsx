@@ -5,7 +5,7 @@ import { useGstText as useUiText } from "../gst-ui";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ApiError } from '../../../lib/shop/api';
-import { formatDay } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { Role } from '../../../lib/shop/permissions';
 import { useShop } from '../context';
 import { Button, Card, NoAccess, Notice, PageHeader, Pill, Spinner } from '../ui';
@@ -24,13 +24,20 @@ function roleTone(role: Role): 'saffron' | 'ok' | 'neutral' {
 
 export function StaffScreen() {
   const uiText = useUiText();
+  const { formatDay } = useShopDates();
   const { api, shop, perms, refreshShops, userId, t } = useShop();
   const queryClient = useQueryClient();
   const members = useQuery({
-    queryKey: ['members', shop?.id],
+    queryKey: ['members', userId, shop?.id],
     enabled: !!shop && perms.canManageStaff,
     queryFn: () => api.getMembers(shop!.id),
   });
+  const taxAuthorizations = useQuery({
+    queryKey: ['product-tax-authorizations', userId, shop?.id],
+    enabled: !!shop && perms.canManageStaff,
+    queryFn: () => api.getProductTaxAuthorizations(shop!.id),
+  });
+  const [authorizing, setAuthorizing] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   if (!shop) return <Spinner />;
@@ -97,12 +104,36 @@ export function StaffScreen() {
                 <div className="party-stat"><span>{uiText("Last active")}</span><b>{formatDay(member.lastActiveAt)}</b></div>
                 <div className="party-stat"><span>{t('pos_settings.shop_phone', 'Phone')}</span><b>{member.user.phoneNumber || '—'}</b></div>
               </div>
+              {member.role === 'MANAGER' ? (
+                <div className="mt-4 border-t border-line pt-4 grid gap-2">
+                  <h3 className="font-semibold">{t('gst.manager_authorization_title', 'Product tax confirmation permission')}</h3>
+                  <p className="party-meta">{t('gst.manager_authorization_hint', 'Authorize this manager to confirm product tax data for this shop. Grants, revocations and confirmations are recorded. Shop registration remains owner-only.')}</p>
+                  {taxAuthorizations.isLoading ? <Spinner /> : taxAuthorizations.isError ? <>
+                    <Notice error={taxAuthorizations.error} />
+                    <Button size="sm" tone="ghost" onClick={() => void taxAuthorizations.refetch()}>{t('common.retry', 'Try again')}</Button>
+                  </> : taxAuthorizations.data ? (() => {
+                    const entry = taxAuthorizations.data.managers.find(row => row.memberId === member.id);
+                    if (!entry) return <p role="status" className="party-meta">{t('gst.manager_authorization_unavailable', 'Tax confirmation permission could not be loaded or saved')}</p>;
+                    const authorized = !!entry.authorization?.authorized;
+                    return <>
+                      <p className="party-meta">{t(authorized ? 'gst.manager_authorized' : 'gst.manager_not_authorized', authorized ? 'Authorized to confirm product tax data' : 'Can edit products; cannot confirm new tax data')}</p>
+                      <Button size="sm" tone="ghost" disabled={authorizing !== null} onClick={() => {
+                        setAuthorizing(member.id); setError(null);
+                        void api.setProductTaxAuthorization(shop.id, {managerId: entry.managerId, authorized: !authorized, requestId: crypto.randomUUID(), expectedMemberId: member.id, expectedEventId: entry.authorization?.id ?? null})
+                          .then(async () => { await taxAuthorizations.refetch(); queryClient.invalidateQueries({queryKey: ['product-tax']}); })
+                          .catch(async caught => { setError(caught); await taxAuthorizations.refetch(); })
+                          .finally(() => setAuthorizing(null));
+                      }}>{t(authorized ? 'gst.manager_revoke' : 'gst.manager_authorize', authorized ? 'Revoke tax confirmation' : 'Authorize tax confirmation')}</Button>
+                    </>;
+                  })() : null}
+                </div>
+              ) : null}
               {member.role !== 'OWNER' ? (
                 <div className="shop-actions">
                   <Button
                     size="sm"
                     tone="ghost"
-                    onClick={() => void api.updateMemberRole(shop.id, member.id, member.role === 'MANAGER' ? 'HELPER' : 'MANAGER').then(() => queryClient.invalidateQueries({ queryKey: ['members', shop.id] })).catch(setError)}
+                    onClick={() => void api.updateMemberRole(shop.id, member.id, member.role === 'MANAGER' ? 'HELPER' : 'MANAGER').then(() => Promise.all([queryClient.invalidateQueries({ queryKey: ['members'] }), queryClient.invalidateQueries({ queryKey: ['product-tax-authorizations', userId, shop.id] })])).catch(setError)}
                   >
                     {t('modal.staff.make_role', 'Make {{role}}', { role: t(`role.${member.role === 'MANAGER' ? 'helper' : 'manager'}`, member.role === 'MANAGER' ? 'helper' : 'manager') })}
                   </Button>
@@ -111,7 +142,7 @@ export function StaffScreen() {
                     tone="danger"
                     onClick={() => {
                       if (!window.confirm(`Remove ${name}?`)) return;
-                      void api.removeMember(shop.id, member.id).then(() => queryClient.invalidateQueries({ queryKey: ['members', shop.id] })).catch(setError);
+                      void api.removeMember(shop.id, member.id).then(() => Promise.all([queryClient.invalidateQueries({ queryKey: ['members'] }), queryClient.invalidateQueries({ queryKey: ['product-tax-authorizations', userId, shop.id] })])).catch(setError);
                     }}
                   >
                     {t('common.remove', 'Remove')}

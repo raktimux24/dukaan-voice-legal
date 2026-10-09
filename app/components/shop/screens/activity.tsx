@@ -5,7 +5,7 @@ import { useGstText as useUiText } from "../gst-ui";
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { auditCsv, downloadText } from '../../../lib/shop/csv';
-import { formatTime } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { AuditLogEntry } from '../../../lib/shop/types';
 import { useShop } from '../context';
 import { Button, Chip, Notice, PageHeader, Spinner } from '../ui';
@@ -69,6 +69,7 @@ function groups(logs: AuditLogEntry[], t: (key: string, fallback: string) => str
 
 export function ActivityScreen() {
   const uiText = useUiText();
+  const { formatTime } = useShopDates();
   const { api, shop, prefs, t } = useShop();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('all');
   const [error, setError] = useState<unknown>(null);
