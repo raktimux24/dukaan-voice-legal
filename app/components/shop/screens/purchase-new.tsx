@@ -496,7 +496,7 @@ export function PurchaseNewScreen() {
               </Section>
             ))}
           </Section>
-          <Card>
+          <Card className="purchase-confirmation">
             {totals ? (
               <Stats
                 items={[

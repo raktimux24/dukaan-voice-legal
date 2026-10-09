@@ -176,7 +176,7 @@ export function Notice({ error }: { error: unknown }) {
   const key=fallback?((EN_FALLBACK as Record<string,string>)['gst.error.'+code]?'gst.error.'+code:'gst.error.action_failed'):'web.gst.'+raw.toLowerCase().replace(/[^a-z0-9]+/g,'_');
   const message=context?context.t(key,fallback??raw):fallback??raw;
   return (
-    <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+    <p role="alert" className="shop-notice">
       {message}
     </p>
   );
