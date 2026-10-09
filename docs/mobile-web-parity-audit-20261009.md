@@ -316,3 +316,12 @@ Payment and correction drafts reset after success. Opening the credit form after
 This closes the successful invoice-only partial-credit, payment/refund and dependent-reversal readback path for this fixture. Linked-stock receive/link/remove, eligible ITC, concurrency, response-loss/retry and opposite-direction native writes remain acceptance gates.
 
 The live lifecycle exposed raw `settled` / `supplier_owes` status strings on web. They now map to existing translated customer-facing wording; settlement history includes localized payment method as native does. Build and translation coverage passed.
+
+
+### Linked-stock purchase and partial-tax rounding follow-up
+
+The approved synthetic WQA-ST-1009 invoice received one Camlin pencil unit into batch WQA-ST-1009. Web inventory changed from 13 to 14. Full supplier credit WQA-ST-CR1009 removed that unit and restored inventory to 13, with outstanding and recoverable both zero. This test moved only the synthetic stock quantity and made no actual payment. Native independently displayed WQA-ST-1009, the same original totals, Stock received with this invoice, and credit WQA-ST-CR1009 with minus 10.50 and the same synthetic-return reason. This accepts received-stock invoice and full-credit readback; independent native inventory quantity and existing-receipt linking remain unaccepted.
+
+The observed 0.24 tax remaining after the earlier half return follows shared returnTax component allocation: each original 0.25 CGST/SGST component has a half credit rounded to 0.13, leaving 0.12 each. Cumulative allocation differences preserve the full component amounts across subsequent returns; this is not evidence of a web-only calculation discrepancy. This source inspection does not establish regulatory approval of the policy.
+
+Web purchase detail now uses native translated stock-action labels for received, linked and invoice-only records. Older batch-linked invoices explicitly state that their original stock action was not recorded, rather than implying a new receipt. Production build and translation coverage passed.
