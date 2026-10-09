@@ -76,6 +76,7 @@ export type StockBatch = {
   batchNumber?: string;
   quantity: number;
   initialQuantity?: number | null;
+  purchaseItemId?: string | null;
   purchasePrice?: number;
   purchaseDate?: string;
   expiryDate?: string;
