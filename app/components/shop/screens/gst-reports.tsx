@@ -46,7 +46,8 @@ export function GstExportsScreen() {
   const [kind, setKind] = useState(
       params.get("kind") === "purchases" ? "purchases" : "sales",
     ),
-    [saved, setSaved] = useState<GstReport | null>(null);
+    [saved, setSaved] = useState<GstReport | null>(null),
+    [preparing, setPreparing] = useState(false);
   const pending = useRef<{
     requestId: string;
     credit: boolean;
@@ -57,6 +58,16 @@ export function GstExportsScreen() {
       api.gst.history(shop!.id, kind, cursor),
     );
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
+  async function runPreparation(credit = false) {
+    await action.run(async () => {
+      setPreparing(true);
+      try {
+        await prepare(credit);
+      } finally {
+        setPreparing(false);
+      }
+    });
+  }
   async function download(row: GstReport) {
     const content = await api.gst.downloadReport(
       shop!.id,
@@ -67,13 +78,13 @@ export function GstExportsScreen() {
   }
   async function prepare(credit = false) {
     const active = financialScope(shop!.id);
-    if (!period.range) throw period.error;
+    if ((kind !== "numbering" || credit) && !period.range) throw period.error;
     let report: GstReport;
     if (kind === "numbering" || credit) {
       const original = pending.current ?? {
         requestId: crypto.randomUUID(),
         credit,
-        exclusiveThrough: period.range.to,
+        exclusiveThrough: period.range?.to ?? "",
       };
       pending.current = original;
       const requestId = original.requestId;
@@ -105,8 +116,8 @@ export function GstExportsScreen() {
       const receipt = await api.gst.createRegister(
         shop!.id,
         kind,
-        period.range.from,
-        period.range.to,
+        period.range!.from,
+        period.range!.to,
       );
       const hash = receipt.hash;
       const history = await api.gst.history(shop!.id, kind);
@@ -141,8 +152,9 @@ export function GstExportsScreen() {
             <SelectField
               label={text("Register")}
               value={kind}
+              disabled={action.busy || !!pending.current}
               onChange={(v) => {
-                if (!pending.current) {
+                if (!action.busy && !pending.current) {
                   setKind(v);
                   setSaved(null);
                 }
@@ -170,10 +182,10 @@ export function GstExportsScreen() {
               action.busy ||
               (!pending.current && kind !== "numbering" && !period.range)
             }
-            onClick={() => void action.run(() => prepare())}
+            onClick={() => void runPreparation()}
           >
             {text(
-              action.busy
+              preparing
                 ? "Preparing report"
                 : pending.current
                   ? "Retry saved report"
@@ -190,7 +202,7 @@ export function GstExportsScreen() {
                 "The exact file is retained. You can download it again from saved reports.",
               )}
             </p>
-            <Button onClick={() => void action.run(() => download(saved))}>
+            <Button disabled={action.busy} onClick={() => void action.run(() => download(saved))}>
               {text("Download saved report")}
             </Button>
             <ReportDetails report={saved} />
@@ -216,7 +228,7 @@ export function GstExportsScreen() {
           <Button
             tone="ghost"
             disabled={action.busy || (!pending.current && !period.range)}
-            onClick={() => void action.run(() => prepare(true))}
+            onClick={() => void runPreparation(true)}
           >
             {text("Save credit-note report")}
           </Button>
