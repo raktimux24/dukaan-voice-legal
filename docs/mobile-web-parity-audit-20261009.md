@@ -238,3 +238,8 @@ Verified locally issued GST bills may now queue consecutively. Catalog snapshots
 ### Runtime confirmation localization follow-up
 
 Browser prompts for clearing a cart, removing staff, leaving/deleting a shop and archiving products now reuse mobile translation keys and interpolation. Account-deletion prompts and the second-confirmation notice have all ten language entries. This removes literal English from these runtime dialogs; destructive actions have not been executed as part of localization validation. Dynamic errors and full native-speaker/browser acceptance remain separate open checks.
+
+
+### Dynamic stock and product notices
+
+Cart addition now returns stable stock outcome codes instead of constructing English sentences. Sell and product detail choose the same translated out-of-stock/capped templates as mobile, then insert the original product name, quantity and localized unit. Product creation and buy-list notices also reuse mobile keys. Translation tests exercise the four templates with product data in all ten languages and check for unresolved placeholders. Production build and the GST regression suite passed; this is not full runtime/native-speaker language acceptance.

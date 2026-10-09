@@ -40,6 +40,25 @@ assert.equal(translateUi('hi', {}, 'missing.alias', 'You are signed in as {{role
 assert.equal(translateUi('en', {}, 'missing', 'Keep {{name}}', { name: 'Suresh' }), 'Keep Suresh');
 assert.equal(translateUi('hi', {}, 'unknown', 'Krishna Enterprise'), 'Krishna Enterprise');
 assert.equal(translateUi('kn', { arbitrary: 'ಕನ್ನಡ' }, 'arbitrary', 'A label'), 'ಕನ್ನಡ');
+// Dynamic notices must select a template before inserting product data.
+const dynamicNotices = {
+  'pos.out_of_stock_toast': '{{name}} is out of stock',
+  'pos.capped_toast': 'Only {{n}} {{unit}} of {{name}} in stock',
+  'modal.add_product.toast_added': '{{name}} added to inventory',
+  'modal.product_detail.toast_added_buy_list': '{{name}} added to Buy List',
+};
+for (const language of ['en', ...languages]) {
+  const dictionary = JSON.parse(fs.readFileSync(`app/lib/shop/locales/${language}.json`, 'utf8'));
+  for (const [key, fallback] of Object.entries(dynamicNotices)) {
+    assert.ok(dictionary[key], `${language}: missing dynamic notice ${key}`);
+    assert.deepEqual(placeholders(dictionary[key]), placeholders(fallback));
+    const rendered = translateUi(language, dictionary, key, fallback, { name: 'Camlin C4', n: 2, unit: 'kg' });
+    assert.ok(rendered.includes('Camlin C4'));
+    assert.equal(placeholders(rendered).length, 0);
+    if (language !== 'en') assert.notEqual(rendered, fallback.replace('{{name}}', 'Camlin C4').replace('{{n}}', '2').replace('{{unit}}', 'kg'));
+  }
+}
+
 // Prevent hard-coded English from returning to authenticated screens.
 for (const file of fs.readdirSync('app/components/shop/screens').filter(file => file.endsWith('.tsx'))) {
   const ast = ts.createSourceFile(file, fs.readFileSync(`app/components/shop/screens/${file}`, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);

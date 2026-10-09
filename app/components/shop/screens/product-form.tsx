@@ -173,7 +173,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
       if (addAnother) {
-        setNotice(`${created.product.name} added.`);
+        setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
         window.scrollTo({ top: 0 });
         return;

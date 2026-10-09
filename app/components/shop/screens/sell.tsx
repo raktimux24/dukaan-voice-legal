@@ -112,7 +112,9 @@ export function SellScreen() {
       setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
       return;
     }
-    if (result.message) setNotice(result.message);
+    if (result.message) setNotice(result.message === 'out_of_stock'
+      ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name })
+      : t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: item.quantity, unit: t(`unit_picker.${item.unit}`, item.unit), name: item.product.name }));
     if (result.ok) setError(null);
   };
 
@@ -169,7 +171,7 @@ export function SellScreen() {
   const choose = (item: InventoryItem) => {
     const tracked = item.product.trackStock !== false;
     if (tracked && item.quantity <= 0) {
-      setNotice(`${item.product.name} is out of stock.`);
+      setNotice(t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name }));
       return;
     }
     if (item.product.sellingPrice == null) {
@@ -191,14 +193,16 @@ export function SellScreen() {
     const existing = cartApi.cart.lines.find((line) => line.productId === item.productId);
     if (existing) {
       const result = cartApi.setQuantity(existing.key, picker.value);
-      if (result.capped) setNotice(`Only ${existing.available} ${existing.unit} of ${existing.name} on hand.`);
+      if (result.capped) setNotice(t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: existing.available ?? 0, unit: t(`unit_picker.${existing.unit}`, existing.unit), name: existing.name }));
     } else {
       const result = cartApi.addProduct(item, picker.value);
       if (result.message === 'unpriced') {
         setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
         return;
       }
-      if (result.message) setNotice(result.message);
+      if (result.message) setNotice(result.message === 'out_of_stock'
+      ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name })
+      : t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: item.quantity, unit: t(`unit_picker.${item.unit}`, item.unit), name: item.product.name }));
       if (!result.ok) return;
     }
     setPicker(null);
@@ -382,7 +386,7 @@ export function SellScreen() {
                 canEditPrice={perms.canEditProducts}
                 onQuantity={(qty) => {
                   const result = cartApi.setQuantity(line.key, qty);
-                  if (result.capped) setNotice(`Only ${line.available} ${line.unit} of ${line.name} on hand.`);
+                  if (result.capped) setNotice(t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: line.available ?? 0, unit: t(`unit_picker.${line.unit}`, line.unit), name: line.name }));
                 }}
                 onPrice={(price) => cartApi.setPrice(line.key, price)}
                 onRemove={() => cartApi.removeLine(line.key)}

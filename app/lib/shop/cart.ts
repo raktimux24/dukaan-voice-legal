@@ -234,12 +234,12 @@ export function useCart(userId: string | null, shopId: string | null) {
     cart,
     pending,
     update,
-    addProduct(item: InventoryItem, qty = 1, inputMethod: 'manual' | 'voice' | 'scan' = 'manual'): { ok: boolean; capped: boolean; message?: string } {
+    addProduct(item: InventoryItem, qty = 1, inputMethod: 'manual' | 'voice' | 'scan' = 'manual'): { ok: boolean; capped: boolean; message?: 'unpriced' | 'out_of_stock' | 'capped' } {
       if (!userId || !shopId) return { ok: false, capped: false };
       const current = readCart(userId, shopId);
       const track = item.product.trackStock !== false;
       const available = track ? item.quantity : null;
-      if (track && (available ?? 0) <= 0) return { ok: false, capped: false, message: `${item.product.name} is out of stock.` };
+      if (track && (available ?? 0) <= 0) return { ok: false, capped: false, message: 'out_of_stock' };
       const price = item.product.sellingPrice;
       if (price == null) return { ok: false, capped: false, message: 'unpriced' };
       const existing = current.lines.find((line) => line.productId === item.productId);
@@ -249,7 +249,7 @@ export function useCart(userId: string | null, shopId: string | null) {
         nextQty = r3(available);
         capped = true;
       }
-      if (nextQty <= 0) return { ok: false, capped: false, message: `${item.product.name} is out of stock.` };
+      if (nextQty <= 0) return { ok: false, capped: false, message: 'out_of_stock' };
       const line: CartLine = {
         gstConfig: item.product.gstConfig,
         gstTaxSnapshot:item.product.gstTaxSnapshot,
@@ -270,7 +270,7 @@ export function useCart(userId: string | null, shopId: string | null) {
       };
       const lines = existing ? current.lines.map((row) => (row.key === existing.key ? line : row)) : [...current.lines, line];
       update({ ...current, lines, inputMethod });
-      return { ok: true, capped, message: capped ? `Only ${available} ${item.unit} of ${item.product.name} can be added.` : undefined };
+      return { ok: true, capped, message: capped ? 'capped' : undefined };
     },
     setQuantity(lineKey: string, quantity: number) {
       if (!userId || !shopId) return { capped: false };
