@@ -222,3 +222,7 @@ Registered GST checkout now constructs a fiscal receipt from the issued request 
 After a transport failure following reservation, checkout opens the local bill. Recovery offers the same receipt after reload and, after successful synchronization, links to the confirmed server bill. Local receipt downloads/prints carry pending synchronization wording. Legacy unissued requests remain requests and do not gain fabricated invoice numbers. New copy is bundled for all ten languages.
 
 Tests cover ordinary GST, Composition, mixed/RSP and rounded totals, altered request/document rejection, actor/shop isolation, missing/mismatched grants, atomic retention after lost response, no allocation reuse on replay and original receipt preservation after confirmation. Browser rendering and actual disconnected restart acceptance remain to verify. Complete offline shell/Clerk boot, allocation prewarming, multiple queued issuance with local stock reconciliation, notifications, runtime localization and the broader acceptance matrix remain open.
+
+### Report and export date localization follow-up
+
+Report charts and expiry labels now use the selected app language and Indian Standard Time. Inventory and activity CSV dates receive the same language from all export entry points, rather than browser-local English dates. Currency and machine-facing CSV column names retain their existing formats.

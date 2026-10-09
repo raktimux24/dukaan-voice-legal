@@ -24,11 +24,12 @@ assert.equal(calls,2);
 await assert.rejects(collectPages(async offset=>{if(offset)throw Error('network');return {rows:[{id:'1'}],hasMore:true};}),/network/);
 assert.deepEqual(await collectPages(async()=>({rows:[],hasMore:false})),[]);
 console.log('Pagination: large exports, short pages, stalled endpoints and network failure passed.');
-const {formatDay,formatTime,formatWhen}=require(join(process.env.GST_TEST_BUILD,'money.js'));
+const {formatDay,formatTime,formatWhen,formatShortDay}=require(join(process.env.GST_TEST_BUILD,'money.js'));
 const stamp='2026-10-08T20:00:00Z'; // 9 October, 01:30 IST, regardless of browser timezone.
 for(const [lang,locale] of [['en','en-IN'],['hi','hi-IN'],['bn','bn-IN'],['ta','ta-IN'],['te','te-IN'],['mr','mr-IN'],['kn','kn-IN'],['gu','gu-IN'],['ml','ml-IN'],['hinglish','en-IN']]) {
   const expected=options=>new Intl.DateTimeFormat(locale,{...options,timeZone:'Asia/Kolkata'}).format(new Date(stamp));
   assert.equal(formatDay(stamp,lang),expected({dateStyle:'medium'}));
+  assert.equal(formatShortDay(stamp,lang),expected({day:'numeric',month:'short'}));
   assert.equal(formatTime(stamp,lang),expected({timeStyle:'short'}));
   assert.equal(formatWhen(stamp,lang),expected({dateStyle:'medium',timeStyle:'short'}));
 }

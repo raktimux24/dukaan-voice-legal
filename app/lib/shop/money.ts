@@ -29,3 +29,7 @@ export function formatTime(value: string | null | undefined, language?: string |
 export function formatDay(value: string | null | undefined, language?: string | null) {
   return dateText(value, language, {dateStyle: 'medium'});
 }
+
+export function formatShortDay(value: string | null | undefined, language?: string | null) {
+  return dateText(value, language, {day: "numeric", month: "short"});
+}

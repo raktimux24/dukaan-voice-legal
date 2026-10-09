@@ -112,12 +112,12 @@ export function SettingsScreen() {
           <Button
             tone="ghost"
             onClick={() => {
-              void api.getAllInventory(shop.id, hideCost).then((items) => downloadText(`products-${shop.name}.csv`, inventoryCsv(items, hideCost))).catch(setError);
+              void api.getAllInventory(shop.id, hideCost).then((items) => downloadText(`products-${shop.name}.csv`, inventoryCsv(items, hideCost, prefs?.appLanguage))).catch(setError);
             }}
           >
             {t('settings.export_inventory', 'Inventory CSV')}
           </Button>
-          <Button tone="ghost" onClick={() => void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError)}>{t('settings.export_activity_log', 'Activity CSV')}</Button>
+          <Button tone="ghost" onClick={() => void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows, prefs?.appLanguage))).catch(setError)}>{t('settings.export_activity_log', 'Activity CSV')}</Button>
           {perms.canSeeReports ? (
             premium ? <Button tone="ghost" onClick={() => void api.salesCsv(shop.id, { period: 'month' }).then((csv) => downloadText('sales-month.csv', csv)).catch(setError)}>{t('settings.export_sales', 'Sales CSV (this month)')}</Button> : <Button tone="ghost" href="/shop/settings/subscription">{t('settings.export_sales', 'Sales CSV')} · {t('subscription.status.active', 'Premium')}</Button>
           ) : null}

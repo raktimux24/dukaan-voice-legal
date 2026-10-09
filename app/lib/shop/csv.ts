@@ -1,3 +1,4 @@
+import {formatDay,formatWhen} from './money';
 import type { AuditLogEntry, InventoryItem } from './types';
 
 function escapeCsv(value: unknown) {
@@ -10,7 +11,7 @@ function row(values: unknown[]) {
   return values.map(escapeCsv).join(',');
 }
 
-export function inventoryCsv(items: InventoryItem[], hideCost: boolean) {
+export function inventoryCsv(items: InventoryItem[], hideCost: boolean, language?: string | null) {
   const header = hideCost
     ? ['Name', 'Category', 'Unit', 'Quantity', 'Stock Status', 'Min Stock', 'Selling Price', 'Barcode', 'Last Updated']
     : ['Name', 'Category', 'Unit', 'Quantity', 'Stock Status', 'Min Stock', 'Purchase Price', 'Selling Price', 'Barcode', 'Last Updated'];
@@ -26,16 +27,16 @@ export function inventoryCsv(items: InventoryItem[], hideCost: boolean) {
     const prices = hideCost
       ? [item.product.sellingPrice ?? '']
       : [item.product.purchasePrice ?? '', item.product.sellingPrice ?? ''];
-    return row([...base, ...prices, item.product.barcode ?? '', item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('en-IN') : '']);
+    return row([...base, ...prices, item.product.barcode ?? '', item.updatedAt ? formatDay(item.updatedAt,language) : '']);
   });
   return [row(header), ...rows].join('\n');
 }
 
-export function auditCsv(logs: AuditLogEntry[]) {
+export function auditCsv(logs: AuditLogEntry[], language?: string | null) {
   const header = row(['Date', 'User', 'Action Type', 'Input Method', 'Description', 'Confidence']);
   const rows = logs.map((log) =>
     row([
-      new Date(log.createdAt).toLocaleString('en-IN'),
+      formatWhen(log.createdAt,language),
       log.userName,
       log.actionType,
       log.inputMethod,

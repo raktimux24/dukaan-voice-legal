@@ -93,7 +93,7 @@ export function ActivityScreen() {
             tone="ghost"
             onClick={() => {
               setError(null);
-              void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError);
+              void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows, prefs?.appLanguage))).catch(setError);
             }}
           >
             {t('reports.sales.export_csv', 'Export CSV')}
