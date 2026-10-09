@@ -352,13 +352,31 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       "This records your eligibility review. It does not claim or file input tax credit.",
                     )}
                   </p>
+                  <p className="shop-hint">
+                    {text(
+                      "Only regular GST recipients purchasing from regular GST suppliers can record eligibility. These are your confirmations; the app does not check the GST portal or supplier payments. This decision does not claim ITC or file a return.",
+                    )}
+                  </p>
+                  <p className="shop-hint">
+                    {text(
+                      "Changing eligibility recalculates acquisition costs for remaining stock and consumed quantities. Review the tax movement and retained cost history before saving.",
+                    )}
+                  </p>
                   <SelectField
                     label={text("Decision")}
                     value={decision}
                     onChange={(v) => setDecision(v as typeof decision)}
                     options={[
                       ["deferred", text("Review later")],
-                      ["reviewed_eligible", text("Reviewed eligible")],
+                      ...(detail.recipientRegistration === "regular" &&
+                      detail.snapshot.supplierRegistration === "regular"
+                        ? [
+                            [
+                              "reviewed_eligible",
+                              text("Reviewed eligible"),
+                            ] as const,
+                          ]
+                        : []),
                       ["ineligible", text("Ineligible")],
                     ]}
                   />
@@ -400,7 +418,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     ))}
                   </ReadState>
                   <Button
-                    disabled={action.busy || !note.trim() || !reference.trim()}
+                    disabled={
+                      action.busy ||
+                      !preview.isSuccess ||
+                      preview.isFetching ||
+                      !note.trim() ||
+                      !reference.trim()
+                    }
                     onClick={() =>
                       void action.run(async () => {
                         validateItcReview(
