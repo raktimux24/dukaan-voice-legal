@@ -234,3 +234,7 @@ The Sell page now prepares number reservations and scoped rounding grants online
 ### Queued local GST bills and stock reconciliation follow-up
 
 Verified locally issued GST bills may now queue consecutively. Catalog snapshots record the confirmations included before their server read; later local receipts reserve quantities against that baseline, including confirmations not yet reflected in a newer catalog. Checkout rechecks aggregate stock under the actor/shop invoice lock before consuming a number. Reconnection replays only original verified local sale requests in order; unsupported or uncertain legacy requests remain for manual recovery. Cached stock remains a device estimate and cannot prove stock on other disconnected devices. Cold-start offline shell and live multi-tab/reconnect acceptance remain open.
+
+### Runtime confirmation localization follow-up
+
+Browser prompts for clearing a cart, removing staff, leaving/deleting a shop and archiving products now reuse mobile translation keys and interpolation. Account-deletion prompts and the second-confirmation notice have all ten language entries. This removes literal English from these runtime dialogs; destructive actions have not been executed as part of localization validation. Dynamic errors and full native-speaker/browser acceptance remain separate open checks.

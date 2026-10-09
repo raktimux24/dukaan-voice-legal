@@ -1122,7 +1122,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "Saved locally · awaiting synchronization",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "This bill keeps its original number and issue time. Server confirmation is pending.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "The product changed. Refresh the cart before charging.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock changed. Refresh the cart before charging."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock changed. Refresh the cart before charging.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "Delete your account? This cannot be undone.",
+    "web.gst.delete_the_account_now_": "Delete the account now?",
+    "web.gst.confirm_delete_account_one_more_time_": "Confirm delete account one more time."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2248,7 +2251,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "इस डिवाइस पर सहेजा गया · सिंक होना बाकी है",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "इस बिल का मूल नंबर और जारी करने का समय सुरक्षित है। सर्वर की पुष्टि बाकी है।",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "उत्पाद बदल गया है। भुगतान लेने से पहले कार्ट रिफ्रेश करें।",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "स्टॉक बदल गया है। भुगतान लेने से पहले कार्ट रिफ्रेश करें।"
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "स्टॉक बदल गया है। भुगतान लेने से पहले कार्ट रिफ्रेश करें।",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "अपना खाता हटाएँ? इसे वापस नहीं किया जा सकता।",
+    "web.gst.delete_the_account_now_": "क्या अभी खाता हटा दें?",
+    "web.gst.confirm_delete_account_one_more_time_": "खाता हटाने की एक बार फिर पुष्टि करें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3373,7 +3379,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "Yahin saved hai · sync hona baaki hai",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "Is bill ka original number aur issue time surakshit hai. Server ki confirmation baaki hai.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "Product badal gaya hai. Payment lene se pehle cart refresh karein.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock badal gaya hai. Payment lene se pehle cart refresh karein."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock badal gaya hai. Payment lene se pehle cart refresh karein.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "Apna account delete karein? Yeh wapas nahi ho sakta.",
+    "web.gst.delete_the_account_now_": "Kya abhi account delete karein?",
+    "web.gst.confirm_delete_account_one_more_time_": "Account delete karne ki ek baar phir pushti karein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4498,7 +4507,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "স্থানীয়ভাবে সংরক্ষিত · সিঙ্ক হওয়া বাকি",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "এই বিলের মূল নম্বর ও জারির সময় অপরিবর্তিত আছে। সার্ভারের নিশ্চিতকরণ বাকি।",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "পণ্যটি পরিবর্তিত হয়েছে। পেমেন্ট নেওয়ার আগে কার্ট রিফ্রেশ করুন।",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "স্টক পরিবর্তিত হয়েছে। পেমেন্ট নেওয়ার আগে কার্ট রিফ্রেশ করুন।"
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "স্টক পরিবর্তিত হয়েছে। পেমেন্ট নেওয়ার আগে কার্ট রিফ্রেশ করুন।",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "আপনার অ্যাকাউন্ট মুছবেন? এটি আর ফেরানো যাবে না।",
+    "web.gst.delete_the_account_now_": "এখনই অ্যাকাউন্ট মুছবেন?",
+    "web.gst.confirm_delete_account_one_more_time_": "অ্যাকাউন্ট মুছে ফেলার জন্য আরও একবার নিশ্চিত করুন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5623,7 +5635,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "இங்கே சேமிக்கப்பட்டது · ஒத்திசைவு நிலுவையில் உள்ளது",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "இந்த பில்லின் அசல் எண்ணும் வெளியிட்ட நேரமும் பாதுகாக்கப்படும். சேவையக உறுதிப்படுத்தல் நிலுவையில் உள்ளது.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "பொருள் மாறியுள்ளது. பணம் பெறுவதற்கு முன் கார்ட்டைப் புதுப்பிக்கவும்.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "இருப்பு மாறியுள்ளது. பணம் பெறுவதற்கு முன் கார்ட்டைப் புதுப்பிக்கவும்."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "இருப்பு மாறியுள்ளது. பணம் பெறுவதற்கு முன் கார்ட்டைப் புதுப்பிக்கவும்.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "உங்கள் கணக்கை நீக்கவா? இதை மீட்டெடுக்க முடியாது.",
+    "web.gst.delete_the_account_now_": "இப்போது கணக்கை நீக்கவா?",
+    "web.gst.confirm_delete_account_one_more_time_": "கணக்கை நீக்குவதை மீண்டும் ஒருமுறை உறுதிப்படுத்தவும்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6748,7 +6763,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "ఇక్కడ సేవ్ అయింది · సింక్ పెండింగ్‌లో ఉంది",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ఈ బిల్లు అసలు నంబర్ మరియు జారీ సమయాన్ని ఉంచుతుంది. సర్వర్ నిర్ధారణ పెండింగ్‌లో ఉంది.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ఉత్పత్తి మారింది. చెల్లింపు తీసుకునే ముందు కార్ట్‌ను రిఫ్రెష్ చేయండి.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "స్టాక్ మారింది. చెల్లింపు తీసుకునే ముందు కార్ట్‌ను రిఫ్రెష్ చేయండి."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "స్టాక్ మారింది. చెల్లింపు తీసుకునే ముందు కార్ట్‌ను రిఫ్రెష్ చేయండి.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "మీ ఖాతాను తొలగించాలా? దీన్ని తిరిగి పొందలేరు.",
+    "web.gst.delete_the_account_now_": "ఇప్పుడే ఖాతాను తొలగించాలా?",
+    "web.gst.confirm_delete_account_one_more_time_": "ఖాతా తొలగింపును మరోసారి నిర్ధారించండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7873,7 +7891,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "स्थानिकरीत्या जतन केले · सिंक होणे बाकी आहे",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "या बिलाचा मूळ क्रमांक आणि जारी करण्याची वेळ कायम आहेत. सर्व्हरची पुष्टी बाकी आहे.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "उत्पादन बदलले आहे. पैसे घेण्यापूर्वी कार्ट रिफ्रेश करा.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "साठा बदलला आहे. पैसे घेण्यापूर्वी कार्ट रिफ्रेश करा."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "साठा बदलला आहे. पैसे घेण्यापूर्वी कार्ट रिफ्रेश करा.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "तुमचे खाते हटवायचे? ते परत मिळवता येणार नाही.",
+    "web.gst.delete_the_account_now_": "आता खाते हटवायचे?",
+    "web.gst.confirm_delete_account_one_more_time_": "खाते हटवण्याची आणखी एकदा पुष्टी करा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -8998,7 +9019,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "ಇಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ · ಸಿಂಕ್ ಬಾಕಿಯಿದೆ",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ಈ ಬಿಲ್‌ನ ಮೂಲ ಸಂಖ್ಯೆ ಮತ್ತು ನೀಡಿದ ಸಮಯ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ. ಸರ್ವರ್ ದೃಢೀಕರಣ ಬಾಕಿಯಿದೆ.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ಉತ್ಪನ್ನ ಬದಲಾಗಿದೆ. ಪಾವತಿ ಪಡೆಯುವ ಮೊದಲು ಕಾರ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "ಸ್ಟಾಕ್ ಬದಲಾಗಿದೆ. ಪಾವತಿ ಪಡೆಯುವ ಮೊದಲು ಕಾರ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "ಸ್ಟಾಕ್ ಬದಲಾಗಿದೆ. ಪಾವತಿ ಪಡೆಯುವ ಮೊದಲು ಕಾರ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಬೇಕೇ? ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
+    "web.gst.delete_the_account_now_": "ಈಗಲೇ ಖಾತೆಯನ್ನು ಅಳಿಸಬೇಕೇ?",
+    "web.gst.confirm_delete_account_one_more_time_": "ಖಾತೆಯನ್ನು ಅಳಿಸುವುದನ್ನು ಮತ್ತೊಮ್ಮೆ ದೃಢೀಕರಿಸಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10123,7 +10147,10 @@
     "web.gst.saved_locally_awaiting_synchronization": "અહીં સાચવેલું છે · સિંક બાકી છે",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "આ બિલનો મૂળ નંબર અને જારી કરવાનો સમય જળવાઈ રહે છે. સર્વરની પુષ્ટિ બાકી છે.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ઉત્પાદન બદલાયું છે. ચુકવણી લેતા પહેલાં કાર્ટ રિફ્રેશ કરો.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "સ્ટોક બદલાયો છે. ચુકવણી લેતા પહેલાં કાર્ટ રિફ્રેશ કરો."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "સ્ટોક બદલાયો છે. ચુકવણી લેતા પહેલાં કાર્ટ રિફ્રેશ કરો.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "તમારું ખાતું કાઢી નાખવું છે? આ પાછું મેળવી શકાશે નહીં.",
+    "web.gst.delete_the_account_now_": "હમણાં જ ખાતું કાઢી નાખવું છે?",
+    "web.gst.confirm_delete_account_one_more_time_": "ખાતું કાઢી નાખવાની ફરી એક વાર પુષ્ટિ કરો."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11248,6 +11275,9 @@
     "web.gst.saved_locally_awaiting_synchronization": "ഇവിടെ സംരക്ഷിച്ചു · സിങ്ക് ബാക്കിയുണ്ട്",
     "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ഈ ബില്ലിന്റെ യഥാർത്ഥ നമ്പറും നൽകിയ സമയവും നിലനിർത്തും. സെർവർ സ്ഥിരീകരണം ബാക്കിയുണ്ട്.",
     "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ഉൽപ്പന്നം മാറിയിട്ടുണ്ട്. പണം സ്വീകരിക്കുന്നതിന് മുമ്പ് കാർട്ട് പുതുക്കുക.",
-    "web.gst.stock_changed_refresh_the_cart_before_charging_": "സ്റ്റോക്ക് മാറിയിട്ടുണ്ട്. പണം സ്വീകരിക്കുന്നതിന് മുമ്പ് കാർട്ട് പുതുക്കുക."
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "സ്റ്റോക്ക് മാറിയിട്ടുണ്ട്. പണം സ്വീകരിക്കുന്നതിന് മുമ്പ് കാർട്ട് പുതുക്കുക.",
+    "web.gst.delete_your_account_this_cannot_be_undone_": "നിങ്ങളുടെ അക്കൗണ്ട് നീക്കം ചെയ്യണോ? ഇത് തിരിച്ചെടുക്കാൻ കഴിയില്ല.",
+    "web.gst.delete_the_account_now_": "ഇപ്പോൾ അക്കൗണ്ട് നീക്കം ചെയ്യണോ?",
+    "web.gst.confirm_delete_account_one_more_time_": "അക്കൗണ്ട് നീക്കം ചെയ്യുന്നത് ഒരിക്കൽ കൂടി സ്ഥിരീകരിക്കുക."
   }
 }

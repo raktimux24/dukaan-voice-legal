@@ -222,7 +222,7 @@ export function SellScreen() {
 
   const clearBill = () => {
     if (lineCount === 0) return;
-    if (!window.confirm('Clear this bill?')) return;
+    if (!window.confirm(t('pos.clear_cart_title','Remove everything from the cart?'))) return;
     cartApi.clear();
     searchRef.current?.focus();
   };

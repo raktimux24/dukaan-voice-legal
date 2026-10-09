@@ -132,7 +132,7 @@ export function SettingsScreen() {
           <Button
             tone="danger"
             onClick={() => {
-              if (!window.confirm('Leave this shop?')) return;
+              if (!window.confirm(t('modal.shop_settings.leave_message',"You will lose access to this shop's inventory and data. You can rejoin later with an invite code."))) return;
               void api.leaveShop(shop.id).then(() => window.location.assign('/shop')).catch(setError);
             }}
           >
@@ -149,12 +149,12 @@ export function SettingsScreen() {
             disabled={deleting}
             onClick={() => {
               if (confirm === 0) {
-                if (!window.confirm('Delete your account? This cannot be undone.')) return;
+                if (!window.confirm(uiText('Delete your account? This cannot be undone.'))) return;
                 setConfirm(1);
-                setNotice('Confirm delete account one more time.');
+                setNotice(uiText('Confirm delete account one more time.'));
                 return;
               }
-              if (!window.confirm('Delete the account now?')) return;
+              if (!window.confirm(uiText('Delete the account now?'))) return;
               setDeleting(true);
               void api.deleteAccount().then(() => window.location.assign('/')).catch((caught: unknown) => {
                 setError(caught);

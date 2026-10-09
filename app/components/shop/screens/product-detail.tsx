@@ -334,7 +334,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
             tone="danger"
             disabled={pending}
             onClick={() => {
-              if (!window.confirm(`Archive ${product.name}?`)) return;
+              if (!window.confirm(t('modal.product_detail.delete_or_archive_message','Remove {{name}} from active products? Products with tax, purchase or bill history are archived and their records are kept.',{name:product.name}))) return;
               void run(async () => {
                 await api.deleteProduct(shop.id, productId);
                 cart.dropProduct(productId);
