@@ -105,6 +105,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
   );
   const detail = q.data;
   const reversalEntry = detail?.settlements.find((entry) => entry.id === reverseId);
+  const duplicateCreditNumber = detail?.returns.some((entry) => entry.supplierCreditNumber === creditNumber) ?? false;
+  const documentConflict = "This supplier document number has already been recorded. Review the existing document before creating another entry.";
   async function mutate(
     operation: string,
     input: NonNullable<typeof retained.current>["input"],
@@ -651,6 +653,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     value={creditNumber}
                     onChange={setCreditNumber}
                   />
+                  {duplicateCreditNumber ? <p role="alert" className="shop-hint text-danger">{text(documentConflict)}</p> : null}
                   <FiscalDateTimeField
                     label={text("Credit date and time")}
                     value={creditDate}
@@ -692,12 +695,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   <Button
                     disabled={
                       action.busy ||
-                      !creditNumber.trim() ||
+                      !creditNumber.trim() || duplicateCreditNumber ||
                       !reason.trim() ||
                       !creditReference.trim()
                     }
                     onClick={() =>
                       void action.run(async () => {
+                        if (duplicateCreditNumber) throw Error(text(documentConflict));
                         if (!/^[A-Za-z0-9/-]{1,16}$/.test(creditNumber))
                           throw Error(text("Check the supplier credit number, date, reason and reference."));
                         const items = detail.items

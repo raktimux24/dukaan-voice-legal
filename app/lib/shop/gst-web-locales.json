@@ -1125,7 +1125,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock changed. Refresh the cart before charging.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "Delete your account? This cannot be undone.",
     "web.gst.delete_the_account_now_": "Delete the account now?",
-    "web.gst.confirm_delete_account_one_more_time_": "Confirm delete account one more time."
+    "web.gst.confirm_delete_account_one_more_time_": "Confirm delete account one more time.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "This supplier document number has already been recorded. Review the existing document before creating another entry."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2254,7 +2255,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "स्टॉक बदल गया है। भुगतान लेने से पहले कार्ट रिफ्रेश करें।",
     "web.gst.delete_your_account_this_cannot_be_undone_": "अपना खाता हटाएँ? इसे वापस नहीं किया जा सकता।",
     "web.gst.delete_the_account_now_": "क्या अभी खाता हटा दें?",
-    "web.gst.confirm_delete_account_one_more_time_": "खाता हटाने की एक बार फिर पुष्टि करें।"
+    "web.gst.confirm_delete_account_one_more_time_": "खाता हटाने की एक बार फिर पुष्टि करें।",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "यह सप्लायर दस्तावेज़ नंबर पहले ही दर्ज है। नई एंट्री बनाने से पहले मौजूदा दस्तावेज़ देखें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3382,7 +3384,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock badal gaya hai. Payment lene se pehle cart refresh karein.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "Apna account delete karein? Yeh wapas nahi ho sakta.",
     "web.gst.delete_the_account_now_": "Kya abhi account delete karein?",
-    "web.gst.confirm_delete_account_one_more_time_": "Account delete karne ki ek baar phir pushti karein."
+    "web.gst.confirm_delete_account_one_more_time_": "Account delete karne ki ek baar phir pushti karein.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "Yeh supplier document number pehle hi record hai. Nayi entry banane se pehle maujooda document dekhein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4510,7 +4513,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "স্টক পরিবর্তিত হয়েছে। পেমেন্ট নেওয়ার আগে কার্ট রিফ্রেশ করুন।",
     "web.gst.delete_your_account_this_cannot_be_undone_": "আপনার অ্যাকাউন্ট মুছবেন? এটি আর ফেরানো যাবে না।",
     "web.gst.delete_the_account_now_": "এখনই অ্যাকাউন্ট মুছবেন?",
-    "web.gst.confirm_delete_account_one_more_time_": "অ্যাকাউন্ট মুছে ফেলার জন্য আরও একবার নিশ্চিত করুন।"
+    "web.gst.confirm_delete_account_one_more_time_": "অ্যাকাউন্ট মুছে ফেলার জন্য আরও একবার নিশ্চিত করুন।",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "এই সরবরাহকারীর নথি নম্বর আগে থেকেই নথিভুক্ত আছে। নতুন এন্ট্রি করার আগে আগের নথিটি দেখুন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5638,7 +5642,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "இருப்பு மாறியுள்ளது. பணம் பெறுவதற்கு முன் கார்ட்டைப் புதுப்பிக்கவும்.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "உங்கள் கணக்கை நீக்கவா? இதை மீட்டெடுக்க முடியாது.",
     "web.gst.delete_the_account_now_": "இப்போது கணக்கை நீக்கவா?",
-    "web.gst.confirm_delete_account_one_more_time_": "கணக்கை நீக்குவதை மீண்டும் ஒருமுறை உறுதிப்படுத்தவும்."
+    "web.gst.confirm_delete_account_one_more_time_": "கணக்கை நீக்குவதை மீண்டும் ஒருமுறை உறுதிப்படுத்தவும்.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "இந்த சப்ளையர் ஆவண எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது. புதிய பதிவை உருவாக்கும் முன் தற்போதைய ஆவணத்தைச் சரிபார்க்கவும்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6766,7 +6771,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "స్టాక్ మారింది. చెల్లింపు తీసుకునే ముందు కార్ట్‌ను రిఫ్రెష్ చేయండి.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "మీ ఖాతాను తొలగించాలా? దీన్ని తిరిగి పొందలేరు.",
     "web.gst.delete_the_account_now_": "ఇప్పుడే ఖాతాను తొలగించాలా?",
-    "web.gst.confirm_delete_account_one_more_time_": "ఖాతా తొలగింపును మరోసారి నిర్ధారించండి."
+    "web.gst.confirm_delete_account_one_more_time_": "ఖాతా తొలగింపును మరోసారి నిర్ధారించండి.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ఈ సరఫరాదారు పత్రం సంఖ్య ఇప్పటికే నమోదైంది. కొత్త నమోదు చేయడానికి ముందు ఉన్న పత్రాన్ని పరిశీలించండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7894,7 +7900,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "साठा बदलला आहे. पैसे घेण्यापूर्वी कार्ट रिफ्रेश करा.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "तुमचे खाते हटवायचे? ते परत मिळवता येणार नाही.",
     "web.gst.delete_the_account_now_": "आता खाते हटवायचे?",
-    "web.gst.confirm_delete_account_one_more_time_": "खाते हटवण्याची आणखी एकदा पुष्टी करा."
+    "web.gst.confirm_delete_account_one_more_time_": "खाते हटवण्याची आणखी एकदा पुष्टी करा.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "हा पुरवठादार दस्तऐवज क्रमांक आधीच नोंदवला आहे. नवीन नोंद करण्यापूर्वी विद्यमान दस्तऐवज तपासा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -9022,7 +9029,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "ಸ್ಟಾಕ್ ಬದಲಾಗಿದೆ. ಪಾವತಿ ಪಡೆಯುವ ಮೊದಲು ಕಾರ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಬೇಕೇ? ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
     "web.gst.delete_the_account_now_": "ಈಗಲೇ ಖಾತೆಯನ್ನು ಅಳಿಸಬೇಕೇ?",
-    "web.gst.confirm_delete_account_one_more_time_": "ಖಾತೆಯನ್ನು ಅಳಿಸುವುದನ್ನು ಮತ್ತೊಮ್ಮೆ ದೃಢೀಕರಿಸಿ."
+    "web.gst.confirm_delete_account_one_more_time_": "ಖಾತೆಯನ್ನು ಅಳಿಸುವುದನ್ನು ಮತ್ತೊಮ್ಮೆ ದೃಢೀಕರಿಸಿ.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ಈ ಪೂರೈಕೆದಾರರ ದಾಖಲೆ ಸಂಖ್ಯೆ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ. ಹೊಸ ದಾಖಲಾತಿ ಮಾಡುವ ಮೊದಲು ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ದಾಖಲೆಯನ್ನು ಪರಿಶೀಲಿಸಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10150,7 +10158,8 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "સ્ટોક બદલાયો છે. ચુકવણી લેતા પહેલાં કાર્ટ રિફ્રેશ કરો.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "તમારું ખાતું કાઢી નાખવું છે? આ પાછું મેળવી શકાશે નહીં.",
     "web.gst.delete_the_account_now_": "હમણાં જ ખાતું કાઢી નાખવું છે?",
-    "web.gst.confirm_delete_account_one_more_time_": "ખાતું કાઢી નાખવાની ફરી એક વાર પુષ્ટિ કરો."
+    "web.gst.confirm_delete_account_one_more_time_": "ખાતું કાઢી નાખવાની ફરી એક વાર પુષ્ટિ કરો.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "આ સપ્લાયરના દસ્તાવેજનો નંબર પહેલેથી નોંધાયેલો છે. નવી એન્ટ્રી કરતા પહેલાં હાલનો દસ્તાવેજ તપાસો."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11278,6 +11287,7 @@
     "web.gst.stock_changed_refresh_the_cart_before_charging_": "സ്റ്റോക്ക് മാറിയിട്ടുണ്ട്. പണം സ്വീകരിക്കുന്നതിന് മുമ്പ് കാർട്ട് പുതുക്കുക.",
     "web.gst.delete_your_account_this_cannot_be_undone_": "നിങ്ങളുടെ അക്കൗണ്ട് നീക്കം ചെയ്യണോ? ഇത് തിരിച്ചെടുക്കാൻ കഴിയില്ല.",
     "web.gst.delete_the_account_now_": "ഇപ്പോൾ അക്കൗണ്ട് നീക്കം ചെയ്യണോ?",
-    "web.gst.confirm_delete_account_one_more_time_": "അക്കൗണ്ട് നീക്കം ചെയ്യുന്നത് ഒരിക്കൽ കൂടി സ്ഥിരീകരിക്കുക."
+    "web.gst.confirm_delete_account_one_more_time_": "അക്കൗണ്ട് നീക്കം ചെയ്യുന്നത് ഒരിക്കൽ കൂടി സ്ഥിരീകരിക്കുക.",
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ഈ വിതരണക്കാരന്റെ രേഖാ നമ്പർ ഇതിനകം രേഖപ്പെടുത്തിയിട്ടുണ്ട്. പുതിയ എൻട്രി സൃഷ്ടിക്കുന്നതിന് മുമ്പ് നിലവിലുള്ള രേഖ പരിശോധിക്കുക."
   }
 }

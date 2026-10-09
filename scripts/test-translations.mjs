@@ -39,6 +39,12 @@ assert.equal(translateUi('hi', {}, 'missing.alias', 'GST setup'), web.hi['web.gs
 assert.equal(translateUi('hi', {}, 'missing.alias', 'You are signed in as {{role}} of this shop.', { role: 'OWNER' }).includes('{{role}}'), false);
 assert.equal(translateUi('en', {}, 'missing', 'Keep {{name}}', { name: 'Suresh' }), 'Keep Suresh');
 assert.equal(translateUi('hi', {}, 'unknown', 'Krishna Enterprise'), 'Krishna Enterprise');
+for (const language of languages) {
+  const fallback = 'This supplier document number has already been recorded. Review the existing document before creating another entry.';
+  const translated = translateUi(language, {}, 'gst.error.duplicate_purchase_document', fallback);
+  assert.notEqual(translated, fallback, `${language}: duplicate purchase conflict must be translated`);
+}
+
 assert.equal(translateUi('kn', { arbitrary: 'ಕನ್ನಡ' }, 'arbitrary', 'A label'), 'ಕನ್ನಡ');
 // Dynamic notices must select a template before inserting product data.
 const dynamicNotices = {
