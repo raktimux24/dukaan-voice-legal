@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { issueSale } from '../../../lib/shop/gst-issuance';
+import {premiumAt} from '../../../lib/shop/offline-premium';
 import { validateContext, type GstContext } from '../../../lib/shop/gst-core/gst';
 import { useGstText } from '../gst-ui';
 import { ApiError } from '../../../lib/shop/api';
@@ -36,7 +37,7 @@ function covers(tendered: number, amount: number) {
 
 export function CheckoutScreen() {
   const uiText = useUiText();
-  const { api, shop, userId, premium, perms, t } = useShop();
+  const { api, shop, userId, premium, entitlement,perms, t } = useShop();
   const text=useGstText();
   const router = useRouter();
   const cartApi = useCart(userId, shop?.id ?? null);
@@ -181,6 +182,7 @@ export function CheckoutScreen() {
 
   const handleCharge = async (fresh: boolean) => {
     if (charging.current || !canCharge) return;
+    if(creditPortion>0&&!premiumAt(entitlement)){setError(new Error(t('checkout.customer_list_premium','Saved customers and udhaar balances are part of Premium.')));return;}
     const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
     if (phone === 'invalid') {
       setError(new Error('Enter a valid Indian mobile number.'));

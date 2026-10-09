@@ -2,6 +2,7 @@ import type { VoiceProcessResponse, VoiceConfirmRequest, VoiceConfirmResponse } 
 import { collectPages } from './pagination';
 import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
 import {createOfflineEvidence,type EvidenceScope} from './offline-evidence';
+import {retainEntitlement} from './offline-premium';
 import { bindGstApi } from './gst-api';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
@@ -481,9 +482,19 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       });
     },
 
-    getPreferences: () => send<{ preferences: UserPreferences | null }>('/api/preferences'),
-    updatePreferences: (body: Partial<UserPreferences>) =>
-      send<{ preferences: UserPreferences }>('/api/preferences', { method: 'PATCH', body: JSON.stringify(body) }),
+    getPreferences: () => {
+      const load=()=>send<{preferences:UserPreferences|null}>('/api/preferences');
+      const validate=(value:unknown):value is {preferences:UserPreferences|null}=>{
+        if(!value||typeof value!=='object'||!('preferences' in value))return false;
+        const p=(value as {preferences:UserPreferences|null}).preferences;
+        return p===null||!!p&&['en','hi','hinglish','bn','ta','te','mr','kn','gu','ml'].includes(p.appLanguage)&&typeof p.voiceLanguage==='string'&&typeof p.voiceFeedbackEnabled==='boolean'&&typeof p.highContrastMode==='boolean'&&['small','medium','large','extra_large'].includes(p.textSize);
+      };
+      return evidence&&evidenceScope?.isSessionCurrent?evidence.read('@account','preferences',load,validate):load();
+    },
+    updatePreferences: async (body: Partial<UserPreferences>) => {
+      await evidence?.clear('@account','preferences');
+      return send<{ preferences: UserPreferences }>('/api/preferences', { method: 'PATCH', body: JSON.stringify(body) });
+    },
     getTranslations: async (lang: string) => {
       const res = await send<unknown>(`/api/translations/${encodeURIComponent(lang)}`);
       return res;
@@ -505,7 +516,15 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
     getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
 
-    getEntitlement: (shopId: string) => send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`),
+    getEntitlement: (shopId: string) => {
+      const load=()=>send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`);
+      const validate=(value:unknown):value is import('../subscriptions').SubscriptionEntitlement=>{
+        if(!value||typeof value!=='object')return false;
+        const e=value as import('../subscriptions').SubscriptionEntitlement;
+        return typeof e.isPremium==='boolean'&&['legacy_free','none','trialing','active','past_due','canceled','expired','pending_authentication'].includes(e.status)&&[null,'monthly','annual'].includes(e.plan)&&[e.currentPeriodEnd,e.trialEnd].every(date=>date===null||typeof date==='string'&&Number.isFinite(Date.parse(date)));
+      };
+      return evidence?evidence.read(shopId,'entitlement',load,validate,retainEntitlement):load();
+    },
     deleteAccount: () => send('/api/account', { method: 'DELETE' }),
   };
 }

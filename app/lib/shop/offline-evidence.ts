@@ -2,13 +2,13 @@ import {permitsOfflineShopFallback} from './offline-shop-context';
 import {canonicalJson} from './gst-core/sale-request-canonical';
 import {readState,writeState,sha256} from './gst-storage';
 
-export type EvidenceScope={actorId:string;sessionId:string;isCurrent:(shopId:string)=>boolean;onFallback?:(shopId:string)=>void};
+export type EvidenceScope={actorId:string;sessionId:string;isCurrent:(shopId:string)=>boolean;isSessionCurrent?:()=>boolean;onFallback?:(shopId:string)=>void};
 type Store={read:(key:string)=>Promise<unknown>;write:(key:string,value:unknown)=>Promise<void>};
 type Entry={version:1;actorId:string;sessionId:string;shopId:string;kind:string;capturedAt:number;value:unknown;hash:string};
 const MAX_AGE=7*86400000;
 /** Only complete, validated reads are retained. A cache never substitutes for authorization or an issuance grant. */
 export function createOfflineEvidence(scope:EvidenceScope,store:Store={read:readState,write:writeState},now:()=>number=Date.now) {
-  const check=(shopId:string)=>{if(!scope.isCurrent(shopId))throw Error('offline_evidence_scope_changed');};
+  const check=(shopId:string)=>{if(!(shopId==='@account'?scope.isSessionCurrent?.():scope.isCurrent(shopId)))throw Error('offline_evidence_scope_changed');};
   const key=(shop:string,kind:string)=>`read-cache:v1:${scope.actorId}:${scope.sessionId}:${shop}:${kind}`;
   const clear=async(shop:string,kind:string)=>{try{await store.write(key(shop,kind),null);}catch{/* Cache invalidation must not mask the originating server error. */}};
   return {
