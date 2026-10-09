@@ -1,10 +1,11 @@
 "use client";
 import {
   gstMonitorView,
+  gstMonitorReceiptConfirmed,
   CORE_MONITOR_KINDS,
 } from "../../../lib/shop/gst-monitor-view";
 import { hasLocalIssuedReceipt } from "../../../lib/shop/local-issued-receipt";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useShop } from "../context";
@@ -200,6 +201,7 @@ export function GstChecksScreen() {
     router = useRouter();
   const [unconfirmedScan, setUnconfirmedScan] = useState<string|null>(null);
   const scanScope = `${userId}:${shop?.id}`;
+  const pendingRun = useRef<{ scope: string; receipt: unknown } | null>(null);
   const [issueLimit, setIssueLimit] = useState(100);
   const [supportNotice, setSupportNotice] = useState("");
   const q = useGstQuery(
@@ -209,6 +211,16 @@ export function GstChecksScreen() {
       "always",
     ),
     action = useGstAction();
+  const refreshSaved = async () => {
+    const scope = financialScope(shop!.id);
+    const refreshed = await q.refetch();
+    assertScope(scope);
+    if (!refreshed.error && pendingRun.current?.scope === scanScope && gstMonitorReceiptConfirmed(pendingRun.current.receipt, refreshed.data)) {
+      setUnconfirmedScan(null);
+      pendingRun.current = null;
+    }
+    return refreshed;
+  };
   const report = q.data,
     issues =
       report?.issues.filter(
@@ -294,18 +306,21 @@ export function GstChecksScreen() {
             onClick={() =>
               void action.run(async () => {
                 const scope = financialScope(shop!.id);
+                setUnconfirmedScan(scanScope);
+                pendingRun.current = null;
                 try {
                   const result = await api.gst.runChecks(scope.shopId);
                   assertScope(scope);
+                  pendingRun.current = { scope: scanScope, receipt: result };
                   if (result.skipped) throw Error(text("A check is already running or unavailable. Refresh saved results shortly."));
-                  const refreshed = await q.refetch();
+                  const refreshed = await refreshSaved();
                   assertScope(scope);
                   if (refreshed.error) throw refreshed.error;
-                  setUnconfirmedScan(null);
+                  if (!gstMonitorReceiptConfirmed(result, refreshed.data)) throw Error(text("Refresh to confirm the current result."));
                 } catch (error) {
                   assertScope(scope);
                   setUnconfirmedScan(scanScope);
-                  await q.refetch();
+                  await refreshSaved();
                   throw error;
                 }
               })
@@ -316,7 +331,7 @@ export function GstChecksScreen() {
           <Button
             tone="ghost"
             disabled={q.isFetching || action.busy}
-            onClick={() => void q.refetch()}
+            onClick={() => void refreshSaved().catch(() => {})}
           >
             {text("Refresh saved results")}
           </Button>

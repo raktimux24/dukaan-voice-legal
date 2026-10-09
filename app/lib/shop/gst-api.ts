@@ -137,7 +137,7 @@ export function bindGstApi(
     monitor: (s: string, limit = 100) =>
       get<GstMonitor>(`${base(s)}/gst-exports/monitor?limit=${Math.max(1,Math.min(10000,Math.trunc(limit)||100))}`),
     runChecks: (s: string) =>
-      post<{ skipped: boolean }>(`${base(s)}/gst-exports/monitor`, {}),
+      post<{ skipped: boolean; run?: { id: string; status: 'completed'; scannedDocuments: number; issueCount: number } }>(`${base(s)}/gst-exports/monitor`, {}),
     numbers: (s: string, before?: string) =>
       get<{ items: AllocationRow[]; nextCursor: string | null }>(
         `${base(s)}/pos-settings/gst-allocations${before ? "?before=" + encodeURIComponent(before) : ""}`,
