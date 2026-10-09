@@ -736,6 +736,33 @@ a.shop-list-row:hover {
   color: #5a5a62;
 }
 
+/* Explicit component spacing survives the marketing reset outside CSS layers. */
+.shop-notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(232, 90, 79, .4);
+  border-radius: 10px;
+  background: rgba(232, 90, 79, .1);
+  color: var(--color-danger);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.purchase-confirmation {
+  display: grid;
+  gap: 16px;
+}
+
+.purchase-confirmation .shop-hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.purchase-confirmation .shop-toggle { line-height: 1.6; }
+
 .shop-input-wrap {
   position: relative;
 }
