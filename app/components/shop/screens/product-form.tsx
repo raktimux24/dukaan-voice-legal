@@ -62,7 +62,7 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
   };
 }
 
-export function ProductFormScreen({ productId }: { productId?: string }) {
+export function ProductFormScreen({ productId, onCreated, onCancel }: { productId?: string; onCreated?: (id: string) => void | Promise<void>; onCancel?: () => void }) {
   const uiText = useUiText();
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const router = useRouter();
@@ -136,7 +136,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
     }
     if(!hideCost && form.purchasePrice!=='' && cost===null){setError(Error(text('Enter a valid buying price and a discount between 0 and 100%.')));return;}
     if(autoMrp&&!priceBreakdown){setError(Error(text('Confirm selling price and GST before calculating MRP.')));return;}
-    const buyListItemId = params.get('buyListItemId');
+    const buyListItemId = onCreated ? null : params.get('buyListItemId');
     if(gstConfig){try{validateProductTaxDraft(gstConfig);}catch(e){setError(e);return;}}
     if(form.mrp&&priceBreakdown&&priceBreakdown.gross>Number(form.mrp)&&!autoMrp){setError(new Error(text('Selling price including GST must not exceed MRP.')));return;}
     const body: Record<string, unknown> = {
@@ -172,6 +172,10 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       const created = await api.addProduct(shop.id, body);
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
+      if (onCreated) {
+        await onCreated(created.product.id);
+        return;
+      }
       if (addAnother) {
         setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
@@ -207,7 +211,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
         description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : uiText('Name, category, and a price are enough to start selling.')}
-        actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
+        actions={<Button href={onCancel ? undefined : productId ? `/shop/products/${productId}` : '/shop/products'} onClick={onCancel} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
       <Notice error={error} />
 
@@ -339,7 +343,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
             ) : null}
             <div className="grid gap-2">
               <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
-              {!productId ? (
+              {!productId && !onCreated ? (
                 <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>{uiText("Save and add another")}</Button>
               ) : null}
             </div>
