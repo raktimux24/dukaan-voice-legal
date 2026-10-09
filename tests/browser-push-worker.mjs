@@ -12,7 +12,9 @@ vm.runInNewContext(fs.readFileSync('public/shop-worker.js','utf8'),{
 });
 async function dispatch(name,event){let work;handlers[name]({...event,waitUntil:p=>work=p});await work;}
 await dispatch('message',{source:{url:'https://evil.test'},data:{type:'BIND_PUSH_ACCOUNT',actorId:'a'}});assert.equal(owner,undefined);
-await dispatch('message',{source:{url:origin+'/shop'},data:{type:'BIND_PUSH_ACCOUNT',actorId:'a'}});
+const acknowledgements=[];
+await dispatch('message',{source:{url:origin+'/shop'},ports:[{postMessage:result=>acknowledgements.push(result)}],data:{type:'BIND_PUSH_ACCOUNT',actorId:'a'}});
+assert.equal(acknowledgements[0].ok,true);assert.equal(acknowledgements[0].actorId,'a');
 const push=data=>dispatch('push',{data:{json:()=>data}});
 await push({title:'Private',data:{actorId:'b'}});assert.equal(notices.length,0);
 await push({title:'अपडेट',body:'दुकान',data:{actorId:'a',screen:'subscription',url:'https://evil.test'}});assert.equal(notices.length,1);assert.equal(notices[0].data.path,'/shop/settings/subscription');
@@ -22,6 +24,6 @@ await dispatch('notificationclick',{notification:{data:notices[0].data,close(){}
 await push({title:'Earlier account',data:{actorId:'a'}});assert.equal(notices.length,1);
 await dispatch('message',{source:{url:origin+'/shop'},data:{type:'BIND_PUSH_ACCOUNT',actorId:null}});assert.equal(owner,undefined);
 await push({title:'Signed out',data:{actorId:'b'}});assert.equal(notices.length,1);
-storageDenied=true;await push({title:'No safe owner',data:{actorId:'a'}});assert.equal(notices.length,1);
+storageDenied=true;await dispatch('message',{source:{url:origin+'/shop'},ports:[{postMessage:result=>acknowledgements.push(result)}],data:{type:'BIND_PUSH_ACCOUNT',actorId:'b'}});assert.equal(acknowledgements.at(-1).ok,false);await push({title:'No safe owner',data:{actorId:'a'}});assert.equal(notices.length,1);
 await dispatch('push',{data:{json(){throw Error('malformed');}}});
 console.log('Browser push worker: account isolation, signout, safe destinations, stale clicks, denied storage and malformed payload passed.');

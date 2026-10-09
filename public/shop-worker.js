@@ -36,7 +36,7 @@ self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('message',event=>{
  // Same-origin page clients only; messages cannot inject arbitrary URLs or content.
  if(!event.source?.url||new URL(event.source.url).origin!==self.location.origin)return;
- if(event.data?.type==='BIND_PUSH_ACCOUNT'&&(event.data.actorId===null||typeof event.data.actorId==='string'&&event.data.actorId.length<256))event.waitUntil(pushOwner(event.data.actorId));
+ if(event.data?.type==='BIND_PUSH_ACCOUNT'&&(event.data.actorId===null||typeof event.data.actorId==='string'&&event.data.actorId.length<256))event.waitUntil(pushOwner(event.data.actorId).then(()=>event.ports?.[0]?.postMessage({ok:true,actorId:event.data.actorId})).catch(()=>event.ports?.[0]?.postMessage({ok:false})));
  if(event.data?.type==='WARM_BILLING_SHELL')event.waitUntil(prewarm());
  if(event.data?.type==='CLEAR_BILLING_SHELL')event.waitUntil(caches.delete(CACHE));
 });
