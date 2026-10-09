@@ -141,7 +141,7 @@ export function StaffScreen() {
                     size="sm"
                     tone="danger"
                     onClick={() => {
-                      if (!window.confirm(`Remove ${name}?`)) return;
+                      if (!window.confirm(t('modal.staff.remove_message','Remove {{name}} from the shop? They can rejoin with a new invite.',{name}))) return;
                       void api.removeMember(shop.id, member.id).then(() => Promise.all([queryClient.invalidateQueries({ queryKey: ['members'] }), queryClient.invalidateQueries({ queryKey: ['product-tax-authorizations', userId, shop.id] })])).catch(setError);
                     }}
                   >
@@ -161,7 +161,7 @@ export function StaffScreen() {
             tone="danger"
             disabled={pending}
             onClick={() => {
-              if (!window.confirm(`Delete ${shop.name}?`)) return;
+              if (!window.confirm(`${shop.name}\n\n${t('modal.shop_settings.delete_message','Are you sure you want to permanently delete this shop and all its data? This cannot be undone.')}`)) return;
               setPending(true);
               void api.deleteShop(shop.id).then(() => {
                 if (userId) localStorage.removeItem(`samaan-active-shop:${userId}`);
