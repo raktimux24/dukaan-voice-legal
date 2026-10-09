@@ -46,6 +46,12 @@ for (const language of languages) {
 }
 
 assert.equal(translateUi('kn', { arbitrary: 'ಕನ್ನಡ' }, 'arbitrary', 'A label'), 'ಕನ್ನಡ');
+// Web actions must not inherit differently scoped mobile copy for the same key.
+assert.equal(translateUi('bn', { 'settings.export_sales': 'বিক্রয় (গত 30 দিন)' }, 'settings.export_sales', 'Sales CSV (this month)'), 'বিক্রির CSV (এই মাসের)');
+assert.equal(translateUi('bn', { 'settings.section_language_voice': 'ভাষা এবং কণ্ঠস্বর' }, 'settings.section_language_voice', 'Preferences'), 'পছন্দসমূহ');
+assert.equal(translateUi('bn', { 'text_size.extra_large': 'বড়' }, 'text_size.extra_large', 'Extra Large'), 'অতিরিক্ত বড়');
+assert.equal(translateUi('bn', { 'unit_picker.piece': 'piece' }, 'unit_picker.piece', 'piece'), 'টি');
+assert.equal(translateUi('bn', { 'customers.settled': 'সমস্ত' }, 'customers.settled', 'All settled'), 'সব বকেয়া মেটানো হয়েছে');
 // Dynamic notices must select a template before inserting product data.
 const dynamicNotices = {
   'pos.out_of_stock_toast': '{{name}} is out of stock',
