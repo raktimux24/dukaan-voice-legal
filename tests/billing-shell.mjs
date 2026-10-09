@@ -15,9 +15,10 @@ async function message(type,url=origin+'/shop/sell'){
 async function request(path,options={}){
  let result;handlers.fetch({request:{url:new URL(path,origin).href,method:options.method??'GET',mode:options.mode??'navigate',headers:new Headers(options.headers)},respondWith:p=>result=p});return result?await result:null;
 }
-transport=async r=>key(r).includes('/_next/static/')?new Response('bundle'):new Response('<script src="/_next/static/app.js"></script><link href="https://evil.test/leak"/>',{headers:{'content-type':'text/html'}});
+transport=async r=>key(r).endsWith('/style.css')?new Response('body{src:url("/_next/static/font.woff2")}'):key(r).includes('/_next/static/')?new Response('bundle'):new Response('<script src="/_next/static/app.js"></script><link href="/_next/static/style.css"/><link href="https://evil.test/leak"/>',{headers:{'content-type':'text/html'}});
 await message('WARM_BILLING_SHELL');
-assert.equal(entries.size,4);assert.ok(calls.every(url=>url.startsWith(origin)));
+assert.equal(entries.size,6);assert.ok(calls.every(url=>url.startsWith(origin)));
+entries.delete(origin+'/_next/static/font.woff2');await message('WARM_BILLING_SHELL');assert.ok(entries.has(origin+'/_next/static/font.woff2'));
 transport=async()=>{throw new TypeError('Failed to fetch');};
 assert.match(await (await request('/shop/sell')).text(),/script/);
 assert.equal(await (await request('/_next/static/app.js',{mode:'cors'})).text(),'bundle');
@@ -26,7 +27,7 @@ assert.equal(await request('/shop/sell',{headers:{RSC:'1'}}),null);
 assert.equal(await request('/shop/sell',{method:'POST'}),null);
 for(const status of [401,403,404,500]){transport=async()=>new Response('denied',{status});assert.equal((await request('/shop/sell')).status,status);}
 transport=async()=>new Response('unavailable',{status:503});assert.equal((await request('/shop/sell')).status,200);
-await message('CLEAR_BILLING_SHELL','https://evil.test');assert.equal(entries.size,4);
+await message('CLEAR_BILLING_SHELL','https://evil.test');assert.equal(entries.size,6);
 await message('CLEAR_BILLING_SHELL');assert.equal(entries.size,0);
 // An incomplete resource warm-up must not replace any retained HTML.
 transport=async r=>key(r).includes('/_next/static/')?new Response('failed',{status:500}):new Response('<script src="/_next/static/new.js"></script>',{headers:{'content-type':'text/html'}});

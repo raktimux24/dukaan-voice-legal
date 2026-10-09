@@ -19,14 +19,13 @@ async function prewarm(){
    let complete=true;
    const resources=[...new Set(urls.map(u=>u.href))];
    for(const url of resources){
-    if(await cache.match(url))continue;
-    try{const resource=await fetch(url);if(!resource.ok||resource.type==='opaque'){complete=false;break;}if(url.endsWith('.css')){
+    try{const cached=await cache.match(url),resource=cached??await fetch(url);if(!resource.ok||resource.type==='opaque'){complete=false;break;}if(url.endsWith('.css')){
      const css=await resource.clone().text();
      for(const match of css.matchAll(/url\(["']?([^"')]+)["']?\)/g)){
       const child=new URL(match[1],url);if(asset(child)&&!resources.includes(child.href))resources.push(child.href);
      }
     }
-    if(!await save(url,resource)){complete=false;break;}}catch{complete=false;break;}
+    if(!cached&&!await save(url,resource)){complete=false;break;}}catch{complete=false;break;}
    }
    if(complete)await save(path,response);
   }catch{/* Existing usable shell remains intact on a failed warm-up. */}
