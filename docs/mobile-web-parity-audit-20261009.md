@@ -554,3 +554,12 @@ PR84 production deploy 6ac97820160bd00008c1fc0e published 2026-10-09T23:28:18.18
 The full GST suite, 62 contracts, TypeScript and production build passed. Layout tests preserve all 100 long multilingual line amounts and text, bound horizontal positions, keep Indic clusters intact and retain the final footer within the image. An actual browser canvas fixture rendered English, Bengali and Hindi names plus a long SKU, address, payment description and multiline footer without overlap or truncation. Evidence: /private/tmp/wrapped-bill-browser-proof-20261010.jpg. This synthetic rendering recorded no invoice, payment or stock change.
 
 Production deploy 6ac979812cbb2600083c0c0f is in progress and not yet publication-verified. Live OS sharing, very large browser bitmap limits, long GST PDF pagination and physical printing remain open. Native PR18/EAS, authenticated recovery/concurrency, eligible Regular GST, provider and full runtime language gates remain open; full parity is not complete.
+
+
+### Sharing fallback scope and focused release — 10 October
+
+PR85 production deploy 6ac979812cbb2600083c0c0f is ready and published 2026-10-09T23:34:06.578Z.
+
+PR86 merged 00077cb530b2679c1378d47a56a1bca078bbb52f. Ordinary bill sharing now checks the captured account/session and shop before conversion and after asynchronous image, failed share and clipboard boundaries, preventing subsequent stale fallback actions. Clipboard denial permits image download; explicit share cancellation remains cancellation. If neither copy nor download succeeds, the screen displays an error. Copy, download and failure notices have coverage in all ten supported language catalogs.
+
+Targeted sharing context/cancellation/failure tests, the full GST suite with 62 contracts, production build, translation coverage and diff checks passed. Production deploy 6ac97b2167d5080008e019f4 has started; publication is pending. Real OS share-sheet acceptance remains unproven. The goal remains focused on reported gaps and essential parity; broad speculative edge cases are not new release requirements. Previously listed required production-native, eligible GST, recovery and provider acceptance still need evidence.
