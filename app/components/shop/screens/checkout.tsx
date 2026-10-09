@@ -251,6 +251,7 @@ export function CheckoutScreen() {
             wentToBill.current=true;
             setLocalReceiptId(clientId);
             cartApi.clear();
+            void queryClient.invalidateQueries({queryKey:['catalog',shop.id]});
             return;
           }
         }catch{/* An unverifiable receipt stays in recovery; never claim an issued bill. */}

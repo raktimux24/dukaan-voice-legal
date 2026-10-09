@@ -1120,7 +1120,9 @@
     "web.gst.retry_saved_checkout": "Retry saved checkout",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "Could not verify the saved checkout. Check browser storage and retry.",
     "web.gst.saved_locally_awaiting_synchronization": "Saved locally · awaiting synchronization",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "This bill keeps its original number and issue time. Server confirmation is pending."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "This bill keeps its original number and issue time. Server confirmation is pending.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "The product changed. Refresh the cart before charging.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock changed. Refresh the cart before charging."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2244,7 +2246,9 @@
     "web.gst.retry_saved_checkout": "सहेजा गया चेकआउट फिर भेजें",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "सहेजे गए चेकआउट की पुष्टि नहीं हो सकी। ब्राउज़र स्टोरेज जाँचकर फिर कोशिश करें।",
     "web.gst.saved_locally_awaiting_synchronization": "इस डिवाइस पर सहेजा गया · सिंक होना बाकी है",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "इस बिल का मूल नंबर और जारी करने का समय सुरक्षित है। सर्वर की पुष्टि बाकी है।"
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "इस बिल का मूल नंबर और जारी करने का समय सुरक्षित है। सर्वर की पुष्टि बाकी है।",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "उत्पाद बदल गया है। भुगतान लेने से पहले कार्ट रिफ्रेश करें।",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "स्टॉक बदल गया है। भुगतान लेने से पहले कार्ट रिफ्रेश करें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3367,7 +3371,9 @@
     "web.gst.retry_saved_checkout": "Saved checkout phir bhejein",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "Saved checkout verify nahi ho saka. Browser storage check karke phir koshish karein.",
     "web.gst.saved_locally_awaiting_synchronization": "Yahin saved hai · sync hona baaki hai",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "Is bill ka original number aur issue time surakshit hai. Server ki confirmation baaki hai."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "Is bill ka original number aur issue time surakshit hai. Server ki confirmation baaki hai.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "Product badal gaya hai. Payment lene se pehle cart refresh karein.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "Stock badal gaya hai. Payment lene se pehle cart refresh karein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4490,7 +4496,9 @@
     "web.gst.retry_saved_checkout": "সংরক্ষিত চেকআউট আবার পাঠান",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "সংরক্ষিত চেকআউট যাচাই করা যায়নি। ব্রাউজারের স্টোরেজ পরীক্ষা করে আবার চেষ্টা করুন।",
     "web.gst.saved_locally_awaiting_synchronization": "স্থানীয়ভাবে সংরক্ষিত · সিঙ্ক হওয়া বাকি",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "এই বিলের মূল নম্বর ও জারির সময় অপরিবর্তিত আছে। সার্ভারের নিশ্চিতকরণ বাকি।"
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "এই বিলের মূল নম্বর ও জারির সময় অপরিবর্তিত আছে। সার্ভারের নিশ্চিতকরণ বাকি।",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "পণ্যটি পরিবর্তিত হয়েছে। পেমেন্ট নেওয়ার আগে কার্ট রিফ্রেশ করুন।",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "স্টক পরিবর্তিত হয়েছে। পেমেন্ট নেওয়ার আগে কার্ট রিফ্রেশ করুন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5613,7 +5621,9 @@
     "web.gst.retry_saved_checkout": "சேமித்த செக்அவுட்டை மீண்டும் அனுப்பவும்",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "சேமித்த செக்அவுட்டை சரிபார்க்க முடியவில்லை. உலாவிச் சேமிப்பகத்தைச் சரிபார்த்து மீண்டும் முயலவும்.",
     "web.gst.saved_locally_awaiting_synchronization": "இங்கே சேமிக்கப்பட்டது · ஒத்திசைவு நிலுவையில் உள்ளது",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "இந்த பில்லின் அசல் எண்ணும் வெளியிட்ட நேரமும் பாதுகாக்கப்படும். சேவையக உறுதிப்படுத்தல் நிலுவையில் உள்ளது."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "இந்த பில்லின் அசல் எண்ணும் வெளியிட்ட நேரமும் பாதுகாக்கப்படும். சேவையக உறுதிப்படுத்தல் நிலுவையில் உள்ளது.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "பொருள் மாறியுள்ளது. பணம் பெறுவதற்கு முன் கார்ட்டைப் புதுப்பிக்கவும்.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "இருப்பு மாறியுள்ளது. பணம் பெறுவதற்கு முன் கார்ட்டைப் புதுப்பிக்கவும்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6736,7 +6746,9 @@
     "web.gst.retry_saved_checkout": "సేవ్ చేసిన చెక్అవుట్ మళ్లీ పంపండి",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "సేవ్ చేసిన చెక్అవుట్‌ను ధృవీకరించలేకపోయాం. బ్రౌజర్ స్టోరేజ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
     "web.gst.saved_locally_awaiting_synchronization": "ఇక్కడ సేవ్ అయింది · సింక్ పెండింగ్‌లో ఉంది",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ఈ బిల్లు అసలు నంబర్ మరియు జారీ సమయాన్ని ఉంచుతుంది. సర్వర్ నిర్ధారణ పెండింగ్‌లో ఉంది."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ఈ బిల్లు అసలు నంబర్ మరియు జారీ సమయాన్ని ఉంచుతుంది. సర్వర్ నిర్ధారణ పెండింగ్‌లో ఉంది.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ఉత్పత్తి మారింది. చెల్లింపు తీసుకునే ముందు కార్ట్‌ను రిఫ్రెష్ చేయండి.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "స్టాక్ మారింది. చెల్లింపు తీసుకునే ముందు కార్ట్‌ను రిఫ్రెష్ చేయండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7859,7 +7871,9 @@
     "web.gst.retry_saved_checkout": "जतन केलेले चेकआउट पुन्हा पाठवा",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "जतन केलेले चेकआउट पडताळता आले नाही. ब्राउझर स्टोरेज तपासून पुन्हा प्रयत्न करा.",
     "web.gst.saved_locally_awaiting_synchronization": "स्थानिकरीत्या जतन केले · सिंक होणे बाकी आहे",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "या बिलाचा मूळ क्रमांक आणि जारी करण्याची वेळ कायम आहेत. सर्व्हरची पुष्टी बाकी आहे."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "या बिलाचा मूळ क्रमांक आणि जारी करण्याची वेळ कायम आहेत. सर्व्हरची पुष्टी बाकी आहे.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "उत्पादन बदलले आहे. पैसे घेण्यापूर्वी कार्ट रिफ्रेश करा.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "साठा बदलला आहे. पैसे घेण्यापूर्वी कार्ट रिफ्रेश करा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -8982,7 +8996,9 @@
     "web.gst.retry_saved_checkout": "ಉಳಿಸಿದ ಚೆಕ್ಔಟ್ ಮತ್ತೆ ಕಳುಹಿಸಿ",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "ಉಳಿಸಿದ ಚೆಕ್ಔಟ್ ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ. ಬ್ರೌಸರ್ ಸಂಗ್ರಹವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "web.gst.saved_locally_awaiting_synchronization": "ಇಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ · ಸಿಂಕ್ ಬಾಕಿಯಿದೆ",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ಈ ಬಿಲ್‌ನ ಮೂಲ ಸಂಖ್ಯೆ ಮತ್ತು ನೀಡಿದ ಸಮಯ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ. ಸರ್ವರ್ ದೃಢೀಕರಣ ಬಾಕಿಯಿದೆ."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ಈ ಬಿಲ್‌ನ ಮೂಲ ಸಂಖ್ಯೆ ಮತ್ತು ನೀಡಿದ ಸಮಯ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ. ಸರ್ವರ್ ದೃಢೀಕರಣ ಬಾಕಿಯಿದೆ.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ಉತ್ಪನ್ನ ಬದಲಾಗಿದೆ. ಪಾವತಿ ಪಡೆಯುವ ಮೊದಲು ಕಾರ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "ಸ್ಟಾಕ್ ಬದಲಾಗಿದೆ. ಪಾವತಿ ಪಡೆಯುವ ಮೊದಲು ಕಾರ್ಟ್ ರಿಫ್ರೆಶ್ ಮಾಡಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10105,7 +10121,9 @@
     "web.gst.retry_saved_checkout": "સાચવેલું ચેકઆઉટ ફરી મોકલો",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "સાચવેલું ચેકઆઉટ ચકાસી શકાયું નહીં. બ્રાઉઝર સ્ટોરેજ તપાસીને ફરી પ્રયાસ કરો.",
     "web.gst.saved_locally_awaiting_synchronization": "અહીં સાચવેલું છે · સિંક બાકી છે",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "આ બિલનો મૂળ નંબર અને જારી કરવાનો સમય જળવાઈ રહે છે. સર્વરની પુષ્ટિ બાકી છે."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "આ બિલનો મૂળ નંબર અને જારી કરવાનો સમય જળવાઈ રહે છે. સર્વરની પુષ્ટિ બાકી છે.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ઉત્પાદન બદલાયું છે. ચુકવણી લેતા પહેલાં કાર્ટ રિફ્રેશ કરો.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "સ્ટોક બદલાયો છે. ચુકવણી લેતા પહેલાં કાર્ટ રિફ્રેશ કરો."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11228,6 +11246,8 @@
     "web.gst.retry_saved_checkout": "സംരക്ഷിച്ച ചെക്കൗട്ട് വീണ്ടും അയക്കുക",
     "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "സംരക്ഷിച്ച ചെക്കൗട്ട് പരിശോധിക്കാനായില്ല. ബ്രൗസർ സ്റ്റോറേജ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
     "web.gst.saved_locally_awaiting_synchronization": "ഇവിടെ സംരക്ഷിച്ചു · സിങ്ക് ബാക്കിയുണ്ട്",
-    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ഈ ബില്ലിന്റെ യഥാർത്ഥ നമ്പറും നൽകിയ സമയവും നിലനിർത്തും. സെർവർ സ്ഥിരീകരണം ബാക്കിയുണ്ട്."
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ഈ ബില്ലിന്റെ യഥാർത്ഥ നമ്പറും നൽകിയ സമയവും നിലനിർത്തും. സെർവർ സ്ഥിരീകരണം ബാക്കിയുണ്ട്.",
+    "web.gst.the_product_changed_refresh_the_cart_before_charging_": "ഉൽപ്പന്നം മാറിയിട്ടുണ്ട്. പണം സ്വീകരിക്കുന്നതിന് മുമ്പ് കാർട്ട് പുതുക്കുക.",
+    "web.gst.stock_changed_refresh_the_cart_before_charging_": "സ്റ്റോക്ക് മാറിയിട്ടുണ്ട്. പണം സ്വീകരിക്കുന്നതിന് മുമ്പ് കാർട്ട് പുതുക്കുക."
   }
 }
