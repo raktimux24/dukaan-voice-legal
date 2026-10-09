@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { issueSale } from '../../../lib/shop/gst-issuance';
+import {permitsOfflineShopFallback} from '../../../lib/shop/offline-shop-context';
 import {premiumAt} from '../../../lib/shop/offline-premium';
 import { validateContext, type GstContext } from '../../../lib/shop/gst-core/gst';
 import { useGstText } from '../gst-ui';
@@ -221,10 +222,10 @@ export function CheckoutScreen() {
       router.replace(`/shop/sales/${result.sale.id}?recorded=${recorded}`);
       cartApi.clear();
     } catch (caught) {
-      const offline = caught instanceof TypeError || (caught instanceof ApiError && caught.status === 0) || (caught instanceof DOMException && caught.name === 'TimeoutError');
+      const offline = permitsOfflineShopFallback(caught);
       if (offline) {
         setOfflineSaved(true);
-        setError(new Error('No connection. This bill stays on this browser and sends again when you are back online.'));
+        setError(new Error('Connection lost. The server outcome is not confirmed. The saved checkout will retry with the same request ID when the connection returns.'));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
       else {
         // Retain the original uncertain or rejected request for recovery.
@@ -281,9 +282,9 @@ export function CheckoutScreen() {
 
           {offlineSaved ? (
             <Card>
-              <p>{uiText("This bill is saved on this browser.")}</p>
+              <p>{uiText("Checkout saved on this browser. Server confirmation is pending.")}</p>
               <div className="mt-3">
-                <Button onClick={() => void handleCharge(false)} disabled={busy}>{busy ? uiText('Sending…') : uiText('Send bill now')}</Button>
+                <Button onClick={() => void handleCharge(false)} disabled={busy}>{busy ? uiText('Sending…') : uiText('Retry saved checkout')}</Button>
               </div>
             </Card>
           ) : null}

@@ -161,7 +161,11 @@ export function readPending(userId: string, shopId: string) {
 export function writePending(userId: string, shopId: string, pending: PendingSale | null) {
   const key = pendingKey(userId, shopId);
   if (!pending) localStorage.removeItem(key);
-  else localStorage.setItem(key, JSON.stringify(pending));
+  else {
+    const serialized=JSON.stringify(pending);
+    localStorage.setItem(key,serialized);
+    if(localStorage.getItem(key)!==serialized)throw new Error('Could not verify the saved checkout. Check browser storage and retry.');
+  }
   emit();
 }
 

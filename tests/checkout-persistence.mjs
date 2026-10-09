@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const {writePending,readPending}=require(process.env.GST_TEST_BUILD+'/cart.js');
+globalThis.window={};
+const rows=new Map();let refuse=false;
+globalThis.localStorage={getItem:key=>rows.get(key)??null,setItem:(key,value)=>{if(!refuse)rows.set(key,value);},removeItem:key=>rows.delete(key)};
+const pending={clientId:'request-one',payload:{clientId:'request-one',items:[],payments:[]},fingerprint:'same-request',startedAt:1};
+writePending('actor','shop',pending);
+assert.deepEqual(readPending('actor','shop'),pending);
+assert.equal(readPending('other-actor','shop'),null);
+refuse=true;
+assert.throws(()=>writePending('actor','shop',{...pending,clientId:'request-two'}),/Could not verify/);
+assert.equal(readPending('actor','shop').clientId,'request-one');
+writePending('actor','shop',null);assert.equal(readPending('actor','shop'),null);
+console.log('Checkout persistence: readback, silent storage refusal, original request preservation and account separation passed.');
