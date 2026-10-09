@@ -31,6 +31,7 @@ try {
     "app/lib/shop/gst-monitor-view.ts",
     "app/lib/shop/checkout-customer.ts",
     "app/lib/shop/gst-api.ts",
+    "app/lib/shop/gst-recovery.ts",
     "app/lib/shop/api.ts",
     "app/lib/shop/voice-review.ts",
     "app/lib/shop/offline-shop-context.ts",
@@ -56,6 +57,7 @@ try {
     ...process.env,
     GST_TEST_BUILD: join(folder,"shop"),
   });
+  run(resolve("tests/purchase-request-closure.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/gst-monitor-view.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/checkout-customer.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

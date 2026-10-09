@@ -18,6 +18,8 @@ import {
   ReadState,
   GstAccess,
 } from "../gst-workspace";
+import { closeUnrecordedPurchase, recoverFinancialRequest } from "../../../lib/shop/gst-recovery";
+import { financialScope, retainedRequests, type RetainedRequest } from "../../../lib/shop/gst-storage";
 import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { formatINR } from "../../../lib/shop/money";
 import { validateItcReview } from "../../../lib/shop/gst-core/purchase-gst";
@@ -51,6 +53,24 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     date = useFiscalDate(),
     action = useGstAction();
   const q = useGstQuery(["purchase", id], () => api.gst.purchase(shop!.id, id));
+  const settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id));
+  const pending = useGstQuery(["purchase-pending", id], async () => {
+    const rows = await retainedRequests(financialScope(shop!.id));
+    const prefix = `/api/shops/${shop!.id}/purchases/${id}/`;
+    return rows.filter((row) => row.state === "pending" &&
+      ["itc-review", "returns", "settlements", "settlement-reversals"].some(
+        (suffix) => row.path === prefix + suffix,
+      ));
+  }, true, "always");
+  const [closureReason, setClosureReason] = useState<Record<string, string>>({});
+  async function closeSavedRequest(row: RetainedRequest) {
+    await closeUnrecordedPurchase(api, shop!.id, row, closureReason[row.id] ?? "");
+    if (retained.current?.input.clientId === row.id) retained.current = null;
+    setClosureReason((current) => { const next = { ...current }; delete next[row.id]; return next; });
+    await pending.refetch();
+    await q.refetch();
+    await preview.refetch();
+  }
   const [decision, setDecision] =
       useState<InputTaxReview["decision"]>("deferred"),
     [conditions, setConditions] = useState(initialConditions),
@@ -128,6 +148,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     }
     const saved = retained.current ?? { operation, input };
     retained.current = saved;
+    try {
     if (saved.operation === "review")
       await api.gst.reviewItc(shop!.id, id, saved.input as InputTaxReview);
     else if (saved.operation === "return")
@@ -148,6 +169,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
         id,
         saved.input as PurchaseSettlementInput,
       );
+    } finally { await pending.refetch(); }
     retained.current = null;
     if (saved.operation === "settlement") {
       setAmount("");
@@ -166,6 +188,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
       setStock({});
       setCreditDate(new Date().toISOString());
     }
+    await pending.refetch();
     await q.refetch();
     await preview.refetch();
   }
@@ -181,23 +204,33 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
           back={{ href: "/shop/purchases", label: text("Purchases") }}
         />
         {action.notice}
-        {retained.current ? (
+        {pending.error ? <Card>
+          <p>{t("purchase.request_storage_error", EN_FALLBACK["purchase.request_storage_error"])}</p>
+          <Button disabled={action.busy} onClick={() => void pending.refetch()}>{t("purchase.retry_storage", EN_FALLBACK["purchase.retry_storage"])}</Button>
+        </Card> : null}
+        {retained.current || pending.data?.length ? (
           <Card>
-            <p>
-              {text(
-                "A saved request needs confirmation. Retry keeps its original amounts and identity.",
-              )}
-            </p>
-            <Button
-              disabled={action.busy}
-              onClick={() =>
-                void action.run(() =>
-                  mutate(retained.current!.operation, retained.current!.input),
-                )
-              }
-            >
-              {text("Retry saved request")}
-            </Button>
+            <p>{text("A saved request needs confirmation. Retry keeps its original amounts and identity.")}</p>
+            <Button href="/shop/settings/gst/recovery">{text("Resume / check saved requests")}</Button>
+            {retained.current && !pending.data?.some((row) => row.id === retained.current?.input.clientId) ? <Button disabled={action.busy} onClick={() =>
+              void action.run(async () => {
+                try { await mutate(retained.current!.operation, retained.current!.input); }
+                finally { await pending.refetch(); }
+              })
+            }>{text("Retry saved request")}</Button> : null}
+            {pending.data?.map((row) => <Section key={row.id} title={text("Saved financial request")} summary={date(row.createdAt)}>
+              <Button disabled={action.busy} onClick={() => void action.run(async () => {
+                await recoverFinancialRequest(api, shop!.id, row);
+                if (retained.current?.input.clientId === row.id) retained.current = null;
+                await pending.refetch(); await q.refetch(); await preview.refetch();
+              })}>{text("Recover original request")}</Button>
+              {settings.data?.gstPurchaseRequestClosureAvailable ? <Section title={text("Close an unrecorded request")}>
+                <p>{text("The server checks that this request was not recorded before closing it. The original evidence is kept.")}</p>
+                <TextField label={text("Reason")} value={closureReason[row.id] ?? ""} onChange={(value) => setClosureReason((current) => ({ ...current, [row.id]: value }))} />
+                <Button tone="danger" disabled={action.busy || !(closureReason[row.id] ?? "").trim() || (closureReason[row.id] ?? "").length > 500}
+                  onClick={() => void action.run(() => closeSavedRequest(row))}>{text("Confirm closure")}</Button>
+              </Section> : null}
+            </Section>)}
           </Card>
         ) : null}
         <ReadState query={q}>
@@ -378,7 +411,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   );
                 })}
               </Section>
-              <fieldset disabled={action.busy || !!retained.current}>
+              <fieldset disabled={action.busy || !!retained.current || pending.isPending || !!pending.error || !!pending.data?.length}>
                 <Section
                   title={text("Review input tax")}
                   summary={text(detail.reviews[0]?.decision ?? "Not reviewed")}
