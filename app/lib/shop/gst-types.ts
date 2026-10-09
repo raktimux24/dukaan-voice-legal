@@ -319,6 +319,10 @@ export interface GstHealth {
   };
 }
 export interface TaxHistory {
+  capturedAt?: string;
+  nextEffectiveAt?: string | null;
+  effectiveVersion?: string | null;
+  currentProfileStatus?: 'not_configured' | 'matches' | 'missing' | 'invalid' | 'mismatch';
   currentVersion: string | null;
   nextCursor: string | null;
   items: {
@@ -329,11 +333,16 @@ export interface TaxHistory {
     recordedAt: string;
     effectiveAt?: string;
     scheduled?: boolean;
+    draft?: import("./gst-core/gst").ProductTax | null;
+    disabled?: boolean;
+    scheduleReview?: { actor: string; expectedVersion: string; sourceReference: string; reason: string } | null;
+    cancellationReview?: { actor: string; reason: string } | null;
     cancelledAt?: string | null;
     confirmation?: {
       actor: string;
       actorName?: string | null;
       ownerName?: string | null;
+      grantId?: string | null;
     };
   }[];
 }
