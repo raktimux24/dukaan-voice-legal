@@ -213,3 +213,12 @@ Checkout and issuance may read a retained, hashed rounding selection during a tr
 ### Checkout recovery state follow-up
 
 Checkout now verifies its local-storage write before charging or claiming saved recovery state. Silent storage refusal preserves the original request and stops the attempt. Connection-loss copy distinguishes the saved checkout request from a server-confirmed invoice and states that retries preserve request identity. The wording is bundled in all ten supported languages. Only recognized transport failures trigger automatic reconnect retries; arbitrary TypeErrors no longer become misleading offline-save messages. This does not substitute for the remaining local fiscal receipt/issuance implementation.
+
+
+### Locally retained fiscal receipts follow-up
+
+Registered GST checkout now constructs a fiscal receipt from the issued request and commits it with the advanced allocation counter in the same IndexedDB transaction. It supports ordinary Regular GST, Composition bills of supply, mixed/RSP and rounded receipts; rounded receipts require the original allocation/actor/device/policy-bound grant. Replay verifies the outer document hash, tax/rounding totals, payment settlement and exact canonical request identity. It uses the original settings, product details, issue instant and invoice number, never refreshed catalog data.
+
+After a transport failure following reservation, checkout opens the local bill. Recovery offers the same receipt after reload and, after successful synchronization, links to the confirmed server bill. Local receipt downloads/prints carry pending synchronization wording. Legacy unissued requests remain requests and do not gain fabricated invoice numbers. New copy is bundled for all ten languages.
+
+Tests cover ordinary GST, Composition, mixed/RSP and rounded totals, altered request/document rejection, actor/shop isolation, missing/mismatched grants, atomic retention after lost response, no allocation reuse on replay and original receipt preservation after confirmation. Browser rendering and actual disconnected restart acceptance remain to verify. Complete offline shell/Clerk boot, allocation prewarming, multiple queued issuance with local stock reconciliation, notifications, runtime localization and the broader acceptance matrix remain open.

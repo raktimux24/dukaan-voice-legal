@@ -1,3 +1,4 @@
+import {buildLocalFiscalReceipt,verifyLocalFiscalReceipt} from './local-fiscal-receipt';
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from './gst-core/gst-tax-cache';
 import {rspItemsForIssue} from './rsp-issue-items';
 import {mixedCartProjection} from './mixed-cart-projection';
@@ -57,6 +58,7 @@ export async function issueSale(
       throw Error(
         "A previous bill needs recovery. Open GST recovery before starting another bill.",
       );
+    if(saved?.verification?.localFiscalReceipt){await verifyLocalFiscalReceipt(saved,active);assertScope(active);}
     let payload = saved
       ? (structuredClone(saved.payload) as CreateSalePayload)
       : structuredClone(body);
@@ -168,7 +170,9 @@ export async function issueSale(
         const quote=quoteRoundedReservation(shopId,payload,grant.signedGrant.grant.policy);
         payload={...payload,roundingGrant:grant,roundingSnapshot:quote.snapshot};
       }else if(Math.round(payload.payments.reduce((sum,p)=>sum+p.amount,0)*100)!==Math.round(before*100))throw Error('The bill total changed. Refresh checkout and confirm payment again.');
-      // Store reservation including the request before advancing the counter.
+      const localFiscalReceipt=await buildLocalFiscalReceipt(active,payload);
+      assertScope(active);
+      // Store receipt, original request and advanced counter in one transaction.
       await reserveSale(
         key,
         { ...allocation, next: allocation.next + 1, pending: payload },
@@ -179,6 +183,7 @@ export async function issueSale(
           payload,
           createdAt: issuedAt,
           state: "pending",
+          verification:{localFiscalReceipt},
         },
       );
     }

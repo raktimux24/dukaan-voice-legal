@@ -1,5 +1,7 @@
 'use client';
 
+import {financialScope,retainedRequests,assertScope} from '../../../lib/shop/gst-storage';
+import {verifyLocalFiscalReceipt} from '../../../lib/shop/local-fiscal-receipt';
 import { useGstText as useUiText } from "../gst-ui";
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from '../../../lib/shop/gst-core/gst-tax-cache';
 import {RspCheckoutControls} from '../gst-rsp-checkout';
@@ -25,6 +27,7 @@ import type { CreateSalePayload } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Button, Card, Field, Notice, PageHeader, PremiumLock, SectionHead, Spinner, cx, inputClass } from '../ui';
+import {LocalFiscalReceiptScreen} from './local-fiscal-receipt';
 import { CustomerAttach } from '../customer-attach';
 
 const CHIPS = [10, 20, 50, 100, 200, 500, 2000];
@@ -69,12 +72,28 @@ export function CheckoutScreen() {
   const [split, setSplit] = useState({ cash: '', upi: '', credit: '', tendered: '' });
   const [error, setError] = useState<unknown>(null);
   const [offlineSaved, setOfflineSaved] = useState(false);
+  const [localReceiptId,setLocalReceiptId]=useState<string|null>(null);
+  const [restoringReceipt,setRestoringReceipt]=useState(true);
   const [busy, setBusy] = useState(false);
   const [confirmOld, setConfirmOld] = useState(false);
   const charging = useRef(false);
   const wentToBill = useRef(false);
   const chargeRef = useRef<(fresh: boolean) => Promise<void>>(async () => {});
   const queryClient = useQueryClient();
+  useEffect(()=>{
+    if(!shop||!userId)return;
+    let canceled=false;setRestoringReceipt(true);setLocalReceiptId(null);wentToBill.current=false;
+    void (async()=>{
+      try{
+        const scope=financialScope(shop.id);
+        const row=(await retainedRequests(scope)).find(row=>row.state==='pending'&&row.path===`/api/shops/${shop.id}/sales`&&row.verification?.localFiscalReceipt);
+        assertScope(scope);
+        if(row&&cartApi.cart.lines.length===0){await verifyLocalFiscalReceipt(row,scope);assertScope(scope);if(!canceled){wentToBill.current=true;setLocalReceiptId(row.id);}}
+      }catch{/* Unverified records remain available through recovery. */}
+      finally{if(!canceled)setRestoringReceipt(false);}
+    })();
+    return()=>{canceled=true;};
+  },[shop?.id,userId]);
 
   useEffect(() => {
     if (!shop || !userId || mode) return;
@@ -109,9 +128,9 @@ export function CheckoutScreen() {
   const total = totals.total;
 
   useEffect(() => {
-    if (wentToBill.current || charging.current) return;
+    if (restoringReceipt || wentToBill.current || charging.current) return;
     if (shop && userId && cartApi.cart.lines.length === 0 && !cartApi.pending) router.replace('/shop/sell');
-  }, [cartApi.cart.lines.length, cartApi.pending, router, shop, userId]);
+  }, [restoringReceipt, cartApi.cart.lines.length, cartApi.pending, router, shop, userId]);
 
   const cashPortion = mode === 'cash' ? total : mode === 'split' ? Number(split.cash || 0) : 0;
   const upiPortion = mode === 'upi' ? total : mode === 'split' ? Number(split.upi || 0) : 0;
@@ -224,6 +243,17 @@ export function CheckoutScreen() {
     } catch (caught) {
       const offline = permitsOfflineShopFallback(caught);
       if (offline) {
+        try{
+          const scope=financialScope(shop.id);
+          const row=(await retainedRequests(scope)).find(row=>row.id===clientId);
+          if(row?.verification?.localFiscalReceipt){
+            await verifyLocalFiscalReceipt(row,scope);assertScope(scope);
+            wentToBill.current=true;
+            setLocalReceiptId(clientId);
+            cartApi.clear();
+            return;
+          }
+        }catch{/* An unverifiable receipt stays in recovery; never claim an issued bill. */}
         setOfflineSaved(true);
         setError(new Error('Connection lost. The server outcome is not confirmed. The saved checkout will retry with the same request ID when the connection returns.'));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
@@ -246,6 +276,8 @@ export function CheckoutScreen() {
   };
   const currentTendered = mode === 'split' ? split.tendered : cashTendered;
   chargeRef.current = handleCharge;
+  if(localReceiptId)return <LocalFiscalReceiptScreen requestId={localReceiptId}/>;
+  if(restoringReceipt)return <Spinner label={uiText('Loading checkout')}/>;
   const modes: TenderMode[] = ['cash', 'upi', ...(settings.data?.cardEnabled ? (['card'] as TenderMode[]) : []), 'credit', 'split'];
 
   return (

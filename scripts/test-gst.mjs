@@ -55,6 +55,7 @@ try {
     GST_TEST_BUILD: join(folder,"shop"),
   });
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/local-fiscal-receipt.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/checkout-persistence.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/voice-review.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/offline-shop-context.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
