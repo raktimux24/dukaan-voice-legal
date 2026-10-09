@@ -400,3 +400,10 @@ On the approved Suresh Stationary Store test account, September 2026 was closed 
 A completed live scan at 01:55 IST surfaced Closed reporting period has new records and Some records need attention. Review records opened /shop/settings/gst/periods?month=2026-09, displaying Closed and Records changed after closing. September was reopened with a synthetic restoration reason. A full reload retained Open. Returning to checks still displayed the prior warning; opening/reopening did not silently mark it resolved. A fresh successful scan at 01:57 showed no open core billing issues and retained both completed runs in Previous results.
 
 Evidence: /private/tmp/web-late-invoice-20261010.jpg, /private/tmp/web-changed-period-warning-20261010.jpg, /private/tmp/web-changed-period-navigation-20261010.jpg, /private/tmp/web-late-period-restored-20261010.jpg, /private/tmp/web-changed-period-resolved-20261010.jpg. September is restored to its original Open state. The labeled zero-value invoice and review history remain as evidence; no money, stock or registration changed. This closes successful web late-record detection, affected-month navigation and successful rescan resolution acceptance. Native rendering, offline/partial/failed scan runtime and period response-loss/concurrency remain open.
+
+
+### Explicit ordinary-purchase confirmation parity
+
+Native purchase creation requires confirmation that the document is an ordinary domestic forward-charge purchase without special valuation/cess/reverse charge/import/SEZ. Web previously submitted that supply type implicitly. Web now displays the same bundled translated confirmation, blocks fresh recording until confirmed, and invalidates affected tax/invoice review confirmations when this choice changes. An original retained request still retries its exact payload without requiring a new draft confirmation. Server purchase policy is unchanged.
+
+Validation: full GST regressions, 62 shared contracts, 1127 labels across nine translated languages and production build passed. Rendered fresh-draft gating follows deployment. Native missing-product handoff remains a separately identified web gap.
