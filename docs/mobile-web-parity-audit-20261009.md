@@ -325,3 +325,12 @@ The approved synthetic WQA-ST-1009 invoice received one Camlin pencil unit into 
 The observed 0.24 tax remaining after the earlier half return follows shared returnTax component allocation: each original 0.25 CGST/SGST component has a half credit rounded to 0.13, leaving 0.12 each. Cumulative allocation differences preserve the full component amounts across subsequent returns; this is not evidence of a web-only calculation discrepancy. This source inspection does not establish regulatory approval of the policy.
 
 Web purchase detail now uses native translated stock-action labels for received, linked and invoice-only records. Older batch-linked invoices explicitly state that their original stock action was not recorded, rather than implying a new receipt. Production build and translation coverage passed.
+
+
+### Invoice-page pending request recovery
+
+PR60 production deploy 6ac9291916099a0008413f24 published 2026-10-09T17:50:45.742Z, main 1cdcace254dec286f9c4ff64fb6ed2d436b787c3. Authenticated web reload displayed Stock received with this invoice and All settled for WQA-ST-1009.
+
+Native supports server-confirmed closure of unrecorded rejected purchase requests directly in the workflow. Web previously offered only immediate retry on invoice detail, despite closure existing in device recovery. Invoice detail now loads its scoped pending review/return/settlement/reversal journal after reload, blocks new edits while requests are unresolved, and offers original-request recovery plus capability-gated closure with per-request reasons. Failed journal loading blocks new submissions and offers storage retry. Closure preserves the original payload and requires a verified server receipt; stale/confirmed/changed stored requests cannot be closed. Requests are never discarded merely because a transport failure or not-found outcome occurred.
+
+Automated closure coverage tests all four invoice operations, exact payload preservation, confirmed-state/stale-payload rejection, malformed receipt, already-recorded rejection, response loss and actor changes. GST regressions, production build and translation coverage passed. Actual rejected-request closure and lost-response/restart acceptance remain unproven and must be tested against a closure-capable live server.
