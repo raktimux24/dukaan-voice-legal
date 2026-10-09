@@ -334,3 +334,16 @@ PR60 production deploy 6ac9291916099a0008413f24 published 2026-10-09T17:50:45.74
 Native supports server-confirmed closure of unrecorded rejected purchase requests directly in the workflow. Web previously offered only immediate retry on invoice detail, despite closure existing in device recovery. Invoice detail now loads its scoped pending review/return/settlement/reversal journal after reload, blocks new edits while requests are unresolved, and offers original-request recovery plus capability-gated closure with per-request reasons. Failed journal loading blocks new submissions and offers storage retry. Closure preserves the original payload and requires a verified server receipt; stale/confirmed/changed stored requests cannot be closed. Requests are never discarded merely because a transport failure or not-found outcome occurred.
 
 Automated closure coverage tests all four invoice operations, exact payload preservation, confirmed-state/stale-payload rejection, malformed receipt, already-recorded rejection, response loss and actor changes. GST regressions, production build and translation coverage passed. Actual rejected-request closure and lost-response/restart acceptance remain unproven and must be tested against a closure-capable live server.
+
+
+### Live rejected-request closure acceptance
+
+PR61 production deploy 6ac92af6c830050008228163 published 2026-10-09T17:58:55.194Z, main 37991ca9bf33c20c3e99e52fb316d14a18c2aef1.
+
+On approved synthetic WQA-261008-01, a 0.1-unit invoice-only return deliberately reused existing supplier credit WQA-CR-1009. The action was rejected; original remaining quantity 0.5 and outstanding 5.25 stayed unchanged. The pending request survived a full page reload, with editors locked. Invoice-page closure was available from the live server. A synthetic closure reason was submitted; verified closure removed the pending lock, and return fields were editable again. Device recovery retained Closed without recording and offered its original evidence export.
+
+Downloaded request 78a2947c-cc35-459d-b91c-9d471670f7f8 retained the original WQA-CR-1009 payload/quantity 0.1 and verified closed receipt 178c4042-76f5-47b7-8b8c-fdb641a6082d with exact request hash 3d864ca152fcd8dcbed5b2814f202ae8ab87c159ed78540161f17d4aa3b72958. Screenshot: /private/tmp/purchase-closure-accepted-20261009.jpg. No stock or actual money moved. This accepts this rejected-return/reload/closure path; network response loss and other rejected workflows remain open.
+
+The test exposed generic document-conflict wording. Web now explains an already-recorded supplier document number in every supported language and rejects a known duplicate credit number before retaining/sending another request. Server uniqueness validation remains authoritative for stale clients and concurrent writes.
+
+Native independently confirmed Camlin stock 13 pieces after WQA-ST-1009 received one unit and WQA-ST-CR1009 removed it, matching the original web baseline 13. This closes native inventory readback for the receive-and-return fixture; existing-receipt linking and native-originated writes remain open.

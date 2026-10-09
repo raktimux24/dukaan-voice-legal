@@ -4,6 +4,7 @@
  * The full server-fetched catalog merges over this on load; keep in sync with server/src/scripts/translations-source.ts.
  */
 export const EN_FALLBACK: Record<string, string> = {
+  "gst.error.duplicate_purchase_document": "This supplier document number has already been recorded. Review the existing document before creating another entry.",
   "gst.export_saved_copy": "{{register}} saved. Download this exact copy or reopen it below.",
   "gst.export_included_dates": "{{from}} – {{to}} (included)",
   "gst.export_as_of": "As of {{date}}",
