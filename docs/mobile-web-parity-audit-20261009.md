@@ -263,3 +263,11 @@ New checkout requests now retain the selected saved customer's name and phone al
 The web screen now uses the native monitor-state rules and actionable core issue kinds. It shows checked-document coverage and an explicit empty-current-result message; failed refreshes preserve prior results without declaring success. Issue truncation offers increased observation loading up to the server's 10,000 limit, while history truncation stays separate. Prior checks and optional support-copy diagnostics remain accessible. Async check and document lookup results are guarded against account/shop changes.
 
 Validation: production build, GST regression suite (including monitor complete/attention/partial/stale/never-checked/offline/unavailable states), and translation coverage passed. Live rendering verification follows release. This does not close the remaining authenticated offline, role, Regular GST, cross-client purchase, notification, or print acceptance gaps.
+
+### Purchase navigation and retained detail follow-up
+
+A fresh authenticated mobile/web comparison reopened WQA-261008-01 on both clients with matching supplier, invoice total 10.50 and purchase tax 0.50. This establishes that existing web-created invoice readback, not the complete purchase lifecycle.
+
+The web purchase overview now mirrors the native saved-request recovery entry, current/previous-month shortcuts, purchase export-history entry and combined records/totals refresh. Its optional accounting section exposes all native reconciliation fields, including opening/closing payable/recoverable balances, recorded payments/refunds, acquisition value and inventory/consumed cost changes. Invoice rows expose retained purchase tax. Supplier invoice detail exposes original registration/document kind, component tax, reviewed delivery evidence and the preserved supplier/recipient identity and structured addresses, using snapshot data rather than current directory identities.
+
+Build, GST regressions, translation coverage and diff validation passed. No financial records, supplier identities, role permissions or registration were changed in this comparison. Production rendering/navigation verification follows release. Live write/recovery/ITC/settlement/return/reversal and cross-client mutation acceptance remain open.

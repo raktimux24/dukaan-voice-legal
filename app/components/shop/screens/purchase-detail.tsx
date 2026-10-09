@@ -192,6 +192,30 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   {detail.snapshot.supplier.name}
                 </h2>
                 <p>
+                  {text(
+                    (
+                      {
+                        regular: "Regular GST",
+                        composition: "Composition",
+                        unregistered: "Not registered",
+                      } as const
+                    )[detail.snapshot.supplierRegistration] ??
+                      "Original registration not recorded",
+                  )}{" "}
+                  ·{" "}
+                  {text(
+                    (
+                      {
+                        tax_invoice: "Tax invoice",
+                        bill_of_supply: "Bill of supply",
+                        commercial_invoice:
+                          "Commercial invoice from unregistered supplier",
+                      } as const
+                    )[detail.snapshot.documentType] ??
+                      "Original registration not recorded",
+                  )}
+                </p>
+                <p>
                   {detail.snapshot.supplier.gstin || text("Not registered")}
                 </p>
                 <p>{detail.snapshot.supplier.address}</p>
@@ -236,6 +260,88 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   </table>
                 </div>
               </Card>
+              <Section title={text("Invoice details")}>
+                <div className="gst-row">
+                  <span>{text("Net value")}</span>
+                  <b>{formatINR(detail.snapshot.totals.net)}</b>
+                </div>
+                {(["cgst", "sgst", "utgst", "igst"] as const)
+                  .filter((kind) => detail.snapshot.totals[kind] !== 0)
+                  .map((kind) => (
+                    <div className="gst-row" key={kind}>
+                      <span>{kind.toUpperCase()}</span>
+                      <b>{formatINR(detail.snapshot.totals[kind])}</b>
+                    </div>
+                  ))}
+                <div className="gst-row">
+                  <span>{text("State code (for example, 29)")}</span>
+                  <b>{detail.snapshot.supplier.stateCode}</b>
+                </div>
+                {detail.snapshot.goodsMovement ? (
+                  <>
+                    <div className="gst-row">
+                      <span>{text("Reviewed delivery address")}</span>
+                      <b>{detail.snapshot.goodsMovement.deliveryAddress}</b>
+                    </div>
+                    <div className="gst-row">
+                      <span>{text("Destination state")}</span>
+                      <b>
+                        {detail.snapshot.goodsMovement.destinationStateCode}
+                      </b>
+                    </div>
+                  </>
+                ) : null}
+                {(["supplier", "recipient"] as const).map((role) => {
+                  const party = detail.snapshot[role];
+                  return (
+                    <div key={role} className="grid gap-2">
+                      <h3 className="shop-section-title">
+                        {text(
+                          role === "supplier"
+                            ? "Choose supplier"
+                            : "Your shop’s invoice identity",
+                        )}
+                      </h3>
+                      <p>{party.name}</p>
+                      {party.gstin ? <p>{party.gstin}</p> : null}
+                      <p>{party.address}</p>
+                      <div className="gst-row">
+                        <span>{text("State code (for example, 29)")}</span>
+                        <b>{party.stateCode}</b>
+                      </div>
+                      {party.structuredAddress ? (
+                        <>
+                          {[
+                            [
+                              "Address line 1",
+                              party.structuredAddress.address1,
+                            ],
+                            [
+                              "Address line 2 (optional)",
+                              party.structuredAddress.address2,
+                            ],
+                            [
+                              "Locality / city",
+                              party.structuredAddress.location,
+                            ],
+                            [
+                              "Six-digit pincode",
+                              party.structuredAddress.pincode,
+                            ],
+                          ]
+                            .filter(([, value]) => value)
+                            .map(([label, value]) => (
+                              <div className="gst-row" key={label}>
+                                <span>{text(label!)}</span>
+                                <b>{value}</b>
+                              </div>
+                            ))}
+                        </>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </Section>
               <fieldset disabled={action.busy || !!retained.current}>
                 <Section
                   title={text("Review input tax")}
