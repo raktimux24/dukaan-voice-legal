@@ -1,3 +1,4 @@
+import {ClerkOfflineError} from '@clerk/nextjs/errors';
 import {parseRole,type Role} from './permissions';
 import type {ShopRecord} from './types';
 
@@ -25,7 +26,7 @@ export function offlineShopRecord(context:OfflineShopContext):ShopRecord {
 }
 export function permitsOfflineShopFallback(error:unknown) {
   const e=error as {name?:string;message?:string;status?:number}|null;
-  return !!e&&([408,502,503,504].includes(e.status??0)||e.name==='TimeoutError'||(e.name==='TypeError'&&/^(Failed to fetch|Network request failed|NetworkError when attempting to fetch resource\.)$/.test(e.message??'')));
+  return !!e&&(ClerkOfflineError.is(e)||[408,502,503,504].includes(e.status??0)||e.name==='TimeoutError'||(e.name==='TypeError'&&/^(Failed to fetch|Network request failed|NetworkError when attempting to fetch resource\.)$/.test(e.message??'')));
 }
 const key=(actor:string)=>`samaan-offline-shop:v1:${actor}`;
 /** Storage refusal is a cache miss; it must never prevent an online shop from opening. */

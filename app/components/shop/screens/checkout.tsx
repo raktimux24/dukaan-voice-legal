@@ -12,7 +12,7 @@ import {cachedRspProductAt} from '../../../lib/shop/gst-core/gst-rsp-cache';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useBillingRouter as useRouter } from '../billing-shell';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { issueSale } from '../../../lib/shop/gst-issuance';
 import {permitsOfflineShopFallback} from '../../../lib/shop/offline-shop-context';

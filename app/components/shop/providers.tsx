@@ -15,6 +15,7 @@ import { permissionsFor, parseRole } from '../../lib/shop/permissions';
 import type { ShopRecord, UserPreferences } from '../../lib/shop/types';
 import { AuthScreen } from './auth-screen';
 import { ShopChrome } from './chrome';
+import {BillingShell,clearBillingShell} from './billing-shell';
 import { ShopContext, type ShopContextValue } from './context';
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
@@ -285,7 +286,7 @@ function ShopSession({ children }: { children: ReactNode }) {
         data-text={prefs?.textSize || 'medium'}
         data-contrast={prefs?.highContrastMode ? 'high' : 'normal'}
       >
-        <ShopChrome onSignOut={() => {try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void signOut({ redirectUrl: '/' });}}>
+        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => {clearBillingShell();try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void signOut({ redirectUrl: '/' });}}>
           {offline?<div className="shop-surface shop-card mb-4" role="status"><p>{t('shop.offline_notice','Using saved shop context for billing. Connect and refresh to manage the shop or view reports.')}</p><div className="shop-actions mt-3"><button type="button" className="text-saffron" onClick={()=>void refreshShops().catch(()=>{})}>{t('common.retry','Try again')}</button><Link className="text-saffron" href="/shop/settings/gst/recovery">{t('gst.rsp.saved_recovery','View saved requests')}</Link></div></div>:null}
           {children}
         </ShopChrome>

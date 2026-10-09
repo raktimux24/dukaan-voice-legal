@@ -66,6 +66,7 @@ try {
   run(resolve("tests/browser-audio.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/shop-parity-api.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/pagination.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/billing-shell.mjs"), []);
   run(resolve("scripts/check-gst-core.mjs"), []);
 } finally {
   rmSync(folder, { recursive: true, force: true });
