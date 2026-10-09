@@ -28,6 +28,7 @@ import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Button, Card, Field, Notice, PageHeader, PremiumLock, SectionHead, Spinner, cx, inputClass } from '../ui';
 import {LocalFiscalReceiptScreen} from './local-fiscal-receipt';
+import {checkoutCustomer} from '../../../lib/shop/checkout-customer';
 import { CustomerAttach } from '../customer-attach';
 
 const CHIPS = [10, 20, 50, 100, 200, 500, 2000];
@@ -163,7 +164,7 @@ export function CheckoutScreen() {
     localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, next);
   };
 
-  const buildBody = (soldAt: string, customerClientId: string | null): Omit<CreateSalePayload, 'clientId'> => {
+  const buildBody = (soldAt: string, customerClientId: string | null, retained?:CreateSalePayload): Omit<CreateSalePayload, 'clientId'> => {
     const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
     const payments = [
       cashPortion > 0 ? { method: 'cash' as const, amount: roundPaise(cashPortion), tendered: roundPaise(tendered) } : null,
@@ -172,10 +173,7 @@ export function CheckoutScreen() {
       creditPortion > 0 ? { method: 'credit' as const, amount: roundPaise(creditPortion) } : null,
     ].filter((part) => part != null);
     if (payments.length === 0) payments.push({ method: 'cash', amount: 0, tendered: 0 });
-    const draftName = cartApi.cart.customerName?.trim() ?? '';
-    const customer = !cartApi.cart.customerId && draftName
-      ? { name: draftName, phone: phone && phone !== 'invalid' ? phone : null, clientId: customerClientId ?? crypto.randomUUID() }
-      : null;
+    const customer=checkoutCustomer({...cartApi.cart,customerPhone:phone&&phone!=='invalid'?phone:null},customerClientId,retained);
     return {
       gstContext,
       mixedDiscountReview:cartApi.cart.mixedDiscountReview,
@@ -215,7 +213,7 @@ export function CheckoutScreen() {
       cartApi.patch({ customerClientId });
     }
     const soldAt = existing?.payload.soldAt ?? new Date().toISOString();
-    const body = buildBody(soldAt, customerClientId);
+    const body = buildBody(soldAt, customerClientId, existing?.payload);
     const fingerprint = saleFingerprint(body);
     if (existing && existing.fingerprint !== fingerprint) {
       setError(new Error('Another bill is being charged. Wait a moment, then retry that bill.'));
