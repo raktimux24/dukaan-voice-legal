@@ -1,0 +1,12 @@
+import {createRequire} from 'node:module';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+const require=createRequire(import.meta.url),{checkoutCustomer}=require(path.join(process.env.GST_TEST_BUILD,'checkout-customer.js'));
+const selected={customerId:'saved-customer',customerName:'  Existing buyer  ',customerPhone:'9111222112'};
+assert.deepEqual(checkoutCustomer(selected,null),{name:'Existing buyer',phone:'9111222112'});
+assert.equal(checkoutCustomer(selected,null,{customerId:selected.customerId,customer:null}),null,'legacy retry remains exactly unchanged');
+assert.deepEqual(checkoutCustomer(selected,null,{customerId:'different',customer:null}),{name:'Existing buyer',phone:'9111222112'});
+assert.deepEqual(checkoutCustomer({...selected,customerId:null},'draft-id'),{name:'Existing buyer',phone:'9111222112',clientId:'draft-id'});
+assert.equal(checkoutCustomer({...selected,customerId:null,customerName:' '},null),null);
+assert.deepEqual(checkoutCustomer({...selected,customerPhone:null},null),{name:'Existing buyer',phone:null});
+console.log('Customer snapshot: existing customer identity/display, draft client ID, blank selection and immutable legacy retry passed.');

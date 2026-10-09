@@ -155,6 +155,13 @@ const plainReceipt=await buildLocalOrdinaryReceipt(plainScope,plain);
 assert.equal(plainReceipt.subtotal,100);assert.equal(plainReceipt.discount,30);assert.equal(plainReceipt.total,70);
 const plainRow={...plainScope,id:plain.clientId,path:`/api/shops/${plainScope.shopId}/sales`,payload:plain,createdAt:plain.soldAt,state:'pending',verification:{localOrdinaryReceipt:plainReceipt}};
 assert.equal((await verifyLocalIssuedReceipt(plainRow,plainScope)).kind,'ordinary');
+const selectedPayload={...plain,clientId:randomUUID(),customerId:'selected-customer',customer:{name:'Existing buyer',phone:'9111222112'}};
+const selectedReceipt=await buildLocalOrdinaryReceipt(plainScope,selectedPayload);
+const selectedRow={...plainRow,id:selectedPayload.clientId,payload:JSON.parse(JSON.stringify(selectedPayload)),verification:{localOrdinaryReceipt:JSON.parse(JSON.stringify(selectedReceipt))}};
+assert.equal((await verifyLocalIssuedReceipt(selectedRow,plainScope)).receipt.customer.name,'Existing buyer');
+const alteredName=structuredClone(selectedRow);alteredName.verification.localOrdinaryReceipt.customer.name='Another buyer';await assert.rejects(verifyLocalIssuedReceipt(alteredName,plainScope));
+const changedSelection=structuredClone(selectedRow);changedSelection.payload.customerId='another-id';await assert.rejects(verifyLocalIssuedReceipt(changedSelection,plainScope));
+
 for(const mutate of [r=>r.payload.payments[0].amount=69,r=>r.verification.localOrdinaryReceipt.total=71,r=>r.actorId='other',r=>r.path='/other',r=>r.state='closed']){
  const altered=structuredClone(plainRow);mutate(altered);await assert.rejects(verifyLocalIssuedReceipt(altered,plainScope));
 }
