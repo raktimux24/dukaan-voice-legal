@@ -141,6 +141,7 @@ try {
     GST_TEST_BUILD: join(folder, "shop"),
   });
   run(resolve("tests/billing-shell.mjs"), []);
+  run(resolve("tests/browser-push-worker.mjs"), []);
   run(resolve("scripts/check-gst-core.mjs"), []);
 } finally {
   rmSync(folder, { recursive: true, force: true });

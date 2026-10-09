@@ -503,6 +503,10 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       });
     },
 
+    getBrowserPush: () => send<{available:boolean;publicKey:string|null}>('/api/devices/web-push'),
+    saveBrowserPush: (subscription:PushSubscriptionJSON,language:string) => send<{success:boolean}>('/api/devices/web-push',{method:'POST',body:JSON.stringify({subscription,language})}),
+    removeBrowserPush: (subscription:PushSubscriptionJSON) => send<{success:boolean}>('/api/devices/web-push',{method:'DELETE',body:JSON.stringify({subscription})}),
+
     getPreferences: () => {
       const load=()=>send<{preferences:UserPreferences|null}>('/api/preferences');
       const validate=(value:unknown):value is {preferences:UserPreferences|null}=>{

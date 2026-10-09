@@ -3,6 +3,7 @@
 import { useGstText as useUiText } from "../gst-ui";
 
 import Link from 'next/link';
+import {BrowserNotifications} from '../browser-notifications';
 import { useState } from 'react';
 import { auditCsv, downloadText, inventoryCsv } from '../../../lib/shop/csv';
 import { useShop } from '../context';
@@ -75,6 +76,7 @@ export function SettingsScreen() {
           <Button tone="ghost" onClick={() => void navigator.clipboard.writeText(shop.helperInviteCode || '')}>{uiText("Copy")} {shop.helperInviteCode}</Button>
         </Card>
       ) : null}
+      <BrowserNotifications/>
       <Card className="grid gap-4">
         <div>
           <h2 className="shop-section-title">{t('settings.section_language_voice', 'Preferences')}</h2>
