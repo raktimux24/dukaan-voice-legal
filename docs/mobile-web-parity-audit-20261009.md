@@ -540,3 +540,9 @@ Web PR82 merged e55f91f5dc97a00d1a8b4a7e25d95847027ae099. Production deploy 6ac9
 At 390px, the nested product section previously measured 370px inside a 312px content area and clipped its fields. Shrinkable grid columns and wrapping titles now keep the section at 312px, with scroll width 310px. Its tax input and review checkbox are visibly accessible. Evidence: /private/tmp/web-nested-gst-fields-fit-20261010.jpg. Viewport restored and the user's existing invoice draft preserved.
 
 PR83 separately deployed confirmation-card spacing: 16px vertical gaps and explicit 12px 14px alert padding. Native PR18 also now includes thirteen previously missing GST design labels in all nine translated languages and corrected Bengali settings labels; corrected native Bengali workspace rendering was observed, then original English preferences restored. This closes key coverage and the inspected runtime labels, not semantic review of every language or full mobile/web release acceptance.
+
+### Ordinary bill share language follow-up — 10 October
+
+PR84 merged 67bad64fd2817d6ed43563759024fa2f692d8eef. Ordinary web bill copied text, canvas image, share title and payment descriptions now receive existing selected-language labels. Tests execute the public share function and verify Bengali text, canvas label calls, title, custom footer and English fallback. Full GST suite, 62 contracts, TypeScript and production build passed. Production deploy 6ac97820160bd00008c1fc0e was created but publication was not yet confirmed when this entry was written. Live OS sharing remains unaccepted.
+
+Source inspection also confirms ordinary canvas sharing still truncates product names to 32 characters and uses fixed-height unwrapped address/detail/payment text. This is a remaining completeness gap for long or multilingual ordinary receipts; the GST verified document path is separate. Long multilingual PDF pagination and physical print acceptance remain open.
