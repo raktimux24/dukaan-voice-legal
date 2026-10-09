@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useShop } from "./context";
 import { Button, Card, Spinner } from "./ui";
 import { useGstText } from "./gst-ui";
+import { ApiError } from "../../lib/shop/api";
 import {
   assertPushSession,
   bindPushOwner,
@@ -126,8 +127,9 @@ export function BrowserNotifications() {
           return Notification.permission === "denied" ? "denied" : "off";
         });
         if (!cancelled) setStatus(outcome);
-      } catch {
-        if (!cancelled && identity.current === userId) setStatus("error");
+      } catch (error) {
+        if (!cancelled && identity.current === userId)
+          setStatus(error instanceof ApiError && [404, 503].includes(error.status) ? "unavailable" : "error");
       }
     };
     if (offline) {
