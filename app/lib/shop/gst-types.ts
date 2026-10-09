@@ -177,7 +177,11 @@ export interface BillingParty {
   updatedAt: string;
 }
 export interface FiscalDocument {
-  integrity?: "verified" | "mismatch" | "legacy_unverifiable" | "local_retained";
+  integrity?:
+    | "verified"
+    | "mismatch"
+    | "legacy_unverifiable"
+    | "local_retained";
   id: string;
   shopId: string;
   saleId: string;
@@ -333,17 +337,52 @@ export interface TaxHistory {
     };
   }[];
 }
+export interface GstPreparationSummary {
+  afterCredits: { net: string; tax: string; gross: string };
+  discrepancies: { reason: string }[];
+  extendedFilingLines?: {
+    id: string;
+    number: string;
+    section: string;
+    review: string[];
+  }[];
+  hsnPreparation?: {
+    codeType: string;
+    code: string;
+    recipient: string;
+    review: string[];
+  }[];
+  turnoverPreparation?: {
+    shortCodes: string[];
+    review: string[];
+    reportingFinancialYear: string;
+    previousFinancialYear: string;
+    minimumCodeDigits?: number | null;
+  }[];
+}
 export interface GstPeriod {
   month: string;
   state: "open" | "closed";
   sequence: number;
   changedSinceClose: boolean;
   currentSourceFingerprint: string;
-  history: { id: string; action: string; createdAt: string; note: string }[];
-  currentSummaries?: Record<string, unknown>;
+  from: string;
+  to: string;
+  history: {
+    id: string;
+    action: string;
+    createdAt: string;
+    note: string;
+    salesExportId: string | null;
+    purchaseExportId: string | null;
+    salesExportHash?: string | null;
+    purchaseExportHash?: string | null;
+  }[];
+  currentSummaries?: Record<"sales" | "purchases", GstPreparationSummary>;
 }
 export interface TurnoverHistory {
   financialYear: string;
+  minimumCodeDigits?: 4 | 6;
   sequence?: number;
   current?: {
     sequence: number;

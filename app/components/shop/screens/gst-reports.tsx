@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useShop } from "../context";
@@ -29,8 +29,21 @@ import {
   retainRequest,
   requestStatus,
 } from "../../../lib/shop/gst-storage";
-import { financialYear } from "../../../lib/shop/gst-core/gst";
-import type { GstReport } from "../../../lib/shop/gst-types";
+import {
+  reportReviewDefaults,
+  pendingReportReviews,
+  checkRecordedPeriod,
+} from "../../../lib/shop/report-review";
+import { recoverFinancialRequest } from "../../../lib/shop/gst-recovery";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
+import {
+  gstExportReview,
+  gstExportReviewItems,
+} from "../../../lib/shop/gst-core/gst-export-review";
+import type {
+  GstPreparationSummary,
+  GstReport,
+} from "../../../lib/shop/gst-types";
 const base = "/shop/settings/gst";
 export function GstExportsScreen() {
   const selection = useSearchParams();
@@ -202,7 +215,10 @@ export function GstExportsScreen() {
                 "The exact file is retained. You can download it again from saved reports.",
               )}
             </p>
-            <Button disabled={action.busy} onClick={() => void action.run(() => download(saved))}>
+            <Button
+              disabled={action.busy}
+              onClick={() => void action.run(() => download(saved))}
+            >
               {text("Download saved report")}
             </Button>
             <ReportDetails report={saved} />
@@ -285,163 +301,470 @@ export function GstExportsScreen() {
     </GstAccess>
   );
 }
+function PreparationReview({ summary }: { summary: GstPreparationSummary }) {
+  const { t: translate } = useShop();
+  const t = (key: string, params?: Record<string, string | number>) =>
+    translate(key, EN_FALLBACK[key], params);
+  const [expanded, setExpanded] = useState(false);
+  const review = gstExportReview(summary),
+    items = gstExportReviewItems(summary);
+  return (
+    <div className="stack-form">
+      <Pill tone={review.status === "checked" ? "neutral" : "warn"}>
+        {t(`gst.preparation.${review.status}`)}
+      </Pill>
+      {review.status === "review" ? (
+        <>
+          <p className="shop-hint">
+            {t("gst.preparation.documents")}: {review.documents} ·{" "}
+            {t("gst.preparation.classifications")}: {review.classifications} ·{" "}
+            {t("gst.preparation.business")}: {review.businessReviews} ·{" "}
+            {t("gst.export_discrepancies")}: {review.discrepancies}
+          </p>
+          {(expanded ? items : items.slice(0, 5)).map((item, index) => (
+            <p className="shop-hint" key={index}>
+              {item.reference ? `${item.reference} · ` : ""}
+              {t(`gst.preparation.reason.${item.reason}`, {
+                digits: item.digits ?? "",
+              })}
+            </p>
+          ))}
+          {items.length > 5 ? (
+            <Button
+              tone="quiet"
+              onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
+            >
+              {t(expanded ? "gst.preparation.less" : "gst.preparation.more")}
+            </Button>
+          ) : null}
+        </>
+      ) : null}
+      <p className="shop-hint">{t("gst.preparation.notice")}</p>
+    </div>
+  );
+}
+function ReviewRequestState({
+  journal,
+  action,
+  onRecover,
+  canCheck = false,
+}: {
+  journal: ReturnType<
+    typeof useGstQuery<
+      import("../../../lib/shop/gst-storage").RetainedRequest[]
+    >
+  >;
+  action: ReturnType<typeof useGstAction>;
+  onRecover: (
+    row: import("../../../lib/shop/gst-storage").RetainedRequest,
+    checkOnly: boolean,
+  ) => Promise<void>;
+  canCheck?: boolean;
+}) {
+  const { t: translate, role } = useShop();
+  const t = (key: string, params?: Record<string, string | number>) =>
+    translate(key, EN_FALLBACK[key], params);
+  if (journal.isPending) return <ReadState query={journal}>{null}</ReadState>;
+  if (journal.error) return <ReadState query={journal}>{null}</ReadState>;
+  return (
+    <>
+      {journal.data?.map((row) => (
+        <Card key={row.id} className="stack-form">
+          <p>{t("purchase.pending")}</p>
+          <div className="shop-actions">
+            <Button
+              disabled={action.busy || role !== "OWNER"}
+              onClick={() => void action.run(() => onRecover(row, false))}
+            >
+              {t("purchase.retry")}
+            </Button>
+            {canCheck ? (
+              <Button
+                tone="quiet"
+                disabled={action.busy}
+                onClick={() => void action.run(() => onRecover(row, true))}
+              >
+                {t("gst.period_check_recorded")}
+              </Button>
+            ) : null}
+          </div>
+        </Card>
+      ))}
+    </>
+  );
+}
 export function GstPeriodsScreen() {
-  const { api, shop, role } = useShop(),
+  const { api, shop, role, userId, t: translate } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
-  const [month, setMonth] = useState(
-      new Date()
-        .toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
-        .slice(0, 7),
-    ),
-    [note, setNote] = useState(""),
-    [reviewed, setReviewed] = useState(false);
+  const t = (key: string, params?: Record<string, string | number>) =>
+    translate(key, EN_FALLBACK[key], params);
+  const params = useSearchParams();
+  const [month, setMonth] = useState(() =>
+    /^\d{4}-(0[1-9]|1[0-2])$/.test(params.get("month") ?? "")
+      ? params.get("month")!
+      : reportReviewDefaults().month,
+  );
+  const [note, setNote] = useState(""),
+    [confirmedSource, setConfirmedSource] = useState<string | null>(null);
+  const valid = /^\d{4}-(0[1-9]|1[0-2])$/.test(month);
   const q = useGstQuery(
     ["period", month],
     () => api.gst.period(shop!.id, month),
-    /^\d{4}-(0[1-9]|1[0-2])$/.test(month),
+    valid,
+  );
+  const journal = useGstQuery(
+    ["period-pending", month],
+    () => pendingReportReviews(shop!.id, "periods", month),
+    valid,
+    "always",
   );
   const action = useGstAction(),
     period = q.data;
-  const pending = useRef<Parameters<typeof api.gst.changePeriod>[2] | null>(
-    null,
-  );
+  const blocked =
+    !journal.isSuccess || !!journal.error || !!journal.data?.length;
+  const source = JSON.stringify([
+    userId,
+    shop?.id,
+    month,
+    period?.sequence,
+    period?.currentSourceFingerprint,
+  ]);
+  const reviewed = confirmedSource === source;
+  useEffect(() => {
+    setNote("");
+    setConfirmedSource(null);
+  }, [userId, shop?.id, month]);
+  useEffect(() => {
+    setConfirmedSource(null);
+  }, [source]);
+  useEffect(() => {
+    const row = journal.data?.[0];
+    if (row)
+      setNote(String((row.payload as Record<string, unknown>).note ?? ""));
+  }, [journal.data]);
+  async function recover(
+    row: import("../../../lib/shop/gst-storage").RetainedRequest,
+    checkOnly: boolean,
+  ) {
+    const scope = financialScope(shop!.id);
+    try {
+      if (checkOnly) await checkRecordedPeriod(api, shop!.id, row);
+      else await recoverFinancialRequest(api, shop!.id, row);
+      assertScope(scope);
+      setNote("");
+      setConfirmedSource(null);
+      await q.refetch();
+    } finally {
+      await journal.refetch();
+    }
+  }
+  async function preview(kind: "sales" | "purchases") {
+    const scope = financialScope(shop!.id);
+    if (!period) throw Error("invalid_report_period");
+    const receipt = await api.gst.createRegister(
+      shop!.id,
+      kind,
+      period.from,
+      period.to,
+    );
+    assertScope(scope);
+    saveFile(receipt.content, `gst-${kind}-${month}.csv`);
+  }
+  async function download(id: string, hash?: string | null) {
+    if (!hash) throw Error("gst_export_content_mismatch");
+    const scope = financialScope(shop!.id),
+      content = await api.gst.downloadReport(shop!.id, id, hash);
+    assertScope(scope);
+    saveFile(content, `gst-reviewed-${id}.csv`);
+  }
   return (
     <GstAccess>
       <div className="shop-page">
         <PageHeader
           title={text("GST period review")}
           back={{ href: base + "/exports", label: text("GST export history") }}
-          description={text(
-            "Closing a period records a review and saves supporting reports. It does not file a GST return.",
-          )}
+          description={t("gst.period_notice")}
         />
-        <TextField
-          label={text("Month")}
-          type="month"
-          value={month}
-          onChange={(v) => {
-            if (!pending.current) {
-              setMonth(v);
-              setReviewed(false);
-            }
-          }}
-        />
-        {!/^\d{4}-(0[1-9]|1[0-2])$/.test(month) ? (
-          <Notice error={Error(text("Choose a valid month."))} />
-        ) : (
-          <ReadState query={q}>
-            {period ? (
-              <>
-                <Card>
-                  <Pill tone={period.changedSinceClose ? "warn" : "neutral"}>
-                    {text(period.state === "closed" ? "Closed" : "Open")}
-                  </Pill>
-                  {period.changedSinceClose ? (
-                    <p>
-                      {text(
-                        "Records changed since the last closure. Review them before relying on the saved reports.",
-                      )}
-                    </p>
-                  ) : null}
-                  <Button href={base + "/exports"} tone="quiet">
-                    {text("Review reports")}
-                  </Button>
-                </Card>
-                {role === "OWNER" ? (
-                  <Card>
-                    <fieldset disabled={action.busy || !!pending.current}>
-                      <TextField
-                        label={text("Review note")}
-                        value={note}
-                        onChange={(v) => {
-                          setNote(v);
-                          setReviewed(false);
-                        }}
-                      />
-                      <Check
-                        label={text(
-                          "I have reviewed this period and its source records.",
-                        )}
-                        checked={reviewed}
-                        onChange={setReviewed}
-                      />
-                    </fieldset>
-                    {action.notice}
-                    <Button
-                      disabled={
-                        action.busy ||
-                        (!pending.current && (!reviewed || !note.trim()))
-                      }
-                      onClick={() =>
-                        void action.run(async () => {
-                          const input = pending.current ?? {
-                            clientId: crypto.randomUUID(),
-                            action:
-                              period.state === "closed"
-                                ? ("reopen" as const)
-                                : ("close" as const),
-                            note,
-                            reviewed: true as const,
-                            expectedSequence: period.sequence,
-                            expectedSourceFingerprint:
-                              period.currentSourceFingerprint,
-                          };
-                          pending.current = input;
-                          await api.gst.changePeriod(shop!.id, month, input);
-                          pending.current = null;
-                          setReviewed(false);
-                          await q.refetch();
-                        })
-                      }
-                    >
-                      {text(
-                        pending.current
-                          ? "Retry saved review"
-                          : period.state === "closed"
-                            ? "Reopen period"
-                            : "Close reviewed period",
-                      )}
-                    </Button>
+        <fieldset disabled={action.busy || !!journal.data?.length}>
+          <TextField
+            label={text("Month")}
+            type="month"
+            value={month}
+            onChange={setMonth}
+          />
+        </fieldset>
+        <Button
+          tone="quiet"
+          disabled={!valid || q.isFetching || action.busy}
+          onClick={() =>
+            void action.run(async () => {
+              await q.refetch();
+              await journal.refetch();
+            })
+          }
+        >
+          {t("gst.health_refresh")}
+        </Button>
+        {valid ? (
+          <>
+            <ReviewRequestState
+              journal={journal}
+              action={action}
+              onRecover={recover}
+              canCheck
+            />
+            {action.notice}
+            <ReadState query={q}>
+              {period ? (
+                <>
+                  <Card className="stack-form">
+                    <Pill tone={period.changedSinceClose ? "warn" : "neutral"}>
+                      {text(period.state === "closed" ? "Closed" : "Open")}
+                    </Pill>
+                    {period.changedSinceClose ? (
+                      <p role="status">{t("gst.period_changed")}</p>
+                    ) : null}
                   </Card>
-                ) : null}
-                <Section title={text("Review history")}>
-                  {period.history.map((event) => (
-                    <div key={event.id} className="gst-row">
-                      <b>
-                        {text(event.action === "close" ? "Closed" : "Reopened")}
-                      </b>
-                      <span>{date(event.createdAt)}</span>
-                      <p>{event.note}</p>
-                    </div>
-                  ))}
-                </Section>
-              </>
-            ) : null}
-          </ReadState>
+                  {(["sales", "purchases"] as const).map((kind) => {
+                    const summary = period.currentSummaries?.[kind];
+                    return (
+                      <Card className="stack-form" key={kind}>
+                        <h2 className="shop-section-title">
+                          {t(
+                            kind === "sales"
+                              ? "gst.export_sales"
+                              : "gst.export_purchases",
+                          )}
+                        </h2>
+                        {summary ? (
+                          <>
+                            <div className="form-grid is-3">
+                              {(["net", "tax", "gross"] as const).map((key) => (
+                                <div key={key}>
+                                  <p className="shop-hint">
+                                    {t(`gst.export_${key}`)}
+                                  </p>
+                                  <b>₹{summary.afterCredits[key]}</b>
+                                </div>
+                              ))}
+                            </div>
+                            {summary.discrepancies.length ? (
+                              <p role="alert">
+                                {t("gst.export_discrepancies")}:{" "}
+                                {summary.discrepancies.length}
+                              </p>
+                            ) : null}
+                            {kind === "sales" ? (
+                              <PreparationReview summary={summary} />
+                            ) : null}
+                          </>
+                        ) : null}
+                        <Button
+                          tone="quiet"
+                          disabled={action.busy}
+                          onClick={() => void action.run(() => preview(kind))}
+                        >
+                          {t("gst.period_preview")}
+                        </Button>
+                      </Card>
+                    );
+                  })}
+                  {role === "OWNER" ? (
+                    <Card className="stack-form">
+                      <fieldset
+                        disabled={action.busy || blocked}
+                        className="stack-form"
+                      >
+                        <TextField
+                          label={t("gst.period_note")}
+                          value={note}
+                          onChange={(value) => {
+                            setNote(value);
+                            setConfirmedSource(null);
+                          }}
+                        />
+                        <Check
+                          label={t("gst.period_reviewed")}
+                          checked={reviewed}
+                          onChange={(value) =>
+                            setConfirmedSource(value ? source : null)
+                          }
+                        />
+                      </fieldset>
+                      <Button
+                        disabled={
+                          action.busy ||
+                          blocked ||
+                          !reviewed ||
+                          !note.trim() ||
+                          note.length > 1000 ||
+                          q.isFetching
+                        }
+                        onClick={() =>
+                          void action.run(async () => {
+                            const scope = financialScope(shop!.id);
+                            try {
+                              if (
+                                (
+                                  await pendingReportReviews(
+                                    shop!.id,
+                                    "periods",
+                                    month,
+                                  )
+                                ).length
+                              )
+                                throw Error(
+                                  "purchase_request_outcome_unconfirmed",
+                                );
+                              await api.gst.changePeriod(shop!.id, month, {
+                                clientId: crypto.randomUUID(),
+                                action:
+                                  period.state === "closed"
+                                    ? "reopen"
+                                    : "close",
+                                note,
+                                reviewed: true,
+                                expectedSequence: period.sequence,
+                                expectedSourceFingerprint:
+                                  period.currentSourceFingerprint,
+                              });
+                              assertScope(scope);
+                              setNote("");
+                              setConfirmedSource(null);
+                              await q.refetch();
+                            } finally {
+                              await journal.refetch();
+                            }
+                          })
+                        }
+                      >
+                        {t(
+                          period.state === "closed"
+                            ? "gst.period_reopen"
+                            : "gst.period_close",
+                        )}
+                      </Button>
+                    </Card>
+                  ) : null}
+                  <Section title={text("Review history")}>
+                    {period.history.map((event) => (
+                      <div key={event.id} className="gst-row">
+                        <b>
+                          {text(
+                            event.action === "close" ? "Closed" : "Reopened",
+                          )}
+                        </b>
+                        <span>{date(event.createdAt)}</span>
+                        <p>{event.note}</p>
+                        <div className="shop-actions">
+                          {event.salesExportId ? (
+                            <Button
+                              tone="quiet"
+                              disabled={action.busy}
+                              onClick={() =>
+                                void action.run(() =>
+                                  download(
+                                    event.salesExportId!,
+                                    event.salesExportHash,
+                                  ),
+                                )
+                              }
+                            >
+                              {t("gst.period_saved_sales")}
+                            </Button>
+                          ) : null}
+                          {event.purchaseExportId ? (
+                            <Button
+                              tone="quiet"
+                              disabled={action.busy}
+                              onClick={() =>
+                                void action.run(() =>
+                                  download(
+                                    event.purchaseExportId!,
+                                    event.purchaseExportHash,
+                                  ),
+                                )
+                              }
+                            >
+                              {t("gst.period_saved_purchases")}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </Section>
+                </>
+              ) : null}
+            </ReadState>
+          </>
+        ) : (
+          <Notice error={Error(text("Choose a valid month."))} />
         )}
       </div>
     </GstAccess>
   );
 }
 export function GstTurnoverScreen() {
-  const { api, shop, role } = useShop(),
+  const { api, shop, role, userId, t: translate } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
-  const [year, setYear] = useState(financialYear(new Date())),
+  const t = (key: string, params?: Record<string, string | number>) =>
+    translate(key, EN_FALLBACK[key], params);
+  const [year, setYear] = useState(() => reportReviewDefaults().year),
     [amount, setAmount] = useState(""),
     [reference, setReference] = useState(""),
     [reviewed, setReviewed] = useState(false);
+  const valid =
+    /^20\d{2}-\d{2}$/.test(year) &&
+    Number(year.slice(5)) === (Number(year.slice(0, 4)) + 1) % 100;
   const q = useGstQuery(
-      ["turnover", year],
-      () => api.gst.turnover(shop!.id, year),
-      /^\d{4}-\d{2}$/.test(year) &&
-        Number(year.slice(5)) === (Number(year.slice(0, 4)) + 1) % 100,
-    ),
-    action = useGstAction();
-  const pending = useRef<Parameters<typeof api.gst.saveTurnover>[2] | null>(
-    null,
+    ["turnover", year],
+    () => api.gst.turnover(shop!.id, year),
+    valid,
   );
+  const journal = useGstQuery(
+    ["turnover-pending", year],
+    () => pendingReportReviews(shop!.id, "turnover", year),
+    valid,
+    "always",
+  );
+  const action = useGstAction(),
+    blocked = !journal.isSuccess || !!journal.error || !!journal.data?.length;
+  useEffect(() => {
+    setAmount("");
+    setReference("");
+    setReviewed(false);
+  }, [userId, shop?.id, year]);
+  useEffect(() => {
+    const row = journal.data?.[0];
+    if (row) {
+      setAmount(String((row.payload as Record<string, unknown>).amount ?? ""));
+      setReference(
+        String(
+          (row.payload as Record<string, unknown>).evidenceReference ?? "",
+        ),
+      );
+      setReviewed(false);
+    }
+  }, [journal.data]);
+  useEffect(() => {
+    setReviewed(false);
+  }, [q.data?.current?.sequence]);
+  async function recover(
+    row: import("../../../lib/shop/gst-storage").RetainedRequest,
+  ) {
+    const scope = financialScope(shop!.id);
+    try {
+      await recoverFinancialRequest(api, shop!.id, row);
+      assertScope(scope);
+      setReviewed(false);
+      await q.refetch();
+    } finally {
+      await journal.refetch();
+    }
+  }
   return (
     <GstAccess>
       <div className="shop-page">
@@ -452,103 +775,146 @@ export function GstTurnoverScreen() {
             "Record reviewed business-wide turnover evidence. This shop’s sales alone do not establish business turnover.",
           )}
         />
-        <TextField
-          label={text("Financial year")}
-          value={year}
-          onChange={(v) => {
-            if (!pending.current) setYear(v);
-          }}
-        />
-        {!(
-          /^\d{4}-\d{2}$/.test(year) &&
-          Number(year.slice(5)) === (Number(year.slice(0, 4)) + 1) % 100
-        ) ? (
+        <fieldset disabled={action.busy || !!journal.data?.length}>
+          <TextField
+            label={text("Financial year")}
+            value={year}
+            onChange={setYear}
+          />
+        </fieldset>
+        <Button
+          tone="quiet"
+          disabled={!valid || q.isFetching || action.busy}
+          onClick={() =>
+            void action.run(async () => {
+              await q.refetch();
+              await journal.refetch();
+            })
+          }
+        >
+          {t("gst.health_refresh")}
+        </Button>
+        {valid ? (
+          <>
+            <ReviewRequestState
+              journal={journal}
+              action={action}
+              onRecover={recover}
+            />
+            {action.notice}
+            <ReadState query={q}>
+              <Card className="stack-form">
+                <p>
+                  {text("Last reviewed amount")}:{" "}
+                  {q.data?.current ? `₹${q.data.current.amount}` : "—"}
+                </p>
+                <p>{q.data?.current?.evidenceReference}</p>
+                {q.data?.current ? (
+                  <>
+                    <p>{date(q.data.current.createdAt)}</p>
+                    {q.data.minimumCodeDigits ? (
+                      <p>
+                        {t("gst.turnover.digits", {
+                          digits: q.data.minimumCodeDigits,
+                        })}
+                      </p>
+                    ) : null}
+                  </>
+                ) : null}
+              </Card>
+              {role === "OWNER" ? (
+                <Card className="stack-form">
+                  <fieldset
+                    disabled={action.busy || blocked}
+                    className="stack-form"
+                  >
+                    <TextField
+                      label={text("Business-wide turnover (₹)")}
+                      type="number"
+                      value={amount}
+                      onChange={(v) => {
+                        setAmount(v);
+                        setReviewed(false);
+                      }}
+                    />
+                    <TextField
+                      label={text("Evidence reference")}
+                      value={reference}
+                      onChange={(v) => {
+                        setReference(v);
+                        setReviewed(false);
+                      }}
+                    />
+                    <Check
+                      label={text(
+                        "I have reviewed the business-wide turnover evidence.",
+                      )}
+                      checked={reviewed}
+                      onChange={setReviewed}
+                    />
+                  </fieldset>
+                  <Button
+                    disabled={
+                      action.busy ||
+                      blocked ||
+                      !q.isSuccess ||
+                      q.isFetching ||
+                      !reviewed ||
+                      !reference.trim() ||
+                      reference.length > 500 ||
+                      !/^\d{1,16}(?:\.\d{1,2})?$/.test(amount)
+                    }
+                    onClick={() =>
+                      void action.run(async () => {
+                        const scope = financialScope(shop!.id);
+                        try {
+                          if (
+                            (
+                              await pendingReportReviews(
+                                shop!.id,
+                                "turnover",
+                                year,
+                              )
+                            ).length
+                          )
+                            throw Error("purchase_request_outcome_unconfirmed");
+                          await api.gst.saveTurnover(shop!.id, year, {
+                            clientId: crypto.randomUUID(),
+                            expectedSequence: q.data?.current?.sequence ?? 0,
+                            amount,
+                            evidenceReference: reference,
+                            reviewed: true,
+                          });
+                          assertScope(scope);
+                          setReviewed(false);
+                          await q.refetch();
+                        } finally {
+                          await journal.refetch();
+                        }
+                      })
+                    }
+                  >
+                    {text("Save reviewed turnover")}
+                  </Button>
+                </Card>
+              ) : null}
+              <Section title={text("Review history")}>
+                {(q.data?.history ?? q.data?.items ?? []).map((row) => (
+                  <div key={row.sequence} className="gst-row">
+                    <b>₹{row.amount}</b>
+                    <span>{date(row.createdAt)}</span>
+                    <p>{row.evidenceReference}</p>
+                  </div>
+                ))}
+              </Section>
+            </ReadState>
+          </>
+        ) : (
           <Notice
             error={Error(
               text("Choose a valid financial year, such as 2026-27."),
             )}
           />
-        ) : (
-          <ReadState query={q}>
-            <Card>
-              <p>
-                {text("Last reviewed amount")}: {q.data?.current?.amount ?? "—"}
-              </p>
-              <p>{q.data?.current?.evidenceReference}</p>
-              {q.data?.current ? <p>{date(q.data.current.createdAt)}</p> : null}
-            </Card>
-            {role === "OWNER" ? (
-              <Card>
-                <fieldset disabled={action.busy || !!pending.current}>
-                  <TextField
-                    label={text("Business-wide turnover (₹)")}
-                    type="number"
-                    value={amount}
-                    onChange={(v) => {
-                      setAmount(v);
-                      setReviewed(false);
-                    }}
-                  />
-                  <TextField
-                    label={text("Evidence reference")}
-                    value={reference}
-                    onChange={(v) => {
-                      setReference(v);
-                      setReviewed(false);
-                    }}
-                  />
-                  <Check
-                    label={text(
-                      "I have reviewed the business-wide turnover evidence.",
-                    )}
-                    checked={reviewed}
-                    onChange={setReviewed}
-                  />
-                </fieldset>
-                {action.notice}
-                <Button
-                  disabled={
-                    action.busy ||
-                    (!pending.current &&
-                      (!reviewed ||
-                        !reference.trim() ||
-                        !/^\d{1,16}(?:\.\d{1,2})?$/.test(amount)))
-                  }
-                  onClick={() =>
-                    void action.run(async () => {
-                      const input = pending.current ?? {
-                        clientId: crypto.randomUUID(),
-                        expectedSequence: q.data?.current?.sequence ?? 0,
-                        amount,
-                        evidenceReference: reference,
-                        reviewed: true as const,
-                      };
-                      pending.current = input;
-                      await api.gst.saveTurnover(shop!.id, year, input);
-                      pending.current = null;
-                      setReviewed(false);
-                      await q.refetch();
-                    })
-                  }
-                >
-                  {text(
-                    pending.current
-                      ? "Retry saved review"
-                      : "Save reviewed turnover",
-                  )}
-                </Button>
-              </Card>
-            ) : null}
-            <Section title={text("Review history")}>
-              {(q.data?.history ?? q.data?.items ?? []).map((row) => (
-                <div key={row.sequence} className="gst-row">
-                  <b>₹{row.amount}</b>
-                  <span>{date(row.createdAt)}</span>
-                  <p>{row.evidenceReference}</p>
-                </div>
-              ))}
-            </Section>
-          </ReadState>
         )}
       </div>
     </GstAccess>
