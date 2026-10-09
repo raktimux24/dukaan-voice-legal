@@ -259,13 +259,13 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               <TextField label={text('Buying discount (%)')} type="number" value={buyingDiscount} onChange={setBuyingDiscount}/>
               {cost!=null?<p className="shop-hint">{text('Effective buying cost')}: {formatINR(cost)}</p>:null}
             </div>:null}
-            {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),text('GST is calculated on this selling price after discounts.'))}
+            {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),pos.data?.gstSettings?.registration === 'regular' ? text('GST is calculated on this selling price after discounts.') : undefined)}
             <Notice error={pos.error}/>
             <p className="shop-hint">{text(EN_FALLBACK[!pos.data?.gstSettings || pos.data.gstSettings.registration === 'unknown' ? 'gst.product_price_unknown' : pos.data.gstSettings.registration !== 'regular' ? 'gst.product_price_no_collection' : pos.data.gstSettings.priceMode === 'exclusive' ? 'gst.product_price_exclusive' : 'gst.product_price_inclusive'])}</p>
             <TaxFields value={gstConfig} onChange={setGstDraft}/>
             {priceBreakdown?<div className="gst-price-preview"><span>{text('Before GST')} <b>{formatINR(priceBreakdown.net)}</b></span><span>{text('GST')} <b>{formatINR(priceBreakdown.tax)}</b></span><span>{text('Customer pays')} <b>{formatINR(priceBreakdown.gross)}</b></span></div>:<p className="shop-hint">{text('Set up shop GST and confirm the product tax details to see the GST calculation.')}</p>}
             <Check label={text('Calculate MRP from selling price and GST')} checked={autoMrp} onChange={setAutoMrp}/>
-            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),text('MRP'),text('Selling price including GST must not exceed MRP.'))}
+            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),text('MRP'),text(EN_FALLBACK['gst.mrp_help']))}
           </Card>
 
           <Card className="grid gap-5">
