@@ -208,3 +208,8 @@ Language, text size and other preferences use one actor/session-bound account ca
 ### Retained rounding selection follow-up
 
 Checkout and issuance may read a retained, hashed rounding selection during a transient outage. Reuse is bounded to the interval beginning at the server-selected timestamp and ending before its refresh boundary, including policy effective-until. Wrong-shop, future, expired and malformed selections are rejected. The selection remains preview evidence: local issuance still requires the separate allocation/actor/device/policy-bound grant and its original issue-time checks. A settings update or authorization denial invalidates the retained selection. This closes a read dependency; locally issued receipt rendering and disconnected acceptance remain open.
+
+
+### Checkout recovery state follow-up
+
+Checkout now verifies its local-storage write before charging or claiming saved recovery state. Silent storage refusal preserves the original request and stops the attempt. Connection-loss copy distinguishes the saved checkout request from a server-confirmed invoice and states that retries preserve request identity. The wording is bundled in all ten supported languages. Only recognized transport failures trigger automatic reconnect retries; arbitrary TypeErrors no longer become misleading offline-save messages. This does not substitute for the remaining local fiscal receipt/issuance implementation.
