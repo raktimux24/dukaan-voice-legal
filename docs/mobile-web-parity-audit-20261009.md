@@ -226,3 +226,7 @@ Tests cover ordinary GST, Composition, mixed/RSP and rounded totals, altered req
 ### Report and export date localization follow-up
 
 Report charts and expiry labels now use the selected app language and Indian Standard Time. Inventory and activity CSV dates receive the same language from all export entry points, rather than browser-local English dates. Currency and machine-facing CSV column names retain their existing formats.
+
+### Offline invoice preparation follow-up
+
+The Sell page now prepares number reservations and scoped rounding grants online before checkout. Preparation shares checkout financial locking, preserves the next number, and retries a lost grant response with its original identity. It does not issue a bill or establish complete offline readiness: retained catalog/tax data, capability expiry and live offline acceptance still apply.

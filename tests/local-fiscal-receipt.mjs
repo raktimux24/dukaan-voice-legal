@@ -8,6 +8,7 @@ const require=createRequire(import.meta.url),root=process.env.GST_TEST_BUILD;
 const {buildLocalFiscalReceipt,verifyLocalFiscalReceipt}=require(root+'/local-fiscal-receipt.js');
 const {documentView}=require(root+'/gst-document-view.js');
 const {quoteRoundedReservation}=require(root+'/rounded-reservation.js');
+const {prepareOfflineInvoices}=require(root+'/invoice-preparation.js');
 const {issueSale}=require(root+'/gst-issuance.js');
 const {financialYear}=require(root+'/gst-core/gst.js');
 const {canonicalSaleRequest}=require(root+'/gst-core/sale-request-canonical.js');
@@ -51,10 +52,15 @@ assert.equal(documentView(mixedReceipt.document).total,365);
 assert.equal(documentView(mixedReceipt.document).lines.length,2);
 // A lost response leaves the fiscal receipt in the same atomic transaction as the consumed number.
 storage.setFinancialScope(scope);
-let settingsReads=0,sent;
+let settingsReads=0,provisions=0,sent;
 const currentYear=financialYear(new Date()),allocationExpiry=new Date(Date.UTC(Number(currentYear.slice(0,4))+1,3,1)).toISOString();
 const draft={...composition,clientId:randomUUID(),gstContext:{settings:composition.gstContext.settings,priceMode:'exclusive',placeOfSupply:'29'},soldAt:new Date().toISOString()};
-const api={gst:{provision:async(_shop,input)=>({id:randomUUID(),issuer:settings.gstin,financialYear:currentYear,block:1,deviceEpoch:input.deviceEpoch,expiresAt:allocationExpiry})},getPosSettings:async()=>{settingsReads++;return {gstSettings:composition.gstContext.settings};},createSale:async(_shop,payload)=>{sent=payload;throw new TypeError('Failed to fetch');}};
+const api={gst:{provision:async(_shop,input)=>{provisions++;return {id:randomUUID(),issuer:settings.gstin,financialYear:currentYear,block:1,deviceEpoch:input.deviceEpoch,expiresAt:allocationExpiry};}},getPosSettings:async()=>{settingsReads++;return {gstAvailable:true,gstSettings:composition.gstContext.settings};},createSale:async(_shop,payload)=>{sent=payload;throw new TypeError('Failed to fetch');}};
+await prepareOfflineInvoices(api,scope.shopId);
+await prepareOfflineInvoices(api,scope.shopId);
+assert.equal(provisions,1);assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,1);
+assert.equal((await storage.retainedRequests(scope)).length,0);
+api.gst.provision=async()=>{throw Error('Offline provisioning must not be needed');};
 await assert.rejects(issueSale(api,scope.shopId,draft),/Failed to fetch/);
 const saved=(await storage.retainedRequests(scope)).find(r=>r.id===draft.clientId);
 const local=await verifyLocalFiscalReceipt(saved,scope);
@@ -62,7 +68,32 @@ const state=await storage.readState(`allocation:${scope.actorId}:${scope.shopId}
 assert.equal(state.next,2);assert.equal(local.document.number,`${currentYear.slice(2,4)}-1-001`);
 api.createSale=async(_shop,payload)=>({sale:{id:randomUUID(),shopId:scope.shopId,soldBy:scope.actorId,clientId:payload.clientId,requestHash:await storage.sha256(canonicalSaleRequest({...payload,userId:scope.actorId})),gstIntegrity:'verified',gstSnapshot:{invoiceNumber:payload.gstContext.allocation.number,context:payload.gstContext}},deduplicated:true});
 await issueSale(api,scope.shopId,{...draft,note:'Do not replace original'});
-assert.equal(settingsReads,1);assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,2);
+assert.equal(settingsReads,3);assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,2);
 const confirmed=(await storage.retainedRequests(scope)).find(r=>r.id===draft.clientId);
 assert.equal(confirmed.state,'confirmed');assert.deepEqual((await verifyLocalFiscalReceipt(confirmed,scope)).document,local.document);
 console.log('Local receipt: tax/composition/rounding, exact request binding, scope/tamper rejection, atomic lost-response retention and immutable replay passed.');
+
+// Rounding preparation retains the original grant request after a lost response, without consuming a number.
+const warmScope={actorId:'prepared-actor',shopId:randomUUID()};storage.setFinancialScope(warmScope);
+const warmFrom=new Date(Date.now()-60000).toISOString(),warmUntil=new Date(Date.now()+3600000).toISOString();
+const warmPolicy={...policy,version:randomUUID(),shopId:warmScope.shopId,effectiveFrom:warmFrom,effectiveUntil:null};
+let warmProvisions=0,grantCalls=0,grantRequest;
+const warmApi={getPosSettings:async()=>({gstAvailable:true,gstSettings:composition.gstContext.settings,gstPayableRoundingAvailable:true}),gst:{
+ provision:async(_shop,input)=>{warmProvisions++;return {id:randomUUID(),issuer:settings.gstin,financialYear:currentYear,block:2,deviceEpoch:input.deviceEpoch,expiresAt:allocationExpiry};},
+ roundingSelection:async(shopId,issuedAt)=>({format:'payable_rounding_selection_v1',shopId,issuedAt,refreshAt:warmUntil,status:'selection_only',selection:{version:warmPolicy.version,createdAt:warmFrom,policy:warmPolicy}}),
+ roundingGrant:async(shopId,input)=>{
+  grantCalls++;
+  if(!grantRequest){grantRequest=input;throw new TypeError('Lost grant response');}
+  assert.deepEqual(input,grantRequest);
+  return {id:randomUUID(),signedGrant:{format:'signed_rounding_issuance_grant_v1',keyId:'synthetic',signature:'a'.repeat(64),grant:{format:'payable_rounding_issuance_grant_v1',shopId,actorId:warmScope.actorId,deviceEpoch:input.deviceEpoch,allocationId:input.allocationId,financialYear:currentYear,block:2,issuer:settings.gstin,validFrom:warmFrom,expiresAt:warmUntil,policy:warmPolicy}}};
+ }
+}};
+await assert.rejects(prepareOfflineInvoices(warmApi,warmScope.shopId),/Lost grant response/);
+assert.equal((await storage.readState(`allocation:${warmScope.actorId}:${warmScope.shopId}`)).next,1);
+const warmed=await prepareOfflineInvoices(warmApi,warmScope.shopId);
+assert.equal(warmed.expiresAt,warmUntil);
+await prepareOfflineInvoices(warmApi,warmScope.shopId);
+assert.equal(warmProvisions,1);assert.equal(grantCalls,2);
+assert.equal((await storage.readState(`allocation:${warmScope.actorId}:${warmScope.shopId}`)).next,1);
+assert.equal((await storage.retainedRequests(warmScope)).length,0);
+console.log('Invoice preparation: number/grant reuse, no counter consumption and immutable lost-response grant retry passed.');
