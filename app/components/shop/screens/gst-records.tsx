@@ -1,4 +1,5 @@
 "use client";
+import {hasLocalIssuedReceipt} from '../../../lib/shop/local-issued-receipt';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -512,7 +513,7 @@ export function GstRecoveryScreen() {
             <p className="shop-hint">
               {text("Original request")} {row.id}
             </p>
-            {row.verification?.localFiscalReceipt?<Button href={`/shop/settings/gst/recovery/${row.id}`}>{text('Review saved bill')}</Button>:null}
+            {hasLocalIssuedReceipt(row)?<Button href={`/shop/settings/gst/recovery/${row.id}`}>{text('Review saved bill')}</Button>:null}
             {row.state === "pending" ? (
               <Button
                 disabled={action.busy||offline}
