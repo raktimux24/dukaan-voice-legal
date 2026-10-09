@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import assert from "node:assert/strict";
 const require = createRequire(import.meta.url);
-const { purchaseDraftTax, purchaseLineForRequest } = require(
+const { purchaseDraftTax, purchaseLineForRequest, purchaseDraftHasPrice } = require(
   `${process.env.GST_TEST_BUILD}/purchase-draft.js`,
 );
 const { purchaseReviewSignature } = require(
@@ -62,8 +62,14 @@ for (const key of [
   "trackStock",
   "stockMode",
   "taxReviewContext",
+  "priceText",
 ])
   assert.equal(key in request, false);
+assert.equal(purchaseDraftHasPrice({ ...line, price: 0, priceText: "" }), false);
+assert.equal(purchaseDraftHasPrice({ ...line, price: 0, priceText: "  " }), false);
+assert.equal(purchaseDraftHasPrice({ ...line, price: 0, priceText: "0" }), true);
+assert.equal(purchaseDraftHasPrice(line), true);
+assert.equal("priceText" in purchaseLineForRequest({ ...line, priceText: "10" }, context), false);
 for (const patch of [
   { receiveStock: true, stockMode: "receive" },
   { existingBatchId: "batch-a", stockMode: "link" },
