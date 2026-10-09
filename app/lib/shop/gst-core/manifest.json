@@ -364,5 +364,11 @@
     "source": "src/lib/pos/gst-export-review.ts",
     "sourceSha256": "08ec44136c9612553c79709a3701770661dede6107e26e21ea8df62addff57bb",
     "vendoredSha256": "bd185041fac4da601b688f76780511d50ed18f4c108a0797ee3fa0af8016fd7d"
+  },
+  {
+    "file": "gst-monitor-view.ts",
+    "source": "src/lib/gst-monitor-view.ts",
+    "sourceSha256": "dcb466a953dd98df2e75629ca1362717f789d3fb07cce975277e2776493ce54c",
+    "vendoredSha256": "dcb466a953dd98df2e75629ca1362717f789d3fb07cce975277e2776493ce54c"
   }
 ]

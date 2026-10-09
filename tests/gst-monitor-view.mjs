@@ -14,6 +14,10 @@ const completed = {
   issueCount: 0,
 };
 assert.equal(view(completed), "checked");
+for (const condition of [{fetchStatus:"paused"},{enabled:false},{unconfirmed:true}]) {
+  assert.equal(view({...completed,...condition}),"stale");
+  assert.equal(view({...completed,issueCount:3,...condition}),"stale");
+}
 assert.equal(view({ ...completed, issueCount: 1 }), "attention");
 assert.equal(view({ ...completed, truncated: true }), "partial");
 assert.equal(view({ ...completed, error: true }), "stale");

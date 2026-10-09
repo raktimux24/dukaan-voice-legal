@@ -194,10 +194,12 @@ const messages: Record<string, [string, string, string]> = {
   ],
 };
 export function GstChecksScreen() {
-  const { api, shop, offline, t } = useShop(),
+  const { api, shop, userId, offline, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     router = useRouter();
+  const [unconfirmedScan, setUnconfirmedScan] = useState<string|null>(null);
+  const scanScope = `${userId}:${shop?.id}`;
   const [issueLimit, setIssueLimit] = useState(100);
   const [supportNotice, setSupportNotice] = useState("");
   const q = useGstQuery(
@@ -223,6 +225,8 @@ export function GstChecksScreen() {
     fetchStatus: offline ? "paused" : q.fetchStatus,
     error: !!q.error || !!failed,
     completed: !!last,
+    enabled: report?.enabled,
+    unconfirmed: unconfirmedScan === scanScope,
     truncated: !!partial,
     issueCount: issues.length,
   });
@@ -290,15 +294,20 @@ export function GstChecksScreen() {
             onClick={() =>
               void action.run(async () => {
                 const scope = financialScope(shop!.id);
-                const result = await api.gst.runChecks(scope.shopId);
-                assertScope(scope);
-                if (result.skipped)
-                  throw Error(
-                    text(
-                      "A check is already running or unavailable. Refresh saved results shortly.",
-                    ),
-                  );
-                await q.refetch();
+                try {
+                  const result = await api.gst.runChecks(scope.shopId);
+                  assertScope(scope);
+                  if (result.skipped) throw Error(text("A check is already running or unavailable. Refresh saved results shortly."));
+                  const refreshed = await q.refetch();
+                  assertScope(scope);
+                  if (refreshed.error) throw refreshed.error;
+                  setUnconfirmedScan(null);
+                } catch (error) {
+                  assertScope(scope);
+                  setUnconfirmedScan(scanScope);
+                  await q.refetch();
+                  throw error;
+                }
               })
             }
           >
