@@ -10,30 +10,35 @@ export type ShareBillInput = {
   total: string;
   payments: string[];
   footer?: string | null;
+  labels?: { bill: string; subtotal: string; discount: string; total: string; thanks: string };
 };
 
+const defaultLabels = { bill: 'Bill', subtotal: 'Subtotal', discount: 'Discount', total: 'Total', thanks: 'Thank you' };
+
 export function billPlainText(bill: ShareBillInput) {
+  const labels = bill.labels ?? defaultLabels;
   const rows = [
     bill.shopName,
     bill.address || null,
     bill.phone || null,
     '',
-    `Bill #${bill.saleNumber}`,
+    `${labels.bill} #${bill.saleNumber}`,
     bill.when,
     '',
     ...bill.lines.flatMap((line) => [line.name, `${line.detail}  ${line.amount}`]),
     '',
-    `Subtotal  ${bill.subtotal}`,
-    bill.discount ? `Discount  ${bill.discount}` : null,
-    `Total  ${bill.total}`,
+    `${labels.subtotal}  ${bill.subtotal}`,
+    bill.discount ? `${labels.discount}  ${bill.discount}` : null,
+    `${labels.total}  ${bill.total}`,
     ...bill.payments,
     '',
-    bill.footer || 'Thank you',
+    bill.footer || labels.thanks,
   ];
   return rows.filter((row) => row != null).join('\n');
 }
 
 function drawBill(bill: ShareBillInput) {
+  const labels = bill.labels ?? defaultLabels;
   const width = 420;
   const lineHeight = 22;
   const height = 220 + bill.lines.length * 48 + bill.payments.length * lineHeight;
@@ -71,7 +76,7 @@ function drawBill(bill: ShareBillInput) {
   y += 24;
   ctx.fillStyle = '#1c1c1c';
   ctx.textAlign = 'left';
-  ctx.fillText(`Bill #${bill.saleNumber}`, 24, y);
+  ctx.fillText(`${labels.bill} #${bill.saleNumber}`, 24, y);
   ctx.textAlign = 'right';
   ctx.fillText(bill.when, width - 24, y);
   y += 28;
@@ -99,20 +104,20 @@ function drawBill(bill: ShareBillInput) {
   ctx.fillStyle = '#1c1c1c';
   ctx.font = '13px Inter, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('Subtotal', 24, y + 10);
+  ctx.fillText(labels.subtotal, 24, y + 10);
   ctx.textAlign = 'right';
   ctx.fillText(bill.subtotal, width - 24, y + 10);
   y += 28;
   if (bill.discount) {
     ctx.textAlign = 'left';
-    ctx.fillText('Discount', 24, y);
+    ctx.fillText(labels.discount, 24, y);
     ctx.textAlign = 'right';
     ctx.fillText(bill.discount, width - 24, y);
     y += 24;
   }
   ctx.font = '700 18px "Space Grotesk", sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('Total', 24, y);
+  ctx.fillText(labels.total, 24, y);
   ctx.textAlign = 'right';
   ctx.fillText(bill.total, width - 24, y);
   y += 28;
@@ -125,13 +130,13 @@ function drawBill(bill: ShareBillInput) {
   }
   y += 10;
   ctx.textAlign = 'center';
-  ctx.fillText(bill.footer || 'Thank you', width / 2, y);
+  ctx.fillText(bill.footer || labels.thanks, width / 2, y);
   return canvas;
 }
 
 export async function shareBill(bill: ShareBillInput): Promise<'shared' | 'copied' | 'cancelled'> {
   const text = billPlainText(bill);
-  const title = `${bill.shopName} · Bill #${bill.saleNumber}`;
+  const title = `${bill.shopName} · ${(bill.labels ?? defaultLabels).bill} #${bill.saleNumber}`;
   const canvas = drawBill(bill);
   const blob = canvas
     ? await new Promise<Blob | null>((resolve) => canvas.toBlob((file) => resolve(file), 'image/png'))

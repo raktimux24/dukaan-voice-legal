@@ -80,14 +80,21 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
       discount: sale.discountAmount > 0 ? `−${formatINR(sale.discountAmount)}` : null,
       total: formatINR(sale.total),
       payments: sale.payments.map((payment) => {
-        const label = METHOD[payment.method] ?? payment.method;
+        const label = t(`pos.method.${payment.method}`, METHOD[payment.method] ?? payment.method);
         const extra = [
-          payment.tendered != null ? `received ${formatINR(payment.tendered)}` : null,
-          payment.changeGiven ? `change ${formatINR(payment.changeGiven)}` : null,
+          payment.tendered != null ? `${t('checkout.cash_received', 'Cash received')} ${formatINR(payment.tendered)}` : null,
+          payment.changeGiven ? `${t('checkout.change', 'Change to return')} ${formatINR(payment.changeGiven)}` : null,
         ].filter(Boolean).join(' · ');
         return extra ? `${label} · ${extra} · ${formatINR(payment.amount)}` : `${label} · ${formatINR(payment.amount)}`;
       }),
       footer: pos?.billFooter,
+      labels: {
+        bill: t('bill.bill', 'Bill'),
+        subtotal: t('bill.subtotal', 'Subtotal'),
+        discount: t('bill.discount', 'Discount'),
+        total: t('bill.total', 'Total'),
+        thanks: t('bill.thanks', 'Thank you'),
+      },
     };
     if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error("Use the verified GST document above to print or download this bill."));return;}
     setSharing(true);
