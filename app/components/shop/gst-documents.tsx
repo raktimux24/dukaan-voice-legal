@@ -1,4 +1,7 @@
 "use client";
+import type {FiscalDocument} from "../../lib/shop/gst-types";
+import type {SalePaymentInput} from "../../lib/shop/types";
+import type {DocumentView} from "../../lib/shop/gst-document-view";
 import { useShop } from "./context";
 import { Button, Notice, NoAccess } from "./ui";
 import { useGstQuery, ReadState } from "./gst-workspace";
@@ -15,9 +18,17 @@ export function GstDocuments({ saleId }: { saleId: string }) {
   return Promise.all(rows.map(async doc=>{try{await verifyDocument(doc,shop!.id,saleId);return {doc,view:documentView(doc),error:null};}catch(error){return {doc,view:null,error};}}));
  },perms.canSeeReports);
  if(!perms.canSeeReports)return <NoAccess what={text('Ask a shop administrator to open the verified GST document.')}/>;
- const address=(party: {address:string;structuredAddress?:{address1:string;address2?:string;location:string;pincode:string}},version?:string)=>version==='gst_bill_v2'&&party.structuredAddress?[party.structuredAddress.address1,party.structuredAddress.address2,party.structuredAddress.location,party.structuredAddress.pincode].filter(Boolean).join(', '):party.address;
+
  return <div className="grid gap-4"><ReadState query={q} empty={!q.data?.length}>{q.data?.map(({doc,view,error})=><Section key={doc.id} title={`${text(doc.type.replaceAll('_',' '))} ${doc.number}`} summary={date(doc.issuedAt)} open>
-  <Notice error={error}/>{!view?<Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-document-${doc.id}.json`,'application/json')}>{text('Download document for support')}</Button>:<article className="gst-document" id={'gst-doc-'+doc.id}>
+  <Notice error={error}/>{!view?<Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-document-${doc.id}.json`,'application/json')}>{text('Download document for support')}</Button>:<FiscalDocumentArticle doc={doc} view={view}/>}
+ </Section>)}</ReadState></div>;
+}
+
+export function FiscalDocumentArticle({doc,view,local=false,payments}:{doc:FiscalDocument;view:DocumentView;local?:boolean;payments?:SalePaymentInput[]}) {
+ const text=useGstText(),date=useFiscalDate();
+ const address=(party: {address:string;structuredAddress?:{address1:string;address2?:string;location:string;pincode:string}},version?:string)=>version==='gst_bill_v2'&&party.structuredAddress?[party.structuredAddress.address1,party.structuredAddress.address2,party.structuredAddress.location,party.structuredAddress.pincode].filter(Boolean).join(', '):party.address;
+ return <article className="gst-document" id={'gst-doc-'+doc.id}>
+   {local?<p className="shop-hint">{text('Saved locally · awaiting synchronization')}</p>:null}
    <header><p><b>{text(doc.type.replaceAll('_',' '))} {doc.number}</b></p><p>{date(doc.issuedAt)}</p><h2 className="shop-section-title">{view.context.settings.legalName}</h2><p>{address(view.context.settings,view.context.documentRenderVersion)}</p><p>GSTIN {view.context.settings.gstin}</p><p>{text('State / place of supply')}: {view.context.placeOfSupply}</p></header>
    {view.context.buyer?<div className="gst-row"><b>{view.context.buyer.name}</b><span>{view.context.buyer.gstin}</span><p>{address(view.context.buyer,view.context.documentRenderVersion)}</p></div>:null}
    {doc.originalNumber?<p>{text('Original invoice')}: {doc.originalNumber}</p>:null}
@@ -26,7 +37,7 @@ export function GstDocuments({ saleId }: { saleId: string }) {
    <div className="gst-price-preview"><span>{text('Before GST')}<b>{formatINR(view.net)}</b></span><span>{text('GST reporting taxable value')}<b>{formatINR(view.taxable)}</b></span><span>GST<b>{formatINR(view.tax)}</b></span>{Object.entries(view.components).filter(([,v])=>v>0).map(([k,v])=><span key={k}>{k}<b>{formatINR(v)}</b></span>)}{view.roundOff!==0?<span>{text('Round-off')}<b>{formatINR(view.roundOff)}</b></span>:null}<span>{text('Total')}<b>{formatINR(view.total)}</b></span>{view.creditReduction!==undefined?<span>{text('Unpaid credit reduced')}<b>{formatINR(view.creditReduction)}</b></span>:null}{view.moneyRefund!==undefined?<span>{text('Money refund')}<b>{formatINR(view.moneyRefund)}</b></span>:null}</div>
    {doc.type==='bill_of_supply'?<p>{text('Composition taxable person, not eligible to collect tax on supplies')}</p>:<p>{text('Reverse charge: No (local forward-charge supply)')}</p>}
    <p className="shop-hint">{text('Authorised signatory')} __________________</p><p className="shop-hint">{text('The app does not digitally sign GST documents. Sign a printed copy when required.')}</p>
+   {payments?<div className="gst-price-preview"><b>{text('Payment')}</b>{payments.map((p,index)=><span key={index}>{text(({cash:'Cash',upi:'UPI',card:'Card',credit:'Udhaar'})[p.method])}<b>{formatINR(p.amount)}</b></span>)}</div>:null}
    <div className="shop-actions no-print"><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)saveFile(documentHtml(el,doc.number),`samaan-${doc.number.replace(/[^a-zA-Z0-9-]/g,'-')}.html`,'text/html');}}>{text('Download bill')}</Button><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)printDocument(el,doc.number);}}>{text('Print / save PDF')}</Button><Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-${doc.id}.json`,'application/json')}>{text('Download saved document')}</Button></div>
-  </article>}
- </Section>)}</ReadState></div>;
+  </article>;
 }

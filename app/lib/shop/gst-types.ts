@@ -177,7 +177,7 @@ export interface BillingParty {
   updatedAt: string;
 }
 export interface FiscalDocument {
-  integrity?: "verified" | "mismatch" | "legacy_unverifiable";
+  integrity?: "verified" | "mismatch" | "legacy_unverifiable" | "local_retained";
   id: string;
   shopId: string;
   saleId: string;

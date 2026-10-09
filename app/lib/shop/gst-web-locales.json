@@ -1118,7 +1118,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "Connection lost. The server outcome is not confirmed. The saved checkout will retry with the same request ID when the connection returns.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "Checkout saved on this browser. Server confirmation is pending.",
     "web.gst.retry_saved_checkout": "Retry saved checkout",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "Could not verify the saved checkout. Check browser storage and retry."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "Could not verify the saved checkout. Check browser storage and retry.",
+    "web.gst.saved_locally_awaiting_synchronization": "Saved locally · awaiting synchronization",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "This bill keeps its original number and issue time. Server confirmation is pending."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2240,7 +2242,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "कनेक्शन टूट गया। सर्वर पर परिणाम की पुष्टि नहीं हुई है। कनेक्शन लौटने पर सहेजा गया चेकआउट उसी अनुरोध पहचान के साथ फिर भेजा जाएगा।",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "चेकआउट इस ब्राउज़र में सहेजा गया है। सर्वर की पुष्टि बाकी है।",
     "web.gst.retry_saved_checkout": "सहेजा गया चेकआउट फिर भेजें",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "सहेजे गए चेकआउट की पुष्टि नहीं हो सकी। ब्राउज़र स्टोरेज जाँचकर फिर कोशिश करें।"
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "सहेजे गए चेकआउट की पुष्टि नहीं हो सकी। ब्राउज़र स्टोरेज जाँचकर फिर कोशिश करें।",
+    "web.gst.saved_locally_awaiting_synchronization": "इस डिवाइस पर सहेजा गया · सिंक होना बाकी है",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "इस बिल का मूल नंबर और जारी करने का समय सुरक्षित है। सर्वर की पुष्टि बाकी है।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3361,7 +3365,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "Connection toot gaya. Server ke outcome ki pushti nahi hui hai. Connection lautne par saved checkout usi request ID ke saath phir bheja jayega.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "Checkout is browser mein saved hai. Server ki confirmation baaki hai.",
     "web.gst.retry_saved_checkout": "Saved checkout phir bhejein",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "Saved checkout verify nahi ho saka. Browser storage check karke phir koshish karein."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "Saved checkout verify nahi ho saka. Browser storage check karke phir koshish karein.",
+    "web.gst.saved_locally_awaiting_synchronization": "Yahin saved hai · sync hona baaki hai",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "Is bill ka original number aur issue time surakshit hai. Server ki confirmation baaki hai."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4482,7 +4488,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "সংযোগ বিচ্ছিন্ন হয়েছে। সার্ভারের ফলাফল নিশ্চিত নয়। সংযোগ ফিরলে সংরক্ষিত চেকআউট একই অনুরোধ পরিচয় দিয়ে আবার পাঠানো হবে।",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "চেকআউট এই ব্রাউজারে সংরক্ষিত। সার্ভারের নিশ্চিতকরণ বাকি।",
     "web.gst.retry_saved_checkout": "সংরক্ষিত চেকআউট আবার পাঠান",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "সংরক্ষিত চেকআউট যাচাই করা যায়নি। ব্রাউজারের স্টোরেজ পরীক্ষা করে আবার চেষ্টা করুন।"
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "সংরক্ষিত চেকআউট যাচাই করা যায়নি। ব্রাউজারের স্টোরেজ পরীক্ষা করে আবার চেষ্টা করুন।",
+    "web.gst.saved_locally_awaiting_synchronization": "স্থানীয়ভাবে সংরক্ষিত · সিঙ্ক হওয়া বাকি",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "এই বিলের মূল নম্বর ও জারির সময় অপরিবর্তিত আছে। সার্ভারের নিশ্চিতকরণ বাকি।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5603,7 +5611,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "இணைப்பு துண்டிக்கப்பட்டது. சேவையக முடிவு உறுதிப்படுத்தப்படவில்லை. இணைப்பு திரும்பியதும் சேமித்த செக்அவுட் அதே கோரிக்கை அடையாளத்துடன் மீண்டும் அனுப்பப்படும்.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "இந்த உலாவியில் செக்அவுட் சேமிக்கப்பட்டது. சேவையக உறுதிப்படுத்தல் நிலுவையில் உள்ளது.",
     "web.gst.retry_saved_checkout": "சேமித்த செக்அவுட்டை மீண்டும் அனுப்பவும்",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "சேமித்த செக்அவுட்டை சரிபார்க்க முடியவில்லை. உலாவிச் சேமிப்பகத்தைச் சரிபார்த்து மீண்டும் முயலவும்."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "சேமித்த செக்அவுட்டை சரிபார்க்க முடியவில்லை. உலாவிச் சேமிப்பகத்தைச் சரிபார்த்து மீண்டும் முயலவும்.",
+    "web.gst.saved_locally_awaiting_synchronization": "இங்கே சேமிக்கப்பட்டது · ஒத்திசைவு நிலுவையில் உள்ளது",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "இந்த பில்லின் அசல் எண்ணும் வெளியிட்ட நேரமும் பாதுகாக்கப்படும். சேவையக உறுதிப்படுத்தல் நிலுவையில் உள்ளது."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6724,7 +6734,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "కనెక్షన్ పోయింది. సర్వర్ ఫలితం నిర్ధారించబడలేదు. కనెక్షన్ తిరిగి వచ్చినప్పుడు సేవ్ చేసిన చెక్అవుట్ అదే అభ్యర్థన గుర్తింపుతో మళ్లీ పంపబడుతుంది.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "ఈ బ్రౌజర్‌లో చెక్అవుట్ సేవ్ అయింది. సర్వర్ నిర్ధారణ పెండింగ్‌లో ఉంది.",
     "web.gst.retry_saved_checkout": "సేవ్ చేసిన చెక్అవుట్ మళ్లీ పంపండి",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "సేవ్ చేసిన చెక్అవుట్‌ను ధృవీకరించలేకపోయాం. బ్రౌజర్ స్టోరేజ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "సేవ్ చేసిన చెక్అవుట్‌ను ధృవీకరించలేకపోయాం. బ్రౌజర్ స్టోరేజ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
+    "web.gst.saved_locally_awaiting_synchronization": "ఇక్కడ సేవ్ అయింది · సింక్ పెండింగ్‌లో ఉంది",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ఈ బిల్లు అసలు నంబర్ మరియు జారీ సమయాన్ని ఉంచుతుంది. సర్వర్ నిర్ధారణ పెండింగ్‌లో ఉంది."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7845,7 +7857,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "कनेक्शन तुटले. सर्व्हरवरील निकालाची पुष्टी झालेली नाही. कनेक्शन परत आल्यावर जतन केलेले चेकआउट त्याच विनंती ओळखीसह पुन्हा पाठवले जाईल.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "चेकआउट या ब्राउझरमध्ये जतन केले आहे. सर्व्हरची पुष्टी बाकी आहे.",
     "web.gst.retry_saved_checkout": "जतन केलेले चेकआउट पुन्हा पाठवा",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "जतन केलेले चेकआउट पडताळता आले नाही. ब्राउझर स्टोरेज तपासून पुन्हा प्रयत्न करा."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "जतन केलेले चेकआउट पडताळता आले नाही. ब्राउझर स्टोरेज तपासून पुन्हा प्रयत्न करा.",
+    "web.gst.saved_locally_awaiting_synchronization": "स्थानिकरीत्या जतन केले · सिंक होणे बाकी आहे",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "या बिलाचा मूळ क्रमांक आणि जारी करण्याची वेळ कायम आहेत. सर्व्हरची पुष्टी बाकी आहे."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -8966,7 +8980,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ. ಸರ್ವರ್ ಫಲಿತಾಂಶ ದೃಢಪಟ್ಟಿಲ್ಲ. ಸಂಪರ್ಕ ಮರಳಿದಾಗ ಉಳಿಸಿದ ಚೆಕ್ಔಟ್ ಅದೇ ವಿನಂತಿ ಗುರುತಿನೊಂದಿಗೆ ಮತ್ತೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಚೆಕ್ಔಟ್ ಉಳಿಸಲಾಗಿದೆ. ಸರ್ವರ್ ದೃಢೀಕರಣ ಬಾಕಿಯಿದೆ.",
     "web.gst.retry_saved_checkout": "ಉಳಿಸಿದ ಚೆಕ್ಔಟ್ ಮತ್ತೆ ಕಳುಹಿಸಿ",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "ಉಳಿಸಿದ ಚೆಕ್ಔಟ್ ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ. ಬ್ರೌಸರ್ ಸಂಗ್ರಹವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "ಉಳಿಸಿದ ಚೆಕ್ಔಟ್ ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ. ಬ್ರೌಸರ್ ಸಂಗ್ರಹವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "web.gst.saved_locally_awaiting_synchronization": "ಇಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ · ಸಿಂಕ್ ಬಾಕಿಯಿದೆ",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ಈ ಬಿಲ್‌ನ ಮೂಲ ಸಂಖ್ಯೆ ಮತ್ತು ನೀಡಿದ ಸಮಯ ಹಾಗೆಯೇ ಉಳಿಯುತ್ತವೆ. ಸರ್ವರ್ ದೃಢೀಕರಣ ಬಾಕಿಯಿದೆ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10087,7 +10103,9 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "કનેક્શન તૂટી ગયું. સર્વરનું પરિણામ હજી ખાતરી થયેલું નથી. કનેક્શન પાછું આવે ત્યારે સાચવેલું ચેકઆઉટ એ જ વિનંતી ઓળખ સાથે ફરી મોકલાશે.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "ચેકઆઉટ આ બ્રાઉઝરમાં સાચવેલું છે. સર્વરની પુષ્ટિ બાકી છે.",
     "web.gst.retry_saved_checkout": "સાચવેલું ચેકઆઉટ ફરી મોકલો",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "સાચવેલું ચેકઆઉટ ચકાસી શકાયું નહીં. બ્રાઉઝર સ્ટોરેજ તપાસીને ફરી પ્રયાસ કરો."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "સાચવેલું ચેકઆઉટ ચકાસી શકાયું નહીં. બ્રાઉઝર સ્ટોરેજ તપાસીને ફરી પ્રયાસ કરો.",
+    "web.gst.saved_locally_awaiting_synchronization": "અહીં સાચવેલું છે · સિંક બાકી છે",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "આ બિલનો મૂળ નંબર અને જારી કરવાનો સમય જળવાઈ રહે છે. સર્વરની પુષ્ટિ બાકી છે."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11208,6 +11226,8 @@
     "web.gst.connection_lost_the_server_outcome_is_not_confirmed_the_saved_checkout_will_retry_with_the_same_request_id_when_the_connection_returns_": "കണക്ഷൻ നഷ്ടപ്പെട്ടു. സെർവറിലെ ഫലം സ്ഥിരീകരിച്ചിട്ടില്ല. കണക്ഷൻ തിരികെ വരുമ്പോൾ സംരക്ഷിച്ച ചെക്കൗട്ട് അതേ അഭ്യർത്ഥന തിരിച്ചറിയലോടെ വീണ്ടും അയക്കും.",
     "web.gst.checkout_saved_on_this_browser_server_confirmation_is_pending_": "ഈ ബ്രൗസറിൽ ചെക്കൗട്ട് സംരക്ഷിച്ചു. സെർവർ സ്ഥിരീകരണം ബാക്കിയുണ്ട്.",
     "web.gst.retry_saved_checkout": "സംരക്ഷിച്ച ചെക്കൗട്ട് വീണ്ടും അയക്കുക",
-    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "സംരക്ഷിച്ച ചെക്കൗട്ട് പരിശോധിക്കാനായില്ല. ബ്രൗസർ സ്റ്റോറേജ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക."
+    "web.gst.could_not_verify_the_saved_checkout_check_browser_storage_and_retry_": "സംരക്ഷിച്ച ചെക്കൗട്ട് പരിശോധിക്കാനായില്ല. ബ്രൗസർ സ്റ്റോറേജ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",
+    "web.gst.saved_locally_awaiting_synchronization": "ഇവിടെ സംരക്ഷിച്ചു · സിങ്ക് ബാക്കിയുണ്ട്",
+    "web.gst.this_bill_keeps_its_original_number_and_issue_time_server_confirmation_is_pending_": "ഈ ബില്ലിന്റെ യഥാർത്ഥ നമ്പറും നൽകിയ സമയവും നിലനിർത്തും. സെർവർ സ്ഥിരീകരണം ബാക്കിയുണ്ട്."
   }
 }
