@@ -203,3 +203,8 @@ Tests cover scoped and complete catalog retention, purchase-cost redaction, tax 
 The counter retains minimal subscription evidence without mandate identifiers or invoice URLs. Paid/trial access expires at its authoritative end date; the explicit temporary Premium server grant remains respected. Retained access has a seven-day maximum lifetime. The UI reassesses expiry on timers and tab resume, and credit checkout checks the current deadline at charge time. Cash/UPI sales retain the same free-access behavior as mobile.
 
 Language, text size and other preferences use one actor/session-bound account cache across shops. A preference mutation invalidates it before sending, including lost responses; leaving the login session prevents cached reads. The validator accepts the server's extra_large text size. Tests cover exact paid/trial and cache expiry, temporary grants, private billing redaction, retained Bengali preferences and mutation invalidation. Full browser offline boot and local fiscal issuance remain open.
+
+
+### Retained rounding selection follow-up
+
+Checkout and issuance may read a retained, hashed rounding selection during a transient outage. Reuse is bounded to the interval beginning at the server-selected timestamp and ending before its refresh boundary, including policy effective-until. Wrong-shop, future, expired and malformed selections are rejected. The selection remains preview evidence: local issuance still requires the separate allocation/actor/device/policy-bound grant and its original issue-time checks. A settings update or authorization denial invalidates the retained selection. This closes a read dependency; locally issued receipt rendering and disconnected acceptance remain open.

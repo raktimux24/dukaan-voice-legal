@@ -1,3 +1,6 @@
+import {assertRoundingSelection,type RoundingSelection} from './gst-core/payable-rounding-request';
+import {retainedRoundingSelection} from './offline-rounding';
+import type {createOfflineEvidence} from './offline-evidence';
 import { confirmedCollectionReview } from "./gst-core/collection-review-outcome";
 import { confirmedSaleReturnReceipt } from "./gst-core/sale-return-outcome";
 import { confirmedManualCredit } from "./gst-core/manual-credit-outcome";
@@ -55,6 +58,7 @@ export function bindGstApi(
   register?: (
     path: string,
   ) => Promise<{ content: string; id: string; hash: string }>,
+  evidence?:ReturnType<typeof createOfflineEvidence>|null,
 ) {
   const get = <T>(path: string) => send<T>(path);
   const post = <T>(path: string, body: unknown) =>
@@ -144,7 +148,12 @@ export function bindGstApi(
       ),
     revoke: (s: string, id: string, reason: string) =>
       post(`${base(s)}/pos-settings/gst-devices/${id}/revoke`, { reason }),
-    roundingSelection: (s:string,issuedAt:string) => post<unknown>(`${base(s)}/pos-settings/rounding-selection`,{issuedAt}),
+    roundingSelection: async (s:string,issuedAt:string) => {
+      const load=async()=>assertRoundingSelection(s,issuedAt,await post<unknown>(`${base(s)}/pos-settings/rounding-selection`,{issuedAt}));
+      if(!evidence)return load();
+      const validate=(value:unknown):value is RoundingSelection=>{try{const row=value as RoundingSelection;assertRoundingSelection(s,row?.issuedAt,value);return true;}catch{return false;}};
+      return retainedRoundingSelection(s,issuedAt,await evidence.read(s,'rounding-selection',load,validate));
+    },
     roundingGrant: (s:string,body:{requestId:string;allocationId:string;deviceEpoch:string}) => post<unknown>(`${base(s)}/pos-settings/gst-rounding-grant`,body),
     provision: (s: string, body: { deviceEpoch: string; gstVersion: string }) =>
       post<Allocation>(`${base(s)}/pos-settings/gst-allocation`, body),

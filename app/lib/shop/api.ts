@@ -289,7 +289,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
   };
 
   return {
-    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};}),
+    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
@@ -463,6 +463,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     },
     updatePosSettings: async (shopId: string, body: Record<string, unknown>) => {
       await evidence?.clear(shopId,'pos-settings');
+      await evidence?.clear(shopId,'rounding-selection');
       return send<PosSettings>(`/api/shops/${shopId}/pos-settings`, { method: 'PUT', body: JSON.stringify(body) });
     },
     uploadUpiQr: (shopId: string, imageBase64: string) =>

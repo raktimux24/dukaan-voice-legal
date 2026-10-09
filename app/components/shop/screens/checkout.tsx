@@ -60,7 +60,7 @@ export function CheckoutScreen() {
   const [previewAt,setPreviewAt]=useState(()=>new Date().toISOString());
   const [previewNow,setPreviewNow]=useState(()=>Date.now());
   const roundingEnabled=settings.data?.gstPayableRoundingAvailable===true;
-  const rounding=useQuery({queryKey:['gst-rounding-selection',shop?.id,previewAt,userId],enabled:!!shop?.id&&roundingEnabled,queryFn:async()=>assertRoundingSelection(shop!.id,previewAt,await api.gst.roundingSelection(shop!.id,previewAt))});
+  const rounding=useQuery({queryKey:['gst-rounding-selection',shop?.id,previewAt,userId],enabled:!!shop?.id&&roundingEnabled,networkMode:'always',queryFn:async()=>assertRoundingSelection(shop!.id,previewAt,await api.gst.roundingSelection(shop!.id,previewAt))});
   useEffect(()=>{if(!roundingEnabled)return;const timer=setInterval(()=>{const now=Date.now();setPreviewNow(now);if(rounding.data&&!roundingSelectionCurrent(rounding.data,now))setPreviewAt(new Date(now).toISOString());},1000);return()=>clearInterval(timer);},[roundingEnabled,rounding.data]);
   const [mode, setMode] = useState<TenderMode | null>(null);
   const [cashTendered, setCashTendered] = useState('');
