@@ -38,6 +38,7 @@ function nearExpiry(item: InventoryItem) {
 
 function matches(item: InventoryItem, filter: string) {
   if (item.product.isActive === false) return false;
+  if (item.product.trackStock === false && ['low_stock', 'out_of_stock', 'near_expiry'].includes(filter)) return false;
   if (filter === 'low_stock') return item.stockStatus === 'LOW';
   if (filter === 'out_of_stock') return item.stockStatus === 'OUT';
   if (filter === 'near_expiry') return nearExpiry(item);
@@ -91,13 +92,13 @@ export function ProductsScreen() {
             <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
               <div className="shop-list-main">
                 <p className="shop-list-title">{item.product.name}</p>
-                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {formatQty(item.quantity, item.unit)} {t('reports.stock.on_hand', 'on hand')}</p>
+                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {item.product.trackStock === false ? t('pos.no_stock_tracking', 'Not stock-tracked') : `${formatQty(item.quantity, item.unit)} ${t('reports.stock.on_hand', 'on hand')}`}</p>
               </div>
               <div className="shop-list-right flex items-center gap-4">
                 <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">{t('home.filter_unpriced', 'Unpriced')}</span> : formatINR(item.product.sellingPrice)}</p>
-                <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
+                {item.product.trackStock !== false ? <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
                   {item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : item.stockStatus === 'LOW' ? t('home.stat_low_stock', 'Low') : t('reports.stock.on_hand', 'In stock')}
-                </Pill>
+                </Pill> : null}
               </div>
             </Link>
           ))}

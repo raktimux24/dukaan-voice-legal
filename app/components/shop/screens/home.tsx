@@ -113,7 +113,7 @@ export function HomeScreen() {
   const attentionItems = useMemo(() => {
     const rank = { OUT: 0, LOW: 1 } as Record<string, number>;
     return (catalog.data ?? [])
-      .filter((item) => item.product.isActive !== false && (item.stockStatus === 'OUT' || item.stockStatus === 'LOW'))
+      .filter((item) => item.product.isActive !== false && item.product.trackStock !== false && (item.stockStatus === 'OUT' || item.stockStatus === 'LOW'))
       .sort((a, b) => (rank[a.stockStatus] ?? 2) - (rank[b.stockStatus] ?? 2) || a.quantity - b.quantity)
       .slice(0, 6);
   }, [catalog.data]);
