@@ -1126,7 +1126,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "Delete your account? This cannot be undone.",
     "web.gst.delete_the_account_now_": "Delete the account now?",
     "web.gst.confirm_delete_account_one_more_time_": "Confirm delete account one more time.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "This supplier document number has already been recorded. Review the existing document before creating another entry."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "This supplier document number has already been recorded. Review the existing document before creating another entry.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "Daily recaps and shop updates on this browser.",
+    "web.gst.this_browser_does_not_support_notifications_": "This browser does not support notifications.",
+    "web.gst.browser_notifications_are_not_available_yet_": "Browser notifications are not available yet.",
+    "web.gst.notifications_are_off_on_this_browser_": "Notifications are off on this browser.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "Notifications are blocked. Allow them in your browser settings.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "Notifications are enabled on this browser.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "Could not update notifications. Connect and try again.",
+    "web.gst.turn_off_notifications": "Turn off notifications",
+    "web.gst.enable_notifications": "Enable notifications"
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2256,7 +2265,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "अपना खाता हटाएँ? इसे वापस नहीं किया जा सकता।",
     "web.gst.delete_the_account_now_": "क्या अभी खाता हटा दें?",
     "web.gst.confirm_delete_account_one_more_time_": "खाता हटाने की एक बार फिर पुष्टि करें।",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "यह सप्लायर दस्तावेज़ नंबर पहले ही दर्ज है। नई एंट्री बनाने से पहले मौजूदा दस्तावेज़ देखें।"
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "यह सप्लायर दस्तावेज़ नंबर पहले ही दर्ज है। नई एंट्री बनाने से पहले मौजूदा दस्तावेज़ देखें।",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "इस ब्राउज़र पर रोज़ का सारांश और दुकान के अपडेट।",
+    "web.gst.this_browser_does_not_support_notifications_": "यह ब्राउज़र सूचनाओं का समर्थन नहीं करता।",
+    "web.gst.browser_notifications_are_not_available_yet_": "ब्राउज़र सूचनाएँ अभी उपलब्ध नहीं हैं।",
+    "web.gst.notifications_are_off_on_this_browser_": "इस ब्राउज़र पर सूचनाएँ बंद हैं।",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "सूचनाएँ ब्लॉक हैं। ब्राउज़र सेटिंग में उन्हें अनुमति दें।",
+    "web.gst.notifications_are_enabled_on_this_browser_": "इस ब्राउज़र पर सूचनाएँ चालू हैं।",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "सूचनाएँ अपडेट नहीं हो सकीं। इंटरनेट से जुड़कर फिर कोशिश करें।",
+    "web.gst.turn_off_notifications": "सूचनाएँ बंद करें",
+    "web.gst.enable_notifications": "सूचनाएँ चालू करें"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3385,7 +3403,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "Apna account delete karein? Yeh wapas nahi ho sakta.",
     "web.gst.delete_the_account_now_": "Kya abhi account delete karein?",
     "web.gst.confirm_delete_account_one_more_time_": "Account delete karne ki ek baar phir pushti karein.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "Yeh supplier document number pehle hi record hai. Nayi entry banane se pehle maujooda document dekhein."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "Yeh supplier document number pehle hi record hai. Nayi entry banane se pehle maujooda document dekhein.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "Is browser par daily recap aur dukaan ke updates.",
+    "web.gst.this_browser_does_not_support_notifications_": "Yeh browser notifications support nahi karta.",
+    "web.gst.browser_notifications_are_not_available_yet_": "Browser notifications abhi available nahi hain.",
+    "web.gst.notifications_are_off_on_this_browser_": "Is browser par notifications band hain.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "Notifications blocked hain. Browser settings mein allow karein.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "Is browser par notifications chalu hain.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "Notifications update nahi hui. Internet connect karke phir try karein.",
+    "web.gst.turn_off_notifications": "Notifications band karein",
+    "web.gst.enable_notifications": "Notifications chalu karein"
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4514,7 +4541,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "আপনার অ্যাকাউন্ট মুছবেন? এটি আর ফেরানো যাবে না।",
     "web.gst.delete_the_account_now_": "এখনই অ্যাকাউন্ট মুছবেন?",
     "web.gst.confirm_delete_account_one_more_time_": "অ্যাকাউন্ট মুছে ফেলার জন্য আরও একবার নিশ্চিত করুন।",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "এই সরবরাহকারীর নথি নম্বর আগে থেকেই নথিভুক্ত আছে। নতুন এন্ট্রি করার আগে আগের নথিটি দেখুন।"
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "এই সরবরাহকারীর নথি নম্বর আগে থেকেই নথিভুক্ত আছে। নতুন এন্ট্রি করার আগে আগের নথিটি দেখুন।",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "এই ব্রাউজারে দৈনিক সারাংশ ও দোকানের আপডেট।",
+    "web.gst.this_browser_does_not_support_notifications_": "এই ব্রাউজার বিজ্ঞপ্তি সমর্থন করে না।",
+    "web.gst.browser_notifications_are_not_available_yet_": "ব্রাউজারের বিজ্ঞপ্তি এখনও উপলব্ধ নয়।",
+    "web.gst.notifications_are_off_on_this_browser_": "এই ব্রাউজারে বিজ্ঞপ্তি বন্ধ আছে।",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "বিজ্ঞপ্তি ব্লক করা আছে। ব্রাউজারের সেটিংসে অনুমতি দিন।",
+    "web.gst.notifications_are_enabled_on_this_browser_": "এই ব্রাউজারে বিজ্ঞপ্তি চালু আছে।",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "বিজ্ঞপ্তি আপডেট করা যায়নি। ইন্টারনেটে যুক্ত হয়ে আবার চেষ্টা করুন।",
+    "web.gst.turn_off_notifications": "বিজ্ঞপ্তি বন্ধ করুন",
+    "web.gst.enable_notifications": "বিজ্ঞপ্তি চালু করুন"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5643,7 +5679,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "உங்கள் கணக்கை நீக்கவா? இதை மீட்டெடுக்க முடியாது.",
     "web.gst.delete_the_account_now_": "இப்போது கணக்கை நீக்கவா?",
     "web.gst.confirm_delete_account_one_more_time_": "கணக்கை நீக்குவதை மீண்டும் ஒருமுறை உறுதிப்படுத்தவும்.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "இந்த சப்ளையர் ஆவண எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது. புதிய பதிவை உருவாக்கும் முன் தற்போதைய ஆவணத்தைச் சரிபார்க்கவும்."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "இந்த சப்ளையர் ஆவண எண் ஏற்கனவே பதிவு செய்யப்பட்டுள்ளது. புதிய பதிவை உருவாக்கும் முன் தற்போதைய ஆவணத்தைச் சரிபார்க்கவும்.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "இந்த உலாவியில் தினசரி சுருக்கமும் கடை புதுப்பிப்புகளும்.",
+    "web.gst.this_browser_does_not_support_notifications_": "இந்த உலாவி அறிவிப்புகளை ஆதரிக்கவில்லை.",
+    "web.gst.browser_notifications_are_not_available_yet_": "உலாவி அறிவிப்புகள் இன்னும் கிடைக்கவில்லை.",
+    "web.gst.notifications_are_off_on_this_browser_": "இந்த உலாவியில் அறிவிப்புகள் அணைக்கப்பட்டுள்ளன.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "அறிவிப்புகள் தடுக்கப்பட்டுள்ளன. உலாவி அமைப்புகளில் அனுமதிக்கவும்.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "இந்த உலாவியில் அறிவிப்புகள் இயக்கப்பட்டுள்ளன.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "அறிவிப்புகளை புதுப்பிக்க முடியவில்லை. இணையத்தில் இணைந்து மீண்டும் முயற்சிக்கவும்.",
+    "web.gst.turn_off_notifications": "அறிவிப்புகளை அணைக்கவும்",
+    "web.gst.enable_notifications": "அறிவிப்புகளை இயக்கவும்"
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6772,7 +6817,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "మీ ఖాతాను తొలగించాలా? దీన్ని తిరిగి పొందలేరు.",
     "web.gst.delete_the_account_now_": "ఇప్పుడే ఖాతాను తొలగించాలా?",
     "web.gst.confirm_delete_account_one_more_time_": "ఖాతా తొలగింపును మరోసారి నిర్ధారించండి.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ఈ సరఫరాదారు పత్రం సంఖ్య ఇప్పటికే నమోదైంది. కొత్త నమోదు చేయడానికి ముందు ఉన్న పత్రాన్ని పరిశీలించండి."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ఈ సరఫరాదారు పత్రం సంఖ్య ఇప్పటికే నమోదైంది. కొత్త నమోదు చేయడానికి ముందు ఉన్న పత్రాన్ని పరిశీలించండి.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "ఈ బ్రౌజర్‌లో రోజువారీ సారాంశాలు మరియు దుకాణం అప్‌డేట్‌లు.",
+    "web.gst.this_browser_does_not_support_notifications_": "ఈ బ్రౌజర్ నోటిఫికేషన్‌లకు మద్దతు ఇవ్వదు.",
+    "web.gst.browser_notifications_are_not_available_yet_": "బ్రౌజర్ నోటిఫికేషన్‌లు ఇంకా అందుబాటులో లేవు.",
+    "web.gst.notifications_are_off_on_this_browser_": "ఈ బ్రౌజర్‌లో నోటిఫికేషన్‌లు ఆఫ్‌లో ఉన్నాయి.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "నోటిఫికేషన్‌లు బ్లాక్ చేయబడ్డాయి. బ్రౌజర్ సెట్టింగ్‌లలో అనుమతించండి.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "ఈ బ్రౌజర్‌లో నోటిఫికేషన్‌లు ఆన్‌లో ఉన్నాయి.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "నోటిఫికేషన్‌లను అప్‌డేట్ చేయలేకపోయాం. ఇంటర్నెట్‌కు కనెక్ట్ అయి మళ్లీ ప్రయత్నించండి.",
+    "web.gst.turn_off_notifications": "నోటిఫికేషన్‌లను ఆఫ్ చేయండి",
+    "web.gst.enable_notifications": "నోటిఫికేషన్‌లను ఆన్ చేయండి"
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7901,7 +7955,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "तुमचे खाते हटवायचे? ते परत मिळवता येणार नाही.",
     "web.gst.delete_the_account_now_": "आता खाते हटवायचे?",
     "web.gst.confirm_delete_account_one_more_time_": "खाते हटवण्याची आणखी एकदा पुष्टी करा.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "हा पुरवठादार दस्तऐवज क्रमांक आधीच नोंदवला आहे. नवीन नोंद करण्यापूर्वी विद्यमान दस्तऐवज तपासा."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "हा पुरवठादार दस्तऐवज क्रमांक आधीच नोंदवला आहे. नवीन नोंद करण्यापूर्वी विद्यमान दस्तऐवज तपासा.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "या ब्राउझरवर रोजचा सारांश आणि दुकानाची अद्यतने.",
+    "web.gst.this_browser_does_not_support_notifications_": "हा ब्राउझर सूचनांना समर्थन देत नाही.",
+    "web.gst.browser_notifications_are_not_available_yet_": "ब्राउझर सूचना अद्याप उपलब्ध नाहीत.",
+    "web.gst.notifications_are_off_on_this_browser_": "या ब्राउझरवर सूचना बंद आहेत.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "सूचना अवरोधित आहेत. ब्राउझर सेटिंगमध्ये परवानगी द्या.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "या ब्राउझरवर सूचना सुरू आहेत.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "सूचना अद्यतनित करता आल्या नाहीत. इंटरनेटशी जोडून पुन्हा प्रयत्न करा.",
+    "web.gst.turn_off_notifications": "सूचना बंद करा",
+    "web.gst.enable_notifications": "सूचना सुरू करा"
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -9030,7 +9093,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಅಳಿಸಬೇಕೇ? ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
     "web.gst.delete_the_account_now_": "ಈಗಲೇ ಖಾತೆಯನ್ನು ಅಳಿಸಬೇಕೇ?",
     "web.gst.confirm_delete_account_one_more_time_": "ಖಾತೆಯನ್ನು ಅಳಿಸುವುದನ್ನು ಮತ್ತೊಮ್ಮೆ ದೃಢೀಕರಿಸಿ.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ಈ ಪೂರೈಕೆದಾರರ ದಾಖಲೆ ಸಂಖ್ಯೆ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ. ಹೊಸ ದಾಖಲಾತಿ ಮಾಡುವ ಮೊದಲು ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ದಾಖಲೆಯನ್ನು ಪರಿಶೀಲಿಸಿ."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ಈ ಪೂರೈಕೆದಾರರ ದಾಖಲೆ ಸಂಖ್ಯೆ ಈಗಾಗಲೇ ದಾಖಲಾಗಿದೆ. ಹೊಸ ದಾಖಲಾತಿ ಮಾಡುವ ಮೊದಲು ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ದಾಖಲೆಯನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ದೈನಂದಿನ ಸಾರಾಂಶ ಮತ್ತು ಅಂಗಡಿಯ ನವೀಕರಣಗಳು.",
+    "web.gst.this_browser_does_not_support_notifications_": "ಈ ಬ್ರೌಸರ್ ಅಧಿಸೂಚನೆಗಳನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.",
+    "web.gst.browser_notifications_are_not_available_yet_": "ಬ್ರೌಸರ್ ಅಧಿಸೂಚನೆಗಳು ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ.",
+    "web.gst.notifications_are_off_on_this_browser_": "ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಅಧಿಸೂಚನೆಗಳು ಆಫ್ ಆಗಿವೆ.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಅನುಮತಿಸಿ.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಅಧಿಸೂಚನೆಗಳು ಆನ್ ಆಗಿವೆ.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "ಅಧಿಸೂಚನೆಗಳನ್ನು ನವೀಕರಿಸಲಾಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "web.gst.turn_off_notifications": "ಅಧಿಸೂಚನೆಗಳನ್ನು ಆಫ್ ಮಾಡಿ",
+    "web.gst.enable_notifications": "ಅಧಿಸೂಚನೆಗಳನ್ನು ಆನ್ ಮಾಡಿ"
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10159,7 +10231,16 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "તમારું ખાતું કાઢી નાખવું છે? આ પાછું મેળવી શકાશે નહીં.",
     "web.gst.delete_the_account_now_": "હમણાં જ ખાતું કાઢી નાખવું છે?",
     "web.gst.confirm_delete_account_one_more_time_": "ખાતું કાઢી નાખવાની ફરી એક વાર પુષ્ટિ કરો.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "આ સપ્લાયરના દસ્તાવેજનો નંબર પહેલેથી નોંધાયેલો છે. નવી એન્ટ્રી કરતા પહેલાં હાલનો દસ્તાવેજ તપાસો."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "આ સપ્લાયરના દસ્તાવેજનો નંબર પહેલેથી નોંધાયેલો છે. નવી એન્ટ્રી કરતા પહેલાં હાલનો દસ્તાવેજ તપાસો.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "આ બ્રાઉઝર પર રોજનો સારાંશ અને દુકાનના અપડેટ્સ.",
+    "web.gst.this_browser_does_not_support_notifications_": "આ બ્રાઉઝર સૂચનાઓને સમર્થન આપતું નથી.",
+    "web.gst.browser_notifications_are_not_available_yet_": "બ્રાઉઝર સૂચનાઓ હજી ઉપલબ્ધ નથી.",
+    "web.gst.notifications_are_off_on_this_browser_": "આ બ્રાઉઝર પર સૂચનાઓ બંધ છે.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "સૂચનાઓ અવરોધિત છે. બ્રાઉઝર સેટિંગ્સમાં મંજૂરી આપો.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "આ બ્રાઉઝર પર સૂચનાઓ ચાલુ છે.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "સૂચનાઓ અપડેટ થઈ શકી નથી. ઇન્ટરનેટ સાથે જોડાઈને ફરી પ્રયાસ કરો.",
+    "web.gst.turn_off_notifications": "સૂચનાઓ બંધ કરો",
+    "web.gst.enable_notifications": "સૂચનાઓ ચાલુ કરો"
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11288,6 +11369,15 @@
     "web.gst.delete_your_account_this_cannot_be_undone_": "നിങ്ങളുടെ അക്കൗണ്ട് നീക്കം ചെയ്യണോ? ഇത് തിരിച്ചെടുക്കാൻ കഴിയില്ല.",
     "web.gst.delete_the_account_now_": "ഇപ്പോൾ അക്കൗണ്ട് നീക്കം ചെയ്യണോ?",
     "web.gst.confirm_delete_account_one_more_time_": "അക്കൗണ്ട് നീക്കം ചെയ്യുന്നത് ഒരിക്കൽ കൂടി സ്ഥിരീകരിക്കുക.",
-    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ഈ വിതരണക്കാരന്റെ രേഖാ നമ്പർ ഇതിനകം രേഖപ്പെടുത്തിയിട്ടുണ്ട്. പുതിയ എൻട്രി സൃഷ്ടിക്കുന്നതിന് മുമ്പ് നിലവിലുള്ള രേഖ പരിശോധിക്കുക."
+    "web.gst.this_supplier_document_number_has_already_been_recorded_review_the_existing_document_before_creating_another_entry": "ഈ വിതരണക്കാരന്റെ രേഖാ നമ്പർ ഇതിനകം രേഖപ്പെടുത്തിയിട്ടുണ്ട്. പുതിയ എൻട്രി സൃഷ്ടിക്കുന്നതിന് മുമ്പ് നിലവിലുള്ള രേഖ പരിശോധിക്കുക.",
+    "web.gst.daily_recaps_and_shop_updates_on_this_browser_": "ഈ ബ്രൗസറിൽ ദിവസേനയുള്ള സംഗ്രഹങ്ങളും കടയുടെ അപ്ഡേറ്റുകളും.",
+    "web.gst.this_browser_does_not_support_notifications_": "ഈ ബ്രൗസർ അറിയിപ്പുകളെ പിന്തുണയ്ക്കുന്നില്ല.",
+    "web.gst.browser_notifications_are_not_available_yet_": "ബ്രൗസർ അറിയിപ്പുകൾ ഇനിയും ലഭ്യമല്ല.",
+    "web.gst.notifications_are_off_on_this_browser_": "ഈ ബ്രൗസറിൽ അറിയിപ്പുകൾ ഓഫാണ്.",
+    "web.gst.notifications_are_blocked_allow_them_in_your_browser_settings_": "അറിയിപ്പുകൾ തടഞ്ഞിരിക്കുന്നു. ബ്രൗസർ ക്രമീകരണങ്ങളിൽ അനുവദിക്കുക.",
+    "web.gst.notifications_are_enabled_on_this_browser_": "ഈ ബ്രൗസറിൽ അറിയിപ്പുകൾ ഓണാണ്.",
+    "web.gst.could_not_update_notifications_connect_and_try_again_": "അറിയിപ്പുകൾ പുതുക്കാനായില്ല. ഇന്റർനെറ്റിൽ കണക്റ്റ് ചെയ്ത് വീണ്ടും ശ്രമിക്കുക.",
+    "web.gst.turn_off_notifications": "അറിയിപ്പുകൾ ഓഫ് ചെയ്യുക",
+    "web.gst.enable_notifications": "അറിയിപ്പുകൾ ഓൺ ചെയ്യുക"
   }
 }

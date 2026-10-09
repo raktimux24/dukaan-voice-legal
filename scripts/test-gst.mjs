@@ -34,6 +34,7 @@ try {
     "app/lib/shop/report-review.ts",
     "app/lib/shop/purchase-draft.ts",
     "app/lib/shop/gst-core/gst-export-review.ts",
+    "app/lib/shop/browser-push-session.ts",
     "app/lib/shop/checkout-customer.ts",
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/gst-recovery.ts",
@@ -141,6 +142,8 @@ try {
     GST_TEST_BUILD: join(folder, "shop"),
   });
   run(resolve("tests/billing-shell.mjs"), []);
+  run(resolve("tests/browser-push-worker.mjs"), []);
+  run(resolve("tests/browser-push-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("scripts/check-gst-core.mjs"), []);
 } finally {
   rmSync(folder, { recursive: true, force: true });

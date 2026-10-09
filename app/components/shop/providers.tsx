@@ -1,4 +1,6 @@
 'use client';
+import {BROWSER_PUSH_OWNER,disconnectBrowserPush} from './browser-notifications';
+import {assertPushSession,beginPushSession,pushSession,withPushSession} from '../../lib/shop/browser-push-session';
 
 import { AuthenticateWithRedirectCallback, useAuth, useClerk } from '@clerk/nextjs';
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -41,6 +43,27 @@ function flattenStrings(value: unknown, prefix = '', out: Record<string, string>
 function ShopSession({ children }: { children: ReactNode }) {
   const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth();
   const { signOut } = useClerk();
+  useLayoutEffect(()=>{
+    const lease=beginPushSession(isSignedIn&&userId?userId:null);
+    if(!('serviceWorker' in navigator))return;
+    // Clear old ownership promptly; subscription mutations stay serialized below.
+    void navigator.serviceWorker.getRegistration('/').then(registration=>{
+      assertPushSession(lease);
+      let bound:string|null=null;try{bound=localStorage.getItem(BROWSER_PUSH_OWNER);}catch{}
+      registration?.active?.postMessage({type:'BIND_PUSH_ACCOUNT',actorId:isSignedIn&&bound===userId?userId:null});
+    }).catch(()=>{});
+    void withPushSession(lease,async check=>{
+      const registration=await navigator.serviceWorker.getRegistration('/');check();
+      let bound:string|null=null;try{bound=localStorage.getItem(BROWSER_PUSH_OWNER);}catch{}
+      const subscription=await registration?.pushManager.getSubscription();check();
+      if(subscription&&bound!==lease.actorId){await subscription.unsubscribe();check();try{localStorage.removeItem(BROWSER_PUSH_OWNER);}catch{}}
+    }).catch(()=>{});
+    return()=>{
+      const clearing=beginPushSession(null);
+      void navigator.serviceWorker.getRegistration('/').then(registration=>{try{assertPushSession(clearing);registration?.active?.postMessage({type:'BIND_PUSH_ACCOUNT',actorId:null});}catch{}}).catch(()=>{});
+    };
+  },[isSignedIn,userId,sessionId]);
+
   const pathname = usePathname();
   const router = useRouter();
   const queryClient=useQueryClient();
@@ -286,7 +309,7 @@ function ShopSession({ children }: { children: ReactNode }) {
         data-text={prefs?.textSize || 'medium'}
         data-contrast={prefs?.highContrastMode ? 'high' : 'normal'}
       >
-        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => {clearBillingShell();try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void signOut({ redirectUrl: '/' });}}>
+        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => {clearBillingShell();try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void Promise.resolve().then(()=>disconnectBrowserPush(api,pushSession(userId!))).catch(()=>{}).finally(()=>signOut({ redirectUrl: '/' }));}}>
           {offline?<div className="shop-surface shop-card mb-4" role="status"><p>{t('shop.offline_notice','Using saved shop context for billing. Connect and refresh to manage the shop or view reports.')}</p><div className="shop-actions mt-3"><button type="button" className="text-saffron" onClick={()=>void refreshShops().catch(()=>{})}>{t('common.retry','Try again')}</button><Link className="text-saffron" href="/shop/settings/gst/recovery">{t('gst.rsp.saved_recovery','View saved requests')}</Link></div></div>:null}
           {children}
         </ShopChrome>
