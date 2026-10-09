@@ -59,7 +59,15 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     [method, setMethod] = useState<PurchaseSettlementInput["method"]>("cash"),
     [kind, setKind] = useState<PurchaseSettlementInput["kind"]>("payment"),
     [when, setWhen] = useState(new Date().toISOString()),
+    [settlementNote, setSettlementNote] = useState(""),
+    [settlementReference, setSettlementReference] = useState(""),
+    [reverseId, setReverseId] = useState(""),
+    [reverseDate, setReverseDate] = useState(new Date().toISOString()),
+    [reverseNote, setReverseNote] = useState(""),
+    [reverseReference, setReverseReference] = useState(""),
     [creditNumber, setCreditNumber] = useState(""),
+    [creditDate, setCreditDate] = useState(new Date().toISOString()),
+    [creditReference, setCreditReference] = useState(""),
     [reason, setReason] = useState(""),
     [quantities, setQuantities] = useState<Record<string, string>>({}),
     [stock, setStock] = useState<Record<string, boolean>>({});
@@ -75,11 +83,17 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     api.gst.costPreview(shop!.id, id, decision),
   );
   const detail = q.data;
+  const reversalEntry = detail?.settlements.find((entry) => entry.id === reverseId);
   async function mutate(
     operation: string,
     input: NonNullable<typeof retained.current>["input"],
   ) {
     if (!retained.current && operation !== "review") {
+      if (operation === "reversal" && "settlementId" in input &&
+          (!detail?.settlements.some((entry) => entry.id === input.settlementId && !entry.reversesId) ||
+           detail.settlements.some((entry) => entry.reversesId === input.settlementId))) {
+        throw Error(text("The original entry is unavailable. Refresh this invoice. A saved correction can still be retried."));
+      }
       const at =
         "occurredAt" in input
           ? input.occurredAt
@@ -88,7 +102,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
             : "";
       if (
         !Number.isFinite(Date.parse(at)) ||
-        Date.parse(at) < Date.parse(detail?.issuedAt ?? "") ||
+        Date.parse(at) < Date.parse(
+          operation === "reversal" && "settlementId" in input
+            ? detail?.settlements.find((entry) => entry.id === input.settlementId)?.occurredAt ?? ""
+            : detail?.issuedAt ?? "",
+        ) ||
         Date.parse(at) > Date.now()
       )
         throw Error(
@@ -130,6 +148,23 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
         saved.input as PurchaseSettlementInput,
       );
     retained.current = null;
+    if (saved.operation === "settlement") {
+      setAmount("");
+      setSettlementNote("");
+      setSettlementReference("");
+      setWhen(new Date().toISOString());
+    } else if (saved.operation === "reversal") {
+      setReverseId("");
+      setReverseNote("");
+      setReverseReference("");
+    } else if (saved.operation === "return") {
+      setCreditNumber("");
+      setCreditReference("");
+      setReason("");
+      setQuantities({});
+      setStock({});
+      setCreditDate(new Date().toISOString());
+    }
     await q.refetch();
     await preview.refetch();
   }
@@ -453,6 +488,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   title={text("Supplier payments and refunds")}
                   summary={text(detail.settlement.status)}
                 >
+                  <p className="shop-hint">{text("This records a payment made outside the app. It does not transfer money.")}</p>
                   <div className="form-grid is-2">
                     <SelectField
                       label={text("Entry type")}
@@ -487,21 +523,21 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     />
                     <TextField
                       label={text("Evidence reference")}
-                      value={reference}
-                      onChange={setReference}
+                      value={settlementReference}
+                      onChange={setSettlementReference}
                     />
                     <TextField
                       label={text("Note")}
-                      value={note}
-                      onChange={setNote}
+                      value={settlementNote}
+                      onChange={setSettlementNote}
                     />
                   </div>
                   <Button
                     disabled={
                       action.busy ||
                       !(Number(amount) > 0) ||
-                      !reference.trim() ||
-                      !note.trim()
+                      !settlementReference.trim() ||
+                      !settlementNote.trim()
                     }
                     onClick={() =>
                       void action.run(() =>
@@ -511,8 +547,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                           amount,
                           method,
                           occurredAt: when,
-                          evidenceReference: reference,
-                          note,
+                          evidenceReference: settlementReference,
+                          note: settlementNote,
                         }),
                       )
                     }
@@ -522,7 +558,12 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   {detail.settlements.map((entry) => (
                     <div key={entry.id} className="gst-row">
                       <b>
-                        {text(entry.kind)} · {formatINR(Number(entry.amount))}
+                        {text(({
+                          payment: "Payment to supplier",
+                          supplier_refund: "Refund received from supplier",
+                          payment_reversal: "Payment entry reversed",
+                          supplier_refund_reversal: "Refund entry reversed",
+                        } as Record<string, string>)[entry.kind] ?? entry.kind)} · {formatINR(Number(entry.amount))}
                       </b>
                       <span>{date(entry.occurredAt)}</span>
                       <small>{entry.evidenceReference}</small>
@@ -532,26 +573,32 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       ) ? (
                         <Button
                           tone="danger"
-                          disabled={
-                            !note.trim() || !reference.trim() || action.busy
-                          }
-                          onClick={() =>
-                            void action.run(() =>
-                              mutate("reversal", {
-                                clientId: crypto.randomUUID(),
-                                settlementId: entry.id,
-                                occurredAt: when,
-                                evidenceReference: reference,
-                                note,
-                              }),
-                            )
-                          }
+                          disabled={action.busy}
+                          onClick={() => {
+                            setReverseId(entry.id);
+                            setReverseDate(new Date().toISOString());
+                            setReverseNote("");
+                            setReverseReference("");
+                          }}
                         >
-                          {text("Record reversal")}
+                          {text("Correct entry")}
                         </Button>
                       ) : null}
                     </div>
                   ))}
+                  {reversalEntry ? (
+                    <Card className="stack-form">
+                      <p>{text("Use only to correct an incorrectly recorded payment or refund. The original entry is retained. This does not transfer money or change tax. Add a reason and evidence; correct dependent refund entries before reversing their payment.")}</p>
+                      <p>{formatINR(Number(reversalEntry.amount))} · {date(reversalEntry.occurredAt)} · {reversalEntry.evidenceReference}</p>
+                      <FiscalDateTimeField label={text("Payment date and time")} value={reverseDate} onChange={setReverseDate} />
+                      <TextField label={text("Reason")} value={reverseNote} onChange={setReverseNote} />
+                      <TextField label={text("Evidence reference")} value={reverseReference} onChange={setReverseReference} />
+                      <Button disabled={action.busy || !reverseNote.trim() || !reverseReference.trim()} onClick={() => void action.run(() => mutate("reversal", {
+                        clientId: crypto.randomUUID(), settlementId: reversalEntry.id,
+                        occurredAt: reverseDate, evidenceReference: reverseReference, note: reverseNote,
+                      }))}>{text("Confirm entry reversal")}</Button>
+                    </Card>
+                  ) : null}
                 </Section>
                 <Section title={text("Supplier credit and return")}>
                   <p className="shop-hint">
@@ -566,8 +613,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   />
                   <FiscalDateTimeField
                     label={text("Credit date and time")}
-                    value={when}
-                    onChange={setWhen}
+                    value={creditDate}
+                    onChange={setCreditDate}
                   />
                   <TextField
                     label={text("Reason")}
@@ -576,13 +623,14 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   />
                   <TextField
                     label={text("Evidence reference")}
-                    value={reference}
-                    onChange={setReference}
+                    value={creditReference}
+                    onChange={setCreditReference}
                   />
                   {detail.items.map((item) => {
                     const returned = detail.returnItems
                       .filter((r) => r.purchaseItemId === item.id)
                       .reduce((sum, r) => sum + Number(r.quantity), 0);
+                    if (Number(item.quantity) - returned <= 0) return null;
                     return (
                       <div key={item.id} className="gst-row">
                         <TextField
@@ -593,11 +641,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                             setQuantities({ ...quantities, [item.id]: v })
                           }
                         />
-                        <Check
+                        {item.batchId ? <Check
                           label={text("Remove this quantity from stock")}
-                          checked={stock[item.id] ?? false}
+                          checked={stock[item.id] ?? true}
                           onChange={(v) => setStock({ ...stock, [item.id]: v })}
-                        />
+                        /> : null}
                       </div>
                     );
                   })}
@@ -606,16 +654,18 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       action.busy ||
                       !creditNumber.trim() ||
                       !reason.trim() ||
-                      !reference.trim()
+                      !creditReference.trim()
                     }
                     onClick={() =>
                       void action.run(async () => {
+                        if (!/^[A-Za-z0-9/-]{1,16}$/.test(creditNumber))
+                          throw Error(text("Check the supplier credit number, date, reason and reference."));
                         const items = detail.items
-                          .filter((i) => Number(quantities[i.id]) > 0)
+                          .filter((i) => quantities[i.id]?.trim())
                           .map((i) => ({
                             purchaseItemId: i.id,
                             quantity: Number(quantities[i.id]),
-                            removeStock: stock[i.id] ?? false,
+                            removeStock: !!i.batchId && (stock[i.id] ?? true),
                           }));
                         if (!items.length)
                           throw Error(text("Choose quantities to return."));
@@ -629,7 +679,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                             )
                             .reduce((n, r) => n + Number(r.quantity), 0);
                           if (
-                            item.quantity >
+                            !Number.isFinite(item.quantity) || item.quantity <= 0 || item.quantity >
                             Number(original.quantity) - returned
                           )
                             throw Error(
@@ -641,8 +691,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                         await mutate("return", {
                           clientId: crypto.randomUUID(),
                           supplierCreditNumber: creditNumber,
-                          issuedAt: when,
-                          evidenceReference: reference,
+                          issuedAt: creditDate,
+                          evidenceReference: creditReference,
                           reason,
                           items,
                         });

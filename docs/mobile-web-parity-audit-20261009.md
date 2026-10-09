@@ -289,3 +289,13 @@ A purchase register was prepared and persisted in history. Downloaded CSV `e845d
 This accepts this purchase review write/readback and small retained-export path. It does not establish stock-receipt/linking, eligible ITC, payment/refund/reversal/return lifecycle, large reports, offline recovery or the complete permissions/concurrency matrix.
 
 The same live test exposed export-operation UX gaps: selector changes were possible during an operation, the retained download button remained enabled during its own request, and report preparation wording was shown while downloading. The follow-up disables selectors/download re-entry during operations and limits preparation wording to preparation. Invoice-number snapshots no longer depend on hidden date-field validity; period-based and credit-note reports retain their range validation.
+
+### Purchase correction draft parity
+
+Export-operation follow-up PR57 was published at 2026-10-09T17:19:52.051Z, Netlify deploy `6ac921e2d2e77d00082cf414`, main `5b2aa62689422b10bd58e88922ff61fd20450a83`.
+
+Comparison with native purchase-detail exposed another functional mismatch: web reused review note/reference and effective date across ITC, settlement, supplier credit and reversal. This could carry evidence from an unrelated workflow. Native maintains independent drafts and clears successful settlement/credit/correction drafts.
+
+Web now follows that separation. Choosing Correct entry opens a dedicated original-entry correction form with fresh date, reason and evidence. Reversal validation uses the selected settlement's date rather than only the purchase date, rejects missing/already-reversed entries, and preserves the original payload on uncertain retries. Settlement rows use localized payment/refund/reversal labels. Successful payment, credit and correction writes reset their own drafts without clearing unrelated work.
+
+Supplier credits expose stock removal only for linked batches, defaulting to removal for those batches as native does. Fully returned lines are hidden. Nonblank invalid/nonpositive quantities cannot be silently omitted alongside valid lines, over-returns are rejected, and credit document numbers follow the native character/length constraints. This implementation still requires live settlement/refund/reversal and linked-stock acceptance; it is not a claim that those acceptance gates are closed.
