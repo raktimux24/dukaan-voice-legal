@@ -10,7 +10,7 @@ assert.ok(!/Bill|Subtotal|Discount|Total|Thank you/.test(text));
 assert.ok(billPlainText({...bill,footer:'Custom footer'}).endsWith('Custom footer'));
 assert.ok(billPlainText({...bill,labels:undefined}).includes('Bill #12'));
 const drawn=[];
-const ctx=new Proxy({fillText(value){drawn.push(value);}}, {get(target,key){return target[key]??(()=>{});}});
+const ctx=new Proxy({fillText(value){drawn.push(value);},measureText(value){return {width:[...value].length*7};}}, {get(target,key){return target[key]??(()=>{});}});
 const canvas={getContext:()=>ctx,toBlob:callback=>callback(null)};
 const oldDocument=globalThis.document;
 const oldNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator');
