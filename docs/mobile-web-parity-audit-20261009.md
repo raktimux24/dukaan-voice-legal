@@ -299,3 +299,20 @@ Comparison with native purchase-detail exposed another functional mismatch: web 
 Web now follows that separation. Choosing Correct entry opens a dedicated original-entry correction form with fresh date, reason and evidence. Reversal validation uses the selected settlement's date rather than only the purchase date, rejects missing/already-reversed entries, and preserves the original payload on uncertain retries. Settlement rows use localized payment/refund/reversal labels. Successful payment, credit and correction writes reset their own drafts without clearing unrelated work.
 
 Supplier credits expose stock removal only for linked batches, defaulting to removal for those batches as native does. Fully returned lines are hidden. Nonblank invalid/nonpositive quantities cannot be silently omitted alongside valid lines, over-returns are rejected, and credit document numbers follow the native character/length constraints. This implementation still requires live settlement/refund/reversal and linked-stock acceptance; it is not a claim that those acceptance gates are closed.
+
+### Live invoice-only purchase correction acceptance
+
+PR58 production deploy `6ac9235c0d227c0008801cbc` published at 2026-10-09T17:26:18.067Z, commit `9f882be66351d8a3d005fdc4a67d5ef112d8f2f1`.
+
+The existing approved synthetic WQA-261008-01 fixture completed these web writes, all explicitly labeled synthetic with no actual money transfer or goods movement:
+
+- A 1.00 payment reduced outstanding from 10.50 to 9.50. Dedicated correction restored 10.50; both entries persisted after reload and appeared on mobile.
+- A 10.50 payment settled outstanding. Supplier credit WQA-CR-1009 returned 0.5 of the invoice-only quantity without stock removal and created recoverable 5.25.
+- A 5.25 supplier refund settled recoverable. Correcting that refund restored recoverable 5.25; correcting the dependent 10.50 payment then yielded outstanding 5.25, recoverable zero.
+- All six settlement/correction entries persisted after reload and independently appeared on native with the same amounts, dates, Cash method and evidence references. Native purchase overview showed purchases after credits 5.25 and purchase tax after credits 0.24. Web retained credit/review history displayed WQA-CR-1009 with 5.25. No actual payment/refund occurred; stock was not received or removed.
+
+Payment and correction drafts reset after success. Opening the credit form after entering payment evidence left its evidence field blank. Invoice-only return lines had no stock-removal control. Browser console error inspection returned no errors. Screenshot: `/private/tmp/purchase-lifecycle-accepted-20261009.jpg`.
+
+This closes the successful invoice-only partial-credit, payment/refund and dependent-reversal readback path for this fixture. Linked-stock receive/link/remove, eligible ITC, concurrency, response-loss/retry and opposite-direction native writes remain acceptance gates.
+
+The live lifecycle exposed raw `settled` / `supplier_owes` status strings on web. They now map to existing translated customer-facing wording; settlement history includes localized payment method as native does. Build and translation coverage passed.

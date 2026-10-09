@@ -486,7 +486,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                 </Section>
                 <Section
                   title={text("Supplier payments and refunds")}
-                  summary={text(detail.settlement.status)}
+                  summary={text(({
+                    payable: "Still owed to supplier",
+                    supplier_owes: "Recoverable from supplier",
+                    settled: "All settled",
+                  } as Record<string, string>)[detail.settlement.status] ?? "Unavailable")}
                 >
                   <p className="shop-hint">{text("This records a payment made outside the app. It does not transfer money.")}</p>
                   <div className="form-grid is-2">
@@ -563,7 +567,9 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                           supplier_refund: "Refund received from supplier",
                           payment_reversal: "Payment entry reversed",
                           supplier_refund_reversal: "Refund entry reversed",
-                        } as Record<string, string>)[entry.kind] ?? entry.kind)} · {formatINR(Number(entry.amount))}
+                        } as Record<string, string>)[entry.kind] ?? entry.kind)} · {formatINR(Number(entry.amount))} · {text(({
+                          cash: "Cash", upi: "UPI", bank: "Bank transfer", card: "Card",
+                        } as Record<string, string>)[entry.method] ?? "Unavailable")}
                       </b>
                       <span>{date(entry.occurredAt)}</span>
                       <small>{entry.evidenceReference}</small>
