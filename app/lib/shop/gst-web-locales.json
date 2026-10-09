@@ -1139,7 +1139,10 @@
     "web.gst.extra_large": "Extra Large",
     "web.gst.all_settled": "All settled",
     "web.gst.piece": "piece",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "Your sign-in changed. Refresh before trying again."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "Your sign-in changed. Refresh before trying again.",
+    "bill.share_copied": "Bill text copied.",
+    "bill.share_downloaded": "Bill image downloaded.",
+    "bill.share_failed": "Could not share or download this bill. Try again."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2282,7 +2285,10 @@
     "web.gst.extra_large": "बहुत बड़ा",
     "web.gst.all_settled": "सभी बकाया चुकाए गए",
     "web.gst.piece": "नग",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "आपका साइन-इन बदल गया है। दोबारा कोशिश करने से पहले रीफ़्रेश करें।"
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "आपका साइन-इन बदल गया है। दोबारा कोशिश करने से पहले रीफ़्रेश करें।",
+    "bill.share_copied": "बिल का टेक्स्ट कॉपी हो गया।",
+    "bill.share_downloaded": "बिल की तस्वीर डाउनलोड हो गई।",
+    "bill.share_failed": "बिल शेयर या डाउनलोड नहीं हो सका। फिर कोशिश करें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3424,7 +3430,10 @@
     "web.gst.extra_large": "Bahut bada",
     "web.gst.all_settled": "Sab bakaya chuka diye",
     "web.gst.piece": "nag",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "Aapka sign-in badal gaya hai. Dobara koshish karne se pehle refresh karein."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "Aapka sign-in badal gaya hai. Dobara koshish karne se pehle refresh karein.",
+    "bill.share_copied": "Bill ka text copy ho gaya.",
+    "bill.share_downloaded": "Bill ki image download ho gayi.",
+    "bill.share_failed": "Bill share ya download nahi ho saka. Phir try karein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4566,7 +4575,10 @@
     "web.gst.extra_large": "অতিরিক্ত বড়",
     "web.gst.all_settled": "সব বকেয়া মেটানো হয়েছে",
     "web.gst.piece": "টি",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "আপনার সাইন-ইন বদলে গেছে। আবার চেষ্টা করার আগে রিফ্রেশ করুন।"
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "আপনার সাইন-ইন বদলে গেছে। আবার চেষ্টা করার আগে রিফ্রেশ করুন।",
+    "bill.share_copied": "বিলের লেখা কপি হয়েছে।",
+    "bill.share_downloaded": "বিলের ছবি ডাউনলোড হয়েছে।",
+    "bill.share_failed": "এই বিল শেয়ার বা ডাউনলোড করা যায়নি। আবার চেষ্টা করুন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5708,7 +5720,10 @@
     "web.gst.extra_large": "மிகப் பெரியது",
     "web.gst.all_settled": "அனைத்து நிலுவைகளும் தீர்க்கப்பட்டன",
     "web.gst.piece": "எண்ணம்",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "உங்கள் உள்நுழைவு மாறிவிட்டது. மீண்டும் முயற்சிக்கும் முன் புதுப்பிக்கவும்."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "உங்கள் உள்நுழைவு மாறிவிட்டது. மீண்டும் முயற்சிக்கும் முன் புதுப்பிக்கவும்.",
+    "bill.share_copied": "பில்லின் உரை நகலெடுக்கப்பட்டது.",
+    "bill.share_downloaded": "பில்லின் படம் பதிவிறக்கப்பட்டது.",
+    "bill.share_failed": "இந்தப் பில்லைப் பகிரவோ பதிவிறக்கவோ முடியவில்லை. மீண்டும் முயற்சிக்கவும்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6850,7 +6865,10 @@
     "web.gst.extra_large": "చాలా పెద్దది",
     "web.gst.all_settled": "అన్ని బకాయిలు చెల్లించబడ్డాయి",
     "web.gst.piece": "నగలు",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "మీ సైన్-ఇన్ మారింది. మళ్లీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "మీ సైన్-ఇన్ మారింది. మళ్లీ ప్రయత్నించే ముందు రిఫ్రెష్ చేయండి.",
+    "bill.share_copied": "బిల్లు వచనం కాపీ అయింది.",
+    "bill.share_downloaded": "బిల్లు చిత్రం డౌన్‌లోడ్ అయింది.",
+    "bill.share_failed": "ఈ బిల్లును షేర్ చేయడం లేదా డౌన్‌లోడ్ చేయడం సాధ్యపడలేదు. మళ్లీ ప్రయత్నించండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7992,7 +8010,10 @@
     "web.gst.extra_large": "अतिशय मोठे",
     "web.gst.all_settled": "सर्व थकबाकी चुकती झाली",
     "web.gst.piece": "नग",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "तुमचे साइन-इन बदलले आहे. पुन्हा प्रयत्न करण्यापूर्वी रिफ्रेश करा."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "तुमचे साइन-इन बदलले आहे. पुन्हा प्रयत्न करण्यापूर्वी रिफ्रेश करा.",
+    "bill.share_copied": "बिलाचा मजकूर कॉपी झाला.",
+    "bill.share_downloaded": "बिलाचे चित्र डाउनलोड झाले.",
+    "bill.share_failed": "हे बिल शेअर किंवा डाउनलोड करता आले नाही. पुन्हा प्रयत्न करा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -9134,7 +9155,10 @@
     "web.gst.extra_large": "ಅತಿ ದೊಡ್ಡದು",
     "web.gst.all_settled": "ಎಲ್ಲ ಬಾಕಿ ಪಾವತಿಸಲಾಗಿದೆ",
     "web.gst.piece": "ನಗ",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "ನಿಮ್ಮ ಸೈನ್-ಇನ್ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "ನಿಮ್ಮ ಸೈನ್-ಇನ್ ಬದಲಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
+    "bill.share_copied": "ಬಿಲ್ ಪಠ್ಯವನ್ನು ನಕಲಿಸಲಾಗಿದೆ.",
+    "bill.share_downloaded": "ಬಿಲ್ ಚಿತ್ರವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ.",
+    "bill.share_failed": "ಈ ಬಿಲ್ ಹಂಚಿಕೊಳ್ಳಲು ಅಥವಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10276,7 +10300,10 @@
     "web.gst.extra_large": "ખૂબ મોટું",
     "web.gst.all_settled": "બધી બાકી રકમ ચૂકવાઈ",
     "web.gst.piece": "નંગ",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "તમારું સાઇન-ઇન બદલાઈ ગયું છે. ફરી પ્રયાસ કરતા પહેલાં રિફ્રેશ કરો."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "તમારું સાઇન-ઇન બદલાઈ ગયું છે. ફરી પ્રયાસ કરતા પહેલાં રિફ્રેશ કરો.",
+    "bill.share_copied": "બિલનું લખાણ કૉપી થયું.",
+    "bill.share_downloaded": "બિલનું ચિત્ર ડાઉનલોડ થયું.",
+    "bill.share_failed": "આ બિલ શેર કે ડાઉનલોડ થઈ શક્યું નથી. ફરી પ્રયત્ન કરો."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11418,6 +11445,9 @@
     "web.gst.extra_large": "വളരെ വലുത്",
     "web.gst.all_settled": "എല്ലാ കുടിശ്ശികയും തീർത്തു",
     "web.gst.piece": "എണ്ണം",
-    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "നിങ്ങളുടെ സൈൻ-ഇൻ മാറിയിരിക്കുന്നു. വീണ്ടും ശ്രമിക്കുന്നതിന് മുമ്പ് പുതുക്കുക."
+    "web.gst.your_sign_in_changed_refresh_before_trying_again_": "നിങ്ങളുടെ സൈൻ-ഇൻ മാറിയിരിക്കുന്നു. വീണ്ടും ശ്രമിക്കുന്നതിന് മുമ്പ് പുതുക്കുക.",
+    "bill.share_copied": "ബില്ലിന്റെ എഴുത്ത് പകർത്തി.",
+    "bill.share_downloaded": "ബില്ലിന്റെ ചിത്രം ഡൗൺലോഡ് ചെയ്തു.",
+    "bill.share_failed": "ഈ ബിൽ പങ്കിടാനോ ഡൗൺലോഡ് ചെയ്യാനോ കഴിഞ്ഞില്ല. വീണ്ടും ശ്രമിക്കുക."
   }
 }

@@ -59,6 +59,10 @@ try {
   ]);
   symlinkSync(resolve("node_modules"), join(folder, "node_modules"), "dir");
   writeFileSync(join(folder, "package.json"), '{"type":"commonjs"}');
+  run(resolve("tests/share-bill-context.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
   run(resolve("tests/bill-image-layout.mjs"), [], {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),
