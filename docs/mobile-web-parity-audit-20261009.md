@@ -196,3 +196,10 @@ Catalog, POS settings and tax-snapshot reads now retain complete responses in br
 Sell and Checkout can run these read-through queries while TanStack considers the browser offline. A restored read activates the offline banner and reduced permissions. Checkout may select a subset from one complete retained tax snapshot; it does not combine independently captured product timelines or invent a missing product profile. Existing effective-date and tax-profile checks still run.
 
 Tests cover scoped and complete catalog retention, purchase-cost redaction, tax subset provenance, missing products, session separation, expired/tampered data, auth rejection, storage refusal and late response/write invalidation. Production build, TypeScript, translation coverage and the GST suite passed. This does not yet prove disconnected browser acceptance or enable complete offline issuance: navigation shell/Clerk bootstrapping, retained entitlement and UI preferences, signed rounding capabilities, local fiscal render/receipt states and the acceptance matrix remain open.
+
+
+### Offline entitlement and account preferences follow-up
+
+The counter retains minimal subscription evidence without mandate identifiers or invoice URLs. Paid/trial access expires at its authoritative end date; the explicit temporary Premium server grant remains respected. Retained access has a seven-day maximum lifetime. The UI reassesses expiry on timers and tab resume, and credit checkout checks the current deadline at charge time. Cash/UPI sales retain the same free-access behavior as mobile.
+
+Language, text size and other preferences use one actor/session-bound account cache across shops. A preference mutation invalidates it before sending, including lost responses; leaving the login session prevents cached reads. The validator accepts the server's extra_large text size. Tests cover exact paid/trial and cache expiry, temporary grants, private billing redaction, retained Bengali preferences and mutation invalidation. Full browser offline boot and local fiscal issuance remain open.

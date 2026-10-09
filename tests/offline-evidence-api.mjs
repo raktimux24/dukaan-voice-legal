@@ -10,7 +10,7 @@ const shop='11111111-1111-4111-8111-111111111111';
 const ids=['22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'];
 const items=ids.map((id,index)=>({id:'inventory-'+index,productId:id,shopId:shop,quantity:'10',unit:'piece',stockStatus:'OK',product:{id,shopId:shop,name:'Pen '+index,unit:'piece',purchasePrice:100,sellingPrice:120,createdAt:'2026-01-01T00:00:00Z'}}));
 const snapshot={version:1,shopId:shop,capturedAt:new Date().toISOString(),products:ids.map(productId=>({productId,profiles:[]}))};
-const api=bindApi(async()=> 'token',{actorId:'actor',sessionId:'session',isCurrent:()=>true});
+const api=bindApi(async()=> 'token',{actorId:'actor',sessionId:'session',isSessionCurrent:()=>true,isCurrent:()=>true});
 const original=globalThis.fetch;
 try {
  globalThis.fetch=async url=>Response.json(url.includes('tax-snapshot')?snapshot:url.includes('pos-settings')?{shopId:shop,shopName:'Store',gstSettings:null,updatedAt:new Date().toISOString(),saleCounter:0,defaultPaymentMethod:'cash',cardEnabled:false}: {items,hasMore:false});
@@ -29,5 +29,18 @@ try {
  await assert.rejects(api.getPosSettings(shop),error=>error.status===403);
  globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
  await assert.rejects(api.getPosSettings(shop),/Failed to fetch/);
+ const preferences={appLanguage:'bn',voiceLanguage:'bn',voiceFeedbackEnabled:true,highContrastMode:false,textSize:'extra_large'};
+ const entitlement={status:'active',plan:'monthly',isPremium:true,temporaryPremium:true,currentPeriodEnd:new Date(Date.now()+1000).toISOString(),trialEnd:null,subscriptionId:'secret',invoices:[{invoiceUrl:'private'}]};
+ globalThis.fetch=async url=>Response.json(url.includes('preferences')?{preferences}:entitlement);
+ await api.getPreferences();await api.getEntitlement(shop);
+ globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
+ assert.equal((await api.getPreferences()).preferences.appLanguage,'bn');
+ const cachedEntitlement=await api.getEntitlement(shop);
+ assert.equal(cachedEntitlement.temporaryPremium,true);assert.equal(cachedEntitlement.subscriptionId,undefined);assert.equal(cachedEntitlement.invoices,undefined);
+ // Updating an account preference invalidates the single account cache even if the response is lost.
+ await assert.rejects(api.updatePreferences({appLanguage:'hi'}),/Failed to fetch/);
+ await assert.rejects(api.getPreferences(),/Failed to fetch/);
+ const inactive=bindApi(async()=> 'token',{actorId:'actor',sessionId:'session',isSessionCurrent:()=>false,isCurrent:()=>true});
+ await assert.rejects(inactive.getPreferences(),/scope_changed/);
  console.log('Offline API: complete catalog retention, cost redaction, tax subset capture, missing product, session separation and denied POS invalidation passed.');
 }finally{globalThis.fetch=original;}

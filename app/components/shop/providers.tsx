@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {clearOfflineShop,createOfflineShopContext,loadOfflineShop,offlineShopRecord,permitsOfflineShopFallback,saveOfflineShop} from '../../lib/shop/offline-shop-context';
+import {premiumAt,premiumDeadline} from '../../lib/shop/offline-premium';
 import { setFinancialScope } from '../../lib/shop/gst-storage';
 import { loadBundledLanguage, translateUi } from '../../lib/shop/translations';
 import { bindApi } from '../../lib/shop/api';
@@ -45,13 +46,14 @@ function ShopSession({ children }: { children: ReactNode }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [offline,setOffline]=useState(false);
+  const [premiumClock,setPremiumClock]=useState(Date.now);
   const activeShop=useRef<string|null>(null);
   const alive=useRef(true);
   const refreshVersion=useRef(0);
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const [catalog, setCatalog] = useState<{ language: string; entries: Record<string, string> }>({ language: 'en', entries: {} });
 
-  const api = useMemo(() => bindApi(async (opts) => getToken(opts),userId&&sessionId?{actorId:userId,sessionId,isCurrent:shop=>alive.current&&activeShop.current===shop,onFallback:()=>setOffline(true)}:undefined), [getToken,userId,sessionId]);
+  const api = useMemo(() => bindApi(async (opts) => getToken(opts),userId&&sessionId?{actorId:userId,sessionId,isSessionCurrent:()=>alive.current,isCurrent:shop=>alive.current&&activeShop.current===shop,onFallback:()=>setOffline(true)}:undefined), [getToken,userId,sessionId]);
 
   const refreshShops = useCallback(async () => {
     const version=++refreshVersion.current;
@@ -125,16 +127,33 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   const entitlementQuery = useQuery({
     queryKey: ['entitlement', userId,shop?.id],
-    enabled: !!shop?.id&&!offline,
+    enabled: !!shop?.id,
+    networkMode:'always',
     queryFn: () => api.getEntitlement(shop!.id),
   });
 
   const prefsQuery = useQuery({
     queryKey: ['preferences', userId],
-    enabled: !!userId&&!offline,
+    enabled: !!userId,
+    networkMode:'always',
     queryFn: () => api.getPreferences(),
   });
   const prefs = prefsQuery.data?.preferences ?? null;
+  useEffect(()=>{
+    let timer:number|undefined;
+    const update=()=>{
+      const now=Date.now();setPremiumClock(now);
+      if(timer!==undefined)window.clearTimeout(timer);
+      const deadline=entitlementQuery.data?premiumDeadline(entitlementQuery.data):null;
+      if(deadline!==null&&Number.isFinite(deadline)&&deadline>now)
+        timer=window.setTimeout(update,Math.min(deadline-now,2147483647));
+    };
+    update();
+    // Reassess expiry after a suspended/background tab wakes up.
+    window.addEventListener('focus',update);
+    document.addEventListener('visibilitychange',update);
+    return()=>{if(timer!==undefined)window.clearTimeout(timer);window.removeEventListener('focus',update);document.removeEventListener('visibilitychange',update);};
+  },[entitlementQuery.data]);
 
   useEffect(() => {
     const language = prefs?.appLanguage ?? 'en';
@@ -196,7 +215,7 @@ function ShopSession({ children }: { children: ReactNode }) {
     role,
     perms,
     entitlement: entitlementQuery.data ?? null,
-    premium: !!entitlementQuery.data?.isPremium,
+    premium: premiumAt(entitlementQuery.data,premiumClock),
     api,
     refreshShops,
     selectShop,
