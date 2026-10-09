@@ -407,3 +407,10 @@ Evidence: /private/tmp/web-late-invoice-20261010.jpg, /private/tmp/web-changed-p
 Native purchase creation requires confirmation that the document is an ordinary domestic forward-charge purchase without special valuation/cess/reverse charge/import/SEZ. Web previously submitted that supply type implicitly. Web now displays the same bundled translated confirmation, blocks fresh recording until confirmed, and invalidates affected tax/invoice review confirmations when this choice changes. An original retained request still retries its exact payload without requiring a new draft confirmation. Server purchase policy is unchanged.
 
 Validation: full GST regressions, 62 shared contracts, 1127 labels across nine translated languages and production build passed. Rendered fresh-draft gating follows deployment. Native missing-product handoff remains a separately identified web gap.
+
+
+### Missing-product handoff without losing the invoice draft
+
+Web now offers the native missing-product entry inside supplier invoice creation. It opens the existing product form within the invoice page, retaining supplier/invoice/line drafts. Cancel returns without navigation. Save refreshes the invoice product selector and returns to the same draft instead of redirecting to product detail. Main invoice editing/recording is disabled while product entry is active. Product form supports optional completion/cancel callbacks; standalone create/edit behavior remains unchanged. The ordinary-purchase confirmation now precedes product review, so checking it does not force a backward trip through the form.
+
+PR69 production 6ac94faf4c742b000812998d published 2026-10-09T20:35:41.670Z, main394b1e8. Live unsaved zero-value draft WQA-GATE-1010 verified: complete tax/invoice reviews still cannot record without ordinary-supply confirmation; checking supply clears those reviews and keeps recording disabled; reconfirming both enables recording. No invoice was submitted. Missing-product rendering and save/cancel acceptance follows its release. Full GST regressions, shared contracts, translations and production build passed.

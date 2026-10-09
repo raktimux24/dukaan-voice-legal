@@ -1,5 +1,6 @@
 "use client";
 import { eligiblePurchaseReceipts } from "../../../lib/shop/gst-core/purchase-batch-link";
+import { ProductFormScreen } from "./product-form";
 import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -65,6 +66,7 @@ export function PurchaseNewScreen() {
     [reference, setReference] = useState(""),
     [reviewed, setReviewed] = useState(false),
     [ordinarySupply, setOrdinarySupply] = useState(false),
+    [addingProduct, setAddingProduct] = useState(false),
     [movement, setMovement] = useState(false);
   const retained = useRef<PurchaseInput | null>(null);
   const settings = pos.data?.gstSettings;
@@ -176,7 +178,18 @@ export function PurchaseNewScreen() {
             </Button>
           </Card>
         ) : null}
-        <fieldset disabled={action.busy || !!retained.current}>
+        {addingProduct ? (
+          <Card>
+            <ProductFormScreen
+              onCancel={() => setAddingProduct(false)}
+              onCreated={async () => {
+                setAddingProduct(false);
+                await catalog.refetch();
+              }}
+            />
+          </Card>
+        ) : null}
+        <fieldset disabled={action.busy || !!retained.current || addingProduct}>
           <Section
             title={"1 · " + text("Choose supplier")}
             summary={supplier?.identity.name}
@@ -280,6 +293,11 @@ export function PurchaseNewScreen() {
                 onChange={(v) => change(() => setMovement(v))}
               />
             ) : null}
+            <Check
+              label={text(EN_FALLBACK["purchase.ordinary_supply"])}
+              checked={ordinarySupply}
+              onChange={(value) => change(() => setOrdinarySupply(value))}
+            />
           </Section>
           <Section
             title={"3 · " + text("Products and stock")}
@@ -287,6 +305,9 @@ export function PurchaseNewScreen() {
             open
           >
             <ReadState query={catalog}>
+              <Button tone="quiet" onClick={() => setAddingProduct(true)}>
+                {text(EN_FALLBACK["gst.ui.add_a_missing_product_then_return_to_this_invoice_92fbf4"])}
+              </Button>
               <SelectField
                 label={text("Add product")}
                 value=""
@@ -417,11 +438,6 @@ export function PurchaseNewScreen() {
             ))}
           </Section>
           <Card>
-            <Check
-              label={text(EN_FALLBACK["purchase.ordinary_supply"])}
-              checked={ordinarySupply}
-              onChange={(value) => change(() => setOrdinarySupply(value))}
-            />
             {totals ? (
               <Stats
                 items={[
@@ -452,6 +468,7 @@ export function PurchaseNewScreen() {
         <Button
           disabled={
             action.busy ||
+            addingProduct ||
             pos.data?.gstPurchasesAvailable !== true ||
             !supplier ||
             (!retained.current && (!ordinarySupply || !reviewed || !totals))
