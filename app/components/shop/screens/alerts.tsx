@@ -5,7 +5,7 @@ import { useGstText as useUiText } from "../gst-ui";
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { formatDay } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Button, Notice, PageHeader, Pill, PremiumLock, Spinner, isPremiumError } from '../ui';
@@ -27,6 +27,7 @@ const TABS = [
 
 export function AlertsScreen() {
   const uiText = useUiText();
+  const { formatDay } = useShopDates();
   const { api, shop, premium, perms, t } = useShop();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('all');

@@ -4,13 +4,15 @@ import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { formatDay, formatINR } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Card, NoAccess, Notice, PageHeader, Pill, Spinner } from '../ui';
 
 export function SupplierDetailScreen({ name }: { name: string }) {
   const uiText = useUiText();
+  const { formatDay } = useShopDates();
   const { api, shop, perms } = useShop();
   const decoded = decodeURIComponent(name);
   const detail = useQuery({

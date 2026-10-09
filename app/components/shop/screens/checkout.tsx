@@ -280,7 +280,7 @@ export function CheckoutScreen() {
             <Card>
               <p>{uiText("This bill is saved on this browser.")}</p>
               <div className="mt-3">
-                <Button onClick={() => void handleCharge(false)} disabled={busy}>{busy ? 'Sending…' : 'Send bill now'}</Button>
+                <Button onClick={() => void handleCharge(false)} disabled={busy}>{busy ? uiText('Sending…') : uiText('Send bill now')}</Button>
               </div>
             </Card>
           ) : null}
@@ -289,7 +289,7 @@ export function CheckoutScreen() {
             <Card className="grid gap-3">
               <h3 className="shop-section-title">{t('pos.method.credit', 'Udhaar')}</h3>
               {udhaarLocked ? <PremiumLock feature="udhaar" /> : (
-                <p className="party-meta">{hasCustomer ? `This bill goes on ${cartApi.cart.customerName}'s balance.` : 'Add a customer. Udhaar needs a name on the bill.'}</p>
+                <p className="party-meta">{hasCustomer ? t('checkout.customer_title', 'Customer') + ': ' + cartApi.cart.customerName : uiText('Add a customer. Udhaar needs a name on the bill.')}</p>
               )}
             </Card>
           ) : null}
