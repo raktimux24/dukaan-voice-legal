@@ -381,3 +381,13 @@ On synthetic invoice-only WQA-261008-01, native saved Cash payment 5.25 at 10 Oc
 PR65's deployed receipt picker excluded already-linked BSSDD9222 and displayed no eligible match guidance with saving disabled. Evidence: /private/tmp/deployed-receipt-picker-20261010.jpg. This closes already-linked picker rejection rendering; concurrent linkage remains open.
 
 Native supplier credit date selection still reset to midnight; native PR11 changes it to the exact IST date/time picker with invoice/current-instant bounds and bundled labels. TypeScript and timezone regression passed. Simulator rendering/navigation failed after reload, so credit-picker visual acceptance, Android device and production EAS remain open. The Tamil web credit-date label now uses credit-note wording rather than incorrectly describing udhaar.
+
+### GST check confidence and closed-period navigation — 10 October
+
+Source review found cached clean results could remain reassuring while offline or after an unconfirmed manual scan. Native additionally ignored a failed latest server run in its confidence classifier. Both clients now preserve observations while showing stale/unconfirmed results for paused connectivity, disabled monitoring, failed reads, skipped scans or an unknown manual outcome. Native subscribes to query connectivity; web attempts a saved-results refresh after a failed scan and retains the uncertainty flag. This does not clear any server issue.
+
+Changed closed-period observations were filtered out of both primary check lists. Both clients now display these warnings with existing localized guidance and route to the validated affected reporting month for review/reopening. The confidence classifier is shared with source-hash verification.
+
+Native PR13 merged into development branch codex/gst-core-test-builds-20261006 (4642856). Web PR68 merged main 9ade56c; Netlify production 6ac94ac34f8e2500085759af is ready/published 2026-10-09T20:13:44.196Z. Native TypeScript and four focused monitor checks passed; web GST regressions, 62 vendored contracts, translation coverage and production build passed. Offline/failed/disabled/unknown-result confidence paths are automated acceptance; live runtime fault injection, changed-period issue navigation and native production EAS remain open.
+
+After full production reload, a live manual scan in Suresh Stationary Store completed at 10 October 01:45 IST, checked nine saved documents and displayed no open core billing issues. Controls returned to idle and the timestamp advanced from 01:30. Evidence: /private/tmp/web-checks-confidence-release-20261010.jpg. This confirms normal successful scan behavior after release, not runtime fault/partial/offline or changed-period acceptance.
