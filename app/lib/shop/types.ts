@@ -482,3 +482,5 @@ export type SaleReturnListRow = {
   settlement?: {creditReduction: string; moneyRefund: string} | null;
 };
 export type ReturnsListSummary = { count: number; amount: number; byMethod: Record<string, number> };
+
+export type SpokenAnswer = {answer:string;intent:string|null;transcript?:string;ttsAudioBase64?:string;ttsJobId?:string};

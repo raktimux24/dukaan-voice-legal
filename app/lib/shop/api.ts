@@ -5,6 +5,7 @@ import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
 import { parseRole } from './permissions';
 import type {
+  SpokenAnswer,
   AuditLogEntry,
   BriefResponse,
   BuyListItem,
@@ -410,11 +411,15 @@ export function bindApi(getToken: TokenGetter) {
     getSalesReport: (shopId: string, period: string) => send<SalesReport>(`/api/shops/${shopId}/reports/sales?period=${period}`),
     getStockReport: (shopId: string, period: string) => send<StockReport>(`/api/shops/${shopId}/reports/stock?period=${period}`),
     stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken),
-    ask: (shopId: string, question: string, language?: string) =>
-      send<{ answer: string; intent: string | null }>(`/api/shops/${shopId}/analytics/ask`, {
+    ask: (shopId: string, question: string, language?: string, voiceFeedbackEnabled = false) =>
+      send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask`, {
         method: 'POST',
-        body: JSON.stringify({ question, language, voiceFeedbackEnabled: false, ttsAsync: false }),
+        body: JSON.stringify({ question, language, voiceFeedbackEnabled, ttsAsync: false }),
       }),
+
+    askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
+      send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
+    getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),
 
     search: (shopId: string, q: string) =>
       send<{

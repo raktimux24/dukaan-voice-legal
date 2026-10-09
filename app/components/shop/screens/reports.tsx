@@ -3,7 +3,9 @@
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { VoiceCapture, SpeechAudio } from '../voice-capture';
+import type { SpokenAnswer } from '../../../lib/shop/types';
 import { labeledL1 } from '../../../lib/shop/catalog';
 import { downloadText } from '../../../lib/shop/csv';
 import { formatINR } from '../../../lib/shop/money';
@@ -308,11 +310,15 @@ function formatDaySafe(value: string) {
 
 export function ReportsScreen() {
   const uiText = useUiText();
-  const { api, shop, perms, premium, prefs, hideCost, t } = useShop();
+  const { api, shop, userId, perms, premium, prefs, hideCost, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['id']>('week');
   const [tab, setTab] = useState<'sales' | 'stock'>('sales');
   const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<{scope:string;response:SpokenAnswer} | null>(null);
+  const scope = `${userId}:${shop?.id}:${prefs?.voiceLanguage}:${prefs?.voiceFeedbackEnabled}`;
+  const currentScope=useRef(scope);currentScope.current=scope;
+  const shownAnswer=answer?.scope===scope?answer.response:null;
+  useEffect(()=>{setQuestion('');setAnswer(null);setError(null);setAsking(false);},[scope]);
   const [error, setError] = useState<unknown>(null);
   const [asking, setAsking] = useState(false);
   const enabled = !!shop && perms.canSeeReports;
@@ -387,14 +393,21 @@ export function ReportsScreen() {
             if (!text || !premium) return;
             setAsking(true);
             setError(null);
-            void api.ask(shop.id, text, prefs?.appLanguage).then((result) => setAnswer(result.answer)).catch(setError).finally(() => setAsking(false));
+            const requestedScope=scope;
+            void api.ask(shop.id, text, prefs?.voiceLanguage ?? prefs?.appLanguage, prefs?.voiceFeedbackEnabled !== false).then(response=>{if(currentScope.current===requestedScope)setAnswer({scope:requestedScope,response});}).catch(caught=>{if(currentScope.current===requestedScope)setError(caught);}).finally(()=>{if(currentScope.current===requestedScope)setAsking(false);});
           }}
         >
           <Field label={t('modal.analytics.ask_placeholder', 'Ask about this shop')}>
             <textarea className={inputClass} value={question} onChange={(event) => setQuestion(event.target.value)} />
           </Field>
-          {premium ? <Button type="submit" disabled={asking || !question.trim()}>{asking ? 'Asking…' : 'Ask'}</Button> : <PremiumLock shopId={shop.id} feature="analytics" />}
-          {answer ? <p>{answer}</p> : null}
+          {premium ? <Button type="submit" disabled={asking || !question.trim()}>{asking ? t('modal.analytics.analyzing','Analyzing your question...') : uiText('Ask')}</Button> : <PremiumLock shopId={shop.id} feature="analytics" />}
+          {premium ? <VoiceCapture key={scope} disabled={asking} onRecorded={async recording=>{
+            const requestedScope=scope;setAsking(true);setError(null);
+            try {const response=await api.askVoice(shop.id,recording,prefs?.voiceLanguage ?? prefs?.appLanguage,prefs?.voiceFeedbackEnabled !== false);if(currentScope.current===requestedScope){setAnswer({scope:requestedScope,response});if(response.transcript)setQuestion(response.transcript);}}
+            catch(caught){if(currentScope.current===requestedScope)setError(caught);throw caught;}
+            finally{if(currentScope.current===requestedScope)setAsking(false);}
+          }} /> : null}
+          {shownAnswer ? <div><p>{shownAnswer.answer}</p><SpeechAudio base64={shownAnswer.ttsAudioBase64} label={t('brief.listen','Listen')} /></div> : null}
         </form>
       </Card>
     </div>

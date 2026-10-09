@@ -19,6 +19,13 @@ try {
   await api.setProductTaxAuthorization('shop-a',body);
   assert.equal(requests[2].options.method,'PUT');assert.deepEqual(JSON.parse(requests[2].options.body),body);
   assert.equal(requests[2].options.headers.Authorization,'Bearer test-token');
+  requests=[];
+  await api.askVoice('shop-a',{audio:'YWJj',fileName:'recording.webm'},'bn',false);
+  assert.equal(new URL(requests[0].url).pathname,'/api/shops/shop-a/analytics/ask-voice');
+  assert.deepEqual(JSON.parse(requests[0].options.body),{audio:'YWJj',fileName:'recording.webm',language:'bn',voiceFeedbackEnabled:false,ttsAsync:false});
+  await api.ask('shop-a','sales today','ta',true);
+  assert.equal(JSON.parse(requests[1].options.body).voiceFeedbackEnabled,true);
+  await api.getBriefAudio('shop-a');assert.equal(new URL(requests[2].url).pathname,'/api/shops/shop-a/nudges/brief/audio');
   globalThis.fetch=async()=>Response.json({error:'tax_authorization_conflict'},{status:409});
   await assert.rejects(api.setProductTaxAuthorization('shop-a',body),error=>error instanceof ApiError&&error.status===409&&error.code==='tax_authorization_conflict');
   globalThis.fetch=async()=>Response.json({error:'Insufficient permissions'},{status:403});

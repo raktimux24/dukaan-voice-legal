@@ -166,3 +166,9 @@ The baseline findings above describe production commit `69d35c0`. On branch `cod
 - Checkout resend controls use translated labels; credit customer identity uses translated labels and preserves the customer's name.
 
 Validation: TypeScript, Next production build, translation coverage and GST regression suite passed. Added tests cover API paths/filters/guards and denied/conflicting responses, 6107-row collection, short pages, stalled pagination, network failure, ten date locales and midnight IST under foreign timezones. These API tests use mocked transport; they do not prove authenticated role behavior. Rendered UI and fresh cross-client transactions remain acceptance gates. Changes are not a claim of full parity: offline issuance, voice/audio, browser push, remaining runtime localization and the acceptance matrix above still require work.
+
+### Audio implementation follow-up
+
+Reports now accepts microphone recordings through the existing analytics voice endpoint, preserves the transcript for editing, and exposes spoken answers when voice feedback is enabled. Daily brief now offers the existing Premium brief-audio endpoint. Capture supports browser-selected WebM/MP4/Ogg formats, stops after 30 seconds, and releases microphone tracks on cancel, errors, unmount or account/shop change. Late responses are scoped to the originating account/shop/preferences. Audio uses explicit playback controls.
+
+Automated tests cover MIME/base64 encoding, recording timeout, cancellation, permission denial, a permission promise resolving after navigation, request paths and speech preference flags. TypeScript, translation and GST tests passed. The Netlify preview is ready, but Clerk production keys reject its hostname, preventing authenticated rendered acceptance there. These changes do not yet implement spoken stock mutations or sale-to-cart flow, and real speech recognition/playback acceptance remains open.
