@@ -97,7 +97,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         thanks: t('bill.thanks', 'Thank you'),
       },
     };
-    if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error("Use the verified GST document above to print or download this bill."));return;}
+    if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error(t("bill.use_verified_gst_document", "Use the verified GST document above to print or download this bill.")));return;}
     setSharing(true);
     try {
       const scope = financialScope(shop.id);
