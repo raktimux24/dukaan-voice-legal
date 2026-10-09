@@ -1,6 +1,12 @@
 "use client";
 import { eligiblePurchaseReceipts } from "../../../lib/shop/gst-core/purchase-batch-link";
 import { ProductFormScreen } from "./product-form";
+import { purchaseReviewSignature } from "../../../lib/shop/gst-core/purchase-review-draft";
+import {
+  purchaseDraftTax,
+  purchaseLineForRequest,
+  type PurchaseDraftLine,
+} from "../../../lib/shop/purchase-draft";
 import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -35,11 +41,7 @@ import type {
   PurchaseLineInput,
 } from "../../../lib/shop/gst-types";
 import { formatINR } from "../../../lib/shop/money";
-type Line = PurchaseLineInput & {
-  key: string;
-  name: string;
-  stockMode: "invoice_only" | "receive" | "link";
-};
+type Line = PurchaseDraftLine;
 export function PurchaseNewScreen() {
   const { api, shop, perms } = useShop(),
     text = useGstText(),
@@ -64,10 +66,10 @@ export function PurchaseNewScreen() {
     [discount, setDiscount] = useState("0"),
     [declared, setDeclared] = useState(""),
     [reference, setReference] = useState(""),
-    [reviewed, setReviewed] = useState(false),
+    [reviewSignature, setReviewSignature] = useState<string | null>(null),
     [ordinarySupply, setOrdinarySupply] = useState(false),
     [addingProduct, setAddingProduct] = useState(false),
-    [movement, setMovement] = useState(false);
+    [movementSignature, setMovementSignature] = useState<string | null>(null);
   const retained = useRef<PurchaseInput | null>(null);
   const settings = pos.data?.gstSettings;
   const recipient = recipientDraft ?? {
@@ -78,6 +80,15 @@ export function PurchaseNewScreen() {
     address: settings?.address || pos.data?.shopAddress || "",
     structuredAddress: settings?.structuredAddress,
   };
+  const movementContext = purchaseReviewSignature({
+    supplierId: supplier?.id,
+    supplierRegistration: registration,
+    placeOfSupply: recipient.stateCode,
+    recipientAddress: recipient.address,
+  });
+  const movement = movementSignature === movementContext;
+  const setMovement = (value: boolean) =>
+    setMovementSignature(value ? movementContext : null);
   const reset = () => {
     setReviewed(false);
     setLines((rows) =>
@@ -88,6 +99,21 @@ export function PurchaseNewScreen() {
     fn();
     reset();
   };
+  const taxContext = purchaseReviewSignature({
+    supplierId: supplier?.id,
+    supplierIdentity: supplier?.identity,
+    supplierRegistration: registration,
+    documentType,
+    invoiceNumber,
+    invoiceDate,
+    priceMode: mode,
+    discount,
+    declared,
+    reference,
+    recipient,
+    ordinarySupply,
+    movement,
+  });
   const input: PurchaseInput = {
     clientId: "",
     supplierId: supplier?.id ?? "",
@@ -110,13 +136,20 @@ export function PurchaseNewScreen() {
     discount: Number(discount),
     declaredTotal: Number(declared),
     recipient,
-    lines: lines.map(({ key, name, stockMode, ...line }) => ({
-      ...line,
-      tax: {...line.tax, version: line.tax.version || "purchase-manual-v1"},
-    })),
+    lines: lines.map((line) => purchaseLineForRequest(line, taxContext)),
     evidenceReference: reference,
-    reviewed,
+    reviewed: false,
   };
+  const invoiceSignature = purchaseReviewSignature({
+    ...input,
+    clientId: undefined,
+    reviewed: undefined,
+    supplierIdentity: supplier?.identity,
+  });
+  const reviewed = reviewSignature === invoiceSignature;
+  input.reviewed = reviewed;
+  const setReviewed = (value: boolean) =>
+    setReviewSignature(value ? invoiceSignature : null);
   let totals: ReturnType<typeof purchaseTotals> | undefined,
     validation: unknown;
   try {
@@ -306,20 +339,26 @@ export function PurchaseNewScreen() {
           >
             <ReadState query={catalog}>
               <Button tone="quiet" onClick={() => setAddingProduct(true)}>
-                {text(EN_FALLBACK["gst.ui.add_a_missing_product_then_return_to_this_invoice_92fbf4"])}
+                {text(
+                  EN_FALLBACK[
+                    "gst.ui.add_a_missing_product_then_return_to_this_invoice_92fbf4"
+                  ],
+                )}
               </Button>
               <SelectField
                 label={text("Add product")}
+                disabled={lines.length >= 100}
                 value=""
                 onChange={(id) => {
                   const row = catalog.data?.find((r) => r.productId === id);
-                  if (!row) return;
+                  if (!row || lines.length >= 100) return;
                   setReviewed(false);
                   setLines([
                     ...lines,
                     {
                       key: crypto.randomUUID(),
                       name: row.product.name,
+                      trackStock: row.product.trackStock !== false,
                       productId: id,
                       quantity: 1,
                       price: row.product.purchasePrice ?? 0,
@@ -354,7 +393,10 @@ export function PurchaseNewScreen() {
                     type="number"
                     value={String(line.quantity)}
                     onChange={(v) =>
-                      updateLine(line.key, { quantity: Number(v), existingBatchId: undefined })
+                      updateLine(line.key, {
+                        quantity: Number(v),
+                        existingBatchId: undefined,
+                      })
                     }
                   />
                   <TextField
@@ -371,22 +413,26 @@ export function PurchaseNewScreen() {
                       updateLine(line.key, { discount: Number(v) })
                     }
                   />
-                  <SelectField
-                    label={text("Stock action")}
-                    value={line.stockMode}
-                    onChange={(v) =>
-                      updateLine(line.key, {
-                        stockMode: v as Line["stockMode"],
-                        receiveStock: v === "receive",
-                        existingBatchId: undefined,
-                      })
-                    }
-                    options={[
-                      ["invoice_only", text("Record invoice only")],
-                      ["receive", text("Receive new stock")],
-                      ["link", text("Link existing stock batch")],
-                    ]}
-                  />
+                  {line.trackStock ? (
+                    <SelectField
+                      label={text("Stock action")}
+                      value={line.stockMode}
+                      onChange={(v) =>
+                        updateLine(line.key, {
+                          stockMode: v as Line["stockMode"],
+                          receiveStock: v === "receive",
+                          existingBatchId: undefined,
+                        })
+                      }
+                      options={[
+                        ["invoice_only", text("Record invoice only")],
+                        ["receive", text("Receive new stock")],
+                        ["link", text("Link existing stock batch")],
+                      ]}
+                    />
+                  ) : (
+                    <p className="shop-hint">{text("Record invoice only")}</p>
+                  )}
                 </div>
                 {line.stockMode === "link" ? (
                   <PurchaseBatchPicker
@@ -420,9 +466,13 @@ export function PurchaseNewScreen() {
                 ) : null}
                 <TaxFields
                   required
-                  value={line.tax}
+                  value={purchaseDraftTax(line, taxContext)}
                   onChange={(v) =>
-                    updateLine(line.key, { tax: v ?? emptyTax() }, true)
+                    updateLine(
+                      line.key,
+                      { tax: v ?? emptyTax(), taxReviewContext: taxContext },
+                      true,
+                    )
                   }
                 />
                 <Button
@@ -471,7 +521,8 @@ export function PurchaseNewScreen() {
             addingProduct ||
             pos.data?.gstPurchasesAvailable !== true ||
             !supplier ||
-            (!retained.current && (!ordinarySupply || !reviewed || !totals))
+            (!retained.current &&
+              (!declared.trim() || !ordinarySupply || !reviewed || !totals))
           }
           onClick={() =>
             void action.run(async () => {
@@ -481,7 +532,13 @@ export function PurchaseNewScreen() {
               };
               if (!retained.current) {
                 if (!ordinarySupply)
-                  throw Error(text(EN_FALLBACK["gst.error.purchase_supply_not_supported"]));
+                  throw Error(
+                    text(
+                      EN_FALLBACK["gst.error.purchase_supply_not_supported"],
+                    ),
+                  );
+                if (!declared.trim())
+                  throw Error(text(EN_FALLBACK["purchase.required"]));
                 purchaseTotals(request, supplier!.identity);
               }
               retained.current = request;
@@ -517,7 +574,9 @@ function PurchaseBatchPicker({
   const batches = eligiblePurchaseReceipts(q.data ?? [], quantity);
   return (
     <ReadState query={q}>
-      <p className="text-sm text-muted">{t("purchase.link_batch", EN_FALLBACK["purchase.link_batch"])}</p>
+      <p className="text-sm text-muted">
+        {t("purchase.link_batch", EN_FALLBACK["purchase.link_batch"])}
+      </p>
       <SelectField
         label={text("Existing stock batch")}
         value={value}
@@ -533,7 +592,16 @@ function PurchaseBatchPicker({
           ),
         ]}
       />
-      {q.isSuccess && !batches.length ? <p role="status" className="text-amber-400">{t("gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f", EN_FALLBACK["gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f"])}</p> : null}
+      {q.isSuccess && !batches.length ? (
+        <p role="status" className="text-amber-400">
+          {t(
+            "gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f",
+            EN_FALLBACK[
+              "gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f"
+            ],
+          )}
+        </p>
+      ) : null}
     </ReadState>
   );
 }
