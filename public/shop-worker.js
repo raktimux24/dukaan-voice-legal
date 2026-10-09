@@ -73,7 +73,7 @@ async function pushOwner(value){
  });}finally{database.close();}
 }
 function pushDestination(data){
- return data?.screen==='subscription'?'/shop/settings/subscription':'/shop';
+ return data?.screen==='subscription'?'/shop/settings/subscription':data?.screen==='brief'?'/shop/brief':'/shop';
 }
 self.addEventListener('push',event=>{
  event.waitUntil((async()=>{
@@ -92,7 +92,7 @@ self.addEventListener('notificationclick',event=>{
   const data=event.notification.data;
   let owner;try{owner=await pushOwner();}catch{return;}
   if(!data?.actorId||owner!==data.actorId)return;
-  const path=['/shop','/shop/settings/subscription'].includes(data.path)?data.path:'/shop';
+  const path=['/shop','/shop/brief','/shop/settings/subscription'].includes(data.path)?data.path:'/shop';
   const url=new URL(path,self.location.origin).href;
   const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
   const existing=windows.find(client=>new URL(client.url).origin===self.location.origin);
