@@ -8,7 +8,7 @@ import { VoiceCapture, SpeechAudio } from '../voice-capture';
 import type { SpokenAnswer } from '../../../lib/shop/types';
 import { labeledL1 } from '../../../lib/shop/catalog';
 import { downloadText } from '../../../lib/shop/csv';
-import { formatINR } from '../../../lib/shop/money';
+import { formatINR, formatShortDay } from '../../../lib/shop/money';
 import type { SalesReport, StockReport } from '../../../lib/shop/types';
 import { useShop } from '../context';
 import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
@@ -39,12 +39,6 @@ function periodChip(id: string, t: (key: string, fallback: string) => string) {
 function clockLabel(hour: number) {
   const suffix = hour >= 12 ? 'pm' : 'am';
   return `${hour % 12 || 12}${suffix}`;
-}
-
-function shortDay(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
 function ColumnChart({ columns }: { columns: { label: string; bars: { value: number; tone?: string }[] }[] }) {
@@ -89,7 +83,7 @@ function ShareList({ rows }: { rows: { key: string; label: string; pct: number; 
 
 function SalesView({ report, showCost }: { report: SalesReport; showCost: boolean }) {
   const uiText = useUiText();
-  const { t } = useShop();
+  const { t, prefs } = useShop();
   const summary = report.summary;
   const revenue = summary?.revenue ?? 0;
   const methodTotal = METHODS.reduce((sum, method) => sum + (summary?.byMethod?.[method.id] ?? 0), 0) || 1;
@@ -155,7 +149,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           <h2 className="shop-section-title">{t('reports.sales.by_day', 'Over the period')}</h2>
           <ColumnChart
             columns={series.map((point, index) => ({
-              label: series.length > 14 && index % Math.ceil(series.length / 8) !== 0 ? '' : shortDay(point.date),
+              label: series.length > 14 && index % Math.ceil(series.length / 8) !== 0 ? '' : formatShortDay(point.date, prefs?.appLanguage),
               bars: [{ value: point.revenue }],
             }))}
           />
@@ -216,7 +210,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
 
 function StockView({ report, showCost }: { report: StockReport; showCost: boolean }) {
   const uiText = useUiText();
-  const { t } = useShop();
+  const { t, prefs } = useShop();
   const onHand = report.onHand;
   const products = onHand?.products || 1;
   const movement = report.movementByDay ?? [];
@@ -260,7 +254,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
         {movement.length === 0 ? <p className="party-meta">{uiText("No stock movement in this period.")}</p> : (
           <ColumnChart
             columns={movement.map((day, index) => ({
-              label: movement.length > 14 && index % Math.ceil(movement.length / 8) !== 0 ? '' : shortDay(day.date),
+              label: movement.length > 14 && index % Math.ceil(movement.length / 8) !== 0 ? '' : formatShortDay(day.date, prefs?.appLanguage),
               bars: [
                 { value: day.unitsIn, tone: '' },
                 { value: day.unitsSold, tone: 'is-ok' },
@@ -290,7 +284,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
               <div key={`${item.productId}-${item.expiryDate}`} className="shop-list-row">
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.name}</p>
-                  <p className="shop-list-meta">{item.units} {item.unit} · {formatDaySafe(item.expiryDate)}</p>
+                  <p className="shop-list-meta">{item.units} {item.unit} · {formatShortDay(item.expiryDate, prefs?.appLanguage)}</p>
                 </div>
                 <b>{item.daysRemaining}d</b>
               </div>
@@ -300,12 +294,6 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
       ) : null}
     </>
   );
-}
-
-function formatDaySafe(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
 export function ReportsScreen() {

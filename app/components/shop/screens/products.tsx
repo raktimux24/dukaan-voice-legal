@@ -47,7 +47,7 @@ function matches(item: InventoryItem, filter: string) {
 
 export function ProductsScreen() {
   const uiText = useUiText();
-  const { api, shop, perms, hideCost, t } = useShop();
+  const { api, shop, perms, hideCost, prefs, t } = useShop();
   const params = useSearchParams();
   const filter = params.get('filter') ?? 'all';
   const [q, setQ] = useState('');
@@ -71,7 +71,7 @@ export function ProductsScreen() {
         description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
         actions={
           <>
-            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
+            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost, prefs?.appLanguage))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
             {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
           </>
         }
