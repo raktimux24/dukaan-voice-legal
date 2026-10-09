@@ -1405,6 +1405,8 @@ a.shop-list-row:hover {
 
 .form-grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 14px;
 }
 
@@ -2859,13 +2861,14 @@ a.party-card:hover {
 }
 
 /* GST workspaces use the existing surface and saffron tokens. */
-.gst-section { border:1px solid var(--color-line); border-radius:var(--radius-lg); background:var(--color-card,#15151c); overflow:hidden; }
+.gst-section { min-width:0; border:1px solid var(--color-line); border-radius:var(--radius-lg); background:var(--color-card,#15151c); overflow:hidden; }
+.gst-section > summary > span:first-child { min-width:0; overflow-wrap:anywhere; }
 .gst-section > summary { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; cursor:pointer; font-weight:600; gap:16px; list-style:none; min-height:64px; }
 .gst-section > summary::-webkit-details-marker { display:none; }
 .gst-section > summary small { display:block; color:var(--color-muted,#9999a3); font-weight:400; font-size:13px; margin-top:5px; }
 .gst-section > summary > span:last-child { color:#FF6B00; }
 .gst-section[open] > summary { border-bottom:1px solid var(--color-line); }
-.gst-section-body { padding:24px; display:grid; gap:20px; }
+.gst-section-body { min-width:0; padding:24px; display:grid; grid-template-columns:minmax(0,1fr); gap:20px; }
 .gst-section-body .shop-btn, .gst-section-body .shop-field { max-width:100%; }
 .gst-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; }
 .gst-navigation { display:grid; gap:0; }
