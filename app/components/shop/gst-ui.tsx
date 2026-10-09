@@ -80,16 +80,19 @@ export function SelectField({
   value,
   onChange,
   options,
+  disabled = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: readonly (readonly [string, string])[];
+  disabled?: boolean;
 }) {
   return (
     <Field label={label}>
       <select
         className={inputClass}
+        disabled={disabled}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >

@@ -273,3 +273,19 @@ The web purchase overview now mirrors the native saved-request recovery entry, c
 Build, GST regressions, translation coverage and diff validation passed. No financial records, supplier identities, role permissions or registration were changed in this comparison. Production rendering/navigation verification follows release. Live write/recovery/ITC/settlement/return/reversal and cross-client mutation acceptance remain open.
 
 The same comparison exposed a purchase-review mismatch: web offered reviewed eligibility for a Composition recipient and permitted save while the cost preview was unavailable. The selector now follows native's regular-recipient/regular-supplier restriction; save requires a successful current cost preview. Native eligibility/cost-impact guidance is reused from the language catalogs. Backend eligibility validation remains authoritative.
+
+### Live purchase review and retained export acceptance
+
+Production deploy `6ac91e1bc4ea700008964af2` was ready and published at 2026-10-09T17:03:23.514Z for main `2d0f5f77ca10ecd28de0cff8bdfda7ed4bd3d32d`.
+
+On the approved test-only Suresh Stationary Store, WQA-261008-01 displayed original Regular GST supplier/Tax invoice, net 10.00, CGST 0.25, SGST 0.25, supplier and recipient identity/address snapshots. Its Composition recipient could select only deferred or ineligible, with save disabled until evidence/note and successful cost preview were available.
+
+An ineligible review was saved for this existing synthetic, invoice-only fixture with note `Synthetic parity review: Composition recipient; no credit claimed.` and reference `WQA-261008-01 acceptance review`. Web retained it after reload; native's retained review/correction history independently displayed the same decision, note and reference, timestamp 9 Oct 2026 at 10:38 PM IST. The overview's unreviewed count changed to zero. No stock receipt, money transfer, registration change or credit claim was performed.
+
+September 1–30 filtering produced empty invoice results and zero period totals; restoring October 1–9 restored this invoice, purchases 10.50 and tax 0.50. Combined refresh disabled while fetching and recovered. Accounting details showed closing payable 10.50, no payments/refunds, no reviewed credit, no cost changes and current unreviewed tax zero. Purchase export-history navigation selected Purchases and preserved October 1–9.
+
+A purchase register was prepared and persisted in history. Downloaded CSV `e845d8c5-360b-4a6b-b33b-a9e549d5ee99` contained the supplier invoice and ineligible review with zero ITC movement and retained identity details. A fresh reload and history download produced exactly the same 3416 bytes, SHA-256 `099905b1f3be637814de3668a51174536281b42f427287754ddd6451280b03f9`. Report details showed one invoice, zero credit notes, total 10.50 and tax 0.50. Screenshot evidence: `/private/tmp/gst-purchase-export-accepted-20261009.jpg`.
+
+This accepts this purchase review write/readback and small retained-export path. It does not establish stock-receipt/linking, eligible ITC, payment/refund/reversal/return lifecycle, large reports, offline recovery or the complete permissions/concurrency matrix.
+
+The same live test exposed export-operation UX gaps: selector changes were possible during an operation, the retained download button remained enabled during its own request, and report preparation wording was shown while downloading. The follow-up disables selectors/download re-entry during operations and limits preparation wording to preparation. Invoice-number snapshots no longer depend on hidden date-field validity; period-based and credit-note reports retain their range validation.
