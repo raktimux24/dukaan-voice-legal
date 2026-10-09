@@ -51,7 +51,7 @@ function ShopSession({ children }: { children: ReactNode }) {
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const [catalog, setCatalog] = useState<{ language: string; entries: Record<string, string> }>({ language: 'en', entries: {} });
 
-  const api = useMemo(() => bindApi(async (opts) => getToken(opts)), [getToken]);
+  const api = useMemo(() => bindApi(async (opts) => getToken(opts),userId&&sessionId?{actorId:userId,sessionId,isCurrent:shop=>alive.current&&activeShop.current===shop,onFallback:()=>setOffline(true)}:undefined), [getToken,userId,sessionId]);
 
   const refreshShops = useCallback(async () => {
     const version=++refreshVersion.current;

@@ -43,11 +43,12 @@ export function CheckoutScreen() {
   const settings = useQuery({
     queryKey: ['pos', shop?.id],
     enabled: !!shop?.id,
+    networkMode:'always',
     queryFn: () => api.getPosSettings(shop!.id),
   });
   const taxRequired=settings.data?.gstAvailable===true&&settings.data.gstSettings?.registration==='regular';
   const productIds=cartApi.cart.lines.map(line=>line.productId);
-  const taxSnapshot=useQuery({queryKey:['checkout-tax-snapshot',shop?.id,userId,...productIds],enabled:!!shop?.id&&taxRequired&&productIds.length>0,queryFn:()=>api.getTaxSnapshot(shop!.id,productIds)});
+  const taxSnapshot=useQuery({queryKey:['checkout-tax-snapshot',shop?.id,userId,...productIds],enabled:!!shop?.id&&taxRequired&&productIds.length>0,networkMode:'always',queryFn:()=>api.getTaxSnapshot(shop!.id,productIds)});
   const adoptedSnapshot=useRef<unknown>(null);
   useEffect(()=>{
     if(!shop||!taxSnapshot.data||adoptedSnapshot.current===taxSnapshot.data)return;

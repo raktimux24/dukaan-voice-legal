@@ -1,6 +1,7 @@
 import type { VoiceProcessResponse, VoiceConfirmRequest, VoiceConfirmResponse } from './voice-types';
 import { collectPages } from './pagination';
 import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
+import {createOfflineEvidence,type EvidenceScope} from './offline-evidence';
 import { bindGstApi } from './gst-api';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
@@ -262,8 +263,29 @@ function queryString(params: Record<string, string | number | boolean | undefine
   return text ? `?${text}` : '';
 }
 
-export function bindApi(getToken: TokenGetter) {
+export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
   const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init);
+  const evidence=evidenceScope?createOfflineEvidence(evidenceScope):null;
+  const readCatalog=async(shopId:string,hideCost:boolean)=>collectPages(async offset=>{
+    const page=await send<{items:ServerInventoryItem[];hasMore:boolean}>(`/api/shops/${shopId}/inventory${queryString({limit:100,offset})}`);
+    return {rows:(page.items??[]).map(item=>mapItem(item,hideCost)),hasMore:page.hasMore};
+  });
+  const validCatalog=(shopId:string)=>(value:unknown):value is InventoryItem[]=>Array.isArray(value)&&new Set(value.map(row=>row?.productId)).size===value.length&&value.every(row=>row&&row.shopId===shopId&&row.product?.shopId===shopId&&row.productId===row.product.id&&typeof row.id==='string'&&typeof row.product.name==='string'&&Number.isFinite(row.quantity)&&row.quantity>=0&&row.unit===row.product.unit);
+  const readTax=async(shopId:string,productIds:string[],completeCatalog=false)=>{
+    const load=()=>send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:'POST',body:JSON.stringify({productIds})});
+    const validate=(value:unknown):value is CatalogTaxSnapshot=>{try{attachCatalogTaxSnapshot(productIds.map(id=>({product:{id}})),value as CatalogTaxSnapshot,shopId);return true;}catch{return false;}};
+    if(!evidence)return load();
+    if(completeCatalog)return evidence.read(shopId,'tax-catalog',load,validate);
+    try{return await evidence.read(shopId,`tax:${[...productIds].sort().join(',')}`,load,validate);}
+    catch(error){
+      const validateCatalog=(value:unknown):value is CatalogTaxSnapshot=>{try{const snapshot=value as CatalogTaxSnapshot;attachCatalogTaxSnapshot(snapshot.products.map(row=>({product:{id:row.productId}})),snapshot,shopId);return true;}catch{return false;}};
+      const snapshot=await evidence.read(shopId,'tax-catalog',()=>Promise.reject(error),validateCatalog);
+      const requested=new Set(productIds);
+      const subset={...snapshot,products:snapshot.products.filter(row=>requested.has(row.productId))};
+      if(!validate(subset))throw error;
+      return subset;
+    }
+  };
 
   return {
     gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};}),
@@ -300,16 +322,12 @@ export function bindApi(getToken: TokenGetter) {
       return { items: (res.items ?? []).map((item) => mapItem(item, hideCost)), total: res.total, hasMore: res.hasMore };
     },
     getAllInventory: async (shopId: string, hideCost = false, coherentTax = false) => {
-      const all = await collectPages(async offset => {
-        const page = await send<{items: ServerInventoryItem[]; hasMore: boolean}>(
-          `/api/shops/${shopId}/inventory${queryString({limit: 100, offset})}`,
-        );
-        return {rows: (page.items ?? []).map(item => mapItem(item, hideCost)), hasMore: page.hasMore};
-      });
-      if(coherentTax){const snapshot=await send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:"POST",body:JSON.stringify({productIds:all.map(item=>item.product.id)})});return attachCatalogTaxSnapshot(all,snapshot,shopId);}
+      // Retained billing catalogs exclude purchase costs, even when the online owner view includes them.
+      const all=evidence?await evidence.read(shopId,'catalog',()=>readCatalog(shopId,hideCost),validCatalog(shopId),rows=>rows.map(row=>({...row,product:{...row.product,purchasePrice:undefined}}))):await readCatalog(shopId,hideCost);
+      if(coherentTax){const snapshot=await readTax(shopId,all.map(item=>item.product.id),true);return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
     },
-    getTaxSnapshot: (shopId:string,productIds:string[]) => send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:"POST",body:JSON.stringify({productIds})}),
+    getTaxSnapshot: readTax,
     getInventoryStats: async (shopId: string) => {
       const stats = await send<InventoryStats>(`/api/shops/${shopId}/inventory/stats`);
       return { ...stats, stockValue: Number(stats.stockValue ?? 0), total: Number(stats.total ?? 0), lowStock: Number(stats.lowStock ?? 0), outOfStock: Number(stats.outOfStock ?? 0), nearExpiry: Number(stats.nearExpiry ?? 0) };
@@ -433,9 +451,19 @@ export function bindApi(getToken: TokenGetter) {
         suppliers: { name: string; products: number; lastAt: string | null }[];
       }>(`/api/shops/${shopId}/search${queryString({ q })}`),
 
-    getPosSettings: (shopId: string) => send<PosSettings>(`/api/shops/${shopId}/pos-settings`),
-    updatePosSettings: (shopId: string, body: Record<string, unknown>) =>
-      send<PosSettings>(`/api/shops/${shopId}/pos-settings`, { method: 'PUT', body: JSON.stringify(body) }),
+    getPosSettings: (shopId: string) => {
+      const load=()=>send<PosSettings>(`/api/shops/${shopId}/pos-settings`);
+      const validate=(value:unknown):value is PosSettings=>{
+        if(!value||typeof value!=='object')return false;
+        const settings=value as PosSettings,gst=settings.gstSettings;
+        return settings.shopId===shopId&&typeof settings.shopName==='string'&&Number.isFinite(Date.parse(settings.updatedAt))&&Number.isSafeInteger(settings.saleCounter)&&settings.saleCounter>=0&&['cash','upi'].includes(settings.defaultPaymentMethod)&&typeof settings.cardEnabled==='boolean'&&(!gst||(typeof gst.version==='string'&&!!gst.version&&['unknown','unregistered','regular','composition'].includes(gst.registration)&&['inclusive','exclusive'].includes(gst.priceMode)));
+      };
+      return evidence?evidence.read(shopId,'pos-settings',load,validate):load();
+    },
+    updatePosSettings: async (shopId: string, body: Record<string, unknown>) => {
+      await evidence?.clear(shopId,'pos-settings');
+      return send<PosSettings>(`/api/shops/${shopId}/pos-settings`, { method: 'PUT', body: JSON.stringify(body) });
+    },
     uploadUpiQr: (shopId: string, imageBase64: string) =>
       send<PosSettings & { decoded?: { found: boolean; isUpi: boolean; vpa: string | null } }>(`/api/shops/${shopId}/pos-settings/upi-qr`, {
         method: 'POST',
