@@ -23,6 +23,7 @@ export type ShopContextValue = {
   notice: string | null;
   setNotice: (notice: string | null) => void;
   hideCost: boolean;
+  offline: boolean;
 };
 
 export const ShopContext = createContext<ShopContextValue | null>(null);

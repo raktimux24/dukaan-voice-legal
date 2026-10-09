@@ -471,7 +471,7 @@ export function GstDevicesScreen({ embedded = false }: { embedded?: boolean } = 
   );
 }
 export function GstRecoveryScreen() {
-  const { api, shop, userId } = useShop(),
+  const { api, shop, userId,offline } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
@@ -483,7 +483,7 @@ export function GstRecoveryScreen() {
       const rows = await retainedRequests(scope);
       assertScope(scope);
       return rows;
-    });
+    },true,'always');
   async function retry(row: RetainedRequest) {
     await recoverFinancialRequest(api, shop!.id, row);
   }
@@ -514,7 +514,7 @@ export function GstRecoveryScreen() {
             </p>
             {row.state === "pending" ? (
               <Button
-                disabled={action.busy}
+                disabled={action.busy||offline}
                 onClick={() =>
                   void action.run(async () => {
                     await retry(row);

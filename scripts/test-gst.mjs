@@ -31,6 +31,7 @@ try {
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/api.ts",
     "app/lib/shop/voice-review.ts",
+    "app/lib/shop/offline-shop-context.ts",
     "app/lib/shop/browser-audio.ts",
     "app/lib/shop/pagination.ts",
     "app/lib/shop/money.ts",
@@ -55,6 +56,7 @@ try {
   });
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/voice-review.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/offline-shop-context.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/browser-audio.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/shop-parity-api.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/pagination.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

@@ -19,6 +19,7 @@ export function useGstQuery<T>(
   key: unknown[],
   load: () => Promise<T>,
   allowed = true,
+  networkMode: 'online'|'always' = 'online',
 ) {
   const { shop, userId } = useShop();
   return useQuery({
@@ -31,6 +32,7 @@ export function useGstQuery<T>(
       return result;
     },
     retry: false,
+    networkMode,
   });
 }
 export function useGstPages<T>(
