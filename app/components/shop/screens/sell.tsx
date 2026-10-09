@@ -226,6 +226,7 @@ export function SellScreen() {
           </div>
           <div className="shop-actions">
             {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">{t('products.add', 'Add product')}</Button> : null}
+            <Button href="/shop/voice?mode=sell" tone="ghost" size="sm">{t('a11y.voice','Voice command')}</Button>
             <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
           </div>
         </div>

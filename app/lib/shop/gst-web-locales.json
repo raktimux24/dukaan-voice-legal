@@ -1112,7 +1112,9 @@
     "web.gst.you_are_signed_in_as_role_of_this_shop_": "You are signed in as {{role}} of this shop.",
     "web.gst.a_member": "a member",
     "web.gst.signing_you_in_": "Signing you in…",
-    "web.gst.loading_your_shop_": "Loading your shop…"
+    "web.gst.loading_your_shop_": "Loading your shop…",
+    "voice.stock_saved": "Stock changes are saved. Retry adding the sale to your cart; stock will not be updated again.",
+    "voice.stock_outcome_unknown": "The stock update could not be confirmed. Check your products and activity before trying the command again."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -2228,7 +2230,9 @@
     "web.gst.how_many_unit_make_one_pack_": "एक पैक बनाने के लिए कितने {{unit}} लगते हैं।",
     "web.gst.signing_you_in_": "हम आपको साइन इन कर रहे हैं…",
     "web.gst.loading_your_shop_": "आपकी दुकान लोड हो रही है…",
-    "web.gst.shop_type": "दुकान का प्रकार"
+    "web.gst.shop_type": "दुकान का प्रकार",
+    "voice.stock_saved": "स्टॉक में बदलाव सहेजे गए हैं। बिक्री को कार्ट में जोड़ने के लिए फिर प्रयास करें; स्टॉक दोबारा नहीं बदलेगा।",
+    "voice.stock_outcome_unknown": "स्टॉक अपडेट की पुष्टि नहीं हो सकी। कमांड दोबारा देने से पहले अपने उत्पाद और गतिविधि देखें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -3343,7 +3347,9 @@
     "web.gst._unit_per_pack": "{{unit}} har pack mein",
     "web.gst._n_batches": "{{n}} batches",
     "web.gst.signing_you_in_": "Aapko sign in kar rahe hain…",
-    "web.gst.loading_your_shop_": "Aapki dukan load ho rahi hai…"
+    "web.gst.loading_your_shop_": "Aapki dukan load ho rahi hai…",
+    "voice.stock_saved": "Stock changes save ho gaye hain. Sale ko cart mein add karne ke liye dobara try karein; stock dobara update nahi hoga.",
+    "voice.stock_outcome_unknown": "Stock update confirm nahi ho saka. Command dobara dene se pehle products aur activity check karein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -4458,7 +4464,9 @@
     "web.gst.alerts_when_on_hand_falls_to_this_many_unit_": "অন-হ্যান্ড এই {{unit}}-এ নেমে এলে অ্যালার্ট দেবে।",
     "web.gst.how_many_unit_make_one_pack_": "কতগুলো {{unit}} মিলে একটি প্যাক তৈরি হয়।",
     "web.gst.signing_you_in_": "আপনাকে সাইন ইন করা হচ্ছে…",
-    "web.gst.loading_your_shop_": "আপনার দোকান লোড হচ্ছে…"
+    "web.gst.loading_your_shop_": "আপনার দোকান লোড হচ্ছে…",
+    "voice.stock_saved": "স্টকের পরিবর্তন সংরক্ষিত হয়েছে। বিক্রয়টি কার্টে যোগ করার জন্য আবার চেষ্টা করুন; স্টক আবার বদলাবে না।",
+    "voice.stock_outcome_unknown": "স্টক আপডেট নিশ্চিত করা যায়নি। আবার কমান্ড দেওয়ার আগে পণ্য ও কার্যকলাপ দেখুন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -5573,7 +5581,9 @@
     "web.gst.how_many_unit_make_one_pack_": "ஒரு பேக்கில் எத்தனை {{unit}} இருக்கும்.",
     "web.gst.print_save_pdf": "அச்சிடு / PDF ஆகச் சேமி",
     "web.gst.signing_you_in_": "உங்களை உள்ளே நுழையச் செய்கிறோம்…",
-    "web.gst.loading_your_shop_": "உங்கள் கடையை ஏற்றுகிறது…"
+    "web.gst.loading_your_shop_": "உங்கள் கடையை ஏற்றுகிறது…",
+    "voice.stock_saved": "இருப்பு மாற்றங்கள் சேமிக்கப்பட்டன. விற்பனையை கார்ட்டில் சேர்க்க மீண்டும் முயற்சிக்கவும்; இருப்பு மீண்டும் மாற்றப்படாது.",
+    "voice.stock_outcome_unknown": "இருப்பு புதுப்பிப்பை உறுதிப்படுத்த முடியவில்லை. கட்டளையை மீண்டும் வழங்கும் முன் பொருட்களையும் செயல்பாடுகளையும் சரிபார்க்கவும்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -6688,7 +6698,9 @@
     "web.gst.alerts_when_on_hand_falls_to_this_many_unit_": "స్టాక్‌లో ఈ {{unit}} మాత్రమే మిగిలి ఉన్నప్పుడు అలర్ట్స్ వస్తాయి.",
     "web.gst.how_many_unit_make_one_pack_": "ఒక ప్యాక్‌కు ఎన్ని {{unit}} కావాలి?",
     "web.gst.signing_you_in_": "మిమ్మల్ని లాగిన్ చేస్తోంది…",
-    "web.gst.loading_your_shop_": "మీ షాప్‌ను లోడ్ చేస్తోంది…"
+    "web.gst.loading_your_shop_": "మీ షాప్‌ను లోడ్ చేస్తోంది…",
+    "voice.stock_saved": "నిల్వ మార్పులు సేవ్ అయ్యాయి. అమ్మకాన్ని కార్ట్‌లో చేర్చడానికి మళ్లీ ప్రయత్నించండి; నిల్వ మళ్లీ మారదు.",
+    "voice.stock_outcome_unknown": "నిల్వ మార్పును నిర్ధారించలేకపోయాము. ఆదేశాన్ని మళ్లీ ఇచ్చే ముందు ఉత్పత్తులు, కార్యకలాపాలను చూడండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -7803,7 +7815,9 @@
     "web.gst.alerts_when_on_hand_falls_to_this_many_unit_": "ऑन-हँड स्टॉक या {{unit}} इतका झाल्यावर अलर्ट्स.",
     "web.gst.how_many_unit_make_one_pack_": "एक पॅक बनवण्यासाठी किती {{unit}} लागतात.",
     "web.gst.signing_you_in_": "तुमचे लॉगिन होत आहे…",
-    "web.gst.loading_your_shop_": "तुमचे दुकान लोड होत आहे…"
+    "web.gst.loading_your_shop_": "तुमचे दुकान लोड होत आहे…",
+    "voice.stock_saved": "साठ्यातील बदल जतन झाले आहेत. विक्री कार्टमध्ये जोडण्यासाठी पुन्हा प्रयत्न करा; साठा पुन्हा बदलणार नाही.",
+    "voice.stock_outcome_unknown": "साठ्यातील बदलाची पुष्टी करता आली नाही. आदेश पुन्हा देण्यापूर्वी उत्पादने आणि हालचाली तपासा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -8918,7 +8932,9 @@
     "web.gst.alerts_when_on_hand_falls_to_this_many_unit_": "ಸ್ಟಾಕ್ ಈ {{unit}} ಗೆ ಇಳಿದಾಗ ಅಲರ್ಟ್ಸ್",
     "web.gst.how_many_unit_make_one_pack_": "ಎಷ್ಟು {{unit}} ಸೇರಿದರೆ ಒಂದು ಪ್ಯಾಕ್ ಆಗುತ್ತದೆ.",
     "web.gst.signing_you_in_": "ನಿಮ್ಮನ್ನು ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ…",
-    "web.gst.loading_your_shop_": "ನಿಮ್ಮ ಅಂಗಡಿಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ…"
+    "web.gst.loading_your_shop_": "ನಿಮ್ಮ ಅಂಗಡಿಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ…",
+    "voice.stock_saved": "ದಾಸ್ತಾನು ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ. ಮಾರಾಟವನ್ನು ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ; ದಾಸ್ತಾನು ಮತ್ತೆ ಬದಲಾಗುವುದಿಲ್ಲ.",
+    "voice.stock_outcome_unknown": "ದಾಸ್ತಾನು ಬದಲಾವಣೆಯನ್ನು ದೃಢೀಕರಿಸಲಾಗಲಿಲ್ಲ. ಆಜ್ಞೆಯನ್ನು ಮತ್ತೆ ನೀಡುವ ಮೊದಲು ಉತ್ಪನ್ನಗಳು ಮತ್ತು ಚಟುವಟಿಕೆಯನ್ನು ಪರಿಶೀಲಿಸಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -10033,7 +10049,9 @@
     "web.gst.alerts_when_on_hand_falls_to_this_many_unit_": "જ્યારે સ્ટોક આ {{unit}} જેટલો થઈ જાય ત્યારે એલર્ટ આપો.",
     "web.gst.how_many_unit_make_one_pack_": "કેટલા {{unit}} મળીને એક પેક બને છે.",
     "web.gst.signing_you_in_": "તમારું એકાઉન્ટ સાઇન ઇન કરી રહ્યા છીએ…",
-    "web.gst.loading_your_shop_": "તમારી દુકાન લોડ કરી રહ્યા છીએ…"
+    "web.gst.loading_your_shop_": "તમારી દુકાન લોડ કરી રહ્યા છીએ…",
+    "voice.stock_saved": "સ્ટોકના ફેરફારો સાચવ્યા છે. વેચાણને કાર્ટમાં ઉમેરવા ફરી પ્રયાસ કરો; સ્ટોક ફરી બદલાશે નહીં.",
+    "voice.stock_outcome_unknown": "સ્ટોકના ફેરફારની પુષ્ટિ થઈ શકી નથી. આદેશ ફરી આપતાં પહેલાં ઉત્પાદનો અને પ્રવૃત્તિ તપાસો."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -11148,6 +11166,8 @@
     "web.gst.alerts_when_on_hand_falls_to_this_many_unit_": "സ്റ്റോക്ക് ഈ {{unit}}-ൽ എത്തുമ്പോൾ അലർട്ടുകൾ",
     "web.gst.how_many_unit_make_one_pack_": "ഒരു പാക്കറ്റിൽ എത്ര {{unit}} ഉണ്ടാകും?",
     "web.gst.signing_you_in_": "നിങ്ങളെ ലോഗിൻ ചെയ്യുന്നു…",
-    "web.gst.loading_your_shop_": "നിങ്ങളുടെ കട ലോഡ് ചെയ്യുന്നു…"
+    "web.gst.loading_your_shop_": "നിങ്ങളുടെ കട ലോഡ് ചെയ്യുന്നു…",
+    "voice.stock_saved": "സ്റ്റോക്കിലെ മാറ്റങ്ങൾ സംരക്ഷിച്ചു. വിൽപ്പന കാർട്ടിൽ ചേർക്കാൻ വീണ്ടും ശ്രമിക്കുക; സ്റ്റോക്ക് വീണ്ടും മാറില്ല.",
+    "voice.stock_outcome_unknown": "സ്റ്റോക്ക് മാറ്റം സ്ഥിരീകരിക്കാനായില്ല. കമാൻഡ് വീണ്ടും നൽകുന്നതിന് മുമ്പ് ഉൽപ്പന്നങ്ങളും പ്രവർത്തനങ്ങളും പരിശോധിക്കുക."
   }
 }
