@@ -1,5 +1,6 @@
 'use client';
 
+import {prepareOfflineInvoices} from '../../../lib/shop/invoice-preparation';
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -23,6 +24,15 @@ export function SellScreen() {
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
   const posSettings=useQuery({queryKey:["pos",shopId],enabled:!!shopId,networkMode:'always',queryFn:()=>api.getPosSettings(shopId)});
+  useQuery({
+    queryKey:['offline-invoice-preparation',userId,shopId,posSettings.data?.gstSettings?.version],
+    enabled:!!shopId&&posSettings.data?.gstAvailable===true&&['regular','composition'].includes(posSettings.data.gstSettings?.registration??''),
+    queryFn:()=>prepareOfflineInvoices(api,shopId),
+    retry:false,
+    refetchOnWindowFocus:false,
+    // Retry successful capabilities before expiry; failed provisioning waits for an explicit revisit.
+    refetchInterval:q=>q.state.status==='success'&&q.state.data?Math.max(60000,Math.min(15*60000,Date.parse(q.state.data.expiresAt)-Date.now()-30000)):false,
+  });
   const coherentTax=posSettings.data?.gstAvailable===true&&posSettings.data.gstSettings?.registration==="regular";
   const catalog = useQuery({
     queryKey: ['catalog', shopId, hideCost, coherentTax],
