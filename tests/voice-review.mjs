@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {webcrypto} from 'node:crypto';
+const require=createRequire(import.meta.url);globalThis.crypto??=webcrypto;
+const {voiceEntityValid,voiceSalePlan,appendVoiceSale,confirmStockOnce,editVoiceEntity}=require(process.env.GST_TEST_BUILD+'/voice-review.js');
+const item={id:'inv',productId:'p',shopId:'s',unit:'piece',quantity:10,product:{id:'p',shopId:'s',name:'Pen',unit:'piece',sellingPrice:20,gstConfig:{reviewed:true,rate:5}}};
+const entity={product:'Pen',quantity:2,unit:'piece',action:'sell',matchedProduct:item.product};
+const cart={lines:[],billDiscount:0,note:'',customerId:null,customerName:null,customerPhone:null,customerClientId:null};
+assert.ok(voiceEntityValid(entity));assert.ok(!voiceEntityValid({...entity,quantity:NaN}));assert.ok(!voiceEntityValid({...entity,unitMismatch:true}));assert.ok(!voiceEntityValid({...entity,unit:'kg'}));
+const edited=editVoiceEntity({...entity,spokenQuantity:1,spokenUnit:'box'},{quantity:3});
+assert.equal(edited.quantity,3);assert.equal(edited.spokenUnit,undefined);assert.equal(edited.spokenQuantity,undefined);
+const plan=voiceSalePlan([entity,{...entity,quantity:3}], [item],'s');assert.equal(plan[0].quantity,5);
+const next=appendVoiceSale(cart,plan);assert.equal(next.lines.length,1);assert.equal(next.lines[0].quantity,5);assert.deepEqual(next.lines[0].gstConfig,item.product.gstConfig);assert.equal(next.inputMethod,'voice');assert.equal(cart.lines.length,0);
+assert.throws(()=>voiceSalePlan([entity],[item],'other'),/invalid_voice_line/);
+assert.throws(()=>voiceSalePlan([entity],[{...item,product:{...item.product,isActive:false}}],'s'),/invalid_voice_line/);
+assert.throws(()=>voiceSalePlan([entity],[{...item,product:{...item.product,sellingPrice:null}}],'s'),/price_required/);
+assert.throws(()=>voiceSalePlan([{...entity,quantity:11}],[item],'s'),/insufficient_stock/);
+assert.throws(()=>appendVoiceSale(next,voiceSalePlan([{...entity,quantity:6}],[item],'s')),/insufficient_stock/);
+assert.equal(next.lines[0].quantity,5); // Failure must not leave a partially changed cart.
+const stock={...entity,action:'add'};
+let writes=0;
+const saved={success:true,results:[{success:true}]};
+const attempt={status:'ready'};
+const send=async()=>{writes++;return saved;};
+await confirmStockOnce(attempt,[stock],send);
+assert.throws(()=>appendVoiceSale(next,voiceSalePlan([{...entity,quantity:6}],[item],'s')),/insufficient_stock/);
+await confirmStockOnce(attempt,[stock],send);
+assert.equal(writes,1,'Cart failure and retry must not duplicate a successful stock write');
+const pending={status:'ready'};let finish;
+const promise=confirmStockOnce(pending,[stock],()=>new Promise(resolve=>{finish=resolve;}));
+await assert.rejects(confirmStockOnce(pending,[stock],send),/already_attempted/);
+finish(saved);await promise;
+const lost={status:'ready'};
+await assert.rejects(confirmStockOnce(lost,[stock],async()=>{throw Error('lost response');}),/lost response/);
+assert.equal(lost.status,'unknown');await assert.rejects(confirmStockOnce(lost,[stock],send),/already_attempted/);
+for(const outcome of [{success:true,results:[]},{success:false,results:[{success:false}]}]){
+ const failed={status:'ready'};await confirmStockOnce(failed,[stock],async()=>outcome);
+ assert.equal(failed.status,'failed');await assert.rejects(confirmStockOnce(failed,[stock],send),/already_attempted/);
+}
+console.log('Voice review: product scope, active/priced stock, quantities, duplicate aggregation, tax preservation and atomic cart failure passed.');

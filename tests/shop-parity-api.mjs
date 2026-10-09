@@ -26,6 +26,13 @@ try {
   await api.ask('shop-a','sales today','ta',true);
   assert.equal(JSON.parse(requests[1].options.body).voiceFeedbackEnabled,true);
   await api.getBriefAudio('shop-a');assert.equal(new URL(requests[2].url).pathname,'/api/shops/shop-a/nudges/brief/audio');
+  await api.processVoice('shop-a',{audio:'YWJj',fileName:'voice.webm'},'kn','counter',true);
+  assert.equal(new URL(requests[3].url).pathname,'/api/shops/shop-a/voice/process');
+  assert.deepEqual(JSON.parse(requests[3].options.body),{audio:'YWJj',fileName:'voice.webm',language:'kn',context:'counter',voiceFeedbackEnabled:true,ttsAsync:false});
+  const confirmation={entities:[{action:'add',product:'Pen',quantity:2,unit:'piece'}],transcript:'add two pens',language:'kn',voiceFeedbackEnabled:false};
+  await api.confirmVoice('shop-a',confirmation);
+  assert.equal(new URL(requests[4].url).pathname,'/api/shops/shop-a/voice/confirm');
+  assert.deepEqual(JSON.parse(requests[4].options.body),{...confirmation,ttsAsync:false});
   globalThis.fetch=async()=>Response.json({error:'tax_authorization_conflict'},{status:409});
   await assert.rejects(api.setProductTaxAuthorization('shop-a',body),error=>error instanceof ApiError&&error.status===409&&error.code==='tax_authorization_conflict');
   globalThis.fetch=async()=>Response.json({error:'Insufficient permissions'},{status:403});

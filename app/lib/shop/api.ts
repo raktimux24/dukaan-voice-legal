@@ -1,3 +1,4 @@
+import type { VoiceProcessResponse, VoiceConfirmRequest, VoiceConfirmResponse } from './voice-types';
 import { collectPages } from './pagination';
 import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
 import { bindGstApi } from './gst-api';
@@ -417,6 +418,10 @@ export function bindApi(getToken: TokenGetter) {
         body: JSON.stringify({ question, language, voiceFeedbackEnabled, ttsAsync: false }),
       }),
 
+    processVoice: (shopId:string,recording:{audio:string;fileName:string},language:string,context:'counter'|'inventory',voiceFeedbackEnabled:boolean) =>
+      send<VoiceProcessResponse>(`/api/shops/${shopId}/voice/process`, {method:'POST',body:JSON.stringify({...recording,language,context,voiceFeedbackEnabled,ttsAsync:false})}),
+    confirmVoice: (shopId:string,request:VoiceConfirmRequest) =>
+      send<VoiceConfirmResponse>(`/api/shops/${shopId}/voice/confirm`, {method:'POST',body:JSON.stringify({...request,ttsAsync:false})}),
     askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
       send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
     getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),

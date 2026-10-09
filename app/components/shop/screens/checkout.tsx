@@ -78,7 +78,7 @@ export function CheckoutScreen() {
     const last = localStorage.getItem(`samaan-last-method:${userId}:${shop.id}`) as TenderMode | null;
     const fallback = settings.data?.defaultPaymentMethod ?? 'cash';
     const known = last === 'cash' || last === 'upi' || last === 'card' || last === 'credit' || last === 'split';
-    const next = known ? last : fallback;
+    const next = cartApi.cart.paymentHint ?? (known ? last : fallback);
     setMode(next === 'card' && !settings.data?.cardEnabled ? 'cash' : next);
   }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId]);
 
@@ -158,7 +158,7 @@ export function CheckoutScreen() {
       gstContext,
       mixedDiscountReview:cartApi.cart.mixedDiscountReview,
       soldAt,
-      inputMethod: 'manual',
+      inputMethod: cartApi.cart.inputMethod ?? 'manual',
       items: cartApi.cart.lines.map((line) => ({
         gstConfig: line.gstConfig,
         rsp:line.rsp,

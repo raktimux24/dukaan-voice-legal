@@ -150,6 +150,7 @@ export function HomeScreen() {
               {alerts.data?.counts.total ? <span className="shop-alert-count">{alerts.data.counts.total}</span> : null}
             </Link>
             {perms.canEditProducts ? <Button href="/shop/products/new" tone="ghost">{t('products.add', 'Add product')}</Button> : null}
+            <Button href="/shop/voice" tone="ghost">{t('a11y.voice','Voice command')}</Button>
             <Button href="/shop/sell">{t('home.action_new_sale', 'New sale')}</Button>
           </>
         }

@@ -28,6 +28,8 @@ export type CartLine = {
 };
 
 export type Cart = {
+  inputMethod?: 'manual' | 'voice' | 'scan';
+  paymentHint?: 'cash' | 'upi' | 'credit';
   mixedDiscountReview?:import("./types").CreateSalePayload["mixedDiscountReview"];
   buyer?:Buyer;
   lines: CartLine[];
@@ -228,7 +230,7 @@ export function useCart(userId: string | null, shopId: string | null) {
     cart,
     pending,
     update,
-    addProduct(item: InventoryItem, qty = 1): { ok: boolean; capped: boolean; message?: string } {
+    addProduct(item: InventoryItem, qty = 1, inputMethod: 'manual' | 'voice' | 'scan' = 'manual'): { ok: boolean; capped: boolean; message?: string } {
       if (!userId || !shopId) return { ok: false, capped: false };
       const current = readCart(userId, shopId);
       const track = item.product.trackStock !== false;
@@ -263,7 +265,7 @@ export function useCart(userId: string | null, shopId: string | null) {
         packLabel: item.product.packLabel,
       };
       const lines = existing ? current.lines.map((row) => (row.key === existing.key ? line : row)) : [...current.lines, line];
-      update({ ...current, lines });
+      update({ ...current, lines, inputMethod });
       return { ok: true, capped, message: capped ? `Only ${available} ${item.unit} of ${item.product.name} can be added.` : undefined };
     },
     setQuantity(lineKey: string, quantity: number) {
