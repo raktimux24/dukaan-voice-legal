@@ -3,7 +3,9 @@
 import { AuthenticateWithRedirectCallback, useAuth, useClerk } from '@clerk/nextjs';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {clearOfflineShop,createOfflineShopContext,loadOfflineShop,offlineShopRecord,permitsOfflineShopFallback,saveOfflineShop} from '../../lib/shop/offline-shop-context';
 import { setFinancialScope } from '../../lib/shop/gst-storage';
 import { loadBundledLanguage, translateUi } from '../../lib/shop/translations';
 import { bindApi } from '../../lib/shop/api';
@@ -34,7 +36,7 @@ function flattenStrings(value: unknown, prefix = '', out: Record<string, string>
 }
 
 function ShopSession({ children }: { children: ReactNode }) {
-  const { isLoaded, isSignedIn, userId, getToken } = useAuth();
+  const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth();
   const { signOut } = useClerk();
   const pathname = usePathname();
   const router = useRouter();
@@ -42,25 +44,50 @@ function ShopSession({ children }: { children: ReactNode }) {
   const [shopId, setShopId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [offline,setOffline]=useState(false);
+  const activeShop=useRef<string|null>(null);
+  const alive=useRef(true);
+  const refreshVersion=useRef(0);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const [catalog, setCatalog] = useState<{ language: string; entries: Record<string, string> }>({ language: 'en', entries: {} });
 
   const api = useMemo(() => bindApi(async (opts) => getToken(opts)), [getToken]);
 
   const refreshShops = useCallback(async () => {
-    const list = await api.getShops();
-    setShops(list);
-    setShopId((current) => {
-      const stored = userId ? localStorage.getItem(`samaan-active-shop:${userId}`) : null;
+    const version=++refreshVersion.current;
+    setLoadError(null);
+    try {
+      const list = await api.getShops();
+      if(!alive.current||version!==refreshVersion.current)return;
+      let stored:string|null=null;
+      try{stored=userId?localStorage.getItem(`samaan-active-shop:${userId}`):null;}catch{/* Cache is optional. */}
+      const current=activeShop.current;
       const next =
         (current && list.some((shop) => shop.id === current) ? current : null) ??
         list.find((shop) => shop.id === stored)?.id ??
         list.find((shop) => shop.isActive)?.id ??
         list[0]?.id ??
         null;
-      if (userId && next) localStorage.setItem(`samaan-active-shop:${userId}`, next);
-      return next;
-    });
-  }, [api, userId]);
+      setShops(list);setShopId(next);activeShop.current=next;setOffline(false);
+      try{
+        if(userId&&sessionId){
+          const selected=list.find(row=>row.id===next);
+          if(selected){saveOfflineShop(localStorage,createOfflineShopContext(userId,sessionId,selected));localStorage.setItem(`samaan-active-shop:${userId}`,next!);}
+          else clearOfflineShop(localStorage,userId);
+        }
+      }catch{/* Storage denial must not break online routing. */}
+    }catch(error){
+      if(!alive.current||version!==refreshVersion.current)return;
+      let cached=null;
+      try{if(userId&&sessionId&&permitsOfflineShopFallback(error))cached=loadOfflineShop(localStorage,userId,sessionId);}catch{/* No usable cache. */}
+      if(cached){const restored=offlineShopRecord(cached);setShops([restored]);setShopId(restored.id);activeShop.current=restored.id;setOffline(true);return;}
+      // Auth and membership errors never restore stale permissions or routing.
+      setShops(null);setShopId(null);activeShop.current=null;setOffline(false);
+      if(!permitsOfflineShopFallback(error)){try{if(userId)clearOfflineShop(localStorage,userId);}catch{}}
+      setLoadError(error instanceof Error?error.message:'Could not load shops.');
+      throw error;
+    }
+  }, [api, userId,sessionId]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn || !userId) return;
@@ -74,28 +101,37 @@ function ShopSession({ children }: { children: ReactNode }) {
     };
   }, [isLoaded, isSignedIn, userId, refreshShops]);
 
+  useEffect(()=>{
+    if(!isSignedIn)return;
+    const reconnect=()=>{void refreshShops().catch(()=>{});};
+    window.addEventListener('online',reconnect);
+    return()=>window.removeEventListener('online',reconnect);
+  },[isSignedIn,refreshShops]);
+
   const selectShop = useCallback(
     (nextId: string) => {
+      const selected=shops?.find(row=>row.id===nextId);if(!selected)return;
       setShopId(nextId);
-      if (userId) localStorage.setItem(`samaan-active-shop:${userId}`, nextId);
+      activeShop.current=nextId;
+      try{if(userId&&sessionId&&!offline){saveOfflineShop(localStorage,createOfflineShopContext(userId,sessionId,selected));localStorage.setItem(`samaan-active-shop:${userId}`, nextId);}}catch{/* Cache is optional. */}
     },
-    [userId],
+    [userId,sessionId,shops,offline],
   );
 
   const shop = shops?.find((item) => item.id === shopId) ?? null;
   useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
   const role = parseRole(shop?.role);
-  const perms = permissionsFor(role);
+  const perms = permissionsFor(role,offline);
 
   const entitlementQuery = useQuery({
-    queryKey: ['entitlement', shop?.id],
-    enabled: !!shop?.id,
+    queryKey: ['entitlement', userId,shop?.id],
+    enabled: !!shop?.id&&!offline,
     queryFn: () => api.getEntitlement(shop!.id),
   });
 
   const prefsQuery = useQuery({
     queryKey: ['preferences', userId],
-    enabled: !!userId,
+    enabled: !!userId&&!offline,
     queryFn: () => api.getPreferences(),
   });
   const prefs = prefsQuery.data?.preferences ?? null;
@@ -128,12 +164,14 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onRemoved = () => {
+      try{if(userId)clearOfflineShop(localStorage,userId);}catch{}
+      setShops(null);setOffline(false);activeShop.current=null;
       setShopId(null);
-      void refreshShops();
+      void refreshShops().catch(()=>{});
     };
     window.addEventListener('samaan-not-member', onRemoved);
     return () => window.removeEventListener('samaan-not-member', onRemoved);
-  }, [refreshShops]);
+  }, [refreshShops,userId]);
 
   const savePrefs = useCallback(
     async (partial: Partial<UserPreferences>) => {
@@ -168,6 +206,7 @@ function ShopSession({ children }: { children: ReactNode }) {
     notice,
     setNotice,
     hideCost: !perms.canSeeCost,
+    offline,
   };
 
   if (pathname === '/shop/sso-callback') {
@@ -196,7 +235,7 @@ function ShopSession({ children }: { children: ReactNode }) {
       <div className="shop-root grid min-h-screen place-items-center p-6">
         <div className="max-w-md text-center">
           <p role="alert" className="text-danger">{loadError}</p>
-          <button className="mt-4 rounded-lg bg-saffron px-4 py-2 font-semibold text-white" type="button" onClick={() => void refreshShops()}>
+          <button className="mt-4 rounded-lg bg-saffron px-4 py-2 font-semibold text-white" type="button" onClick={() => void refreshShops().catch(()=>{})}>
             {t('common.retry', 'Try again')}
           </button>
         </div>
@@ -212,7 +251,10 @@ function ShopSession({ children }: { children: ReactNode }) {
         data-text={prefs?.textSize || 'medium'}
         data-contrast={prefs?.highContrastMode ? 'high' : 'normal'}
       >
-        <ShopChrome onSignOut={() => void signOut({ redirectUrl: '/' })}>{children}</ShopChrome>
+        <ShopChrome onSignOut={() => {try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void signOut({ redirectUrl: '/' });}}>
+          {offline?<div className="shop-surface shop-card mb-4" role="status"><p>{t('shop.offline_notice','Using saved shop context for billing. Connect and refresh to manage the shop or view reports.')}</p><div className="shop-actions mt-3"><button type="button" className="text-saffron" onClick={()=>void refreshShops().catch(()=>{})}>{t('common.retry','Try again')}</button><Link className="text-saffron" href="/shop/settings/gst/recovery">{t('gst.rsp.saved_recovery','View saved requests')}</Link></div></div>:null}
+          {children}
+        </ShopChrome>
         {notice ? (
           <div className="shop-toast no-print" role="status">
             {t('web.gst.' + notice.toLowerCase().replace(/[^a-z0-9]+/g, '_'), notice)}
@@ -224,6 +266,10 @@ function ShopSession({ children }: { children: ReactNode }) {
 }
 
 export function ShopProviders({ children }: { children: ReactNode }) {
+  const {userId,sessionId}=useAuth();
+  return <ScopedShopProviders key={`${userId??'signed-out'}:${sessionId??'no-session'}`}>{children}</ScopedShopProviders>;
+}
+function ScopedShopProviders({children}:{children:ReactNode}) {
   const [client] = useState(
     () =>
       new QueryClient({
@@ -238,4 +284,3 @@ export function ShopProviders({ children }: { children: ReactNode }) {
     </QueryClientProvider>
   );
 }
-

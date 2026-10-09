@@ -18,19 +18,20 @@ export function parseRole(value: string | null | undefined): Role | null {
   return null;
 }
 
-export function permissionsFor(role: Role | null): Permissions {
+export function permissionsFor(role: Role | null, offline = false): Permissions {
+  if(offline&&role)role='HELPER';
   const owner = role === 'OWNER';
   const manager = role === 'MANAGER';
   const mgmt = owner || manager;
   return {
     role,
     canSell: !!role,
-    canAdjustStock: !!role,
+    canAdjustStock: !!role&&!offline,
     canEditProducts: mgmt,
     canManageCustomers: mgmt,
     canSeeCost: mgmt,
     canSeeReports: mgmt,
-    canVoidOrReturn: mgmt,
+    canVoidOrReturn: mgmt&&!offline,
     canManageStaff: owner,
     canManageShop: owner,
   };
