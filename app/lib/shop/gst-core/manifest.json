@@ -346,5 +346,11 @@
     "source": "server/src/lib/payable-rounding-report.ts",
     "sourceSha256": "d97d407573812733288eb006be53400c826bdc1a7308d7f2a955ee2fcdbd2632",
     "vendoredSha256": "1b561e597d2c5d7ab9f93695e542f324a0b78995ab5b99ba462de0f7a04ddfea"
+  },
+  {
+    "file": "purchase-settlement.ts",
+    "source": "server/src/lib/purchase-settlement.ts",
+    "sourceSha256": "66c70e8009022ecb2081932d560e9fd45f7f93701e7511d3b6f31fc594f74f5d",
+    "vendoredSha256": "c872509adf6b4bd27520fcd5b248f9275be451817810792858bbfa6089a4539b"
   }
 ]

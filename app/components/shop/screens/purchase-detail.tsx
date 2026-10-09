@@ -22,6 +22,7 @@ import { closeUnrecordedPurchase, recoverFinancialRequest } from "../../../lib/s
 import { financialScope, retainedRequests, type RetainedRequest } from "../../../lib/shop/gst-storage";
 import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { formatINR } from "../../../lib/shop/money";
+import { canReversePurchaseSettlement } from "../../../lib/shop/gst-core/purchase-settlement";
 import { validateItcReview } from "../../../lib/shop/gst-core/purchase-gst";
 import type {
   InputTaxReview,
@@ -105,6 +106,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
   );
   const detail = q.data;
   const reversalEntry = detail?.settlements.find((entry) => entry.id === reverseId);
+  const reversalBlocked = !!detail && !!reversalEntry && !canReversePurchaseSettlement(detail.grossAmount, detail.returns.map(entry => entry.grossAmount), detail.settlements, reverseId);
   const duplicateCreditNumber = detail?.returns.some((entry) => entry.supplierCreditNumber === creditNumber) ?? false;
   const documentConflict = "This supplier document number has already been recorded. Review the existing document before creating another entry.";
   async function mutate(
@@ -116,6 +118,10 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
           (!detail?.settlements.some((entry) => entry.id === input.settlementId && !entry.reversesId) ||
            detail.settlements.some((entry) => entry.reversesId === input.settlementId))) {
         throw Error(text("The original entry is unavailable. Refresh this invoice. A saved correction can still be retried."));
+      }
+      if (operation === "reversal" && "settlementId" in input && detail &&
+          !canReversePurchaseSettlement(detail.grossAmount, detail.returns.map(entry => entry.grossAmount), detail.settlements, input.settlementId)) {
+        throw Error(t("gst.error.purchase_settlement_reconciliation_required", EN_FALLBACK["gst.error.purchase_settlement_reconciliation_required"]));
       }
       const at =
         "occurredAt" in input
@@ -632,10 +638,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     <Card className="stack-form">
                       <p>{text("Use only to correct an incorrectly recorded payment or refund. The original entry is retained. This does not transfer money or change tax. Add a reason and evidence; correct dependent refund entries before reversing their payment.")}</p>
                       <p>{formatINR(Number(reversalEntry.amount))} · {date(reversalEntry.occurredAt)} · {reversalEntry.evidenceReference}</p>
+                      {reversalBlocked ? <p role="alert" className="text-amber-400">{t("gst.error.purchase_settlement_reconciliation_required", EN_FALLBACK["gst.error.purchase_settlement_reconciliation_required"])}</p> : null}
                       <FiscalDateTimeField label={text("Payment date and time")} value={reverseDate} onChange={setReverseDate} />
                       <TextField label={text("Reason")} value={reverseNote} onChange={setReverseNote} />
                       <TextField label={text("Evidence reference")} value={reverseReference} onChange={setReverseReference} />
-                      <Button disabled={action.busy || !reverseNote.trim() || !reverseReference.trim()} onClick={() => void action.run(() => mutate("reversal", {
+                      <Button disabled={action.busy || reversalBlocked || !reverseNote.trim() || !reverseReference.trim()} onClick={() => void action.run(() => mutate("reversal", {
                         clientId: crypto.randomUUID(), settlementId: reversalEntry.id,
                         occurredAt: reverseDate, evidenceReference: reverseReference, note: reverseNote,
                       }))}>{text("Confirm entry reversal")}</Button>

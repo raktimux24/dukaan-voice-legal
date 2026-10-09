@@ -44,6 +44,7 @@ try {
     "app/lib/shop/rsp-cart-entry.ts",
     "app/lib/shop/gst-print.ts",
     "app/lib/shop/gst-document.ts",
+    "app/lib/shop/gst-core/purchase-settlement.ts",
     "app/lib/shop/gst-core/product-gross-price.ts",
     "app/lib/shop/gst-core/report-period.ts",
   ]);
@@ -57,6 +58,7 @@ try {
     ...process.env,
     GST_TEST_BUILD: join(folder,"shop"),
   });
+  run(resolve("tests/purchase-reversal.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/purchase-request-closure.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/gst-monitor-view.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
