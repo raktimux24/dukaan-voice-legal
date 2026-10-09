@@ -3,13 +3,15 @@ import {createRequire} from 'node:module';
 import {webcrypto,randomUUID} from 'node:crypto';
 import {indexedDB} from 'fake-indexeddb';
 globalThis.crypto??=webcrypto;globalThis.indexedDB=indexedDB;
-Object.defineProperty(globalThis,'navigator',{value:{locks:{request:async(_key,fn)=>fn()}},configurable:true});
+const locks=new Map();
+Object.defineProperty(globalThis,'navigator',{value:{locks:{request:async(key,fn)=>{const previous=locks.get(key)??Promise.resolve();let release;const next=new Promise(resolve=>release=resolve);locks.set(key,next);await previous;try{return await fn();}finally{release();}}}},configurable:true});
 const require=createRequire(import.meta.url),root=process.env.GST_TEST_BUILD;
 const {buildLocalFiscalReceipt,verifyLocalFiscalReceipt}=require(root+'/local-fiscal-receipt.js');
 const {documentView}=require(root+'/gst-document-view.js');
 const {quoteRoundedReservation}=require(root+'/rounded-reservation.js');
 const {prepareOfflineInvoices}=require(root+'/invoice-preparation.js');
-const {issueSale}=require(root+'/gst-issuance.js');
+const {projectLocalStock,assertSaleStock}=require(root+'/local-stock.js');
+const {issueSale,syncQueuedSales}=require(root+'/gst-issuance.js');
 const {financialYear}=require(root+'/gst-core/gst.js');
 const {canonicalSaleRequest}=require(root+'/gst-core/sale-request-canonical.js');
 const storage=require(root+'/gst-storage.js');
@@ -55,7 +57,8 @@ storage.setFinancialScope(scope);
 let settingsReads=0,provisions=0,sent;
 const currentYear=financialYear(new Date()),allocationExpiry=new Date(Date.UTC(Number(currentYear.slice(0,4))+1,3,1)).toISOString();
 const draft={...composition,clientId:randomUUID(),gstContext:{settings:composition.gstContext.settings,priceMode:'exclusive',placeOfSupply:'29'},soldAt:new Date().toISOString()};
-const api={gst:{provision:async(_shop,input)=>{provisions++;return {id:randomUUID(),issuer:settings.gstin,financialYear:currentYear,block:1,deviceEpoch:input.deviceEpoch,expiresAt:allocationExpiry};}},getPosSettings:async()=>{settingsReads++;return {gstAvailable:true,gstSettings:composition.gstContext.settings};},createSale:async(_shop,payload)=>{sent=payload;throw new TypeError('Failed to fetch');}};
+const stockBaseline={format:'billing_catalog_v2',items:[{id:randomUUID(),shopId:scope.shopId,productId:draft.items[0].productId,unit:'piece',quantity:2,stockStatus:'OK',product:{id:draft.items[0].productId,shopId:scope.shopId,name:'Pen',unit:'piece',trackStock:true,minStockLevel:1}}],accountedRequestIds:[]};
+const api={getAllInventory:async()=>projectLocalStock(stockBaseline,await storage.retainedRequests(scope),scope),gst:{provision:async(_shop,input)=>{provisions++;return {id:randomUUID(),issuer:settings.gstin,financialYear:currentYear,block:1,deviceEpoch:input.deviceEpoch,expiresAt:allocationExpiry};}},getPosSettings:async()=>{settingsReads++;return {gstAvailable:true,gstSettings:composition.gstContext.settings};},createSale:async(_shop,payload)=>{sent=payload;throw new TypeError('Failed to fetch');}};
 await prepareOfflineInvoices(api,scope.shopId);
 await prepareOfflineInvoices(api,scope.shopId);
 assert.equal(provisions,1);assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,1);
@@ -66,12 +69,58 @@ const saved=(await storage.retainedRequests(scope)).find(r=>r.id===draft.clientI
 const local=await verifyLocalFiscalReceipt(saved,scope);
 const state=await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`);
 assert.equal(state.next,2);assert.equal(local.document.number,`${currentYear.slice(2,4)}-1-001`);
+// Two simultaneous new bills contend for the one remaining unit; only one may reserve a number.
+const nextDraft={...draft,clientId:randomUUID()},tooMany={...draft,clientId:randomUUID()};
+const raced=await Promise.allSettled([issueSale(api,scope.shopId,nextDraft),issueSale(api,scope.shopId,tooMany)]);
+assert.match(raced[0].reason.message,/Failed to fetch/);assert.match(raced[1].reason.message,/Stock changed/);
+assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,3);
+assert.equal((await api.getAllInventory())[0].quantity,0);
+assert.equal((await storage.retainedRequests(scope)).some(row=>row.id===tooMany.clientId),false);
+// The durable transaction also rejects a stale number even if a caller loses its lock.
+const counterKey=`allocation:${scope.actorId}:${scope.shopId}`,counterBefore=await storage.readState(counterKey);
+await assert.rejects(storage.reserveSale(counterKey,{...counterBefore,next:2},{...saved,id:randomUUID()}),/reserve/);
+await storage.reserveSale(counterKey,{...counterBefore,next:2},saved);
+assert.equal((await storage.readState(counterKey)).next,3);
 api.createSale=async(_shop,payload)=>({sale:{id:randomUUID(),shopId:scope.shopId,soldBy:scope.actorId,clientId:payload.clientId,requestHash:await storage.sha256(canonicalSaleRequest({...payload,userId:scope.actorId})),gstIntegrity:'verified',gstSnapshot:{invoiceNumber:payload.gstContext.allocation.number,context:payload.gstContext}},deduplicated:true});
 await issueSale(api,scope.shopId,{...draft,note:'Do not replace original'});
-assert.equal(settingsReads,3);assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,2);
+assert.equal(settingsReads,4);assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,3);
 const confirmed=(await storage.retainedRequests(scope)).find(r=>r.id===draft.clientId);
 assert.equal(confirmed.state,'confirmed');assert.deepEqual((await verifyLocalFiscalReceipt(confirmed,scope)).document,local.document);
+let syncCalls=0;
+const originalCreate=api.createSale;api.createSale=async(...args)=>{syncCalls++;return originalCreate(...args);};
+assert.equal(await syncQueuedSales(api,scope.shopId,()=>false),0);assert.equal(syncCalls,0);
+assert.equal(await syncQueuedSales(api,scope.shopId),1);assert.equal(syncCalls,1);
+assert.equal(await syncQueuedSales(api,scope.shopId),0);
+assert.equal((await storage.readState(`allocation:${scope.actorId}:${scope.shopId}`)).next,3);
+// Confirmation alone must not restore stock in an older retained catalog.
+assert.equal((await api.getAllInventory())[0].quantity,0);
+const updatedBaseline={...stockBaseline,items:[{...stockBaseline.items[0],quantity:1}],accountedRequestIds:[draft.clientId]};
+assert.equal((await projectLocalStock(updatedBaseline,await storage.retainedRequests(scope),scope))[0].quantity,0);
+const unlimited={...stockBaseline,items:[{...stockBaseline.items[0],quantity:0,product:{...stockBaseline.items[0].product,trackStock:false}}]};
+assertSaleStock([{...draft.items[0],quantity:99}],unlimited.items);
+assert.throws(()=>assertSaleStock([{...draft.items[0],quantity:1},{...draft.items[0],quantity:2}],stockBaseline.items),/Stock changed/);
 console.log('Local receipt: tax/composition/rounding, exact request binding, scope/tamper rejection, atomic lost-response retention and immutable replay passed.');
+
+// Exercise the real read-through API: a cached stock baseline must not resurrect a confirmed local sale.
+process.env.NEXT_PUBLIC_API_BASE_URL='https://api.example.test';
+const {bindApi}=require(root+'/api.js'),originalFetch=globalThis.fetch;
+try{
+ const catalogApi=bindApi(async()=> 'token',{actorId:scope.actorId,sessionId:'stock-test',isCurrent:()=>true,isSessionCurrent:()=>true});
+ globalThis.fetch=async()=>Response.json({items:[{...stockBaseline.items[0],quantity:3}],hasMore:false});
+ assert.equal((await catalogApi.getAllInventory(scope.shopId,true,false,true))[0].quantity,3);
+ const extra=structuredClone(sent);extra.clientId=randomUUID();extra.gstContext.allocation.index=3;extra.gstContext.allocation.number=`${currentYear.slice(2,4)}-1-003`;
+ const extraReceipt=await buildLocalFiscalReceipt(scope,extra);
+ await storage.retainRequest({...scope,id:extra.clientId,path:`/api/shops/${scope.shopId}/sales`,payload:extra,createdAt:extra.soldAt,state:'pending',verification:{localFiscalReceipt:extraReceipt}});
+ globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
+ assert.equal((await catalogApi.getAllInventory(scope.shopId,true,false,true))[0].quantity,2);
+ await storage.requestStatus(extra.clientId,{state:'confirmed'});
+ assert.equal((await catalogApi.getAllInventory(scope.shopId,true,false,true))[0].quantity,2);
+ globalThis.fetch=async()=>Response.json({items:[{...stockBaseline.items[0],quantity:2}],hasMore:false});
+ assert.equal((await catalogApi.getAllInventory(scope.shopId,true,false,true))[0].quantity,2);
+ globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
+ assert.equal((await catalogApi.getAllInventory(scope.shopId,true,false,true))[0].quantity,2);
+}finally{globalThis.fetch=originalFetch;}
+console.log('Queued stock: concurrent last-unit reservation, stale-cache confirmation, fresh baseline and reconnect replay passed.');
 
 // Rounding preparation retains the original grant request after a lost response, without consuming a number.
 const warmScope={actorId:'prepared-actor',shopId:randomUUID()};storage.setFinancialScope(warmScope);

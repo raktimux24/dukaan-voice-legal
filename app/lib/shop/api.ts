@@ -1,3 +1,5 @@
+import {accountedSales,projectLocalStock,type BillingCatalog} from './local-stock';
+import {retainedRequests} from './gst-storage';
 import type { VoiceProcessResponse, VoiceConfirmRequest, VoiceConfirmResponse } from './voice-types';
 import { collectPages } from './pagination';
 import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
@@ -322,9 +324,27 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       );
       return { items: (res.items ?? []).map((item) => mapItem(item, hideCost)), total: res.total, hasMore: res.hasMore };
     },
-    getAllInventory: async (shopId: string, hideCost = false, coherentTax = false) => {
+    getAllInventory: async (shopId: string, hideCost = false, coherentTax = false, requireJournal = false) => {
       // Retained billing catalogs exclude purchase costs, even when the online owner view includes them.
-      const all=evidence?await evidence.read(shopId,'catalog',()=>readCatalog(shopId,hideCost),validCatalog(shopId),rows=>rows.map(row=>({...row,product:{...row.product,purchasePrice:undefined}}))):await readCatalog(shopId,hideCost);
+      let all:InventoryItem[];
+      if(evidence&&evidenceScope){
+        const scope={actorId:evidenceScope.actorId,shopId};let online=false;
+        const load=async():Promise<BillingCatalog>=>{
+          let accountedRequestIds:string[]=[];
+          try{accountedRequestIds=accountedSales(await retainedRequests(scope),scope);}catch(error){if(requireJournal)throw error;/* Storage refusal must not break a connected catalog read. */}
+          const items=await readCatalog(shopId,hideCost);online=true;
+          return {format:'billing_catalog_v2',items,accountedRequestIds};
+        };
+        const validate=(value:unknown):value is BillingCatalog=>{
+          const row=value as BillingCatalog;
+          return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
+        };
+        const snapshot=await evidence.read(shopId,'catalog-v2',load,validate,row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
+        let rows:Awaited<ReturnType<typeof retainedRequests>>;
+        try{rows=await retainedRequests(scope);}catch(error){if(!online||requireJournal)throw error;rows=[];}
+        all=await projectLocalStock(snapshot,rows,scope);
+        if(!evidenceScope.isCurrent(shopId))throw Error('offline_evidence_scope_changed');
+      }else all=await readCatalog(shopId,hideCost);
       if(coherentTax){const snapshot=await readTax(shopId,all.map(item=>item.product.id),true);return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
     },

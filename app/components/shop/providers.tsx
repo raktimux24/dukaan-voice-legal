@@ -1,12 +1,13 @@
 'use client';
 
 import { AuthenticateWithRedirectCallback, useAuth, useClerk } from '@clerk/nextjs';
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {clearOfflineShop,createOfflineShopContext,loadOfflineShop,offlineShopRecord,permitsOfflineShopFallback,saveOfflineShop} from '../../lib/shop/offline-shop-context';
 import {premiumAt,premiumDeadline} from '../../lib/shop/offline-premium';
+import {syncQueuedSales} from '../../lib/shop/gst-issuance';
 import { setFinancialScope } from '../../lib/shop/gst-storage';
 import { loadBundledLanguage, translateUi } from '../../lib/shop/translations';
 import { bindApi } from '../../lib/shop/api';
@@ -41,6 +42,7 @@ function ShopSession({ children }: { children: ReactNode }) {
   const { signOut } = useClerk();
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient=useQueryClient();
   const [shops, setShops] = useState<ShopRecord[] | null>(null);
   const [shopId, setShopId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -122,6 +124,19 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   const shop = shops?.find((item) => item.id === shopId) ?? null;
   useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
+  useEffect(()=>{
+    if(!shop||!userId||offline||navigator.onLine===false)return;
+    let canceled=false,running=false;
+    const retry=()=>{
+      if(canceled||running||navigator.onLine===false)return;
+      running=true;
+      void syncQueuedSales(api,shop.id,()=>!canceled&&alive.current&&activeShop.current===shop.id).then(count=>{
+        if(count&&!canceled)void queryClient.invalidateQueries();
+      }).catch(()=>{/* Original bills and their errors remain available in device recovery. */}).finally(()=>{running=false;});
+    };
+    retry();const timer=window.setInterval(retry,30000);
+    return()=>{canceled=true;window.clearInterval(timer);};
+  },[api,shop?.id,userId,offline,queryClient]);
   const role = parseRole(shop?.role);
   const perms = permissionsFor(role,offline);
 

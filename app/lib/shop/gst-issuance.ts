@@ -1,3 +1,4 @@
+import {assertSaleStock} from './local-stock';
 import {ensureInvoiceAllocation,ensureRoundingGrant} from './invoice-preparation';
 import {buildLocalFiscalReceipt,verifyLocalFiscalReceipt} from './local-fiscal-receipt';
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from './gst-core/gst-tax-cache';
@@ -49,15 +50,13 @@ export async function issueSale(
     // The original request survives response loss and browser restart.
     const journal = await retainedRequests(active);
     const saved = journal.find((r) => r.id === body.clientId);
-    if (
-      !saved &&
-      journal.some(
-        (r) => r.state === "pending" && r.path === `/api/shops/${shopId}/sales`,
-      )
-    )
-      throw Error(
-        "A previous bill needs recovery. Open GST recovery before starting another bill.",
-      );
+    if(!saved){
+      const pending=journal.filter(row=>row.state==='pending'&&row.path===`/api/shops/${shopId}/sales`);
+      for(const row of pending){
+        if(!row.verification?.localFiscalReceipt||!body.gstContext||!['regular','composition'].includes(body.gstContext.settings.registration))throw Error('A previous bill needs recovery. Open GST recovery before starting another bill.');
+        await verifyLocalFiscalReceipt(row,active);assertScope(active);
+      }
+    }
     if(saved?.verification?.localFiscalReceipt){await verifyLocalFiscalReceipt(saved,active);assertScope(active);}
     let payload = saved
       ? (structuredClone(saved.payload) as CreateSalePayload)
@@ -70,6 +69,9 @@ export async function issueSale(
       )
     ) {
       const context = payload.gstContext;
+      const stock=await api.getAllInventory(shopId,true,false,true);assertScope(active);
+      assertSaleStock(payload.items,stock);
+
       let {allocation,deviceEpoch}=await ensureInvoiceAllocation(api,active,context.settings);
       let taxLines:Parameters<typeof assertCartTaxSnapshots>[0]["lines"]|undefined;
       // Validate fresh server timelines before reserving a number. Never silently substitute tax rates.
@@ -233,4 +235,20 @@ export async function recoverReservedSales(
       state: "pending",
     });
   }
+}
+
+/** Reconnect only replays already-issued original bills; it never creates or edits a request. */
+export async function syncQueuedSales(api:ShopApi,shopId:string,isCurrent:()=>boolean=()=>true) {
+ const active=financialScope(shopId);
+ const rows=(await retainedRequests(active)).filter(row=>row.state==='pending'&&row.path===`/api/shops/${shopId}/sales`).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||((a.payload as CreateSalePayload).gstContext?.allocation?.index??0)-((b.payload as CreateSalePayload).gstContext?.allocation?.index??0));
+ let confirmed=0;
+ for(const row of rows){
+  if(!isCurrent())break;
+  assertScope(active);
+  if(!row.verification?.localFiscalReceipt)break; // Unissued or uncertain legacy requests require manual review.
+  await verifyLocalFiscalReceipt(row,active);assertScope(active);
+  await issueSale(api,shopId,row.payload as CreateSalePayload);
+  assertScope(active);confirmed++;
+ }
+ return confirmed;
 }
