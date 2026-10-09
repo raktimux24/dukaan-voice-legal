@@ -4,6 +4,7 @@ import { ProductFormScreen } from "./product-form";
 import { purchaseReviewSignature } from "../../../lib/shop/gst-core/purchase-review-draft";
 import {
   purchaseDraftTax,
+  purchaseDraftHasPrice,
   purchaseLineForRequest,
   type PurchaseDraftLine,
 } from "../../../lib/shop/purchase-draft";
@@ -153,6 +154,8 @@ export function PurchaseNewScreen() {
   let totals: ReturnType<typeof purchaseTotals> | undefined,
     validation: unknown;
   try {
+    if (lines.some((line) => !purchaseDraftHasPrice(line)))
+      throw Error(text(EN_FALLBACK["purchase.required"]));
     if (lines.some((l) => l.stockMode === "link" && !l.existingBatchId))
       throw Error(text("Select a batch for each linked stock item."));
     if (supplier)
@@ -362,6 +365,10 @@ export function PurchaseNewScreen() {
                       productId: id,
                       quantity: 1,
                       price: row.product.purchasePrice ?? 0,
+                      priceText:
+                        row.product.purchasePrice == null
+                          ? ""
+                          : String(row.product.purchasePrice),
                       discount: 0,
                       tax: {
                         ...(row.product.gstConfig ?? emptyTax()),
@@ -402,8 +409,10 @@ export function PurchaseNewScreen() {
                   <TextField
                     label={text("Buying price (₹)")}
                     type="number"
-                    value={String(line.price)}
-                    onChange={(v) => updateLine(line.key, { price: Number(v) })}
+                    value={line.priceText ?? String(line.price)}
+                    onChange={(v) =>
+                      updateLine(line.key, { price: Number(v), priceText: v })
+                    }
                   />
                   <TextField
                     label={text("Line discount (₹)")}
@@ -538,6 +547,8 @@ export function PurchaseNewScreen() {
                     ),
                   );
                 if (!declared.trim())
+                  throw Error(text(EN_FALLBACK["purchase.required"]));
+                if (lines.some((line) => !purchaseDraftHasPrice(line)))
                   throw Error(text(EN_FALLBACK["purchase.required"]));
                 purchaseTotals(request, supplier!.identity);
               }

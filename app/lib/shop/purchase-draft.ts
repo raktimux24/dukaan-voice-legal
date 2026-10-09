@@ -6,16 +6,21 @@ export type PurchaseDraftLine = PurchaseLineInput & {
   key: string;
   name: string;
   trackStock: boolean;
+  priceText?: string;
   taxReviewContext?: string;
   stockMode: "invoice_only" | "receive" | "link";
 };
+
+export function purchaseDraftHasPrice(line: PurchaseDraftLine): boolean {
+  return (line.priceText ?? String(line.price)).trim() !== "";
+}
 
 export function purchaseDraftTax(line: PurchaseDraftLine, context: string) {
   return purchaseLineTaxForContext(
     {
       ...line,
       quantity: String(line.quantity),
-      price: String(line.price),
+      price: line.priceText ?? String(line.price),
       discount: String(line.discount ?? 0),
     },
     context,
@@ -33,7 +38,9 @@ export function purchaseLineForRequest(
       line.existingBatchId)
   )
     throw new GstError("service_stock_receipt_not_allowed");
-  const { key, name, trackStock, stockMode, taxReviewContext, ...input } = line;
+  const {
+    key, name, trackStock, stockMode, taxReviewContext, priceText, ...input
+  } = line;
   return {
     ...input,
     tax: {
