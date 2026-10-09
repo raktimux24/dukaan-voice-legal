@@ -1,5 +1,9 @@
 "use client";
-import {hasLocalIssuedReceipt} from '../../../lib/shop/local-issued-receipt';
+import {
+  gstMonitorView,
+  CORE_MONITOR_KINDS,
+} from "../../../lib/shop/gst-monitor-view";
+import { hasLocalIssuedReceipt } from "../../../lib/shop/local-issued-receipt";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -106,7 +110,15 @@ export function GstRecordsScreen() {
               "GST record checks",
               "Find saved records that need attention.",
             ],
-            ...(settings.data?.gstPayableRoundingReviewsAvailable ? [[base + "/rounding", "Payable rounding review", "Review rounding policy and retained evidence."]] : []),
+            ...(settings.data?.gstPayableRoundingReviewsAvailable
+              ? [
+                  [
+                    base + "/rounding",
+                    "Payable rounding review",
+                    "Review rounding policy and retained evidence.",
+                  ],
+                ]
+              : []),
             [
               base + "/exports",
               "GST export history",
@@ -116,7 +128,9 @@ export function GstRecordsScreen() {
             <Link key={href} href={href} className="shop-list-row">
               <span>
                 <b className="shop-list-title">{text(title)}</b>
-                <small className="shop-list-meta block">{text(description)}</small>
+                <small className="shop-list-meta block">
+                  {text(description)}
+                </small>
               </span>
               <span aria-hidden="true">›</span>
             </Link>
@@ -126,7 +140,9 @@ export function GstRecordsScreen() {
           <GstDevicesScreen embedded />
         </Section>
         <Section title={text("GST provider status")}>
-          <Button href={base + "/providers"} tone="ghost">{text("GST provider status")}</Button>
+          <Button href={base + "/providers"} tone="ghost">
+            {text("GST provider status")}
+          </Button>
         </Section>
         <Button
           tone="ghost"
@@ -178,29 +194,48 @@ const messages: Record<string, [string, string, string]> = {
   ],
 };
 export function GstChecksScreen() {
-  const { api, shop } = useShop(),
+  const { api, shop, offline, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     router = useRouter();
-  const q = useGstQuery(["checks"], () => api.gst.monitor(shop!.id)),
+  const [issueLimit, setIssueLimit] = useState(100);
+  const [supportNotice, setSupportNotice] = useState("");
+  const q = useGstQuery(
+      ["checks", issueLimit],
+      () => api.gst.monitor(shop!.id, issueLimit),
+      true,
+      "always",
+    ),
     action = useGstAction();
   const report = q.data,
-    issues = report?.issues.filter((i) => i.status === "open") ?? [];
-  const last = report?.lastSuccessfulRun;
-  const partial =
-    report?.truncated || report?.issueTruncated || report?.historyTruncated;
+    issues =
+      report?.issues.filter(
+        (i) => i.status === "open" && CORE_MONITOR_KINDS.has(i.kind),
+      ) ?? [];
+  const last =
+    report?.lastSuccessfulRun ??
+    report?.runs.find((run) => run.status === "completed");
+  const partial = report?.issueTruncated ?? report?.truncated;
   const failed = report?.runs[0]?.status === "failed";
-  const status = q.error
-    ? "Could not load record checks"
-    : !last
-      ? "No completed check yet"
-      : failed
-        ? "Saved results may be out of date"
-        : issues.length
-          ? "Some records need attention"
-          : partial
-            ? "More results need review"
-            : "Last completed check";
+  const view = gstMonitorView({
+    hasData: !!report,
+    pending: q.isPending,
+    fetchStatus: offline ? "paused" : q.fetchStatus,
+    error: !!q.error || !!failed,
+    completed: !!last,
+    truncated: !!partial,
+    issueCount: issues.length,
+  });
+  const status = {
+    loading: "Loading saved checks…",
+    offline: "Waiting for a connection",
+    unavailable: "Checks unavailable",
+    stale: "Saved results may be out of date",
+    never_checked: "No completed check yet",
+    attention: "Some records need attention",
+    partial: "More results need review",
+    checked: "Last completed check",
+  }[view];
   return (
     <GstAccess>
       <div className="shop-page">
@@ -211,33 +246,52 @@ export function GstChecksScreen() {
             "Checks saved bill integrity and incomplete product tax setup. Reports are for filing elsewhere.",
           )}
         />
-        <ReadState query={q}>
-          <Card>
-            <h2 className="shop-section-title">{text(status)}</h2>
-            <p className="shop-hint">
-              {last
-                ? date(last.createdAt)
-                : text("Run a check to assess the saved records.")}
+        <Notice error={q.error} />
+        <Card>
+          <h2 className="shop-section-title">{text(status)}</h2>
+          <p className="shop-hint">
+            {last
+              ? `${date(last.createdAt)} · ${t("gst.monitor_checked_count", "Checked {{count}} saved documents.", { count: last.scannedDocuments })}`
+              : text("Run a check to assess the saved records.")}
+          </p>
+          {failed ? (
+            <p role="status">
+              {text(
+                "The latest check failed. Results below are from earlier checks.",
+              )}
             </p>
-            {report?.enabled === false ? (
-              <p>{text("Checks are unavailable on this server.")}</p>
-            ) : null}
-            {partial ? (
-              <p role="status">
-                {text(
-                  "Results are partial. An empty list does not mean all records passed.",
-                )}
-              </p>
-            ) : null}
-          </Card>
-        </ReadState>
+          ) : null}
+          <p className="shop-hint">
+            {text(
+              "Results reflect the time of the check, not legal or filing approval.",
+            )}
+          </p>
+          {report?.enabled === false ? (
+            <p>{text("Checks are unavailable on this server.")}</p>
+          ) : null}
+          {partial ? (
+            <p role="status">
+              {text(
+                "Results are partial. An empty list does not mean all records passed.",
+              )}
+            </p>
+          ) : null}
+        </Card>
         {action.notice}
         <div className="shop-actions">
           <Button
-            disabled={action.busy || !q.isSuccess || report?.enabled === false}
+            disabled={
+              action.busy ||
+              q.isFetching ||
+              !q.isSuccess ||
+              offline ||
+              report?.enabled === false
+            }
             onClick={() =>
               void action.run(async () => {
-                const result = await api.gst.runChecks(shop!.id);
+                const scope = financialScope(shop!.id);
+                const result = await api.gst.runChecks(scope.shopId);
+                assertScope(scope);
                 if (result.skipped)
                   throw Error(
                     text(
@@ -250,10 +304,30 @@ export function GstChecksScreen() {
           >
             {text(action.busy ? "Checking records" : "Check records")}
           </Button>
-          <Button tone="ghost" onClick={() => void q.refetch()}>
+          <Button
+            tone="ghost"
+            disabled={q.isFetching || action.busy}
+            onClick={() => void q.refetch()}
+          >
             {text("Refresh saved results")}
           </Button>
         </div>
+        {report && !issues.length ? (
+          <Card>
+            <h2 className="shop-section-title">{text("Current results")}</h2>
+            <p>
+              {text(
+                view === "checked"
+                  ? "No billing issues were found in the last completed check."
+                  : view === "partial"
+                    ? "Load the remaining results before drawing a conclusion."
+                    : view === "stale"
+                      ? "Refresh to confirm the current result."
+                      : "A completed current result has not been confirmed.",
+              )}
+            </p>
+          </Card>
+        ) : null}
         {issues.map((issue) => {
           const message = messages[issue.kind] ?? [
             "Saved records need review",
@@ -283,6 +357,7 @@ export function GstChecksScreen() {
                 tone="quiet"
                 onClick={() =>
                   void action.run(async () => {
+                    const scope = financialScope(shop!.id);
                     if (issue.document) {
                       router.push("/shop/sales/" + issue.document.saleId);
                       return;
@@ -291,6 +366,7 @@ export function GstChecksScreen() {
                       const target = await api.gst.get<{ saleId: string }>(
                         `/api/shops/${shop!.id}/gst-exports/documents/${issue.details.documentId}`,
                       );
+                      assertScope(scope);
                       router.push("/shop/sales/" + target.saleId);
                       return;
                     }
@@ -311,20 +387,72 @@ export function GstChecksScreen() {
             </Card>
           );
         })}
+        {report?.issueTruncated && issueLimit < 10000 ? (
+          <Button
+            tone="ghost"
+            disabled={q.isFetching || action.busy || offline}
+            onClick={() =>
+              setIssueLimit((limit) => Math.min(10000, limit + 100))
+            }
+          >
+            {text("Load more observations")}
+          </Button>
+        ) : null}
         <Section title={text("Previous results")}>
-          <ReadState query={q}>
-            {report?.runs.map((run) => (
-              <div className="gst-row" key={run.id}>
-                <span>{date(run.createdAt)}</span>
-                <Pill tone={run.status === "completed" ? "ok" : "warn"}>
-                  {text(run.status === "completed" ? "Completed" : "Failed")}
-                </Pill>
-                <span>
-                  {run.scannedDocuments} {text("documents")}
-                </span>
-              </div>
-            ))}
-          </ReadState>
+          {report?.runs.map((run) => (
+            <div className="gst-row" key={run.id}>
+              <span>{date(run.createdAt)}</span>
+              <Pill tone={run.status === "completed" ? "ok" : "warn"}>
+                {text(run.status === "completed" ? "Completed" : "Failed")}
+              </Pill>
+              <span>
+                {run.scannedDocuments} {text("documents")}
+              </span>
+            </div>
+          ))}
+          {report?.historyTruncated ? (
+            <p className="shop-hint">
+              {text(
+                "More results may be available. This page does not show every observation yet.",
+              )}
+            </p>
+          ) : null}
+          {report ? (
+            <Button
+              tone="ghost"
+              onClick={async () => {
+                const scope = financialScope(shop!.id);
+                try {
+                  assertScope(scope);
+                  await navigator.clipboard.writeText(
+                    JSON.stringify({ shopId: scope.shopId, report }, null, 2),
+                  );
+                  assertScope(scope);
+                  setSupportNotice(
+                    text(
+                      "Support details copied. Share them only with your support contact.",
+                    ),
+                  );
+                } catch {
+                  try {
+                    assertScope(scope);
+                    setSupportNotice(
+                      text("Could not copy support details. Try again."),
+                    );
+                  } catch {
+                    /* Account changed; leave the current view untouched. */
+                  }
+                }
+              }}
+            >
+              {text("Copy details for support")}
+            </Button>
+          ) : null}
+          {supportNotice ? (
+            <p role="status" className="shop-hint">
+              {supportNotice}
+            </p>
+          ) : null}
         </Section>
       </div>
     </GstAccess>
@@ -402,7 +530,9 @@ export function GstNumbersScreen() {
     </GstAccess>
   );
 }
-export function GstDevicesScreen({ embedded = false }: { embedded?: boolean } = {}) {
+export function GstDevicesScreen({
+  embedded = false,
+}: { embedded?: boolean } = {}) {
   const { api, shop, role } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
@@ -415,13 +545,15 @@ export function GstDevicesScreen({ embedded = false }: { embedded?: boolean } = 
   return (
     <GstAccess>
       <div className={embedded ? "grid gap-4" : "shop-page"}>
-        {!embedded ? <PageHeader
-          title={text("Billing installations")}
-          back={{ href: base, label: text("GST records") }}
-          description={text(
-            "An installation identifies a browser’s billing storage. Last seen does not confirm that every bill has synchronized.",
-          )}
-        /> : null}
+        {!embedded ? (
+          <PageHeader
+            title={text("Billing installations")}
+            back={{ href: base, label: text("GST records") }}
+            description={text(
+              "An installation identifies a browser’s billing storage. Last seen does not confirm that every bill has synchronized.",
+            )}
+          />
+        ) : null}
         {action.notice}
         <ReadState query={q} empty={!rows.length}>
           {rows.map((row) => (
@@ -472,19 +604,24 @@ export function GstDevicesScreen({ embedded = false }: { embedded?: boolean } = 
   );
 }
 export function GstRecoveryScreen() {
-  const { api, shop, userId,offline } = useShop(),
+  const { api, shop, userId, offline } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
   const [closureReason, setClosureReason] = useState(""),
     settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
-    q = useGstQuery(["recovery"], async () => {
-      const scope = financialScope(shop!.id);
-      await recoverReservedSales(scope, true);
-      const rows = await retainedRequests(scope);
-      assertScope(scope);
-      return rows;
-    },true,'always');
+    q = useGstQuery(
+      ["recovery"],
+      async () => {
+        const scope = financialScope(shop!.id);
+        await recoverReservedSales(scope, true);
+        const rows = await retainedRequests(scope);
+        assertScope(scope);
+        return rows;
+      },
+      true,
+      "always",
+    );
   async function retry(row: RetainedRequest) {
     await recoverFinancialRequest(api, shop!.id, row);
   }
@@ -513,10 +650,14 @@ export function GstRecoveryScreen() {
             <p className="shop-hint">
               {text("Original request")} {row.id}
             </p>
-            {hasLocalIssuedReceipt(row)?<Button href={`/shop/settings/gst/recovery/${row.id}`}>{text('Review saved bill')}</Button>:null}
+            {hasLocalIssuedReceipt(row) ? (
+              <Button href={`/shop/settings/gst/recovery/${row.id}`}>
+                {text("Review saved bill")}
+              </Button>
+            ) : null}
             {row.state === "pending" ? (
               <Button
-                disabled={action.busy||offline}
+                disabled={action.busy || offline}
                 onClick={() =>
                   void action.run(async () => {
                     await retry(row);
