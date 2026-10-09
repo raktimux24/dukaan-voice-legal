@@ -417,3 +417,12 @@ PR69 production 6ac94faf4c742b000812998d published 2026-10-09T20:35:41.670Z, mai
 
 
 PR70 production deploy 6ac950a6a2618e0007b5eb1b published 2026-10-09T20:39:43.816Z, main aebc3fa. Live unsaved WQA-HANDOFF-1010 retained Krishna Enterprise, evidence Unsaved draft handoff acceptance only and the existing Camlin line through opening/cancelling product entry. Saving synthetic product WQA Handoff 1010 test only (zero opening stock, selling price 1.00, reviewed synthetic HSN 4820 / 5 percent) returned to /shop/purchases/new with the same invoice draft unlocked and the new product visible in the refreshed selector. This is a labeled test fixture, not a real classification or purchase. No supplier invoice was submitted; no money or inventory quantity changed. Screenshot /private/tmp/web-product-handoff-saved-20261010.jpg. This accepts the successful web save/cancel handoff; response-loss product creation and native stock receipt acceptance remain open. Native WQA-NST-1010 is an unsaved draft after the computer-use pipe dropped; no native invoice write was attempted.
+
+
+### Purchase review context and untracked-stock parity
+
+Web now uses native purchase review signatures to bind each tax review and the final invoice confirmation to the exact supplier identity, recipient address and invoice context. Refreshing an identity with the same ID no longer leaves a stale confirmation usable. Goods-movement confirmation is separately bound to supplier/registration/destination/address, so later address changes cannot silently reuse a prior movement review. Original retained requests still replay their exact payload.
+
+Untracked products now show invoice-only recording instead of offering stock receipt/link actions that the server rejects. Draft-only metadata is removed from the request. Product selection stops at the same 100-line limit as native, and blank original invoice total cannot become an implicit zero-value declaration. Regression checks cover identity invalidation, original-evidence immutability, untracked receipt/link rejection and payload metadata isolation; full GST regressions, 62 vendored contracts, translations and build passed. Live rendering follows deployment.
+
+Native receipt draft WQA-NST-1010 now contains one Camlin unit at inclusive 10.50, receive-stock selection and labeled batch. A fresh independent web read confirmed baseline stock13. Native recording was not attempted: user interaction interrupted the simulator before tax/invoice confirmation. Draft remains unsaved and no stock changed.

@@ -32,6 +32,7 @@ try {
     "--skipLibCheck",
     "app/lib/shop/gst-monitor-view.ts",
     "app/lib/shop/report-review.ts",
+    "app/lib/shop/purchase-draft.ts",
     "app/lib/shop/gst-core/gst-export-review.ts",
     "app/lib/shop/checkout-customer.ts",
     "app/lib/shop/gst-api.ts",
@@ -60,6 +61,10 @@ try {
     GST_TEST_BUILD: join(folder, "shop"),
   });
   run(resolve("tests/report-review.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/purchase-draft.mjs"), [], {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),
   });
