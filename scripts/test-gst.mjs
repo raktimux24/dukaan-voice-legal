@@ -57,6 +57,8 @@ try {
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/voice-review.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/offline-shop-context.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/offline-evidence.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/offline-evidence-api.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/browser-audio.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/shop-parity-api.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/pagination.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

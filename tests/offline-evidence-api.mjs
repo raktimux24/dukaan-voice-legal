@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {webcrypto} from 'node:crypto';
+import {indexedDB} from 'fake-indexeddb';
+globalThis.crypto??=webcrypto;globalThis.indexedDB=indexedDB;
+process.env.NEXT_PUBLIC_API_BASE_URL='https://api.example.test';
+const require=createRequire(import.meta.url);
+const {bindApi}=require(process.env.GST_TEST_BUILD+'/api.js');
+const shop='11111111-1111-4111-8111-111111111111';
+const ids=['22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'];
+const items=ids.map((id,index)=>({id:'inventory-'+index,productId:id,shopId:shop,quantity:'10',unit:'piece',stockStatus:'OK',product:{id,shopId:shop,name:'Pen '+index,unit:'piece',purchasePrice:100,sellingPrice:120,createdAt:'2026-01-01T00:00:00Z'}}));
+const snapshot={version:1,shopId:shop,capturedAt:new Date().toISOString(),products:ids.map(productId=>({productId,profiles:[]}))};
+const api=bindApi(async()=> 'token',{actorId:'actor',sessionId:'session',isCurrent:()=>true});
+const original=globalThis.fetch;
+try {
+ globalThis.fetch=async url=>Response.json(url.includes('tax-snapshot')?snapshot:url.includes('pos-settings')?{shopId:shop,shopName:'Store',gstSettings:null,updatedAt:new Date().toISOString(),saleCounter:0,defaultPaymentMethod:'cash',cardEnabled:false}: {items,hasMore:false});
+ const live=await api.getAllInventory(shop,false,true);assert.equal(live[0].product.purchasePrice,100);
+ await api.getPosSettings(shop);
+ globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
+ const cached=await api.getAllInventory(shop,true,true);
+ assert.equal(cached.length,2);assert.equal(cached[0].product.purchasePrice,undefined);
+ assert.equal(cached[0].product.gstTaxSnapshot.productId,ids[0]);
+ const subset=await api.getTaxSnapshot(shop,[ids[1]]);assert.deepEqual(subset.products.map(row=>row.productId),[ids[1]]);assert.equal(subset.capturedAt,snapshot.capturedAt);
+ assert.equal((await api.getPosSettings(shop)).shopName,'Store');
+ await assert.rejects(api.getTaxSnapshot(shop,['44444444-4444-4444-8444-444444444444']),/Failed to fetch/);
+ const other=bindApi(async()=> 'token',{actorId:'actor',sessionId:'new-session',isCurrent:()=>true});
+ await assert.rejects(other.getPosSettings(shop),/Failed to fetch/);
+ globalThis.fetch=async()=>Response.json({error:'Insufficient permissions'},{status:403});
+ await assert.rejects(api.getPosSettings(shop),error=>error.status===403);
+ globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
+ await assert.rejects(api.getPosSettings(shop),/Failed to fetch/);
+ console.log('Offline API: complete catalog retention, cost redaction, tax subset capture, missing product, session separation and denied POS invalidation passed.');
+}finally{globalThis.fetch=original;}
