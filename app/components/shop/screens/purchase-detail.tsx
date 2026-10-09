@@ -323,7 +323,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                         <tr key={item.id}>
                           <td>{item.name}</td>
                           <td>
-                            {item.quantity} {item.unit}
+                            {item.quantity} {text(item.unit)}
                           </td>
                           <td>{formatINR(Number(item.taxAmount))}</td>
                           <td>{formatINR(Number(item.grossAmount))}</td>
