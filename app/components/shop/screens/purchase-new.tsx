@@ -64,6 +64,7 @@ export function PurchaseNewScreen() {
     [declared, setDeclared] = useState(""),
     [reference, setReference] = useState(""),
     [reviewed, setReviewed] = useState(false),
+    [ordinarySupply, setOrdinarySupply] = useState(false),
     [movement, setMovement] = useState(false);
   const retained = useRef<PurchaseInput | null>(null);
   const settings = pos.data?.gstSettings;
@@ -416,6 +417,11 @@ export function PurchaseNewScreen() {
             ))}
           </Section>
           <Card>
+            <Check
+              label={text(EN_FALLBACK["purchase.ordinary_supply"])}
+              checked={ordinarySupply}
+              onChange={(value) => change(() => setOrdinarySupply(value))}
+            />
             {totals ? (
               <Stats
                 items={[
@@ -448,7 +454,7 @@ export function PurchaseNewScreen() {
             action.busy ||
             pos.data?.gstPurchasesAvailable !== true ||
             !supplier ||
-            (!retained.current && (!reviewed || !totals))
+            (!retained.current && (!ordinarySupply || !reviewed || !totals))
           }
           onClick={() =>
             void action.run(async () => {
@@ -456,8 +462,11 @@ export function PurchaseNewScreen() {
                 ...input,
                 clientId: crypto.randomUUID(),
               };
-              if (!retained.current)
+              if (!retained.current) {
+                if (!ordinarySupply)
+                  throw Error(text(EN_FALLBACK["gst.error.purchase_supply_not_supported"]));
                 purchaseTotals(request, supplier!.identity);
+              }
               retained.current = request;
               const saved = await api.gst.createPurchase(shop!.id, request);
               retained.current = null;
