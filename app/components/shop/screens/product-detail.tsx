@@ -45,6 +45,12 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
   const [showAll, setShowAll] = useState(false);
   const item = catalog.data?.find((row) => row.productId === productId);
   const tracksStock = item?.product.trackStock !== false;
+  // Keep next-sale costing independent of the history filter.
+  const activeBatchQuery = useQuery({
+    queryKey: ['batches', shop?.id, productId, false],
+    enabled: !!shop?.id && tracksStock,
+    queryFn: () => api.getBatches(shop!.id, productId, false),
+  });
   const batches = useQuery({
     queryKey: ['batches', shop?.id, productId, showAll || !tracksStock],
     enabled: !!shop?.id,
@@ -84,10 +90,13 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
   const product = item.product;
   const onBuyList = (buyList.data ?? []).some((row) => row.productId === productId && row.status === 'pending');
-  const activeBatches = (batches.data ?? []).filter((batch) => batch.status !== 'depleted');
+  const activeBatches = (activeBatchQuery.data ?? []).filter((batch) => batch.status !== 'depleted');
   const nextOutId = tracksStock ? activeBatches[0]?.id : undefined;
-  const nextCost = (tracksStock ? activeBatches.find((batch) => batch.purchasePrice != null)?.purchasePrice : null) ?? product.purchasePrice ?? null;
+  const nextCost = tracksStock && (activeBatchQuery.isPending || activeBatchQuery.isError) ? null : (tracksStock ? activeBatches.find((batch) => batch.purchasePrice != null)?.purchasePrice : null) ?? product.purchasePrice ?? null;
   const margin = product.sellingPrice != null && nextCost != null ? product.sellingPrice - nextCost : null;
+  const costedBatches = tracksStock ? activeBatches.filter(batch => batch.purchasePrice != null) : [];
+  const costedQuantity = costedBatches.reduce((sum, batch) => sum + batch.quantity, 0);
+  const averageCost = costedQuantity > 0 ? costedBatches.reduce((sum, batch) => sum + batch.quantity * batch.purchasePrice!, 0) / costedQuantity : null;
   const productLogs = (activity.data?.logs ?? []).filter((log) => logMentionsProduct(log.payload, productId)).slice(0, 5);
 
   const refresh = async () => {
@@ -293,13 +302,14 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           {!hideCost ? <div><dt>{t('modal.product_detail.detail_last_paid', 'Last paid')}</dt><dd>{formatINR(product.purchasePrice)}</dd></div> : null}
           <div><dt>{t('modal.product_detail.detail_selling_price', 'Selling price')}</dt><dd>{product.sellingPrice == null ? '—' : formatINR(product.sellingPrice)}</dd></div>
           <div><dt>{t('modal.product_detail.detail_mrp', 'MRP')}</dt><dd>{product.mrp == null ? '—' : formatINR(product.mrp)}</dd></div>
-          {!hideCost ? <div><dt>{t('modal.product_detail.detail_margin', 'Margin on next sale')}</dt><dd>{margin == null || product.sellingPrice == null || product.sellingPrice <= 0 ? '—' : `${formatINR(margin)} · ${Math.round((margin / product.sellingPrice) * 100)}%`}</dd></div> : null}
+          {!hideCost ? <div><dt>{t('modal.product_detail.detail_margin', 'Margin on next sale')}</dt><dd>{margin == null || product.sellingPrice == null || product.sellingPrice <= 0 ? '—' : `${formatINR(margin)} · ${Math.round((margin / product.sellingPrice) * 100)}%${averageCost != null && nextCost != null && Math.abs(averageCost - nextCost) > 0.5 ? ' · ' + t('modal.product_detail.avg_cost', 'avg cost {{amount}}', {amount: formatINR(averageCost)}) : ''}`}</dd></div> : null}
           {product.shortCode ? <div><dt>{t('modal.product_detail.detail_short_code', 'Short code')}</dt><dd>{product.shortCode}</dd></div> : null}
           {tracksStock ? <div><dt>{t('modal.product_detail.detail_min_stock', 'Low-stock alert')}</dt><dd>{product.minStockLevel > 0 ? formatQty(product.minStockLevel, item.unit) : '—'}</dd></div> : null}
           <div><dt>{t('modal.product_detail.detail_unit', 'Unit')}</dt><dd>{item.unit}</dd></div>
           <div><dt>{t('modal.add_product.category_label', 'Category')}</dt><dd>{[labeledL1(product.category, (key) => t(key, key)), labeledL2(product.category, product.subcategory, (key) => t(key, key))].filter(Boolean).join(' · ')}</dd></div>
           <div><dt>{t('modal.product_detail.detail_last_updated', 'Updated')}</dt><dd>{formatWhen(item.updatedAt)} · {item.updatedByName}</dd></div>
         </dl>
+        {!hideCost ? <p className="shop-hint">{t('gst.margin_estimate', 'Margin uses recorded purchase cost; input-tax credits are not calculated.')}</p> : null}
       </Card>
 
       {productLogs.length > 0 ? (
@@ -387,6 +397,7 @@ function BatchRow({
           {formatQty(batch.quantity, unit)}
           {batch.initialQuantity != null && batch.initialQuantity > batch.quantity ? ` left of ${formatQty(batch.initialQuantity, unit)}` : ''}
         </p>
+        {batch.batchNumber ? <p className="shop-list-meta">#{batch.batchNumber}</p> : null}
         <p className="shop-list-meta">
           {[batch.supplier, batch.purchaseDate ? `bought ${formatDay(batch.purchaseDate)}` : null, batch.expiryDate ? `expires ${formatDay(batch.expiryDate)}` : null].filter(Boolean).join(' · ') || 'No supplier or expiry'}
         </p>

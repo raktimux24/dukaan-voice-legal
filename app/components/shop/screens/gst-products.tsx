@@ -215,6 +215,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
     [reason, setReason] = useState(""),
     [cancelReason, setCancelReason] = useState("");
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
+  const effectiveVersion = q.capture?.effectiveVersion === undefined ? q.capture?.currentVersion : q.capture.effectiveVersion;
   const retained = useRef<{
     path: string;
     input: Record<string, unknown>;
@@ -323,7 +324,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
               disabled={
                 action.busy || !!retained.current ||
                 (!retained.current &&
-                  (!q.historyFresh ||
+                  (!q.historyFresh || !effectiveVersion ||
                     !config?.reviewed ||
                     !source.trim() ||
                     !reason.trim() ||
@@ -337,7 +338,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
                       requestId: crypto.randomUUID(),
                       config,
                       effectiveFrom: effective,
-                      expectedVersion: q.capture?.effectiveVersion === undefined ? q.capture?.currentVersion ?? "" : q.capture.effectiveVersion ?? "",
+                      expectedVersion: effectiveVersion ?? "",
                       sourceReference: source,
                       reason,
                     },
