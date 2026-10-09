@@ -7,4 +7,4 @@ export function gstMonitorView(input:{hasData:boolean;pending:boolean;fetchStatu
  if(input.truncated)return 'partial';
  return 'checked';
 }
-export const CORE_MONITOR_KINDS=new Set(['integrityMismatch','legacyHashes','missingProfiles','numberConflict','missingInvoices','missingCreditNotes','unbalancedSales']);
+export const CORE_MONITOR_KINDS=new Set(['integrityMismatch','legacyHashes','missingProfiles','numberConflict','missingInvoices','missingCreditNotes','unbalancedSales','closedPeriodChanged']);

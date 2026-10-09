@@ -368,7 +368,7 @@
   {
     "file": "gst-monitor-view.ts",
     "source": "src/lib/gst-monitor-view.ts",
-    "sourceSha256": "dcb466a953dd98df2e75629ca1362717f789d3fb07cce975277e2776493ce54c",
-    "vendoredSha256": "dcb466a953dd98df2e75629ca1362717f789d3fb07cce975277e2776493ce54c"
+    "sourceSha256": "645b53e459636e2b9fd7587c764bc0d3c2ee304dfd2ffe4f19d91a860782fb11",
+    "vendoredSha256": "645b53e459636e2b9fd7587c764bc0d3c2ee304dfd2ffe4f19d91a860782fb11"
   }
 ]

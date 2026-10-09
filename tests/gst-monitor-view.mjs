@@ -35,6 +35,7 @@ assert.equal(
   "offline",
 );
 assert.equal(view({ ...completed, hasData: false, pending: true }), "loading");
+assert.ok(CORE_MONITOR_KINDS.has("closedPeriodChanged"));
 assert.ok(CORE_MONITOR_KINDS.has("missingProfiles"));
 assert.ok(CORE_MONITOR_KINDS.has("integrityMismatch"));
 assert.equal(CORE_MONITOR_KINDS.has("periodMutation"), false);

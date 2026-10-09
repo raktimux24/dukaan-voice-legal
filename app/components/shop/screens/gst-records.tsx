@@ -338,7 +338,7 @@ export function GstChecksScreen() {
           </Card>
         ) : null}
         {issues.map((issue) => {
-          const message = messages[issue.kind] ?? [
+          const message = issue.kind === "closedPeriodChanged" ? [t("gst.monitor.kind.closedPeriodChanged", "Closed reporting period has new records"),t("gst.period_changed", "Records changed after closing. Reopen and review updated reports."),"periods"] : messages[issue.kind] ?? [
             "Saved records need review",
             "Keep the original records and ask support to investigate.",
             "recovery",
@@ -367,6 +367,12 @@ export function GstChecksScreen() {
                 onClick={() =>
                   void action.run(async () => {
                     const scope = financialScope(shop!.id);
+                    if (issue.kind === "closedPeriodChanged") {
+                      const month=issue.details.month;
+                      if(typeof month!=="string"||!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw Error("invalid_report_period");
+                      router.push(base+"/periods?month="+encodeURIComponent(month));
+                      return;
+                    }
                     if (issue.document) {
                       router.push("/shop/sales/" + issue.document.saleId);
                       return;
