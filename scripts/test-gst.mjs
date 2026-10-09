@@ -138,6 +138,7 @@ try {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),
   });
+  run(resolve("tests/api-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/pagination.mjs"), [], {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),
