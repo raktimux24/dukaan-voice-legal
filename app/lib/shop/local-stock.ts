@@ -1,6 +1,6 @@
+import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt} from './local-issued-receipt';
 import type {InventoryItem,CreateSalePayload} from './types';
 import type {Scope,RetainedRequest} from './gst-storage';
-import {verifyLocalFiscalReceipt} from './local-fiscal-receipt';
 export type BillingCatalog={format:'billing_catalog_v2';items:InventoryItem[];accountedRequestIds:string[]};
 /** Only confirmations known before the server read began can be included in its stock baseline. */
 export function accountedSales(rows:RetainedRequest[],scope:Scope) {
@@ -10,8 +10,8 @@ export function accountedSales(rows:RetainedRequest[],scope:Scope) {
 export async function projectLocalStock(catalog:BillingCatalog,rows:RetainedRequest[],scope:Scope):Promise<InventoryItem[]> {
  const accounted=new Set(catalog.accountedRequestIds),reserved=new Map<string,number>();
  for(const row of rows){
-  if(row.actorId!==scope.actorId||row.shopId!==scope.shopId||row.path!==`/api/shops/${scope.shopId}/sales`||row.state==='closed'||accounted.has(row.id)||!row.verification?.localFiscalReceipt)continue;
-  await verifyLocalFiscalReceipt(row,scope);
+  if(row.actorId!==scope.actorId||row.shopId!==scope.shopId||row.path!==`/api/shops/${scope.shopId}/sales`||row.state==='closed'||accounted.has(row.id)||!hasLocalIssuedReceipt(row))continue;
+  await verifyLocalIssuedReceipt(row,scope);
   for(const item of (row.payload as CreateSalePayload).items){
    if(!item.productId||!Number.isFinite(item.quantity)||item.quantity<=0||Math.round(item.quantity*1000)/1000!==item.quantity)throw Error('The saved document could not be verified.');
    reserved.set(item.productId,(reserved.get(item.productId)??0)+item.quantity);

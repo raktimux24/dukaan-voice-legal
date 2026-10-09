@@ -146,3 +146,31 @@ assert.equal(warmProvisions,1);assert.equal(grantCalls,2);
 assert.equal((await storage.readState(`allocation:${warmScope.actorId}:${warmScope.shopId}`)).next,1);
 assert.equal((await storage.retainedRequests(warmScope)).length,0);
 console.log('Invoice preparation: number/grant reuse, no counter consumption and immutable lost-response grant retry passed.');
+
+// Ordinary local bills retain the exact request without borrowing a fiscal number.
+const {buildLocalOrdinaryReceipt,verifyLocalIssuedReceipt}=require(root+'/local-issued-receipt.js');
+const plainScope={actorId:'ordinary-actor',shopId:randomUUID()};storage.setFinancialScope(plainScope);
+const plain={clientId:randomUUID(),soldAt:new Date().toISOString(),items:[{productId:randomUUID(),name:'Notebook',unit:'piece',quantity:1,price:80,listPrice:100,discount:5}],discountAmount:5,payments:[{method:'cash',amount:70}],customer:{name:'Synthetic customer'}};
+const plainReceipt=await buildLocalOrdinaryReceipt(plainScope,plain);
+assert.equal(plainReceipt.subtotal,100);assert.equal(plainReceipt.discount,30);assert.equal(plainReceipt.total,70);
+const plainRow={...plainScope,id:plain.clientId,path:`/api/shops/${plainScope.shopId}/sales`,payload:plain,createdAt:plain.soldAt,state:'pending',verification:{localOrdinaryReceipt:plainReceipt}};
+assert.equal((await verifyLocalIssuedReceipt(plainRow,plainScope)).kind,'ordinary');
+for(const mutate of [r=>r.payload.payments[0].amount=69,r=>r.verification.localOrdinaryReceipt.total=71,r=>r.actorId='other',r=>r.path='/other',r=>r.state='closed']){
+ const altered=structuredClone(plainRow);mutate(altered);await assert.rejects(verifyLocalIssuedReceipt(altered,plainScope));
+}
+await assert.rejects(buildLocalOrdinaryReceipt(plainScope,{...plain,gstContext:body.gstContext}));
+const plainCatalog={format:'billing_catalog_v2',items:[{productId:plain.items[0].productId,unit:'piece',quantity:2,product:{id:plain.items[0].productId,isActive:true,trackStock:true,minStockLevel:0}}],accountedRequestIds:[]};
+let uploaded=[];
+const plainApi={getPosSettings:async()=>({gstSettings:null}),getAllInventory:async()=>projectLocalStock(plainCatalog,await storage.retainedRequests(plainScope),plainScope),createSale:async(_shop,p)=>{uploaded.push(structuredClone(p));throw new TypeError('Failed to fetch');}};
+await assert.rejects(issueSale(plainApi,plainScope.shopId,plain),/Failed to fetch/);
+const plainNext={...plain,clientId:randomUUID()};
+await assert.rejects(issueSale(plainApi,plainScope.shopId,plainNext),/Failed to fetch/);
+assert.equal((await plainApi.getAllInventory())[0].quantity,0);
+await assert.rejects(issueSale(plainApi,plainScope.shopId,{...plain,clientId:randomUUID()}),/Stock changed/);
+assert.equal((await storage.retainedRequests(plainScope)).length,2);
+assert.equal(await storage.readState(`allocation:${plainScope.actorId}:${plainScope.shopId}`),undefined);
+plainApi.createSale=async(_shop,p)=>{uploaded.push(structuredClone(p));return {sale:{id:randomUUID(),shopId:plainScope.shopId,soldBy:plainScope.actorId,clientId:p.clientId,requestHash:await storage.sha256(canonicalSaleRequest({...p,userId:plainScope.actorId}))}};};
+assert.equal(await syncQueuedSales(plainApi,plainScope.shopId),2);
+assert.deepEqual(uploaded[0],uploaded[2]);assert.deepEqual(uploaded[1],uploaded[3]);
+assert.equal(await syncQueuedSales(plainApi,plainScope.shopId),0);
+console.log('Ordinary receipts: discount/payment totals, immutable request binding, scope/tamper guards, consecutive queued stock and original reconnect replay passed.');

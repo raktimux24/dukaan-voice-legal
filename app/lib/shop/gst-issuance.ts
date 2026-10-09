@@ -1,6 +1,7 @@
+import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt,buildLocalOrdinaryReceipt} from './local-issued-receipt';
 import {assertSaleStock} from './local-stock';
 import {ensureInvoiceAllocation,ensureRoundingGrant} from './invoice-preparation';
-import {buildLocalFiscalReceipt,verifyLocalFiscalReceipt} from './local-fiscal-receipt';
+import {buildLocalFiscalReceipt} from './local-fiscal-receipt';
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from './gst-core/gst-tax-cache';
 import {rspItemsForIssue} from './rsp-issue-items';
 import {mixedCartProjection} from './mixed-cart-projection';
@@ -53,11 +54,11 @@ export async function issueSale(
     if(!saved){
       const pending=journal.filter(row=>row.state==='pending'&&row.path===`/api/shops/${shopId}/sales`);
       for(const row of pending){
-        if(!row.verification?.localFiscalReceipt||!body.gstContext||!['regular','composition'].includes(body.gstContext.settings.registration))throw Error('A previous bill needs recovery. Open GST recovery before starting another bill.');
-        await verifyLocalFiscalReceipt(row,active);assertScope(active);
+        if(!hasLocalIssuedReceipt(row))throw Error('A previous bill needs recovery. Open GST recovery before starting another bill.');
+        await verifyLocalIssuedReceipt(row,active);assertScope(active);
       }
     }
-    if(saved?.verification?.localFiscalReceipt){await verifyLocalFiscalReceipt(saved,active);assertScope(active);}
+    if(saved && hasLocalIssuedReceipt(saved)){await verifyLocalIssuedReceipt(saved,active);assertScope(active);}
     let payload = saved
       ? (structuredClone(saved.payload) as CreateSalePayload)
       : structuredClone(body);
@@ -133,12 +134,21 @@ export async function issueSale(
         },
       );
     }
+    let ordinaryReceipt;
+    if(!saved&&!payload.gstContext){
+      const settings=await api.getPosSettings(shopId);assertScope(active);
+      if(settings.gstSettings&&['regular','composition'].includes(settings.gstSettings.registration))throw Error('Shop GST settings changed. Refresh checkout before charging.');
+      const stock=await api.getAllInventory(shopId,true,false,true);assertScope(active);
+      assertSaleStock(payload.items,stock);
+      ordinaryReceipt=await buildLocalOrdinaryReceipt(active,payload);assertScope(active);
+    }
     const path = `/api/shops/${shopId}/sales`;
     const row: RetainedRequest = {
       ...active,
       id: payload.clientId,
       path,
       payload,
+      ...(ordinaryReceipt?{verification:{localOrdinaryReceipt:ordinaryReceipt}}:{}),
       createdAt: saved?.createdAt ?? new Date().toISOString(),
       state: "pending",
     };
@@ -245,8 +255,8 @@ export async function syncQueuedSales(api:ShopApi,shopId:string,isCurrent:()=>bo
  for(const row of rows){
   if(!isCurrent())break;
   assertScope(active);
-  if(!row.verification?.localFiscalReceipt)break; // Unissued or uncertain legacy requests require manual review.
-  await verifyLocalFiscalReceipt(row,active);assertScope(active);
+  if(!hasLocalIssuedReceipt(row))break; // Unissued or uncertain legacy requests require manual review.
+  await verifyLocalIssuedReceipt(row,active);assertScope(active);
   await issueSale(api,shopId,row.payload as CreateSalePayload);
   assertScope(active);confirmed++;
  }

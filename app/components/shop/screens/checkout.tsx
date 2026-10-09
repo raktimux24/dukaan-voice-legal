@@ -1,7 +1,7 @@
 'use client';
+import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt} from '../../../lib/shop/local-issued-receipt';
 
 import {financialScope,retainedRequests,assertScope} from '../../../lib/shop/gst-storage';
-import {verifyLocalFiscalReceipt} from '../../../lib/shop/local-fiscal-receipt';
 import { useGstText as useUiText } from "../gst-ui";
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from '../../../lib/shop/gst-core/gst-tax-cache';
 import {RspCheckoutControls} from '../gst-rsp-checkout';
@@ -86,9 +86,9 @@ export function CheckoutScreen() {
     void (async()=>{
       try{
         const scope=financialScope(shop.id);
-        const row=(await retainedRequests(scope)).find(row=>row.state==='pending'&&row.path===`/api/shops/${shop.id}/sales`&&row.verification?.localFiscalReceipt);
+        const row=(await retainedRequests(scope)).find(row=>row.state==='pending'&&row.path===`/api/shops/${shop.id}/sales`&&hasLocalIssuedReceipt(row));
         assertScope(scope);
-        if(row&&cartApi.cart.lines.length===0){await verifyLocalFiscalReceipt(row,scope);assertScope(scope);if(!canceled){wentToBill.current=true;setLocalReceiptId(row.id);}}
+        if(row&&cartApi.cart.lines.length===0){await verifyLocalIssuedReceipt(row,scope);assertScope(scope);if(!canceled){wentToBill.current=true;setLocalReceiptId(row.id);}}
       }catch{/* Unverified records remain available through recovery. */}
       finally{if(!canceled)setRestoringReceipt(false);}
     })();
@@ -246,8 +246,8 @@ export function CheckoutScreen() {
         try{
           const scope=financialScope(shop.id);
           const row=(await retainedRequests(scope)).find(row=>row.id===clientId);
-          if(row?.verification?.localFiscalReceipt){
-            await verifyLocalFiscalReceipt(row,scope);assertScope(scope);
+          if(row && hasLocalIssuedReceipt(row)){
+            await verifyLocalIssuedReceipt(row,scope);assertScope(scope);
             wentToBill.current=true;
             setLocalReceiptId(clientId);
             cartApi.clear();
