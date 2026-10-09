@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useShop } from "../context";
 import { Button, Card, PageHeader, Notice, Pill } from "../ui";
+import { TaxHistoryRows, TaxHistoryRefresh, useProductTaxHistory } from "../product-tax-history";
 import {
   TaxFields,
   TextField,
@@ -10,6 +11,7 @@ import {
   Section,
   useGstText,
   useFiscalDate,
+  FiscalDateTimeField,
 } from "../gst-ui";
 import {
   useGstQuery,
@@ -28,7 +30,7 @@ import {
 } from "../../../lib/shop/gst-storage";
 import { validateProductTax } from "../../../lib/shop/gst-core/gst";
 import { canonicalJson } from "../../../lib/shop/gst-core/sale-request-canonical";
-import type { ProductTax } from "../../../lib/shop/gst-types";
+import type { ProductTax, TaxHistory } from "../../../lib/shop/gst-types";
 export function GstProductsScreen() {
   const { api, shop } = useShop(),
     text = useGstText(),
@@ -203,16 +205,15 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
-  const q = useGstPages(["tax-history", id], async (cursor) =>
-    api.gst.taxHistory(shop!.id, id, cursor),
-  );
+  const q = useProductTaxHistory(id);
   const settings = useGstQuery(["settings"], () =>
     api.getPosSettings(shop!.id),
   );
   const [config, setConfig] = useState<ProductTax | null>(null),
     [effective, setEffective] = useState(""),
     [source, setSource] = useState(""),
-    [reason, setReason] = useState("");
+    [reason, setReason] = useState(""),
+    [cancelReason, setCancelReason] = useState("");
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
   const retained = useRef<{
     path: string;
@@ -272,60 +273,22 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
           )}
         />
         {action.notice}
+        <TaxHistoryRefresh query={q} />
+        {retained.current ? <Button disabled={action.busy} onClick={() => void action.run(() => submit(retained.current!.path, retained.current!.input))}>{text("Retry saved request")}</Button> : null}
         <ReadState query={q} empty={!rows.length}>
-          {rows.map((row) => (
-            <Card key={row.id}>
-              <Pill tone={row.valid ? "ok" : "warn"}>
-                {text(
-                  row.current
-                    ? "Current profile"
-                    : row.scheduled
-                      ? "Scheduled profile"
-                      : "Previous profile",
-                )}
-              </Pill>
-              <p>
-                {row.config
-                  ? `${row.config.category} · ${row.config.codeType.toUpperCase()} ${row.config.code} · ${row.config.rate}%`
-                  : text("Tax settings disabled")}
-              </p>
-              <p>{date(row.recordedAt)}</p>
-              {row.effectiveAt ? (
-                <p>
-                  {text("Effective")} {date(row.effectiveAt)}
-                </p>
-              ) : null}
-              <p className="shop-hint">
-                {text("Confirmed by")}{" "}
-                {row.confirmation?.actorName ?? text("Shop member")}
-                {row.confirmation?.ownerName
-                  ? ` · ${text("Authorizing owner")} ${row.confirmation.ownerName}`
-                  : ""}
-              </p>
-              {row.scheduled && !row.cancelledAt ? (
-                <Button
-                  tone="danger"
-                  disabled={action.busy || !reason.trim()}
-                  onClick={() =>
-                    void action.run(() =>
-                      submit(
-                        `/api/shops/${shop!.id}/inventory/products/${id}/tax-schedules/${row.id}/cancel`,
-                        { requestId: crypto.randomUUID(), reason },
-                      ),
-                    )
-                  }
-                >
-                  {text("Cancel scheduled change")}
-                </Button>
-              ) : null}
-            </Card>
-          ))}
+          <TaxHistoryRows rows={rows} capture={q.capture} action={row => row.scheduled && !row.cancelledAt && row.effectiveAt && Date.parse(row.effectiveAt) > Date.now() ? (
+            <div className="grid gap-3"><TextField label={text("Cancellation reason")} value={cancelReason} onChange={setCancelReason} /><Button tone="danger" disabled={action.busy || !q.historyFresh || !!retained.current || !cancelReason.trim()} onClick={() => void action.run(() => submit(
+              `/api/shops/${shop!.id}/inventory/products/${id}/tax-schedules/${row.id}/cancel`,
+              { requestId: crypto.randomUUID(), reason: cancelReason },
+            ))}>{text("Cancel scheduled change")}</Button></div>
+          ) : null} />
         </ReadState>
         <More query={q} />
         {settings.data?.gstRspProfileReviewsAvailable &&
         rows.some(
           (r) =>
-            r.current &&
+            (q.capture?.effectiveVersion === undefined ? r.current : r.id === q.capture.effectiveVersion) &&
+            r.valid && !r.draft && !r.disabled &&
             r.config?.codeType === "hsn" &&
             /^(21069020|2401\d{4}|2402\d{4}|2403\d{4}|24041100|24041900)$/.test(
               r.config.code,
@@ -340,8 +303,8 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
           <Section title={text("Schedule a tax profile change")}>
             <fieldset disabled={!!retained.current || action.busy}>
               <TaxFields value={config} onChange={setConfig} />
-              <TextField
-                label={text("Effective date and time (ISO)")}
+              <FiscalDateTimeField
+                label={text("Effective")}
                 value={effective}
                 onChange={setEffective}
               />
@@ -358,12 +321,13 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
             </fieldset>
             <Button
               disabled={
-                action.busy ||
+                action.busy || !!retained.current ||
                 (!retained.current &&
-                  (!config?.reviewed ||
+                  (!q.historyFresh ||
+                    !config?.reviewed ||
                     !source.trim() ||
                     !reason.trim() ||
-                    !Number.isFinite(Date.parse(effective))))
+                    !Number.isFinite(Date.parse(effective)) || Date.parse(effective) <= Date.now()))
               }
               onClick={() =>
                 void action.run(() =>
@@ -373,7 +337,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
                       requestId: crypto.randomUUID(),
                       config,
                       effectiveFrom: effective,
-                      expectedVersion: rows.find((r) => r.current)?.id ?? "",
+                      expectedVersion: q.capture?.effectiveVersion === undefined ? q.capture?.currentVersion ?? "" : q.capture.effectiveVersion ?? "",
                       sourceReference: source,
                       reason,
                     },
@@ -381,11 +345,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
                 )
               }
             >
-              {text(
-                retained.current
-                  ? "Retry saved request"
-                  : "Save scheduled tax change",
-              )}
+              {text("Save scheduled tax change")}
             </Button>
           </Section>
         ) : null}

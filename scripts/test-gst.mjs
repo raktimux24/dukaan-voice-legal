@@ -43,6 +43,7 @@ try {
     "app/lib/shop/offline-shop-context.ts",
     "app/lib/shop/browser-audio.ts",
     "app/lib/shop/pagination.ts",
+    "app/lib/shop/tax-history-refresh.ts",
     "app/lib/shop/money.ts",
     "app/lib/shop/gst-storage.ts",
     "app/lib/shop/gst-return-preview.ts",
@@ -141,6 +142,7 @@ try {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),
   });
+  run(resolve("tests/tax-history-refresh.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/billing-shell.mjs"), []);
   run(resolve("tests/browser-push-worker.mjs"), []);
   run(resolve("tests/browser-push-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

@@ -13,6 +13,7 @@ import type { AdjustmentReason, StockBatch } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { SupplierField } from '../supplier-field';
+import { ProductTaxHistory } from '../product-tax-history';
 import { Button, Card, Field, Notice, PageHeader, Pill, Spinner, inputClass, isDenied } from '../ui';
 
 const REASONS: AdjustmentReason[] = ['damaged', 'expired', 'theft', 'correction', 'returned_to_supplier', 'personal_use', 'other'];
@@ -280,6 +281,8 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           <div className="kpi"><p className="kpi-label">{uiText("Last sold")}</p><p className="kpi-value is-compact">{formatWhen(sales.data.lastSoldAt)}</p></div>
         </div>
       ) : null}
+
+      <ProductTaxHistory productId={productId} />
 
       <Card>
         <div className="product-batch-head">
