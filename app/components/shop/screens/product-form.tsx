@@ -280,9 +280,9 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 </span>
                 <input type="checkbox" className="shop-field" checked={form.trackStock} onChange={(event) => set({ trackStock: event.target.checked })} />
               </label>
-              <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
+              {form.trackStock ? <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
                 <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
-              </Field>
+              </Field> : null}
             </div>
             {!productId && form.trackStock ? (
               <div className="form-grid is-2">
