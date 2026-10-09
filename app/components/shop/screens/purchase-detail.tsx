@@ -18,6 +18,7 @@ import {
   ReadState,
   GstAccess,
 } from "../gst-workspace";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { formatINR } from "../../../lib/shop/money";
 import { validateItcReview } from "../../../lib/shop/gst-core/purchase-gst";
 import type {
@@ -45,7 +46,7 @@ const labels = {
   withinTimeLimit: "Within the permitted time limit",
 };
 export function PurchaseDetailScreen({ id }: { id: string }) {
-  const { api, shop } = useShop(),
+  const { api, shop, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
@@ -271,7 +272,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {detail.items.map((item) => (
+                      {detail.items.map((item) => {
+                        const stockActionKey = `gst.stock_action.${
+                          detail.snapshot.stockActions?.find(
+                            (action) => action.purchaseItemId === item.id,
+                          )?.action ?? (item.batchId ? "legacy" : "invoice_only")
+                        }`;
+                        return (
                         <tr key={item.id}>
                           <td>{item.name}</td>
                           <td>
@@ -280,17 +287,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                           <td>{formatINR(Number(item.taxAmount))}</td>
                           <td>{formatINR(Number(item.grossAmount))}</td>
                           <td>
-                            {text(
-                              detail.snapshot.stockActions?.find(
-                                (a) => a.purchaseItemId === item.id,
-                              )?.action ??
-                                (item.batchId
-                                  ? "Linked stock"
-                                  : "Invoice only"),
-                            )}
+                            {t(stockActionKey, EN_FALLBACK[stockActionKey])}
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
