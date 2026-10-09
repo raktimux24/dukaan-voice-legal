@@ -257,3 +257,9 @@ Clerk's actual `ClerkOfflineError` is now recognized as an offline transport fai
 ### Existing customer names on local receipts
 
 New checkout requests now retain the selected saved customer's name and phone alongside customerId. The server's existing resolver returns the scoped customerId before considering the display snapshot, so this does not create or edit a customer. Ordinary local receipt reconstruction therefore retains readable customer details after storage/restart. Legacy pending requests with customerId and null customer keep that exact original field on retry; they are not rewritten or given new request hashes. Tests cover selected/draft/blank customers, legacy retry preservation, serialized receipt reconstruction, altered name and changed customerId rejection. Web build and GST suite passed; authenticated disconnected receipt rendering remains an acceptance check.
+
+### GST record-check result parity follow-up
+
+The web screen now uses the native monitor-state rules and actionable core issue kinds. It shows checked-document coverage and an explicit empty-current-result message; failed refreshes preserve prior results without declaring success. Issue truncation offers increased observation loading up to the server's 10,000 limit, while history truncation stays separate. Prior checks and optional support-copy diagnostics remain accessible. Async check and document lookup results are guarded against account/shop changes.
+
+Validation: production build, GST regression suite (including monitor complete/attention/partial/stale/never-checked/offline/unavailable states), and translation coverage passed. Live rendering verification follows release. This does not close the remaining authenticated offline, role, Regular GST, cross-client purchase, notification, or print acceptance gaps.

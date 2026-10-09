@@ -28,6 +28,7 @@ try {
     "--ignoreDeprecations",
     "6.0",
     "--skipLibCheck",
+    "app/lib/shop/gst-monitor-view.ts",
     "app/lib/shop/checkout-customer.ts",
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/api.ts",
@@ -56,6 +57,7 @@ try {
     GST_TEST_BUILD: join(folder,"shop"),
   });
   run(resolve("tests/gst-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/gst-monitor-view.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/checkout-customer.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/local-fiscal-receipt.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/checkout-persistence.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
