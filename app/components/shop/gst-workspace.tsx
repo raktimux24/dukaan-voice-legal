@@ -164,6 +164,7 @@ export function usePeriod(initial?: { from: string; through: string }) {
   }
   return {
     dates,
+    setDates,
     range,
     error,
     fields: (

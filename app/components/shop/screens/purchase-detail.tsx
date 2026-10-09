@@ -192,6 +192,30 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   {detail.snapshot.supplier.name}
                 </h2>
                 <p>
+                  {text(
+                    (
+                      {
+                        regular: "Regular GST",
+                        composition: "Composition",
+                        unregistered: "Not registered",
+                      } as const
+                    )[detail.snapshot.supplierRegistration] ??
+                      "Original registration not recorded",
+                  )}{" "}
+                  ·{" "}
+                  {text(
+                    (
+                      {
+                        tax_invoice: "Tax invoice",
+                        bill_of_supply: "Bill of supply",
+                        commercial_invoice:
+                          "Commercial invoice from unregistered supplier",
+                      } as const
+                    )[detail.snapshot.documentType] ??
+                      "Original registration not recorded",
+                  )}
+                </p>
+                <p>
                   {detail.snapshot.supplier.gstin || text("Not registered")}
                 </p>
                 <p>{detail.snapshot.supplier.address}</p>
@@ -236,6 +260,88 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   </table>
                 </div>
               </Card>
+              <Section title={text("Invoice details")}>
+                <div className="gst-row">
+                  <span>{text("Net value")}</span>
+                  <b>{formatINR(detail.snapshot.totals.net)}</b>
+                </div>
+                {(["cgst", "sgst", "utgst", "igst"] as const)
+                  .filter((kind) => detail.snapshot.totals[kind] !== 0)
+                  .map((kind) => (
+                    <div className="gst-row" key={kind}>
+                      <span>{kind.toUpperCase()}</span>
+                      <b>{formatINR(detail.snapshot.totals[kind])}</b>
+                    </div>
+                  ))}
+                <div className="gst-row">
+                  <span>{text("State code (for example, 29)")}</span>
+                  <b>{detail.snapshot.supplier.stateCode}</b>
+                </div>
+                {detail.snapshot.goodsMovement ? (
+                  <>
+                    <div className="gst-row">
+                      <span>{text("Reviewed delivery address")}</span>
+                      <b>{detail.snapshot.goodsMovement.deliveryAddress}</b>
+                    </div>
+                    <div className="gst-row">
+                      <span>{text("Destination state")}</span>
+                      <b>
+                        {detail.snapshot.goodsMovement.destinationStateCode}
+                      </b>
+                    </div>
+                  </>
+                ) : null}
+                {(["supplier", "recipient"] as const).map((role) => {
+                  const party = detail.snapshot[role];
+                  return (
+                    <div key={role} className="grid gap-2">
+                      <h3 className="shop-section-title">
+                        {text(
+                          role === "supplier"
+                            ? "Choose supplier"
+                            : "Your shop’s invoice identity",
+                        )}
+                      </h3>
+                      <p>{party.name}</p>
+                      {party.gstin ? <p>{party.gstin}</p> : null}
+                      <p>{party.address}</p>
+                      <div className="gst-row">
+                        <span>{text("State code (for example, 29)")}</span>
+                        <b>{party.stateCode}</b>
+                      </div>
+                      {party.structuredAddress ? (
+                        <>
+                          {[
+                            [
+                              "Address line 1",
+                              party.structuredAddress.address1,
+                            ],
+                            [
+                              "Address line 2 (optional)",
+                              party.structuredAddress.address2,
+                            ],
+                            [
+                              "Locality / city",
+                              party.structuredAddress.location,
+                            ],
+                            [
+                              "Six-digit pincode",
+                              party.structuredAddress.pincode,
+                            ],
+                          ]
+                            .filter(([, value]) => value)
+                            .map(([label, value]) => (
+                              <div className="gst-row" key={label}>
+                                <span>{text(label!)}</span>
+                                <b>{value}</b>
+                              </div>
+                            ))}
+                        </>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </Section>
               <fieldset disabled={action.busy || !!retained.current}>
                 <Section
                   title={text("Review input tax")}
@@ -246,13 +352,31 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       "This records your eligibility review. It does not claim or file input tax credit.",
                     )}
                   </p>
+                  <p className="shop-hint">
+                    {text(
+                      "Only regular GST recipients purchasing from regular GST suppliers can record eligibility. These are your confirmations; the app does not check the GST portal or supplier payments. This decision does not claim ITC or file a return.",
+                    )}
+                  </p>
+                  <p className="shop-hint">
+                    {text(
+                      "Changing eligibility recalculates acquisition costs for remaining stock and consumed quantities. Review the tax movement and retained cost history before saving.",
+                    )}
+                  </p>
                   <SelectField
                     label={text("Decision")}
                     value={decision}
                     onChange={(v) => setDecision(v as typeof decision)}
                     options={[
                       ["deferred", text("Review later")],
-                      ["reviewed_eligible", text("Reviewed eligible")],
+                      ...(detail.recipientRegistration === "regular" &&
+                      detail.snapshot.supplierRegistration === "regular"
+                        ? [
+                            [
+                              "reviewed_eligible",
+                              text("Reviewed eligible"),
+                            ] as const,
+                          ]
+                        : []),
                       ["ineligible", text("Ineligible")],
                     ]}
                   />
@@ -294,7 +418,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     ))}
                   </ReadState>
                   <Button
-                    disabled={action.busy || !note.trim() || !reference.trim()}
+                    disabled={
+                      action.busy ||
+                      !preview.isSuccess ||
+                      preview.isFetching ||
+                      !note.trim() ||
+                      !reference.trim()
+                    }
                     onClick={() =>
                       void action.run(async () => {
                         validateItcReview(
