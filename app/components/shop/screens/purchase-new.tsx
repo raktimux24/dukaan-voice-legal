@@ -1,4 +1,6 @@
 "use client";
+import { eligiblePurchaseReceipts } from "../../../lib/shop/gst-core/purchase-batch-link";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useShop } from "../context";
@@ -330,7 +332,7 @@ export function PurchaseNewScreen() {
                     type="number"
                     value={String(line.quantity)}
                     onChange={(v) =>
-                      updateLine(line.key, { quantity: Number(v) })
+                      updateLine(line.key, { quantity: Number(v), existingBatchId: undefined })
                     }
                   />
                   <TextField
@@ -367,6 +369,7 @@ export function PurchaseNewScreen() {
                 {line.stockMode === "link" ? (
                   <PurchaseBatchPicker
                     productId={line.productId}
+                    quantity={Number(line.quantity)}
                     value={line.existingBatchId ?? ""}
                     onChange={(existingBatchId) =>
                       updateLine(line.key, {
@@ -470,36 +473,41 @@ export function PurchaseNewScreen() {
 }
 
 function PurchaseBatchPicker({
+  quantity,
   productId,
   value,
   onChange,
 }: {
   productId: string;
+  quantity: number;
   value: string;
   onChange: (v: string) => void;
 }) {
-  const { api, shop } = useShop(),
+  const { api, shop, t } = useShop(),
     text = useGstText();
   const q = useGstQuery(["purchase-batches", productId], () =>
-    api.getBatches(shop!.id, productId),
+    api.getBatches(shop!.id, productId, true),
   );
+  const batches = eligiblePurchaseReceipts(q.data ?? [], quantity);
   return (
     <ReadState query={q}>
+      <p className="text-sm text-muted">{t("purchase.link_batch", EN_FALLBACK["purchase.link_batch"])}</p>
       <SelectField
         label={text("Existing stock batch")}
         value={value}
         onChange={onChange}
         options={[
           ["", text("Choose batch")],
-          ...(q.data ?? []).map(
+          ...batches.map(
             (b) =>
               [
                 b.id,
-                `${b.batchNumber || b.id.slice(0, 8)} · ${b.quantity} · ${b.supplier ?? ""}`,
+                `${b.batchNumber || b.id.slice(0, 8)} · ${b.initialQuantity} → ${b.quantity} · ${b.supplier ?? ""}`,
               ] as const,
           ),
         ]}
       />
+      {q.isSuccess && !batches.length ? <p role="status" className="text-amber-400">{t("gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f", EN_FALLBACK["gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f"])}</p> : null}
     </ReadState>
   );
 }

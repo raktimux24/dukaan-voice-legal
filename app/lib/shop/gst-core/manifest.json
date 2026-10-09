@@ -352,5 +352,11 @@
     "source": "server/src/lib/purchase-settlement.ts",
     "sourceSha256": "66c70e8009022ecb2081932d560e9fd45f7f93701e7511d3b6f31fc594f74f5d",
     "vendoredSha256": "c872509adf6b4bd27520fcd5b248f9275be451817810792858bbfa6089a4539b"
+  },
+  {
+    "file": "purchase-batch-link.ts",
+    "source": "src/lib/pos/purchase-batch-link.ts",
+    "sourceSha256": "812ba28f4c39334e8662f3ec0106b8dac4f022d4d09423992f6b64d22761c8a9",
+    "vendoredSha256": "812ba28f4c39334e8662f3ec0106b8dac4f022d4d09423992f6b64d22761c8a9"
   }
 ]
