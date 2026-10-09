@@ -129,13 +129,15 @@ export function renderBillImage(bill: ShareBillInput) {
   return canvas;
 }
 
-export async function shareBill(bill: ShareBillInput): Promise<'shared' | 'copied' | 'cancelled'> {
+export async function shareBill(bill: ShareBillInput, assertCurrent: () => void = () => {}): Promise<'shared' | 'copied' | 'downloaded' | 'cancelled'> {
+  assertCurrent();
   const text = billPlainText(bill);
   const title = `${bill.shopName} · ${(bill.labels ?? defaultLabels).bill} #${bill.saleNumber}`;
   const canvas = renderBillImage(bill);
   const blob = canvas
     ? await new Promise<Blob | null>((resolve) => canvas.toBlob((file) => resolve(file), 'image/png'))
     : null;
+  assertCurrent();
   const file = blob ? new File([blob], `bill-${bill.saleNumber}.png`, { type: 'image/png' }) : null;
   try {
     if (file && navigator.canShare?.({ files: [file] })) {
@@ -149,18 +151,24 @@ export async function shareBill(bill: ShareBillInput): Promise<'shared' | 'copie
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled';
   }
+  assertCurrent();
+  let copied = false;
   try {
     await navigator.clipboard.writeText(text);
-  } catch {
-    return 'cancelled';
-  }
+    copied = true;
+  } catch { /* A denied clipboard must not prevent downloading the receipt. */ }
+  assertCurrent();
   if (blob) {
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `bill-${bill.saleNumber}.png`;
-    link.click();
-    URL.revokeObjectURL(url);
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `bill-${bill.saleNumber}.png`;
+      assertCurrent();
+      link.click();
+    } finally { URL.revokeObjectURL(url); }
   }
-  return 'copied';
+  if (copied) return 'copied';
+  if (blob) return 'downloaded';
+  throw Error('Could not share or download this bill. Try again.');
 }

@@ -13,6 +13,7 @@ import { useShopDates } from '../use-shop-dates';
 import type { PaymentMethod } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { shareBill, type ShareBillInput } from '../../../lib/shop/share-bill';
+import { financialScope, assertScope } from '../../../lib/shop/gst-storage';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass, isDenied } from '../ui';
 
@@ -99,8 +100,13 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
     if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error("Use the verified GST document above to print or download this bill."));return;}
     setSharing(true);
     try {
-      const result = await shareBill(payload);
-      if (result === 'copied') setNotice('Bill copied. The image downloaded so you can send it on WhatsApp.');
+      const scope = financialScope(shop.id);
+      const result = await shareBill(payload, () => { api.assertSession(); assertScope(scope); });
+      if (result === 'copied') setNotice(t('bill.share_copied', 'Bill text copied.'));
+      if (result === 'downloaded') setNotice(t('bill.share_downloaded', 'Bill image downloaded.'));
+    } catch (error) {
+      setError(error instanceof Error && error.message === 'Could not share or download this bill. Try again.'
+        ? new Error(t('bill.share_failed', error.message)) : error);
     } finally {
       setSharing(false);
     }
