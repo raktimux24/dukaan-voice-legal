@@ -5009,7 +5009,7 @@
     "web.gst.choose_a_date_between_the_original_invoice_and_today_": "மூல இன்வாய்ஸ் மற்றும் இன்றைய தேதிக்கு இடைப்பட்ட தேதியைத் தேர்ந்தெடுக்கவும்.",
     "web.gst.the_amount_exceeds_the_available_supplier_balance_": "தொகை, உள்ள சப்ளையர் பேலன்ஸை விட அதிகமாக உள்ளது.",
     "web.gst.payment_date_and_time": "பணம் செலுத்திய தேதி மற்றும் நேரம்",
-    "web.gst.credit_date_and_time": "உதவித் தொகை (udhaar) வழங்கிய தேதி மற்றும் நேரம்",
+    "web.gst.credit_date_and_time": "கிரெடிட் நோட்டின் தேதி மற்றும் நேரம்",
     "web.gst.the_report_receipt_transport_is_unavailable_": "ரிப்போர்ட் ரசீது போக்குவரத்து கிடைக்கவில்லை.",
     "web.gst.the_saved_report_request_identity_is_invalid_": "சேமிக்கப்பட்ட ரிப்போர்ட் கோரிக்கை ஐடி செல்லுபடியாகவில்லை.",
     "web.gst.suppliers_show_purchase_prices_so_helpers_cannot_open_them_": "சப்ளையர்கள் கொள்முதல் விலையைக் காட்டுவார்கள், எனவே உதவியாளர்களால் அவற்றைத் திறக்க முடியாது.",
