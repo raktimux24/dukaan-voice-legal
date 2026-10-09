@@ -347,3 +347,12 @@ Downloaded request 78a2947c-cc35-459d-b91c-9d471670f7f8 retained the original WQ
 The test exposed generic document-conflict wording. Web now explains an already-recorded supplier document number in every supported language and rejects a known duplicate credit number before retaining/sending another request. Server uniqueness validation remains authoritative for stale clients and concurrent writes.
 
 Native independently confirmed Camlin stock 13 pieces after WQA-ST-1009 received one unit and WQA-ST-CR1009 removed it, matching the original web baseline 13. This closes native inventory readback for the receive-and-return fixture; existing-receipt linking and native-originated writes remain open.
+
+
+### Native-origin review and post-correction export acceptance
+
+Production PR62 deploy 6ac92d90e044850008e72780 was ready and published 2026-10-09T18:09:56.020Z for main 76fcdcbcfb33c58e43e7a24ae75b01b353deebd8. Its known duplicate supplier-credit warning was observed live, with submission disabled before a new request was retained.
+
+On approved synthetic fully returned WQA-ST-1009, mobile saved an Ineligible review at 9 Oct 2026 11:45 PM IST, note `Synthetic native review - no ITC claimed`, evidence `WQA-ST-1009 native-to-web acceptance`. Native retained history displayed the saved entry. A fresh web navigation independently displayed the same decision, timestamp, note and reference in Review and adjustment history. Invoice outstanding and recoverable remained zero. This accepts native-to-web readback for this ineligible review only; eligible ITC, other native-origin purchase mutations and response-loss cases remain open. Screenshot: /private/tmp/native-review-web-readback-20261009.jpg.
+
+The earlier retained purchase register e845d8c5-360b-4a6b-b33b-a9e549d5ee99 was downloaded again from production history after the later review, payments, refunds, reversals, credit and synthetic stock receipt/return. The downloaded `(2).csv` was exactly equal to the original: 3416 bytes, SHA-256 099905b1f3be637814de3668a51174536281b42f427287754ddd6451280b03f9. This accepts saved-file immutability after subsequent mutations for this small report; large report pagination remains unaccepted.
