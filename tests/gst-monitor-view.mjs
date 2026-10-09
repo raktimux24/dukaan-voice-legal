@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import assert from "node:assert/strict";
-const { gstMonitorView: view, CORE_MONITOR_KINDS } = createRequire(
+const { gstMonitorView: view, gstMonitorReceiptConfirmed: confirmed, CORE_MONITOR_KINDS } = createRequire(
   import.meta.url,
 )(path.join(process.env.GST_TEST_BUILD, "gst-monitor-view.js"));
 const completed = {
@@ -39,6 +39,18 @@ assert.ok(CORE_MONITOR_KINDS.has("closedPeriodChanged"));
 assert.ok(CORE_MONITOR_KINDS.has("missingProfiles"));
 assert.ok(CORE_MONITOR_KINDS.has("integrityMismatch"));
 assert.equal(CORE_MONITOR_KINDS.has("periodMutation"), false);
+const run = { id: "new-check", status: "completed", scannedDocuments: 9 };
+const receipt = { skipped: false, run };
+assert.equal(confirmed(receipt, { runs: [run] }), true);
+assert.equal(confirmed(receipt, { runs: [{ ...run, id: "previous-check" }] }), false);
+assert.equal(confirmed(receipt, { runs: [{ ...run, status: "failed" }] }), false);
+assert.equal(confirmed(receipt, { runs: [{ ...run, scannedDocuments: 8 }] }), false);
+assert.equal(confirmed({ skipped: true, run }, { runs: [run] }), false);
+assert.equal(confirmed({ skipped: false }, { runs: [run] }), false);
+assert.equal(confirmed(receipt, null), false);
+assert.equal(confirmed(receipt, { runs: [null, run] }), true);
+assert.equal(confirmed({ skipped: false, run: { ...run, scannedDocuments: -1 } }, { runs: [run] }), false);
+assert.equal(confirmed({ skipped: false, run: { ...run, scannedDocuments: 0 } }, { runs: [{ ...run, scannedDocuments: 0 }] }), true);
 console.log(
   "GST check results: complete, issues, partial, failed/stale, never checked, unavailable and offline states passed.",
 );

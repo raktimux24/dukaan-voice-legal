@@ -114,9 +114,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? '';
 
-export async function apiSend<T>(path: string, getToken: TokenGetter, init?: RequestInit, attempt = 0, metadata?:{id?:string;hash?:string}): Promise<T> {
+export async function apiSend<T>(path: string, getToken: TokenGetter, init?: RequestInit, attempt = 0, metadata?:{id?:string;hash?:string}, assertCurrent:()=>void=()=>{}): Promise<T> {
   if (!apiBaseUrl) throw new ApiError('NEXT_PUBLIC_API_BASE_URL is not configured.', 0, 'missing_api');
+  assertCurrent();
   const token = await getToken(attempt > 0 ? { skipCache: true } : undefined);
+  assertCurrent();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     signal: AbortSignal.timeout(60_000),
@@ -126,12 +128,14 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
       'X-Samaan-GST-Protocol': '2',
       ...init?.headers,
     },
-  });
+  }).catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
 
-  if (response.status === 401 && attempt === 0) return apiSend<T>(path, getToken, init, 1,metadata);
+  if (response.status === 401 && attempt === 0) return apiSend<T>(path, getToken, init, 1,metadata,assertCurrent);
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
+    assertCurrent();
     let code = '';
     let feature: string | undefined;
     let message = '';
@@ -151,22 +155,27 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
     throw error;
   }
 
-  if(metadata){metadata.id=response.headers.get('X-GST-Export-ID')??undefined;metadata.hash=response.headers.get('X-GST-Export-SHA256')??undefined;}
   if (response.status === 204) return undefined as T;
   const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('text/csv') || contentType.includes('text/plain')) return (await response.text()) as T;
-  return response.json() as Promise<T>;
+  const value = await (contentType.includes('text/csv') || contentType.includes('text/plain') ? response.text() : response.json()).catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
+  if(metadata){metadata.id=response.headers.get('X-GST-Export-ID')??undefined;metadata.hash=response.headers.get('X-GST-Export-SHA256')??undefined;}
+  return value as T;
 }
 
-export async function apiText(path: string, getToken: TokenGetter): Promise<string> {
+export async function apiText(path: string, getToken: TokenGetter, assertCurrent:()=>void=()=>{}): Promise<string> {
   if (!apiBaseUrl) throw new ApiError('NEXT_PUBLIC_API_BASE_URL is not configured.', 0, 'missing_api');
+  assertCurrent();
   const token = await getToken();
+  assertCurrent();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     signal: AbortSignal.timeout(60_000),
     headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  }).catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
   if (!response.ok) {
     const text = await response.text().catch(() => '');
+    assertCurrent();
     let code = '';
     let feature: string | undefined;
     try {
@@ -178,7 +187,9 @@ export async function apiText(path: string, getToken: TokenGetter): Promise<stri
     }
     throw new ApiError(ERROR_MESSAGES[code] ?? (code || `Request failed with status ${response.status}`), response.status, code, feature);
   }
-  return response.text();
+  const text = await response.text().catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
+  return text;
 }
 
 type ServerInventoryItem = {
@@ -267,7 +278,10 @@ function queryString(params: Record<string, string | number | boolean | undefine
 }
 
 export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
-  const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init);
+  const assertCurrent=()=>{
+    if(evidenceScope?.isSessionCurrent&&!evidenceScope.isSessionCurrent())throw new ApiError('Your sign-in changed. Refresh before trying again.',409,'auth_session_changed');
+  };
+  const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init,0,undefined,assertCurrent);
   const evidence=evidenceScope?createOfflineEvidence(evidenceScope):null;
   const readCatalog=async(shopId:string,hideCost:boolean)=>collectPages(async offset=>{
     const page=await send<{items:ServerInventoryItem[];hasMore:boolean}>(`/api/shops/${shopId}/inventory${queryString({limit:100,offset})}`);
@@ -291,7 +305,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
   };
 
   return {
-    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
+    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata,assertCurrent);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
@@ -415,7 +429,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       saleId: string,
       body: { items: { saleItemId: string; quantity: number; restock?: boolean; reason?: string | null }[]; refundMethod?: PaymentMethod | null; reason?: string | null },
     ) => send<Sale>(`/api/shops/${shopId}/sales/${saleId}/returns`, { method: 'POST', body: JSON.stringify(body) }),
-    salesCsv: (shopId: string, params: Record<string, string | undefined>) => apiText(`/api/shops/${shopId}/sales/export.csv${queryString(params)}`, getToken),
+    salesCsv: (shopId: string, params: Record<string, string | undefined>) => apiText(`/api/shops/${shopId}/sales/export.csv${queryString(params)}`, getToken,assertCurrent),
 
     getCustomers: (shopId: string, params: Record<string, string | number | undefined> = {}) =>
       send<{ customers: Customer[]; total: number; hasMore: boolean }>(`/api/shops/${shopId}/customers${queryString(params)}`),
@@ -450,7 +464,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
 
     getSalesReport: (shopId: string, period: string) => send<SalesReport>(`/api/shops/${shopId}/reports/sales?period=${period}`),
     getStockReport: (shopId: string, period: string) => send<StockReport>(`/api/shops/${shopId}/reports/stock?period=${period}`),
-    stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken),
+    stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken,assertCurrent),
     ask: (shopId: string, question: string, language?: string, voiceFeedbackEnabled = false) =>
       send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask`, {
         method: 'POST',

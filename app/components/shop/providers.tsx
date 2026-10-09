@@ -76,7 +76,7 @@ function ShopSession({ children }: { children: ReactNode }) {
   const activeShop=useRef<string|null>(null);
   const alive=useRef(true);
   const refreshVersion=useRef(0);
-  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+  useLayoutEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const [catalog, setCatalog] = useState<{ language: string; entries: Record<string, string> }>({ language: 'en', entries: {} });
 
   const api = useMemo(() => bindApi(async (opts) => getToken(opts),userId&&sessionId?{actorId:userId,sessionId,isSessionCurrent:()=>alive.current,isCurrent:shop=>alive.current&&activeShop.current===shop,onFallback:()=>setOffline(true)}:undefined), [getToken,userId,sessionId]);
