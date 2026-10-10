@@ -568,3 +568,19 @@ Targeted sharing context/cancellation/failure tests, the full GST suite with 62 
 ### Native online process restart — 10 October
 
 Simulator controls recovered after refreshing the app binding. Samaan-Bol was closed through the app switcher and its app card disappeared. A Spotlight relaunch restored Suresh Stationary Store with four products and three customers without sign-in. Evidence: /private/tmp/native-process-restart-20261010.png. This accepts an online process restart, not offline bootstrap, first-login warm-up or account-switch recovery. Native PR18 remains draft for those unresolved checks and has no production EAS release. The account chooser exposed only the existing Composition shop; eligible Regular GST acceptance awaits an approved test context.
+
+
+### Regular GST store acceptance, 10 October 2026
+
+Authenticated web and iPhone 17 simulator use Suresh GST Store (Regular GST, Karnataka, exclusive prices). Synthetic test profiles are fixtures, not classification advice or real portal verification.
+
+- Web-created HSN 5% / 12% goods and SAC 998719 18% service. Web invoice 26-1-001 (`ce3311cc-11a7-4721-8518-30cc3af512de`) retains three lines: net 450, tax 59 (CGST/SGST 29.50 each), payable 509. Mobile shows the same retained bill and goods batch costs.
+- Created QA Karnataka Parts Supplier through the unified supplier directory. Supplier invoice QA-PUR-1010A (`d20ba257-ee7f-4c80-b1d8-4ce9d6ceff80`) contains 3 received goods at 60 + 1 invoice-only service at 40 + 2 received new goods at 30; net 280, tax 27, gross 307. Created the new goods inside the purchase flow with zero opening stock; the existing draft was preserved. Stock becomes 22 / 2 respectively, service remains untracked.
+- Simulated eligible ITC review persisted after reload. Simulated cash settlement 307 leaves payable and recoverable zero. No money was transferred and no portal claim was submitted.
+- Mobile-created invoice 26-2-001 (`ffc02df4-2c09-412d-9da5-35d19b1a569c`) mixes the purchase-created HSN goods and SAC service. Discount 25 is allocated 5/20, net 225, GST 40.50, payable 265.50. Persisted invoice visible on web.
+- Found stock intent mismatch: create API silently forced service categories untracked while allowing opening batches. Fix honors explicit trackStock and rejects positive opening stock for untracked products. Web defaults match category type and sends zero opening stock when untracked; native does likewise.
+- Found native Sell retained a five-minute stale catalog across web changes. Focus refresh now shows the newly created goods and 22-unit stock in the simulator.
+- Four-digit SAC rejection and review-reset billing guard worked correctly. QA SAC was reconfirmed after changing its code before any invoice was issued.
+- Acceptance remains open for linked-batch purchases in this Regular GST shop, native supplier/purchase entry, refunds/returns, export totals and large files, offline/restart/device concurrency, and previously recorded release dependencies. No complete parity claim.
+
+Evidence: `/private/tmp/gst-mixed-hsn-sac-invoice-20261010.jpg`, `/private/tmp/native-mixed-hsn-sac-bill-20261010.png`, `/private/tmp/gst-mixed-purchase-20261010.jpg`, `/private/tmp/native-discounted-mixed-gst-sale-20261010.png`.
