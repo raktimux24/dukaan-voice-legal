@@ -5,6 +5,8 @@ import { roundedFiscalConsistent, type RoundedFiscalPayload } from './gst-core/p
 import { roundedCreditConsistent, type RoundedCreditPayload } from './gst-core/payable-rounding-credit-fiscal';
 import { ordinaryCreditConsistent, type OrdinaryCreditPayload } from './gst-core/ordinary-credit-fiscal';
 import { fiscalLineParticulars } from './gst-core/fiscal-line-particulars';
+import { fiscalTotalsConsistent } from './gst-core/fiscal-totals-integrity';
+import type { TaxTotals } from './gst-core/gst';
 import type { FiscalEnvelope, FiscalHashRecord } from './gst-core/fiscal-integrity';
 type Signed = FiscalEnvelope & FiscalHashRecord;
 export type DocumentLine = {name:string;quantity:number;unit:string;classification:string;rate:string;net:number;taxable:number;tax:number;total:number;discount:number;components:Record<string,number>};
@@ -71,7 +73,10 @@ export function documentView(doc: FiscalDocument | Signed):DocumentView {
  if(!context||!items?.length)return invalid();
  const view=summed(context,items.map(ordinaryLine));
  if(legacyCredit){
-  if(legacyCredit.invoiceNumber!==doc.originalNumber||!items.every(i=>Number.isFinite(i.quantity)&&i.quantity>0&&i.tax&&[i.tax.net,i.tax.tax,i.tax.total].every(n=>Number.isFinite(n)&&n>=0)&&Math.abs(i.tax.net+i.tax.tax-i.tax.total)<0.001)||[['net',view.net],['tax',view.tax],['total',view.total]].some(([key,expected])=>typeof p[key as string]!=='number'||Math.abs(Number(p[key as string])-Number(expected))>0.001))return invalid();
+  const valueCredit=p.stockEffect==='none';
+  const totals=valueCredit?p.totals as TaxTotals:p;
+  if(valueCredit&&(p.type!=='credit_note'||p.version!==1||p.taxAdjustmentStatus!=='review_required'||!fiscalTotalsConsistent(totals as TaxTotals)||JSON.stringify(items.map(i=>i.tax))!==JSON.stringify((totals as TaxTotals).lines)))return invalid();
+  if(legacyCredit.invoiceNumber!==doc.originalNumber||!items.every(i=>Number.isFinite(i.quantity)&&i.quantity>0&&i.tax&&[i.tax.net,i.tax.tax,i.tax.total].every(n=>Number.isFinite(n)&&n>=0)&&Math.abs(i.tax.net+i.tax.tax-i.tax.total)<0.001)||[['net',view.net],['tax',view.tax],['total',view.total]].some(([key,expected])=>typeof (totals as Record<string,unknown>)[key as string]!=='number'||Math.abs(Number((totals as Record<string,unknown>)[key as string])-Number(expected))>0.001))return invalid();
   const settlement=p.settlement as {creditReduction?:string;moneyRefund?:string;total?:string}|undefined;
   if(settlement){if(![settlement.creditReduction,settlement.moneyRefund,settlement.total].every(n=>typeof n==='string'&&/^\d+\.\d{2}$/.test(n))||Math.abs(Number(settlement.creditReduction)+Number(settlement.moneyRefund)-view.total)>0.001||Number(settlement.total)!==view.total)return invalid();view.creditReduction=Number(settlement.creditReduction);view.moneyRefund=Number(settlement.moneyRefund);}
  }

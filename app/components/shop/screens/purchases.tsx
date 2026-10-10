@@ -56,7 +56,7 @@ export function PurchasesScreen() {
             "Record supplier invoices and review purchase tax. Recording an invoice does not claim or file ITC.",
           )}
           actions={
-            <Button href="/shop/purchases/new">
+            <Button href={`/shop/purchases/new${supplierId ? `?supplierId=${encodeURIComponent(supplierId)}` : ""}`}>
               {text("Record supplier invoice")}
             </Button>
           }
