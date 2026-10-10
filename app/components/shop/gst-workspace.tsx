@@ -11,6 +11,7 @@ import { useShop } from "./context";
 import { Button, Card, Notice, Spinner, NoAccess } from "./ui";
 import { TextField, useGstText } from "./gst-ui";
 import { financialScope, assertScope } from "../../lib/shop/gst-storage";
+import { gstReviewRejection } from "../../lib/shop/gst-core/gst-review-rejection";
 import {
   currentReportMonth,
   reportPeriod,
@@ -130,9 +131,9 @@ export function useGstAction() {
     notice: error ? (
       <Card>
         <Notice error={error} />
-        <Button href="/shop/settings/gst/recovery" tone="quiet">
+        {!gstReviewRejection('turnover',error) && !gstReviewRejection('period',error) ? <Button href="/shop/settings/gst/recovery" tone="quiet">
           {text("Keep any saved request and review recovery")}
-        </Button>
+        </Button> : null}
       </Card>
     ) : null,
   };

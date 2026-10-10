@@ -86,6 +86,24 @@ console.log(
 );
 storage.setFinancialScope(scope);
 const { bindGstApi } = require(`${process.env.GST_TEST_BUILD}/gst-api.js`);
+const { ApiError } = require(`${process.env.GST_TEST_BUILD}/api.js`);
+for (const [kind, code, closed] of [
+  ['turnover','turnover_sequence_conflict',true],
+  ['periods','period_sequence_conflict',true],
+  ['periods','period_sources_changed_conflict',true],
+  ['turnover','turnover_request_conflict',false],
+  ['turnover','connection_lost',false],
+]) {
+  const id=crypto.randomUUID(),path=`/api/shops/${scope.shopId}/gst-exports/${kind}/${kind==='turnover'?'2025-26':'2026-09'}`;
+  const failing=bindGstApi(async()=>{throw new ApiError(code,409,code);});
+  await assert.rejects(failing.financial(scope.shopId,path,{clientId:id},v=>v));
+  const row=(await storage.retainedRequests(scope)).find(r=>r.id===id);
+  assert.equal(row.state,closed?'closed':'pending');
+  assert.deepEqual(row.payload,{clientId:id});
+  if(closed)assert.deepEqual(row.result,{status:'rejected',code});
+  // Release only the test fixture so cases can share a workflow path.
+  if(!closed)await storage.requestStatus(id,{state:'closed'});
+}
 let calls = [];
 const api = bindGstApi(async (path, init) => {
   calls.push({ path, body: JSON.parse(init.body) });
