@@ -188,6 +188,9 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
       setReverseId("");
       setReverseNote("");
       setReverseReference("");
+      // A subsequent refund must use the balance after this correction.
+      // Preserve a payment/refund draft the owner has already started.
+      if (!amount.trim()) setWhen(new Date().toISOString());
     } else if (saved.operation === "return") {
       setCreditNumber("");
       setCreditReference("");
@@ -195,6 +198,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
       setQuantities({});
       setStock({});
       setCreditDate(new Date().toISOString());
+      if (!amount.trim()) setWhen(new Date().toISOString());
     }
     await pending.refetch();
     await q.refetch();
