@@ -21,6 +21,23 @@ const settings={version:randomUUID(),registration:'regular',gstin:'29AAAGM0289C1
 const allocation={id:randomUUID(),deviceEpoch:randomUUID(),financialYear:'2026-27',index:1,number:'26-1-001'};
 const body={clientId:randomUUID(),soldAt:at,gstContext:{settings,priceMode:'exclusive',placeOfSupply:'29',issuedAt:at,documentRenderVersion:'gst_bill_v2',allocation},items:[{productId:randomUUID(),name:'Pen',unit:'piece',quantity:1,price:100,gstConfig:tax}],payments:[{method:'cash',amount:105}]};
 const receipt=await buildLocalFiscalReceipt(scope,body);
+const {ordinaryDocumentType}=require(root+'/ordinary-document-type.js');
+const {calculateTax}=require(root+'/gst-core/gst.js');
+const b2bContext={...body.gstContext,buyer:{name:'Synthetic Buyer',gstin:'29AAAGM0289C1ZF',stateCode:'29',address:'Synthetic Bengaluru address',billingAddress:{version:1,line1:'Synthetic Lane',locality:'Bengaluru',pincode:'560048',stateCode:'29',reviewed:true}}};
+// Preview and local issuance must agree with the backend for registered buyers.
+const exempt={...body.items[0],gstConfig:{...tax,category:'exempt',rate:0}};
+const categories=['exempt','nil','non_gst'];
+for(const category of categories){
+ const item={...exempt,gstConfig:{...exempt.gstConfig,category}};
+ const totals=calculateTax([{quantity:1,price:100,tax:item.gstConfig}],0,b2bContext);
+ assert.equal(ordinaryDocumentType(b2bContext,totals),'bill_of_supply');
+ assert.equal((await buildLocalFiscalReceipt(scope,{...body,gstContext:b2bContext,items:[item],payments:[{method:'cash',amount:100}]})).document.type,'bill_of_supply');
+ const mixedTotals=calculateTax([{quantity:1,price:100,tax},{quantity:1,price:100,tax:item.gstConfig}],0,b2bContext);
+ assert.throws(()=>ordinaryDocumentType(b2bContext,mixedTotals),/mixed_b2b_document_not_supported/);
+ await assert.rejects(buildLocalFiscalReceipt(scope,{...body,gstContext:b2bContext,items:[body.items[0],item],payments:[{method:'cash',amount:205}]}),/mixed_b2b_document_not_supported/);
+ assert.equal(ordinaryDocumentType(body.gstContext,mixedTotals),'invoice_cum_bill_of_supply');
+}
+assert.equal((await buildLocalFiscalReceipt(scope,{...body,gstContext:b2bContext})).document.type,'tax_invoice');
 assert.equal(documentView(receipt.document).tax,5);
 assert.equal(receipt.document.number,'26-1-001');
 assert.equal(receipt.document.integrity,'local_retained');

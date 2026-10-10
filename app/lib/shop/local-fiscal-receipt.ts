@@ -9,6 +9,7 @@ import {verifyRoundedReservation} from './rounded-reservation';
 import {localRoundingGrantIssue} from './rounding-grant';
 import {verifyDocument} from './gst-document';
 import {documentView} from './gst-document-view';
+import {ordinaryDocumentType} from './ordinary-document-type';
 import {sha256,type Scope,type RetainedRequest} from './gst-storage';
 import type {CreateSalePayload} from './types';
 import type {FiscalDocument} from './gst-types';
@@ -32,7 +33,7 @@ export async function buildLocalFiscalReceipt(scope:Scope,input:CreateSalePayloa
  }else{
   const totals=calculateTax(p.items.map(i=>({quantity:i.quantity,price:i.price??0,listPrice:i.listPrice,discount:i.discount,tax:i.gstConfig})),p.discountAmount??0,c);
   validateContext(c,totals.total);
-  type=c.settings.registration==='composition'?'bill_of_supply':totals.lines.some(l=>l.category!=='taxable')?'invoice_cum_bill_of_supply':'tax_invoice';
+  type=ordinaryDocumentType(c,totals);
   payload={renderVersion:c.documentRenderVersion,invoiceNumber:a.number,documentType:type,context:c,totals,items:p.items.map((i,index)=>({name:i.name!,unit:i.unit!,quantity:i.quantity,price:i.price??0,tax:totals.lines[index]}))};
  }
  if(type==='invoice_cum_bill_of_supply'&&c.buyer?.gstin)return fail();
