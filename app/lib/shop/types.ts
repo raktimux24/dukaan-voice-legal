@@ -422,6 +422,7 @@ export type SalesReport = {
     cogs: number;
     grossProfit: number;
     marginPct: number | null;
+    purchaseCostMovement?: {count: number; inventory: string; consumed: string; total: string; dateBasis: 'recorded'; timezone: 'Asia/Kolkata'} | null;
     avgBill: number;
     itemsSold: number;
     byMethod: Record<string, number>;

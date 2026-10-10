@@ -10,6 +10,7 @@ import { labeledL1 } from '../../../lib/shop/catalog';
 import { downloadText } from '../../../lib/shop/csv';
 import { formatINR, formatShortDay } from '../../../lib/shop/money';
 import type { SalesReport, StockReport } from '../../../lib/shop/types';
+import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 import { useShop } from '../context';
 import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
 
@@ -190,6 +191,15 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           <div className="kpi"><p className="kpi-label">{t('reports.sales.cash_in_drawer', 'Cash in drawer')}</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p></div>
           <div className="kpi"><p className="kpi-label">{t('bill.discount', 'Discounts')}</p><p className="kpi-value">{formatINR(summary?.discounts)}</p></div>
         </div>
+      ) : null}
+      {showCost && summary?.purchaseCostMovement && summary.purchaseCostMovement.count > 0 ? (
+        <Card>
+          <h2 className="shop-section-title">{t('gst.cost_movement_title', EN_FALLBACK['gst.cost_movement_title'])} ({summary.purchaseCostMovement.count})</h2>
+          <dl className="grid gap-3">
+            {(['inventory', 'consumed', 'total'] as const).map(key => <div key={key} className="flex flex-wrap items-baseline justify-between gap-3"><dt>{t(`gst.cost_movement_${key}`, EN_FALLBACK[`gst.cost_movement_${key}`])}</dt><dd>{formatINR(Number(summary.purchaseCostMovement![key]))}</dd></div>)}
+          </dl>
+          <p className="shop-hint">{t('gst.cost_movement_notice', EN_FALLBACK['gst.cost_movement_notice'])}</p>
+        </Card>
       ) : null}
       {(report.inputMethods ?? []).length > 0 ? (
         <Card>
