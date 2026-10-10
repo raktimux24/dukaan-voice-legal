@@ -101,6 +101,7 @@ export const EN_FALLBACK: Record<string, string> = {
   "gst.state.24": "Gujarat",
   "gst.state.26": "Dadra & Nagar Haveli and Daman & Diu",
   "gst.state.27": "Maharashtra",
+  "gst.state.28": "Andhra Pradesh",
   "gst.state.29": "Karnataka",
   "gst.state.30": "Goa",
   "gst.state.31": "Lakshadweep",
