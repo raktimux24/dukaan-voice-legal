@@ -134,8 +134,8 @@
   {
     "file": "sale-return-outcome.ts",
     "source": "src/lib/pos/sale-return-outcome.ts",
-    "sourceSha256": "0d9e2a79574ea0ec50f49fb8578ce2485afd23ab17bed0b1f297e14f9ea2c934",
-    "vendoredSha256": "45d98b7eda7373675d7ea7c4ce72840403e3bc244eb5b20dcbf3c500ab48d088"
+    "sourceSha256": "a9689f933b1542f552e1e0d912796329f29802847f6b74d64ecb70e93c42e0a6",
+    "vendoredSha256": "5d389ddd899710f1f97645ec11dbd214a07f7d5512189551562cbeac1f716f49"
   },
   {
     "file": "tax-import-outcome.ts",
