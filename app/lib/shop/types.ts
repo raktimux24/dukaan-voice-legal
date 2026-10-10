@@ -452,27 +452,116 @@ export type SalesReport = {
   boughtTogether?: {a:string;b:string;times:number}[];
 };
 
-export type StockReport = {
+export interface StockOnHand {
+  products: number;
+  units: number;
+  costValue: number | null;
+  retailValue: number | null;
+  potentialMargin: number | null;
+  byStatus: Record<"OK" | "LOW" | "OUT", { products: number; costValue: number | null }>;
+}
+export interface CategoryValue {
+  category: string;
+  products: number;
+  units: number;
+  costValue: number | null;
+  retailValue: number | null;
+  lowStock: number;
+  outOfStock: number;
+}
+export interface MovementDay {
+  date: string;
+  unitsIn: number;
+  unitsSold: number;
+  unitsAdjusted: number;
+}
+export interface ProductMovement {
+  productId: string;
+  name: string;
+  unit: string;
+  category: string;
+  opening: number;
+  unitsIn: number;
+  unitsSold: number;
+  unitsAdjusted: number;
+  closing: number;
+  sellThroughPct: number | null;
+  daysOfCover: number | null;
+}
+export interface CategoryMovement {
+  category: string;
+  unitsIn: number;
+  unitsSold: number;
+  unitsAdjusted: number;
+  revenue: number;
+  cogs: number | null;
+}
+export interface ShrinkageRow {
+  reason: string;
+  events: number;
+  units: number;
+  costValue: number | null;
+}
+export interface SlowItem {
+  productId: string;
+  name: string;
+  unit: string;
+  onHand: number;
+  costValue: number | null;
+  lastSoldAt: string | null;
+  daysSinceSale: number | null;
+}
+export interface FastItem {
+  productId: string;
+  name: string;
+  unit: string;
+  onHand: number;
+  avgDailySold: number;
+  daysOfCover: number;
+}
+export interface AgeBucket {
+  bucket: "0-30" | "31-60" | "61-90" | "90+";
+  batches: number;
+  units: number;
+  costValue: number | null;
+}
+export interface ExpiryBucket {
+  batches: number;
+  units: number;
+  costValue: number | null;
+}
+export interface ExpiryExposure {
+  within7: ExpiryBucket;
+  within30: ExpiryBucket;
+  within60: ExpiryBucket;
+  items: { productId: string; name: string; unit: string; batchNumber: string | null; expiryDate: string; daysRemaining: number; units: number; costValue: number | null }[];
+}
+export interface SupplierPurchases {
+  supplier: string;
+  batches: number;
+  units: number;
+  costValue: number | null;
+  products: number;
+  lastAt: string;
+}
+export interface StockReport {
+  range: { from: string; to: string };
   premium: boolean;
-  limitedToDays: number | null;
   showCost: boolean;
-  onHand: {
-    products: number;
-    units: number;
-    costValue: number;
-    retailValue: number;
-    potentialMargin: number;
-    byStatus: Record<string, { products: number; costValue: number }>;
-  };
-  byCategory: { category: string; products: number; units: number; costValue: number; retailValue: number; lowStock: number; outOfStock: number }[];
-  movementByDay: { date: string; unitsIn: number; unitsSold: number; unitsAdjusted: number }[];
-  expiry: {
-    within7: { batches: number; units: number };
-    within30: { batches: number; units: number };
-    within60: { batches: number; units: number };
-    items: { productId: string; name: string; unit: string; expiryDate: string; daysRemaining: number; units: number; costValue: number }[];
-  };
-};
+  limitedToDays: number | null;
+  onHand: StockOnHand;
+  byCategory: CategoryValue[];
+  movementByDay: MovementDay[];
+  expiry: ExpiryExposure;
+  byProduct?: ProductMovement[];
+  movementByCategory?: CategoryMovement[];
+  shrinkage?: { rows: ShrinkageRow[]; totalUnits: number; totalCost: number | null; pctOfCogs: number | null };
+  slowStock?: { items: SlowItem[]; valueTiedUp: number | null; thresholdDays: number };
+  fastMovers?: FastItem[];
+  ageing?: AgeBucket[];
+  turnover?: { cogs: number; avgStockValue: number; turns: number | null; daysOfInventory: number | null } | null;
+  suppliers?: SupplierPurchases[];
+}
 
 export type UnifiedAlerts = {
   stock: {

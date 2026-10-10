@@ -12,6 +12,7 @@ import { formatINR, formatShortDay } from '../../../lib/shop/money';
 import type { SalesReport, StockReport } from '../../../lib/shop/types';
 import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 import {SalesInsights} from '../report-sales-insights';
+import {StockInsights} from '../report-stock-insights';
 import { useShop } from '../context';
 import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
 
@@ -229,7 +230,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
     { key: 'OK', label: t('reports.stock.status_ok', 'In stock'), tone: 'is-ok' },
     { key: 'LOW', label: t('reports.stock.status_low', 'Low'), tone: 'is-warn' },
     { key: 'OUT', label: t('reports.stock.status_out', 'Out'), tone: 'is-danger' },
-  ];
+  ] as const;
 
   return (
     <>
@@ -261,12 +262,13 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
       </div>
       <Card>
         <h2 className="shop-section-title">{t('reports.stock.movement', 'Movement')}</h2>
-        <p className="chart-legend"><i /> {t('reports.stock.units_in', 'In')} <i className="is-ok" /> {t('reports.stock.units_sold', 'Sold')}</p>
+        <p className="chart-legend"><i /> {t('reports.stock.units_in', 'In')} <i className="is-ok" /> {t('reports.stock.units_sold', 'Sold')} <i className="is-danger" /> {t('reports.stock.units_adjusted', 'Adjusted')}</p>
         {movement.length === 0 ? <p className="party-meta">{uiText("No stock movement in this period.")}</p> : (
           <ColumnChart
             columns={movement.map((day, index) => ({
               label: movement.length > 14 && index % Math.ceil(movement.length / 8) !== 0 ? '' : formatShortDay(day.date, prefs?.appLanguage),
               bars: [
+                { value: day.unitsAdjusted, tone: 'is-danger' },
                 { value: day.unitsIn, tone: '' },
                 { value: day.unitsSold, tone: 'is-ok' },
               ],
@@ -275,13 +277,13 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
         )}
       </Card>
       <Card>
-        <h2 className="shop-section-title">{t('reports.stock.value_by_category', 'By category')}</h2>
+        <h2 className="shop-section-title">{showCost ? t('reports.stock.value_by_category', 'Value by category') : t('reports.stock.units_by_category', 'Units by category')}</h2>
         <ShareList
           rows={(report.byCategory ?? []).map((row) => ({
             key: row.category,
             label: labeledL1(row.category, (key) => t(key, key)),
-            pct: products ? (row.products / products) * 100 : 0,
-            value: showCost ? formatINR(row.retailValue) : `${row.products} products`,
+            pct: (showCost ? row.costValue ?? 0 : row.units) / ((report.byCategory ?? []).reduce((total, category) => total + (showCost ? category.costValue ?? 0 : category.units), 0) || 1) * 100,
+            value: showCost ? formatINR(row.costValue) : `${row.units} ${t('reports.stock.units', 'Units')}`,
           }))}
         />
       </Card>
@@ -303,6 +305,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
           </div>
         </Card>
       ) : null}
+      <StockInsights report={report} showCost={showCost}/>
     </>
   );
 }
