@@ -4,6 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { calculateTax, type GstContext, type Buyer, type ProductTax } from './gst-core/gst';
 import {cartLineWithQuantity} from './rsp-cart-quantity';
 import {mixedCartProjection} from './mixed-cart-projection';
+import {ordinaryDocumentType} from './ordinary-document-type';
 import { roundPaise } from './money';
 import { r3 } from './units';
 import type { CreateSalePayload, InventoryItem } from './types';
@@ -197,6 +198,7 @@ export function computeTotals(cart: Cart, context?:GstContext|null) {
   const discount = roundPaise(lineDiscounts + billDiscount);
   const mixed=context&&cart.lines.some(line=>line.rsp)?mixedCartProjection(cart.lines,context,billDiscount,cart.mixedDiscountReview):null;
   const tax=context&&!mixed?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context):null;
+  if(context&&tax)ordinaryDocumentType(context,tax);
   return {
     mixed,
     subtotal,
