@@ -773,6 +773,18 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     <p>{row.reason}</p>
                   </div>
                 ))}
+                {detail.costAdjustments.map((row) => (
+                  <div key={row.id} className="gst-row">
+                    <b>{t("purchase.cost_adjustment", EN_FALLBACK["purchase.cost_adjustment"])}</b>
+                    <span>{date(row.createdAt)}</span>
+                    <p>{detail.items.find((item) => item.id === row.purchaseItemId)?.name}</p>
+                    <p>
+                      {t("purchase.inventory", EN_FALLBACK["purchase.inventory"])}: {formatINR(Number(row.inventoryAdjustment))}
+                      {" · "}
+                      {t("purchase.consumed", EN_FALLBACK["purchase.consumed"])}: {formatINR(Number(row.consumedAdjustment))}
+                    </p>
+                  </div>
+                ))}
               </Section>
             </>
           ) : null}

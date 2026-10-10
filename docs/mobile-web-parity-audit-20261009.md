@@ -583,7 +583,12 @@ Authenticated web and iPhone 17 simulator use Suresh GST Store (Regular GST, Kar
 - Four-digit SAC rejection and review-reset billing guard worked correctly. QA SAC was reconfirmed after changing its code before any invoice was issued.
 - Native linked-batch purchase QA-N-LINK-1010 preserved stock at 9; native supplier creation, invoice-only service purchase QA-N-SVC-1010 and mixed new-stock/service purchase QA-N-NEW-1010 passed cross-client readback. The last purchase created a SAC service inside the native flow and received 2 exempt goods; stock became 14.
 - Web goods return CN26-1 refunds 53.10 from the discounted mixed native invoice and restores stock 1 to 2. Service value credit CN26-2 retains net 20, GST 3.60, refund 23.60 with no stock movement. Its verified payload exposed a renderer mismatch (nested totals versus return totals); renderer now validates both structures and settlement, with corruption regression coverage.
-- The supplier-filtered create-invoice link now preserves supplierId and prefills the scoped directory record. Live post-deployment checks are pending.
-- Acceptance remains open for native adjustment readback, export reconciliation, offline/restart/device concurrency, and release dependencies. The locked Mac prevents current simulator checks. No complete parity claim.
+- The supplier-filtered create-invoice link preserves supplierId and prefills the scoped directory record. Live post-deployment readback confirmed the native-created supplier is selected.
+- Downloaded sales register includes both invoices and credits: net 610, tax 87.80, gross 697.80. Saved re-download is byte-identical. Purchase register includes all four invoices: gross 1,761, tax 171, payments 307 and closing payable 1,454. Decimal reconciliation passed. The latest completed check covers all four saved sale/credit documents with no current billing issues.
+- Acceptance remains open for native adjustment/export readback, offline/restart/device concurrency, and release dependencies. The locked Mac prevents current simulator checks. No complete parity claim.
 
 Evidence: `/private/tmp/gst-mixed-hsn-sac-invoice-20261010.jpg`, `/private/tmp/native-mixed-hsn-sac-bill-20261010.png`, `/private/tmp/gst-mixed-purchase-20261010.jpg`, `/private/tmp/native-discounted-mixed-gst-sale-20261010.png`.
+
+### Purchase cost history parity — 10 October
+
+Live reviewed purchase `QA-PUR-1010A` exposed a missing web history section: the server returned acquisition-cost adjustments, and mobile displayed them, but web omitted them. Web now renders each saved adjustment with its product, recorded date, signed on-hand inventory change and consumed acquisition change. Labels reuse the translated mobile keys. No eligibility decision, invoice or stock record is changed by this display correction. Runtime readback awaits production publication.
