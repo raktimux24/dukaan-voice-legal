@@ -435,7 +435,7 @@ export type SalesReport = {
   comparison: {
     label: string;
     previous: { revenue: number; bills: number; avgBill: number; itemsSold: number };
-    deltaPct: { revenue: number; bills: number; avgBill: number; itemsSold: number };
+    deltaPct: { revenue: number | null; bills: number | null; avgBill: number | null; itemsSold: number | null };
   } | null;
   byCategory: { category: string; bills: number; units: number; revenue: number; sharePct: number; marginPct: number }[];
   byWeekday: { dow: number; bills: number; revenue: number }[];

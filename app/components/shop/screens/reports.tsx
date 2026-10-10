@@ -102,7 +102,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
         <div className="kpi">
           <p className="kpi-label">{t('sales.summary.revenue', 'Revenue')}</p>
           <p className="kpi-value">{formatINR(revenue)}</p>
-          {report.comparison ? (
+          {report.comparison && report.comparison.deltaPct.revenue != null ? (
             <p className={report.comparison.deltaPct.revenue >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
               {report.comparison.deltaPct.revenue >= 0 ? '+' : ''}
               {Math.round(report.comparison.deltaPct.revenue)}% {report.comparison.label === 'same_day_last_week' ? t('reports.sales.vs_last_week', 'vs last week') : t('reports.sales.vs_previous', 'vs previous')}
@@ -112,7 +112,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
         <div className="kpi">
           <p className="kpi-label">{t('sales.summary.bills', 'Bills')}</p>
           <p className="kpi-value">{summary?.bills ?? 0}</p>
-          {report.comparison ? (
+          {report.comparison && report.comparison.deltaPct.bills != null ? (
             <p className={report.comparison.deltaPct.bills >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
               {report.comparison.deltaPct.bills >= 0 ? '+' : ''}
               {Math.round(report.comparison.deltaPct.bills)}%

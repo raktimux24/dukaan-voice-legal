@@ -1837,6 +1837,7 @@ a.party-card:hover {
 
 .chart-pair span.is-ok { background: #32d583; }
 .chart-pair span.is-warn { background: #ffb547; }
+.chart-pair span.is-danger, .chart-legend i.is-danger { background: #e85a4f; }
 
 .chart-col small {
   height: 12px;
