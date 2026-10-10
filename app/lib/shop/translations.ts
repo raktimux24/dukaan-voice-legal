@@ -7,6 +7,7 @@ export const APP_LANGUAGES = ['en', 'hi', 'hinglish', 'bn', 'ta', 'te', 'mr', 'k
 const mobile = gstLocales as Record<string, Record<string, string>>;
 const web = webLocales as Record<string, Record<string, string>>;
 const english: Record<string, string> = { ...source, ...EN_FALLBACK, ...web.en };
+const currentEnglishGst = Object.fromEntries(Object.entries(english).filter(([key]) => key.startsWith('gst.')));
 const keysByText = new Map<string, string[]>();
 for (const [key, value] of Object.entries(english)) {
   const keys = keysByText.get(value) ?? [];
@@ -15,7 +16,7 @@ for (const [key, value] of Object.entries(english)) {
 }
 
 export function translateUi(language: string, dictionary: Record<string, string>, key: string, fallback: string, vars?: Record<string, string | number>) {
-  const catalogs = [web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [english] : []), dictionary];
+  const catalogs = [web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [currentEnglishGst] : []), dictionary];
   const webKey = 'web.gst.' + fallback.toLowerCase().replace(/[^a-z0-9]+/g, '_');
   const candidates = [webKey, key, ...(keysByText.get(fallback) ?? [])];
   let text = fallback;
