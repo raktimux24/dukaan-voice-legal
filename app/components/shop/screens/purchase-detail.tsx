@@ -422,7 +422,9 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
               <fieldset disabled={action.busy || !!retained.current || pending.isPending || !!pending.error || !!pending.data?.length}>
                 <Section
                   title={text("Review input tax")}
-                  summary={text(detail.reviews[0]?.decision ?? "Not reviewed")}
+                  summary={detail.reviews[0]
+                    ? t(`purchase.decision_${detail.reviews[0].decision}`, EN_FALLBACK[`purchase.decision_${detail.reviews[0].decision}`])
+                    : text("Not reviewed")}
                 >
                   <p className="shop-hint">
                     {text(
@@ -487,9 +489,9 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                         </span>
                         <small>
                           {text("Inventory cost change")}:{" "}
-                          {row.inventoryAdjustment} ·{" "}
+                          {formatINR(Number(row.inventoryAdjustment))} ·{" "}
                           {text("Consumed cost change")}:{" "}
-                          {row.consumedAdjustment}
+                          {formatINR(Number(row.consumedAdjustment))}
                         </small>
                       </div>
                     ))}
@@ -757,7 +759,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
               <Section title={text("Review and adjustment history")}>
                 {detail.reviews.map((row) => (
                   <div key={row.id} className="gst-row">
-                    <b>{text(row.decision)}</b>
+                    <b>{t(`purchase.decision_${row.decision}`, EN_FALLBACK[`purchase.decision_${row.decision}`])}</b>
                     <span>{date(row.createdAt)}</span>
                     <p>
                       {row.note} · {row.evidenceReference}
