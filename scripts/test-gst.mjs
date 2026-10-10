@@ -36,6 +36,7 @@ try {
     "app/lib/shop/gst-core/gst-export-review.ts",
     "app/lib/shop/browser-push-session.ts",
     "app/lib/shop/checkout-customer.ts",
+    "app/lib/shop/checkout-rejection.ts",
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/gst-recovery.ts",
     "app/lib/shop/api.ts",

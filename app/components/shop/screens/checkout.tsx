@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useBillingRouter as useRouter } from '../billing-shell';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { issueSale } from '../../../lib/shop/gst-issuance';
+import {releaseRejectedMixedCheckout} from '../../../lib/shop/checkout-rejection';
 import {permitsOfflineShopFallback} from '../../../lib/shop/offline-shop-context';
 import {premiumAt} from '../../../lib/shop/offline-premium';
 import { validateContext, type GstContext } from '../../../lib/shop/gst-core/gst';
@@ -206,7 +207,13 @@ export function CheckoutScreen() {
       setError(new Error('Enter a valid Indian mobile number.'));
       return;
     }
-    const existing = fresh ? null : readPending(userId, shop.id);
+    let existing = fresh ? null : readPending(userId, shop.id);
+    if(existing){
+      charging.current=true;setBusy(true);
+      try{if(await releaseRejectedMixedCheckout(shop.id,existing))existing=null;}
+      catch(caught){setError(caught);return;}
+      finally{charging.current=false;setBusy(false);}
+    }
     let customerClientId = cartApi.cart.customerClientId;
     if (!cartApi.cart.customerId && cartApi.cart.customerName?.trim() && !customerClientId) {
       customerClientId = crypto.randomUUID();
