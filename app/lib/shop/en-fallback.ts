@@ -4,6 +4,10 @@
  * The full server-fetched catalog merges over this on load; keep in sync with server/src/scripts/translations-source.ts.
  */
 export const EN_FALLBACK: Record<string, string> = {
+  "gst.error.turnover_sequence_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
+  "gst.error.period_sequence_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
+  "gst.error.period_sources_changed_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
+
   "gst.error.duplicate_purchase_document": "This supplier document number has already been recorded. Review the existing document before creating another entry.",
   "gst.export_saved_copy": "{{register}} saved. Download this exact copy or reopen it below.",
   "gst.export_included_dates": "{{from}} – {{to}} (included)",

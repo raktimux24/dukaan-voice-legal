@@ -633,9 +633,10 @@ export function GstPeriodsScreen() {
                               assertScope(scope);
                               setNote("");
                               setConfirmedSource(null);
-                              await q.refetch();
                             } finally {
                               await journal.refetch();
+                              setConfirmedSource(null);
+                              await q.refetch();
                             }
                           })
                         }
@@ -887,9 +888,10 @@ export function GstTurnoverScreen() {
                           });
                           assertScope(scope);
                           setReviewed(false);
-                          await q.refetch();
                         } finally {
                           await journal.refetch();
+                          setReviewed(false);
+                          await q.refetch();
                         }
                       })
                     }

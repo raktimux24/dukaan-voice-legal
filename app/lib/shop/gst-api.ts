@@ -9,6 +9,7 @@ import { confirmedDebitSettlement } from "./gst-core/debit-settlement-outcome";
 import { confirmedPeriodEvent } from "./gst-core/period-outcome";
 import { confirmedTurnoverReview } from "./gst-core/turnover-outcome";
 import { confirmedTaxImport } from "./gst-core/tax-import-outcome";
+import { gstReviewRejection } from "./gst-core/gst-review-rejection";
 import type {
   Buyer,
   ProductTax,
@@ -117,7 +118,12 @@ export function bindGstApi(
         });
         return result;
       } catch (error) {
+        assertScope(active);
+        const kind = /\/gst-exports\/turnover\/20\d{2}-\d{2}$/.test(path)
+          ? 'turnover' : /\/gst-exports\/periods\/\d{4}-\d{2}$/.test(path) ? 'period' : null;
+        const rejection = kind ? gstReviewRejection(kind, error) : null;
         await requestStatus(id, {
+          ...(rejection ? { state: 'closed' as const, result: { status: 'rejected', code: rejection } } : {}),
           error:
             error instanceof Error
               ? error.message

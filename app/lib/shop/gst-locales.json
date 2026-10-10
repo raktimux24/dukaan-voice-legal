@@ -1176,7 +1176,10 @@
     "bill.fiscal.invoice_cum_bill_of_supply": "इनवॉइस कम बिल ऑफ सप्लाई",
     "bill.fiscal.credit_note": "क्रेडिट नोट",
     "bill.fiscal.nil": "निल-रेटेड",
-    "bill.fiscal.exempt": "छूट प्राप्त"
+    "bill.fiscal.exempt": "छूट प्राप्त",
+    "gst.error.turnover_sequence_conflict": "किसी अन्य समीक्षा ने ये रिकॉर्ड बदल दिए हैं। दोबारा सहेजने से पहले रीफ़्रेश करें और नवीनतम विवरण की समीक्षा करें। अस्वीकृत अनुरोध संदर्भ के लिए सुरक्षित है.",
+    "gst.error.period_sequence_conflict": "किसी अन्य समीक्षा ने ये रिकॉर्ड बदल दिए हैं। दोबारा सहेजने से पहले रीफ़्रेश करें और नवीनतम विवरण की समीक्षा करें। अस्वीकृत अनुरोध संदर्भ के लिए सुरक्षित है.",
+    "gst.error.period_sources_changed_conflict": "किसी अन्य समीक्षा ने ये रिकॉर्ड बदल दिए हैं। दोबारा सहेजने से पहले रीफ़्रेश करें और नवीनतम विवरण की समीक्षा करें। अस्वीकृत अनुरोध संदर्भ के लिए सुरक्षित है."
   },
   "hinglish": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -2355,7 +2358,10 @@
     "checkout.phone_optional": "Phone (optional)",
     "checkout.use_customer": "Is customer ka istemal karein",
     "checkout.customer_list_premium": "Save kiye gaye customers aur udhaar balance Premium ka hissa hain.",
-    "checkout.no_payment_due": "Bill poora ho gaya · koi payment baki nahi"
+    "checkout.no_payment_due": "Bill poora ho gaya · koi payment baki nahi",
+    "gst.error.turnover_sequence_conflict": "Kisi aur review ne ye records badal diye hain. Dobara save karne se pehle refresh karke latest details review karein. Rejected request reference ke liye rakhi gayi hai.",
+    "gst.error.period_sequence_conflict": "Kisi aur review ne ye records badal diye hain. Dobara save karne se pehle refresh karke latest details review karein. Rejected request reference ke liye rakhi gayi hai.",
+    "gst.error.period_sources_changed_conflict": "Kisi aur review ne ye records badal diye hain. Dobara save karne se pehle refresh karke latest details review karein. Rejected request reference ke liye rakhi gayi hai."
   },
   "ta": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -3534,7 +3540,10 @@
     "checkout.upi_ref_required": "தேவை",
     "checkout.zero_total": "ஒரு பில்லுக்குத் தொகை தேவை. ஒரு விலையை அமைக்கவும் அல்லது ₹0 வரிகளை நீக்கவும்.",
     "checkout.no_payment_due": "பில்லை முடிக்கவும் · கட்ட வேண்டிய பணம் இல்லை",
-    "bill.fiscal.nil": "ஜீரோ-ரேட்டட்"
+    "bill.fiscal.nil": "ஜீரோ-ரேட்டட்",
+    "gst.error.turnover_sequence_conflict": "மற்றொரு மதிப்பாய்வு இந்தப் பதிவுகளை மாற்றியுள்ளது. மீண்டும் சேமிக்கும் முன் புதுப்பித்து சமீபத்திய விவரங்களை மதிப்பாய்வு செய்யவும். நிராகரிக்கப்பட்ட கோரிக்கை குறிப்புக்காக வைத்துள்ளது.",
+    "gst.error.period_sequence_conflict": "மற்றொரு மதிப்பாய்வு இந்தப் பதிவுகளை மாற்றியுள்ளது. மீண்டும் சேமிக்கும் முன் புதுப்பித்து சமீபத்திய விவரங்களை மதிப்பாய்வு செய்யவும். நிராகரிக்கப்பட்ட கோரிக்கை குறிப்புக்காக வைத்துள்ளது.",
+    "gst.error.period_sources_changed_conflict": "மற்றொரு மதிப்பாய்வு இந்தப் பதிவுகளை மாற்றியுள்ளது. மீண்டும் சேமிக்கும் முன் புதுப்பித்து சமீபத்திய விவரங்களை மதிப்பாய்வு செய்யவும். நிராகரிக்கப்பட்ட கோரிக்கை குறிப்புக்காக வைத்துள்ளது."
   },
   "te": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -4713,7 +4722,10 @@
     "bill.fiscal.invoice_cum_bill_of_supply": "ఇన్వాయిస్ కమ్ బిల్ ఆఫ్ సప్లై",
     "bill.fiscal.credit_note": "క్రెడిట్ నోట్",
     "bill.fiscal.nil": "నిల్-రేటెడ్",
-    "bill.fiscal.exempt": "ఎగ్జెంప్ట్"
+    "bill.fiscal.exempt": "ఎగ్జెంప్ట్",
+    "gst.error.turnover_sequence_conflict": "మరో సమీక్ష ఈ రికార్డులను మార్చింది. మళ్లీ సేవ్ చేసే ముందు రిఫ్రెష్ చేసి తాజా వివరాలను సమీక్షించండి. తిరస్కరించిన అభ్యర్థన సూచన కోసం భద్రపరచబడింది.",
+    "gst.error.period_sequence_conflict": "మరో సమీక్ష ఈ రికార్డులను మార్చింది. మళ్లీ సేవ్ చేసే ముందు రిఫ్రెష్ చేసి తాజా వివరాలను సమీక్షించండి. తిరస్కరించిన అభ్యర్థన సూచన కోసం భద్రపరచబడింది.",
+    "gst.error.period_sources_changed_conflict": "మరో సమీక్ష ఈ రికార్డులను మార్చింది. మళ్లీ సేవ్ చేసే ముందు రిఫ్రెష్ చేసి తాజా వివరాలను సమీక్షించండి. తిరస్కరించిన అభ్యర్థన సూచన కోసం భద్రపరచబడింది."
   },
   "bn": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -5892,7 +5904,10 @@
     "checkout.resolve_setup": "বিলিং সেটআপ ঠিক করুন",
     "checkout.upi_ref_required": "প্রয়োজনীয়",
     "checkout.zero_total": "একটি বিলে পরিমাণ থাকতে হবে। একটি দাম সেট করুন অথবা ₹0 লাইনগুলো মুছে ফেলুন।",
-    "checkout.no_payment_due": "বিল সম্পন্ন · কোনো পেমেন্ট বকেয়া নেই"
+    "checkout.no_payment_due": "বিল সম্পন্ন · কোনো পেমেন্ট বকেয়া নেই",
+    "gst.error.turnover_sequence_conflict": "অন্য একটি পর্যালোচনায় এই রেকর্ডগুলো বদলেছে। আবার সেভ করার আগে রিফ্রেশ করে সর্বশেষ বিবরণ যাচাই করুন। প্রত্যাখ্যাত অনুরোধটি তথ্যসূত্র হিসেবে রাখা হয়েছে।",
+    "gst.error.period_sequence_conflict": "অন্য একটি পর্যালোচনায় এই রেকর্ডগুলো বদলেছে। আবার সেভ করার আগে রিফ্রেশ করে সর্বশেষ বিবরণ যাচাই করুন। প্রত্যাখ্যাত অনুরোধটি তথ্যসূত্র হিসেবে রাখা হয়েছে।",
+    "gst.error.period_sources_changed_conflict": "অন্য একটি পর্যালোচনায় এই রেকর্ডগুলো বদলেছে। আবার সেভ করার আগে রিফ্রেশ করে সর্বশেষ বিবরণ যাচাই করুন। প্রত্যাখ্যাত অনুরোধটি তথ্যসূত্র হিসেবে রাখা হয়েছে।"
   },
   "mr": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -7071,7 +7086,10 @@
     "checkout.resolve_setup": "बिलिंग सेटअप सोडवा",
     "checkout.upi_ref_required": "आवश्यक",
     "checkout.zero_total": "बिलासाठी रक्कम आवश्यक आहे. किंमत सेट करा किंवा ₹0 ओळी काढून टाका.",
-    "checkout.no_payment_due": "बिल पूर्ण करा · कोणतीही देय रक्कम नाही"
+    "checkout.no_payment_due": "बिल पूर्ण करा · कोणतीही देय रक्कम नाही",
+    "gst.error.turnover_sequence_conflict": "दुसऱ्या पुनरावलोकनामुळे या नोंदी बदलल्या आहेत. पुन्हा जतन करण्यापूर्वी रिफ्रेश करून नवीनतम तपशील तपासा. नाकारलेली विनंती संदर्भासाठी ठेवली आहे.",
+    "gst.error.period_sequence_conflict": "दुसऱ्या पुनरावलोकनामुळे या नोंदी बदलल्या आहेत. पुन्हा जतन करण्यापूर्वी रिफ्रेश करून नवीनतम तपशील तपासा. नाकारलेली विनंती संदर्भासाठी ठेवली आहे.",
+    "gst.error.period_sources_changed_conflict": "दुसऱ्या पुनरावलोकनामुळे या नोंदी बदलल्या आहेत. पुन्हा जतन करण्यापूर्वी रिफ्रेश करून नवीनतम तपशील तपासा. नाकारलेली विनंती संदर्भासाठी ठेवली आहे."
   },
   "kn": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -8250,7 +8268,10 @@
     "checkout.resolve_setup": "ಬಿಲ್ಲಿಂಗ್ ಸೆಟಪ್ ಸರಿಪಡಿಸಿ",
     "checkout.upi_ref_required": "ಅಗತ್ಯವಿದೆ",
     "checkout.zero_total": "ಬಿಲ್‌ಗೆ ಮೊತ್ತ ಬೇಕಾಗುತ್ತದೆ. ಬೆಲೆ ನಿಗದಿಪಡಿಸಿ ಅಥವಾ ₹0 ಸಾಲುಗಳನ್ನು ತೆಗೆದುಹಾಕಿ.",
-    "checkout.no_payment_due": "ಬಿಲ್ ಪೂರ್ಣಗೊಳಿಸಿ · ಪಾವತಿಸಲು ಬಾಕಿ ಇಲ್ಲ"
+    "checkout.no_payment_due": "ಬಿಲ್ ಪೂರ್ಣಗೊಳಿಸಿ · ಪಾವತಿಸಲು ಬಾಕಿ ಇಲ್ಲ",
+    "gst.error.turnover_sequence_conflict": "ಮತ್ತೊಂದು ಪರಿಶೀಲನೆಯು ಈ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸಿದೆ. ಮತ್ತೆ ಉಳಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಇತ್ತೀಚಿನ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ತಿರಸ್ಕರಿಸಿದ ವಿನಂತಿಯನ್ನು ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಉಳಿಸಲಾಗಿದೆ.",
+    "gst.error.period_sequence_conflict": "ಮತ್ತೊಂದು ಪರಿಶೀಲನೆಯು ಈ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸಿದೆ. ಮತ್ತೆ ಉಳಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಇತ್ತೀಚಿನ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ತಿರಸ್ಕರಿಸಿದ ವಿನಂತಿಯನ್ನು ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಉಳಿಸಲಾಗಿದೆ.",
+    "gst.error.period_sources_changed_conflict": "ಮತ್ತೊಂದು ಪರಿಶೀಲನೆಯು ಈ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸಿದೆ. ಮತ್ತೆ ಉಳಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಇತ್ತೀಚಿನ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ತಿರಸ್ಕರಿಸಿದ ವಿನಂತಿಯನ್ನು ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಉಳಿಸಲಾಗಿದೆ."
   },
   "gu": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -9429,7 +9450,10 @@
     "checkout.resolve_setup": "બિલિંગ સેટઅપ ઉકેલો",
     "checkout.upi_ref_required": "જરૂરી છે",
     "checkout.zero_total": "બિલ માટે રકમ જરૂરી છે. કિંમત સેટ કરો અથવા ₹0 લાઈનો કાઢી નાખો.",
-    "checkout.no_payment_due": "બિલ પૂર્ણ કરો · કોઈ ચુકવણી બાકી નથી"
+    "checkout.no_payment_due": "બિલ પૂર્ણ કરો · કોઈ ચુકવણી બાકી નથી",
+    "gst.error.turnover_sequence_conflict": "બીજી સમીક્ષાએ આ રેકોર્ડ બદલ્યા છે. ફરી સાચવતાં પહેલાં રિફ્રેશ કરીને નવીનતમ વિગતો તપાસો. નકારેલી વિનંતી સંદર્ભ માટે રાખવામાં આવી છે.",
+    "gst.error.period_sequence_conflict": "બીજી સમીક્ષાએ આ રેકોર્ડ બદલ્યા છે. ફરી સાચવતાં પહેલાં રિફ્રેશ કરીને નવીનતમ વિગતો તપાસો. નકારેલી વિનંતી સંદર્ભ માટે રાખવામાં આવી છે.",
+    "gst.error.period_sources_changed_conflict": "બીજી સમીક્ષાએ આ રેકોર્ડ બદલ્યા છે. ફરી સાચવતાં પહેલાં રિફ્રેશ કરીને નવીનતમ વિગતો તપાસો. નકારેલી વિનંતી સંદર્ભ માટે રાખવામાં આવી છે."
   },
   "ml": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -10608,6 +10632,9 @@
     "bill.fiscal.bill_of_supply": "വിതരണ ബിൽ",
     "bill.fiscal.invoice_cum_bill_of_supply": "ഇൻവോയ്സും വിതരണ ബില്ലും",
     "bill.fiscal.credit_note": "ക്രെഡിറ്റ് നോട്ട്",
-    "bill.fiscal.nil": "പൂജ്യം നിരക്ക്"
+    "bill.fiscal.nil": "പൂജ്യം നിരക്ക്",
+    "gst.error.turnover_sequence_conflict": "മറ്റൊരു പരിശോധന ഈ രേഖകൾ മാറ്റിയിട്ടുണ്ട്. വീണ്ടും സംരക്ഷിക്കുന്നതിന് മുമ്പ് പുതുക്കി ഏറ്റവും പുതിയ വിവരങ്ങൾ പരിശോധിക്കുക. നിരസിച്ച അഭ്യർത്ഥന റഫറൻസിനായി സൂക്ഷിച്ചിട്ടുണ്ട്.",
+    "gst.error.period_sequence_conflict": "മറ്റൊരു പരിശോധന ഈ രേഖകൾ മാറ്റിയിട്ടുണ്ട്. വീണ്ടും സംരക്ഷിക്കുന്നതിന് മുമ്പ് പുതുക്കി ഏറ്റവും പുതിയ വിവരങ്ങൾ പരിശോധിക്കുക. നിരസിച്ച അഭ്യർത്ഥന റഫറൻസിനായി സൂക്ഷിച്ചിട്ടുണ്ട്.",
+    "gst.error.period_sources_changed_conflict": "മറ്റൊരു പരിശോധന ഈ രേഖകൾ മാറ്റിയിട്ടുണ്ട്. വീണ്ടും സംരക്ഷിക്കുന്നതിന് മുമ്പ് പുതുക്കി ഏറ്റവും പുതിയ വിവരങ്ങൾ പരിശോധിക്കുക. നിരസിച്ച അഭ്യർത്ഥന റഫറൻസിനായി സൂക്ഷിച്ചിട്ടുണ്ട്."
   }
 }
