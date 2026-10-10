@@ -68,3 +68,14 @@ const legacyCredit={type:'credit_note',originalNumber:'26-3-001',payload:{origin
 assert.equal(documentView(legacyCredit).total,450);assert.equal(documentView(legacyCredit).moneyRefund,450);
 assert.throws(()=>documentView({...legacyCredit,payload:{...legacyCredit.payload,total:449}}),/inconsistent/);
 assert.throws(()=>documentView({...legacyCredit,originalNumber:'wrong'}),/inconsistent/);
+
+// Value-only service credits retain totals under payload.totals, not return payload.net/tax/total.
+const serviceTax={...legacyLine,codeType:'sac',code:'998719',rate:18,gross:20,net:20,taxable:20,tax:3.6,cgst:1.8,sgst:1.8,total:23.6};
+const serviceTotals={version:1,subtotal:20,discount:0,billDiscount:0,net:20,taxable:20,tax:3.6,cgst:1.8,sgst:1.8,utgst:0,igst:0,total:23.6,lines:[serviceTax]};
+const valueCredit={...legacyCredit,payload:{version:1,type:'credit_note',stockEffect:'none',taxAdjustmentStatus:'review_required',original:legacyCredit.payload.original,context:legacyCredit.payload.original.context,reason:'Synthetic service value correction',items:[{name:'QA service',unit:'piece',quantity:1,tax:serviceTax}],totals:serviceTotals,settlement:{creditReduction:'0.00',moneyRefund:'23.60',total:'23.60'}}};
+assert.equal(documentView(valueCredit).total,23.6);
+assert.equal(documentView(valueCredit).tax,3.6);
+assert.equal(documentView(valueCredit).moneyRefund,23.6);
+assert.throws(()=>documentView({...valueCredit,payload:{...valueCredit.payload,totals:{...serviceTotals,total:23.61}}}),/inconsistent/);
+assert.throws(()=>documentView({...valueCredit,payload:{...valueCredit.payload,totals:{...serviceTotals,lines:[legacyLine]}}}),/inconsistent/);
+assert.throws(()=>documentView({...valueCredit,payload:{...valueCredit.payload,settlement:{creditReduction:'0.00',moneyRefund:'23.61',total:'23.61'}}}),/inconsistent/);

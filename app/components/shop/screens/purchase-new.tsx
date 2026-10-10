@@ -9,8 +9,8 @@ import {
   type PurchaseDraftLine,
 } from "../../../lib/shop/purchase-draft";
 import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
 import { Button, Card, PageHeader, Notice } from "../ui";
 import { SupplierPicker } from "../gst-supplier";
@@ -48,6 +48,9 @@ export function PurchaseNewScreen() {
     text = useGstText(),
     router = useRouter(),
     action = useGstAction();
+  const requestedSupplierId = useSearchParams().get("supplierId") ?? "";
+  const requestedSupplier = useGstQuery(["purchase-supplier", requestedSupplierId],
+    () => api.gst.supplier(shop!.id, requestedSupplierId), !!requestedSupplierId);
   const pos = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
     catalog = useGstQuery(
       ["purchase-products"],
@@ -72,6 +75,13 @@ export function PurchaseNewScreen() {
     [addingProduct, setAddingProduct] = useState(false),
     [movementSignature, setMovementSignature] = useState<string | null>(null);
   const retained = useRef<PurchaseInput | null>(null);
+  const supplierPrefilled = useRef(false);
+  useEffect(() => {
+    if (!supplierPrefilled.current && requestedSupplier.data) {
+      supplierPrefilled.current = true;
+      setSupplier(current => current ?? requestedSupplier.data!);
+    }
+  }, [requestedSupplier.data]);
   const settings = pos.data?.gstSettings;
   const recipient = recipientDraft ?? {
     ...emptyBuyer(),
@@ -232,6 +242,7 @@ export function PurchaseNewScreen() {
             open
           >
             <SupplierPicker value={supplier} onChange={selectSupplier} />
+            {requestedSupplierId && requestedSupplier.isError ? <Notice error={requestedSupplier.error} /> : null}
             <div className="form-grid is-2">
               <SelectField
                 label={text("Supplier registration for this invoice")}
