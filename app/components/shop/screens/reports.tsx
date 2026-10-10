@@ -11,15 +11,12 @@ import { downloadText } from '../../../lib/shop/csv';
 import { formatINR, formatShortDay } from '../../../lib/shop/money';
 import type { SalesReport, StockReport } from '../../../lib/shop/types';
 import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
+import {SalesInsights} from '../report-sales-insights';
 import { useShop } from '../context';
 import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
 
-const PERIODS = [
-  { id: 'today', label: 'Today' },
-  { id: 'week', label: 'This week' },
-  { id: 'month', label: 'This month' },
-  { id: 'year', label: 'This year' },
-] as const;
+const SALES_PERIODS = ['today', '7d', '30d', 'month', 'last_month'] as const;
+const STOCK_PERIODS = ['7d', '30d', '90d'] as const;
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const WEEKDAY_FALLBACK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -32,9 +29,11 @@ const METHODS = [
 
 function periodChip(id: string, t: (key: string, fallback: string) => string) {
   if (id === 'today') return t('sales.period.today', 'Today');
-  if (id === 'week') return t('sales.period.7d', 'This week');
+  if (id === '7d') return t('sales.period.7d', '7 days');
+  if (id === '30d') return t('sales.period.30d', '30 days');
+  if (id === '90d') return t('reports.stock.period_90d', '90 days');
   if (id === 'month') return t('sales.period.month', 'This month');
-  return t('web.gst.this_year', 'This year');
+  return t('reports.sales.period_last_month', 'Last month');
 }
 
 function clockLabel(hour: number) {
@@ -105,7 +104,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           {report.comparison ? (
             <p className={report.comparison.deltaPct.revenue >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
               {report.comparison.deltaPct.revenue >= 0 ? '+' : ''}
-              {Math.round(report.comparison.deltaPct.revenue)}% {report.comparison.label.replaceAll('_', ' ')}
+              {Math.round(report.comparison.deltaPct.revenue)}% {report.comparison.label === 'same_day_last_week' ? t('reports.sales.vs_last_week', 'vs last week') : t('reports.sales.vs_previous', 'vs previous')}
             </p>
           ) : null}
         </div>
@@ -159,6 +158,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
       <div className="dash-columns">
         <Card>
           <h2 className="shop-section-title">{t('reports.sales.payment_mix', 'How it was paid')}</h2>
+          {summary.collections && Object.values(summary.collections).some(amount => amount > 0) ? <p className="shop-hint">{t('reports.sales.incl_collections', EN_FALLBACK['reports.sales.incl_collections'], { amount: formatINR(Object.values(summary.collections).reduce((sum, amount) => sum + amount, 0)) })}</p> : null}
           <ShareList
             rows={METHODS.map((method) => {
               const amount = summary?.byMethod?.[method.id] ?? 0;
@@ -171,7 +171,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           <ShareList
             rows={(report.byCategory ?? []).map((row) => ({
               key: row.category,
-              label: labeledL1(row.category, (key) => t(key, key)),
+              label: `${labeledL1(row.category, (key) => t(key, key))}${showCost && row.marginPct != null ? ` · ${row.marginPct}% ${t('reports.sales.margin', 'Margin')}` : ''}`,
               pct: row.sharePct,
               value: formatINR(row.revenue),
             }))}
@@ -214,6 +214,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           />
         </Card>
       ) : null}
+      <SalesInsights report={report} showCost={showCost}/>
     </>
   );
 }
@@ -309,8 +310,11 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
 export function ReportsScreen() {
   const uiText = useUiText();
   const { api, shop, userId, perms, premium, prefs, hideCost, t } = useShop();
-  const [period, setPeriod] = useState<(typeof PERIODS)[number]['id']>('week');
+  const [salesPeriod, setSalesPeriod] = useState<(typeof SALES_PERIODS)[number]>('today');
+  const [stockPeriod, setStockPeriod] = useState<(typeof STOCK_PERIODS)[number]>('7d');
+  const [topBy, setTopBy] = useState<'quantity' | 'revenue'>('quantity');
   const [tab, setTab] = useState<'sales' | 'stock'>('sales');
+  const period = tab === 'sales' ? salesPeriod : stockPeriod;
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<{scope:string;response:SpokenAnswer} | null>(null);
   const scope = `${userId}:${shop?.id}:${prefs?.voiceLanguage}:${prefs?.voiceFeedbackEnabled}`;
@@ -320,9 +324,9 @@ export function ReportsScreen() {
   const [error, setError] = useState<unknown>(null);
   const [asking, setAsking] = useState(false);
   const enabled = !!shop && perms.canSeeReports;
-  const sales = useQuery({ queryKey: ['report-sales', shop?.id, period], enabled, queryFn: () => api.getSalesReport(shop!.id, period) });
-  const stock = useQuery({ queryKey: ['report-stock', shop?.id, period], enabled, queryFn: () => api.getStockReport(shop!.id, period) });
-  const top = useQuery({ queryKey: ['top', shop?.id, period], enabled: enabled && premium && tab === 'sales', queryFn: () => api.getTopProducts(shop!.id, { period }) });
+  const sales = useQuery({ queryKey: ['report-sales', shop?.id, salesPeriod], enabled: enabled && tab === 'sales', queryFn: () => api.getSalesReport(shop!.id, salesPeriod) });
+  const stock = useQuery({ queryKey: ['report-stock', shop?.id, stockPeriod], enabled: enabled && tab === 'stock', queryFn: () => api.getStockReport(shop!.id, stockPeriod) });
+  const top = useQuery({ queryKey: ['top', shop?.id, salesPeriod, premium ? topBy : 'quantity'], enabled: enabled && tab === 'sales', queryFn: () => api.getTopProducts(shop!.id, { period: salesPeriod, by: premium ? topBy : 'quantity', limit: 8 }) });
 
   if (!shop) return <Spinner />;
   if (!perms.canSeeReports) return <NoAccess what={uiText("Reports are for the owner and managers.")} />;
@@ -355,7 +359,7 @@ export function ReportsScreen() {
           <button type="button" role="tab" aria-selected={tab === 'stock'} className={tab === 'stock' ? 'is-active' : undefined} onClick={() => setTab('stock')}>{t('reports.tab.stock', 'Stock')}</button>
         </div>
         <div className="pos-chips">
-          {PERIODS.map((item) => <Chip key={item.id} active={period === item.id} onClick={() => setPeriod(item.id)}>{periodChip(item.id, t)}</Chip>)}
+          {tab === 'sales' ? SALES_PERIODS.map(id => <Chip key={id} active={salesPeriod === id} onClick={() => setSalesPeriod(id)}>{periodChip(id, t)}</Chip>) : STOCK_PERIODS.map(id => <Chip key={id} active={stockPeriod === id} onClick={() => setStockPeriod(id)}>{periodChip(id, t)}</Chip>)}
         </div>
       </div>
       <Notice error={error} />
@@ -365,21 +369,24 @@ export function ReportsScreen() {
       {tab === 'stock' && stock.isLoading ? <Spinner label={uiText("Loading stock")} /> : null}
       {tab === 'sales' && sales.data && !isPremiumError(sales.error) ? <SalesView report={sales.data} showCost={showCost} /> : null}
       {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} /> : null}
-      {tab === 'sales' && premium ? (
+      {tab === 'sales' ? (
         <Card>
-          <h2 className="shop-section-title">{t('reports.sales.top_products', 'Top products')}</h2>
-          {top.isLoading ? <Spinner /> : null}
-          <ShareList
-            rows={(top.data?.products ?? []).map((product) => {
-              const max = Math.max(...(top.data?.products ?? []).map((row) => row.revenue), 1);
-              return {
-                key: `${product.productId}-${product.name}`,
-                label: product.name,
-                pct: (product.revenue / max) * 100,
-                value: formatINR(product.revenue),
-              };
-            })}
-          />
+          <div className="shop-toolbar">
+            <h2 className="shop-section-title">{t('reports.sales.top_products', 'Top sellers')}</h2>
+            {premium ? <div className="shop-seg">
+              {(['quantity', 'revenue'] as const).map(by => <button key={by} type="button" aria-pressed={topBy === by} className={topBy === by ? 'is-active' : undefined} onClick={() => setTopBy(by)}>{t(`reports.sales.by_${by}`, by === 'quantity' ? 'Qty' : '₹')}</button>)}
+            </div> : null}
+          </div>
+          {top.isLoading ? <Spinner /> : top.error ? <Notice error={top.error} /> : (
+            <div className="grid gap-4">
+              {(top.data?.products ?? []).map((product, index) => <div key={`${product.productId}-${product.name}`} className="flex flex-wrap justify-between gap-3">
+                <div><strong>{index + 1}. {product.name}</strong><p className="shop-hint">{product.quantity} {product.unit} · {t('reports.sales.in_bills', 'in {{n}} bills', { n: product.bills })}{showCost && product.marginPct != null ? ` · ${product.marginPct}% ${t('reports.sales.margin', 'Margin')}` : ''}</p>
+                {product.fiscalCorrectionNet ? <p className="shop-hint">{t('reports.sales.value_corrections', EN_FALLBACK['reports.sales.value_corrections'])}: {formatINR(product.fiscalCorrectionNet)}</p> : null}</div>
+                <strong>{formatINR(product.revenue)}</strong>
+              </div>)}
+              {!top.data?.products.length ? <p className="shop-hint">{t('modal.analytics.no_data', 'No data yet')}</p> : null}
+            </div>
+          )}
         </Card>
       ) : null}
       <Card>

@@ -420,7 +420,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     getSalesSummary: (shopId: string, params: Record<string, string | undefined>) =>
       send<SalesSummary>(`/api/shops/${shopId}/sales/summary${queryString(params)}`),
     getTopProducts: (shopId: string, params: Record<string, string | number | undefined>) =>
-      send<{ products: { productId: string | null; name: string; unit: string; quantity: number; revenue: number; bills: number; grossProfit?: number; marginPct?: number | null }[]; limitedToDays: number | null }>(
+      send<{ products: { productId: string | null; name: string; unit: string; quantity: number; revenue: number; bills: number; grossProfit?: number; marginPct?: number | null; fiscalCorrectionNet?: number }[]; limitedToDays: number | null }>(
         `/api/shops/${shopId}/sales/top-products${queryString(params)}`,
       ),
     voidSale: (shopId: string, saleId: string, reason?: string) =>

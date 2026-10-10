@@ -423,6 +423,8 @@ export type SalesReport = {
     grossProfit: number;
     marginPct: number | null;
     purchaseCostMovement?: {count: number; inventory: string; consumed: string; total: string; dateBasis: 'recorded'; timezone: 'Asia/Kolkata'} | null;
+    collections?: {cash:number;upi:number;card:number};
+    udhaar?: {givenInRange:number;collectedInRange:number;outstandingTotal:number} | null;
     avgBill: number;
     itemsSold: number;
     byMethod: Record<string, number>;
@@ -441,6 +443,13 @@ export type SalesReport = {
   basket: { itemsPerBill: number; avgBill: number; discountPctOfGross: number; discountedBills: number } | null;
   returns: { returns: number; returnAmount: number; voids: number; voidAmount: number } | null;
   inputMethods: { method: string; bills: number; revenue: number }[];
+  runRate?: {mtdRevenue:number;daysElapsed:number;daysInMonth:number;projected:number;lastMonthRevenue:number;vsLastMonthPct:number|null} | null;
+  customers?: {bills:number;billsWithCustomer:number;walkIns:number;uniqueCustomers:number;newCustomers:number;returningCustomers:number;top:{customerId:string;name:string;bills:number;revenue:number;fiscalCorrectionNet?:number;owes:number}[]};
+  udhaarAgeing?: {outstanding:number;customers:number;collectionRatePct:number|null;buckets:{bucket:string;customers:number;amount:number}[];stale:{customerId:string;name:string;balance:number;daysSinceCredit:number;daysSincePayment:number|null}[]};
+  paymentByDay?: {date:string;cash:number;upi:number;card:number;credit:number}[];
+  staff?: {userId:string;name:string;bills:number;revenue:number;avgBill:number;itemsPerBill:number;discounts:number;voids:number;fiscalCorrectionNet?:number}[];
+  marginByProduct?: {products:{productId:string|null;name:string;units:number;revenue:number;cogs:number;grossProfit:number;marginPct:number|null;fiscalCorrectionNet?:number}[];overallMarginPct:number|null;lowMarginBestSellers:{name:string;marginPct:number|null}[]};
+  boughtTogether?: {a:string;b:string;times:number}[];
 };
 
 export type StockReport = {
