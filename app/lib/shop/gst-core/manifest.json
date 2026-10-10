@@ -376,5 +376,11 @@
     "source": "src/lib/pos/gst-review-rejection.ts",
     "sourceSha256": "6266cffd1b0b0032bcd97e58b9fb3104e3633163e531dd11a184300ee33a8e89",
     "vendoredSha256": "6266cffd1b0b0032bcd97e58b9fb3104e3633163e531dd11a184300ee33a8e89"
+  },
+  {
+    "file": "customer-payment-outcome.ts",
+    "source": "src/lib/pos/customer-payment-outcome.ts",
+    "sourceSha256": "dddc2cc7f552446b03240d1fbddb569b4a89a0b2643dcf2ac65b9e1a5c57ad3f",
+    "vendoredSha256": "dddc2cc7f552446b03240d1fbddb569b4a89a0b2643dcf2ac65b9e1a5c57ad3f"
   }
 ]

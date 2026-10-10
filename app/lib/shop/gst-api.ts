@@ -1,3 +1,4 @@
+import {confirmedCustomerPayment} from './gst-core/customer-payment-outcome';
 import {assertRoundingSelection,type RoundingSelection} from './gst-core/payable-rounding-request';
 import {retainedRoundingSelection} from './offline-rounding';
 import type {createOfflineEvidence} from './offline-evidence';
@@ -484,6 +485,7 @@ export function bindGstApi(
           confirmedDebitSettlement(v, s, financialScope(s).actorId, id, input),
         `${base(s)}/adjustments/${id}/settlements/request-outcome`,
       ),
+    recordCustomerPayment: (s:string,id:string,input:Parameters<typeof confirmedCustomerPayment>[4]) => financial(s,`${base(s)}/customers/${id}/payments`,input,v=>confirmedCustomerPayment(v,s,financialScope(s).actorId,id,input),`${base(s)}/customers/${id}/payments/request-outcome`),
     collections: (s: string, id: string, before?: string) =>
       get<{
         items: {

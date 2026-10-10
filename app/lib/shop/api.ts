@@ -442,8 +442,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send<{ customer: Customer; ledger: LedgerEntry[] }>(`/api/shops/${shopId}/customers/${customerId}`),
     updateCustomer: (shopId: string, customerId: string, body: Record<string, unknown>) =>
       send<{ customer: Customer }>(`/api/shops/${shopId}/customers/${customerId}`, { method: 'PATCH', body: JSON.stringify(body) }),
-    recordPayment: (shopId: string, customerId: string, body: { amount: number; method: 'cash' | 'upi' | 'card'; note?: string }) =>
-      send<{ customer: Customer; entry: LedgerEntry }>(`/api/shops/${shopId}/customers/${customerId}/payments`, { method: 'POST', body: JSON.stringify(body) }),
+
 
     getBuyList: async (shopId: string) => {
       return collectPages(async offset => {

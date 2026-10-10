@@ -157,6 +157,21 @@ const rejected = bindGstApi(async (path) => {
 });
 await assert.rejects(rejected.financial(scope.shopId,'/rejected-return',{clientId:'rejected-return'},v=>v,'/rejected-return/outcome'),/return_settlement_total_mismatch/);
 assert.equal((await storage.retainedRequests(scope)).find(r=>r.id==='rejected-return').state,'pending');
+// Customer payments must retain identity and verify the server outcome, including exact bill links.
+const paymentInput={clientId:'customer-pay-test',amount:100,method:'cash',note:'Synthetic repayment',allocations:[]};
+const paymentCalls=[];
+const paymentApi=bindGstApi(async(path,init)=>{
+ paymentCalls.push({path,body:JSON.parse(init.body)});
+ if(!path.endsWith('/request-outcome'))throw Error('response lost');
+ return {status:'recorded',entry:{id:'11111111-1111-4111-8111-111111111111',shopId:scope.shopId,customerId:'customer-a',createdBy:scope.actorId,clientId:paymentInput.clientId,type:'payment',amount:'-100.00',method:'cash',note:'Synthetic repayment',createdAt:new Date().toISOString(),balanceAfter:'241.00'},customer:{id:'customer-a',shopId:scope.shopId,balance:'241.00'},allocations:[]};
+});
+assert.equal((await paymentApi.recordCustomerPayment(scope.shopId,'customer-a',paymentInput)).customer.balance,241);
+assert.deepEqual(paymentCalls.map(row=>row.body),[paymentInput,paymentInput]);
+assert.equal((await storage.retainedRequests(scope)).find(row=>row.id===paymentInput.clientId).state,'confirmed');
+const badPayment=bindGstApi(async()=>({status:'recorded',entry:{amount:'-99.00'},customer:{balance:'242.00'},allocations:[]}));
+await assert.rejects(badPayment.recordCustomerPayment(scope.shopId,'customer-b',{...paymentInput,clientId:'bad-payment'}),/unconfirmed/);
+assert.equal((await storage.retainedRequests(scope)).find(row=>row.id==='bad-payment').state,'pending');
+await assert.rejects(badPayment.recordCustomerPayment(scope.shopId,'customer-b',{...paymentInput,clientId:'second-payment'}),/earlier request/);
 const switched = bindGstApi(async () => {
   storage.setFinancialScope({ ...scope, actorId: "different-actor" });
   return { ok: true };

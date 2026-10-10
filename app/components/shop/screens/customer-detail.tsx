@@ -1,4 +1,5 @@
 'use client';
+import {GstCustomerPayment} from '../gst-customer-payment';
 
 import { useGstText as useUiText } from "../gst-ui";
 
@@ -23,8 +24,6 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
     enabled,
     queryFn: () => api.getCustomer(shop!.id, customerId),
   });
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState<'cash' | 'upi'>('cash');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [ready, setReady] = useState(false);
@@ -71,26 +70,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         </div>
       </div>
       <Notice error={error} />
-      <Card className="grid gap-3">
-        <h2 className="font-semibold">{t('customers.record_payment', 'Record payment')}</h2>
-        <Field label={t('bill.amount', 'Amount')}><input className={inputClass} inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} /></Field>
-        <Field label={t('checkout.payment_method', 'Method')}>
-          <select className={inputClass} value={method} onChange={(event) => setMethod(event.target.value as 'cash' | 'upi')}>
-            <option value="cash">{t('pos.method.cash', 'Cash')}</option>
-            <option value="upi">{t('pos.method.upi', 'UPI')}</option>
-          </select>
-        </Field>
-        <Button
-          disabled={!(Number(amount) > 0)}
-          onClick={() => {
-            setError(null);
-            void api.recordPayment(shop.id, customerId, { amount: Number(amount), method }).then(async () => {
-              setAmount('');
-              await queryClient.invalidateQueries({ queryKey: ['customer', shop.id, customerId] });
-            }).catch(setError);
-          }}
-        > {uiText("Save payment")} </Button>
-      </Card>
+      <GstCustomerPayment customerId={customerId}/>
       <Card>
         <form
           className="grid gap-3"
