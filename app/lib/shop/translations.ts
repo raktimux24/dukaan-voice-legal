@@ -15,7 +15,7 @@ for (const [key, value] of Object.entries(english)) {
 }
 
 export function translateUi(language: string, dictionary: Record<string, string>, key: string, fallback: string, vars?: Record<string, string | number>) {
-  const catalogs = [web[language] ?? {}, mobile[language] ?? {}, dictionary];
+  const catalogs = [web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [english] : []), dictionary];
   const webKey = 'web.gst.' + fallback.toLowerCase().replace(/[^a-z0-9]+/g, '_');
   const candidates = [webKey, key, ...(keysByText.get(fallback) ?? [])];
   let text = fallback;

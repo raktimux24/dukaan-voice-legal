@@ -34,6 +34,8 @@ const loadTs = (filename) => {
   return exports;
 };
 const { translateUi } = loadTs('app/lib/shop/translations.ts');
+// An older general catalog must not replace current bundled GST guidance.
+assert.equal(translateUi('en', { 'gst.margin_estimate': 'Margin uses recorded purchase cost; input-tax credits are not calculated.' }, 'gst.margin_estimate', 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.'), 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.');
 assert.equal(translateUi('hi', { 'sale_complete.new_sale': 'छूट' }, 'sale_complete.new_sale', 'New sale'), 'नई बिक्री');
 assert.equal(translateUi('hi', {}, 'missing.alias', 'GST setup'), web.hi['web.gst.gst_setup']);
 assert.equal(translateUi('hi', {}, 'missing.alias', 'You are signed in as {{role}} of this shop.', { role: 'OWNER' }).includes('{{role}}'), false);
