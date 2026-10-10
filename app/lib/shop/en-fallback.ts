@@ -1148,7 +1148,7 @@ export const EN_FALLBACK: Record<string, string> = {
     "Refresh the product's GST settings before billing.",
   "gst.error.checkout_in_progress": "Checkout is already being completed.",
   "gst.margin_estimate":
-    "Margin uses recorded purchase cost; input-tax credits are not calculated.",
+    "Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.",
   "gst.bulk_title": "Review product GST in bulk",
   "gst.bulk_instructions": "Select only products with the same reviewed HSN/SAC, classification and rate. This replaces their tax settings for future invoices; issued bills retain their original settings.",
   "gst.bulk_selected": "products selected",

@@ -309,7 +309,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           <div><dt>{t('modal.add_product.category_label', 'Category')}</dt><dd>{[labeledL1(product.category, (key) => t(key, key)), labeledL2(product.category, product.subcategory, (key) => t(key, key))].filter(Boolean).join(' · ')}</dd></div>
           <div><dt>{t('modal.product_detail.detail_last_updated', 'Updated')}</dt><dd>{formatWhen(item.updatedAt)} · {item.updatedByName}</dd></div>
         </dl>
-        {!hideCost ? <p className="shop-hint">{t('gst.margin_estimate', 'Margin uses recorded purchase cost; input-tax credits are not calculated.')}</p> : null}
+        {!hideCost ? <p className="shop-hint">{t('gst.margin_estimate', 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.')}</p> : null}
       </Card>
 
       {productLogs.length > 0 ? (
