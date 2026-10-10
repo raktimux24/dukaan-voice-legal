@@ -161,6 +161,8 @@ export async function recoverFinancialRequest(
         body as Parameters<typeof gst.debitSettlement>[2],
       ),
     );
+  match = path.match(/^\/customers\/([^/]+)\/payments$/);
+  if(match) return invoke(gst.recordCustomerPayment(shop,match[1],body as Parameters<typeof gst.recordCustomerPayment>[2]));
   match = path.match(/^\/customers\/([^/]+)\/collection-reviews$/);
   if (match)
     return invoke(
