@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { formatINR } from '../../../lib/shop/money';
 import { useShopDates } from '../use-shop-dates';
 import { normalizeIndianMobile } from '../../../lib/shop/phone';
+import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
 
@@ -119,7 +120,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         <div className="mt-3 grid gap-2 text-sm">
           {(detail.data?.ledger ?? []).map((entry) => (
             <div key={entry.id} className="flex justify-between gap-3 border-t border-line pt-2">
-              <span>{entry.type}{entry.saleNumber ? ` #${entry.saleNumber}` : ''} · {formatWhen(entry.createdAt)}</span>
+              <span>{t(`customers.ledger_type.${entry.type}`, EN_FALLBACK[`customers.ledger_type.${entry.type}`] ?? EN_FALLBACK['customers.ledger_type.adjustment'])}{entry.saleNumber ? ` #${entry.saleNumber}` : ''} · {formatWhen(entry.createdAt)}</span>
               <span>{formatINR(entry.amount)} → {formatINR(entry.balanceAfter)}</span>
             </div>
           ))}
