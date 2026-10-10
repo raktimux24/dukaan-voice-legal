@@ -11,7 +11,7 @@ import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, remapProductL1 } from '../../../lib/shop/catalog';
+import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, l2ItemType, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
@@ -50,7 +50,7 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
     sellingPrice: '',
     mrp: '',
     purchasePrice: '',
-    trackStock: true,
+    trackStock: l2ItemType(category, subcategory) !== "service",
     shortCode: '',
     packSize: '',
     packLabel: '',
@@ -165,7 +165,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
         router.push(`/shop/products/${productId}`);
         return;
       }
-      body.initialStock = Number(form.initialStock || 0);
+      body.initialStock = form.trackStock ? Number(form.initialStock || 0) : 0;
       if (form.supplier) body.supplier = form.supplier;
       if (form.expiryDate) body.expiryDate = form.expiryDate;
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
@@ -229,12 +229,12 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               </Field>
               <div className="form-grid is-2">
                 <Field label={t('modal.add_product.category_label', 'Category')}>
-                  <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '' })}>
+                  <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '', trackStock: l2ItemType(event.target.value, l2ForL1(event.target.value)[0]?.code) !== 'service' })}>
                     {l1.map((row) => <option key={row.code} value={row.code}>{labeledL1(row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
                 <Field label={t('modal.add_product.subcategory_label', 'Sub-category')}>
-                  <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value })} required>
+                  <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value, trackStock: l2ItemType(form.category, event.target.value) !== 'service' })} required>
                     {subs.map((row) => <option key={row.code} value={row.code}>{labeledL2(form.category, row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
