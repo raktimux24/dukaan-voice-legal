@@ -49,7 +49,10 @@ export function SuppliersScreen() {
           "web.gst.supplier_directory",
           "Keep supplier billing details and stock history together. Stock spend comes from recorded buying costs.",
         )}
-        actions={<Button onClick={() => setAdding(true)}>{t('web.gst.add_supplier', 'Add supplier')}</Button>}
+        actions={<>
+          <Button tone="ghost" onClick={() => setAdding(true)}>{t('web.gst.add_supplier', 'Add supplier')}</Button>
+          <Button href="/shop/purchases/new">{t('web.gst.record_supplier_invoice', 'Record supplier invoice')}</Button>
+        </>}
       />
       <FieldSearch q={q} onChange={setQ} label={t('suppliers.search', 'Search suppliers')} />
       <ReadState
