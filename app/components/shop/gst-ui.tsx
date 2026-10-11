@@ -188,7 +188,7 @@ export function BuyerFields({
   const text = useGstText();
   const patch = (part: Partial<Buyer>) => onChange({ ...value, ...part });
   return (
-    <div className="form-grid is-2">
+    <div className="form-grid is-2 buyer-fields">
       {includeName ? (
         <TextField
           label={text("Legal name")}
@@ -219,7 +219,9 @@ export function BuyerFields({
         value={value.address}
         onChange={(address) => patch({ address })}
       />
-      <StructuredBuyerAddress value={value} onChange={onChange} />
+      <div className="buyer-address-section">
+        <StructuredBuyerAddress value={value} onChange={onChange} />
+      </div>
     </div>
   );
 }

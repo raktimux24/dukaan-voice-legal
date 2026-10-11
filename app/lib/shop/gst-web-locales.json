@@ -513,7 +513,12 @@
     "web.gst.could_not_safely_save_the_financial_request_check_browser_storage_and_retry_": "Could not safely save the financial request. Check browser storage and retry.",
     "web.gst.another_financial_request_is_in_progress_in_this_browser_": "Another financial request is in progress in this browser.",
     "web.gst.sha_256": "SHA-256",
-    "web.gst.could_not_safely_reserve_this_invoice_": "Could not safely reserve this invoice."
+    "web.gst.could_not_safely_reserve_this_invoice_": "Could not safely reserve this invoice.",
+    "web.gst.use_customer_name_as_legal_name": "Use customer name as legal name",
+    "web.gst.select_a_customer_above_to_use_their_name_": "Select a customer above to use their name.",
+    "web.gst.searching_customers_": "Searching customers…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "No matching customers. Add a customer below.",
+    "web.gst.opening_saved_bill_": "Opening saved bill…"
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -1029,7 +1034,12 @@
     "web.gst.gst_after_credits": "credits के बाद GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "इस फ़ाइल को filing preparation के लिए इस्तेमाल करने से पहले कुछ source records की review ज़रूरत है।",
     "web.gst.review_gst_record_checks": "GST record checks की review करें",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "यह एक सेव की गई preparation रिपोर्ट है। यह filing या input-tax eligibility की पुष्टि नहीं करती।"
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "यह एक सेव की गई preparation रिपोर्ट है। यह filing या input-tax eligibility की पुष्टि नहीं करती।",
+    "web.gst.use_customer_name_as_legal_name": "ग्राहक का नाम कानूनी नाम के रूप में उपयोग करें",
+    "web.gst.select_a_customer_above_to_use_their_name_": "नाम उपयोग करने के लिए ऊपर ग्राहक चुनें।",
+    "web.gst.searching_customers_": "ग्राहक खोज रहे हैं…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "कोई ग्राहक नहीं मिला। नीचे ग्राहक जोड़ें।",
+    "web.gst.opening_saved_bill_": "सहेजा हुआ बिल खोल रहे हैं…"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -1545,7 +1555,12 @@
     "web.gst.review_gst_record_checks": "GST record checks review karein",
     "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "Yeh ek save kiya hua preparation report hai. Yeh filing ya input-tax eligibility confirm nahi karta.",
     "web.gst.report_details": "Report details",
-    "web.gst.recorded_credit_notes": "Recorded credit notes"
+    "web.gst.recorded_credit_notes": "Recorded credit notes",
+    "web.gst.use_customer_name_as_legal_name": "Customer ka naam legal name ke liye use karein",
+    "web.gst.select_a_customer_above_to_use_their_name_": "Naam use karne ke liye upar customer chunein.",
+    "web.gst.searching_customers_": "Customers dhoondh rahe hain…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "Koi customer nahi mila. Neeche customer add karein.",
+    "web.gst.opening_saved_bill_": "Saved bill khol rahe hain…"
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -2061,7 +2076,12 @@
     "web.gst.gst_after_credits": "ক্রেডিট বাদ দিয়ে GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "এই ফাইলটি ফাইলিং প্রস্তুতির জন্য ব্যবহার করার আগে কিছু সোর্স রেকর্ড যাচাই করা প্রয়োজন।",
     "web.gst.review_gst_record_checks": "GST রেকর্ড যাচাই করুন",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "এটি একটি সংরক্ষিত প্রস্তুতি রিপোর্ট। এটি ফাইলিং বা ইনপুট-ট্যাক্স যোগ্যতার নিশ্চয়তা দেয় না।"
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "এটি একটি সংরক্ষিত প্রস্তুতি রিপোর্ট। এটি ফাইলিং বা ইনপুট-ট্যাক্স যোগ্যতার নিশ্চয়তা দেয় না।",
+    "web.gst.use_customer_name_as_legal_name": "গ্রাহকের নাম আইনি নাম হিসেবে ব্যবহার করুন",
+    "web.gst.select_a_customer_above_to_use_their_name_": "নাম ব্যবহার করতে উপরে গ্রাহক বেছে নিন।",
+    "web.gst.searching_customers_": "গ্রাহক খোঁজা হচ্ছে…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "কোনও গ্রাহক পাওয়া যায়নি। নিচে গ্রাহক যোগ করুন।",
+    "web.gst.opening_saved_bill_": "সংরক্ষিত বিল খোলা হচ্ছে…"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -2577,7 +2597,12 @@
     "web.gst.gst_after_credits": "credits-க்கு பிறகு GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "இந்த ஃபைலை filing preparation-க்கு பயன்படுத்துவதற்கு முன், சில source records-ஐ review செய்ய வேண்டும்.",
     "web.gst.review_gst_record_checks": "GST record checks-ஐ review செய்யவும்",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "இது சேமிக்கப்பட்ட preparation report. இது filing அல்லது input-tax தகுதியை உறுதி செய்யாது."
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "இது சேமிக்கப்பட்ட preparation report. இது filing அல்லது input-tax தகுதியை உறுதி செய்யாது.",
+    "web.gst.use_customer_name_as_legal_name": "வாடிக்கையாளர் பெயரை சட்டப்பூர்வ பெயராகப் பயன்படுத்தவும்",
+    "web.gst.select_a_customer_above_to_use_their_name_": "பெயரைப் பயன்படுத்த மேலே வாடிக்கையாளரைத் தேர்ந்தெடுக்கவும்.",
+    "web.gst.searching_customers_": "வாடிக்கையாளர்களைத் தேடுகிறது…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "வாடிக்கையாளர்கள் கிடைக்கவில்லை. கீழே சேர்க்கவும்.",
+    "web.gst.opening_saved_bill_": "சேமித்த பில்லைத் திறக்கிறது…"
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -3093,7 +3118,12 @@
     "web.gst.gst_after_credits": "క్రెడిట్ల తర్వాత GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "ఫిల్లింగ్ ప్రిపరేషన్ కోసం ఈ ఫైల్‌ని వాడే ముందు కొన్ని సోర్స్ రికార్డులను రివ్యూ చేయాలి.",
     "web.gst.review_gst_record_checks": "GST రికార్డ్ చెక్‌లను రివ్యూ చేయండి",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ఇది సేవ్ చేసిన ప్రిపరేషన్ రిపోర్ట్. ఇది ఫిల్లింగ్ లేదా ఇన్‌పుట్-టాక్స్ అర్హతను నిర్ధారించదు."
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ఇది సేవ్ చేసిన ప్రిపరేషన్ రిపోర్ట్. ఇది ఫిల్లింగ్ లేదా ఇన్‌పుట్-టాక్స్ అర్హతను నిర్ధారించదు.",
+    "web.gst.use_customer_name_as_legal_name": "కస్టమర్ పేరును చట్టపరమైన పేరుగా ఉపయోగించండి",
+    "web.gst.select_a_customer_above_to_use_their_name_": "పేరు ఉపయోగించడానికి పైన కస్టమర్‌ను ఎంచుకోండి.",
+    "web.gst.searching_customers_": "కస్టమర్ల కోసం వెతుకుతోంది…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "కస్టమర్లు కనుగొనబడలేదు. కింద జోడించండి.",
+    "web.gst.opening_saved_bill_": "సేవ్ చేసిన బిల్లును తెరుస్తోంది…"
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -3609,7 +3639,12 @@
     "web.gst.gst_after_credits": "क्रेडिट्सनंतर GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "फायलिंगसाठी ही फाईल वापरण्यापूर्वी काही सोर्स रेकॉर्ड्स तपासणे आवश्यक आहे.",
     "web.gst.review_gst_record_checks": "GST रेकॉर्ड तपासणीचे पुनरावलोकन करा",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ही एक सेव्ह केलेली तयारीची रिपोर्ट आहे. ती फायलिंग किंवा इनपुट टॅक्स पात्रतेची पुष्टी करत नाही."
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ही एक सेव्ह केलेली तयारीची रिपोर्ट आहे. ती फायलिंग किंवा इनपुट टॅक्स पात्रतेची पुष्टी करत नाही.",
+    "web.gst.use_customer_name_as_legal_name": "ग्राहकाचे नाव कायदेशीर नाव म्हणून वापरा",
+    "web.gst.select_a_customer_above_to_use_their_name_": "नाव वापरण्यासाठी वर ग्राहक निवडा.",
+    "web.gst.searching_customers_": "ग्राहक शोधत आहे…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "ग्राहक सापडले नाहीत. खाली जोडा.",
+    "web.gst.opening_saved_bill_": "जतन केलेले बिल उघडत आहे…"
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -4125,7 +4160,12 @@
     "web.gst.gst_after_credits": "credits ನಂತರದ GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "ಈ ಫೈಲ್ ಅನ್ನು filing ತಯಾರಿಕೆಗೆ ಬಳಸುವ ಮೊದಲು ಕೆಲವು ಮೂಲ ದಾಖಲೆಗಳನ್ನು ಪರಿಶೀಲಿಸಬೇಕಾಗಿದೆ.",
     "web.gst.review_gst_record_checks": "GST ದಾಖಲೆ ಪರಿಶೀಲನೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ಇದು ಉಳಿಸಿದ ತಯಾರಿಕಾ ವರದಿ. ಇದು filing ಅಥವಾ input-tax ಅರ್ಹತೆಯನ್ನು ಖಚಿತಪಡಿಸುವುದಿಲ್ಲ."
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ಇದು ಉಳಿಸಿದ ತಯಾರಿಕಾ ವರದಿ. ಇದು filing ಅಥವಾ input-tax ಅರ್ಹತೆಯನ್ನು ಖಚಿತಪಡಿಸುವುದಿಲ್ಲ.",
+    "web.gst.use_customer_name_as_legal_name": "ಗ್ರಾಹಕರ ಹೆಸರನ್ನು ಕಾನೂನುಬದ್ಧ ಹೆಸರಾಗಿ ಬಳಸಿ",
+    "web.gst.select_a_customer_above_to_use_their_name_": "ಹೆಸರನ್ನು ಬಳಸಲು ಮೇಲೆ ಗ್ರಾಹಕರನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+    "web.gst.searching_customers_": "ಗ್ರಾಹಕರನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "ಗ್ರಾಹಕರು ಸಿಗಲಿಲ್ಲ. ಕೆಳಗೆ ಸೇರಿಸಿ.",
+    "web.gst.opening_saved_bill_": "ಉಳಿಸಿದ ಬಿಲ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ…"
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -4641,7 +4681,12 @@
     "web.gst.gst_after_credits": "ક્રેડિટ પછી GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "ફાઇલિંગની તૈયારી માટે આ ફાઇલનો ઉપયોગ કરતા પહેલા કેટલાક સોર્સ રેકોર્ડ્સ તપાસવા જરૂરી છે.",
     "web.gst.review_gst_record_checks": "GST રેકોર્ડ ચેક તપાસો",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "આ એક સેવ કરેલો તૈયારી રિપોર્ટ છે. તે ફાઇલિંગ અથવા ઇનપુટ ટેક્સની પાત્રતાની પુષ્ટિ કરતો નથી."
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "આ એક સેવ કરેલો તૈયારી રિપોર્ટ છે. તે ફાઇલિંગ અથવા ઇનપુટ ટેક્સની પાત્રતાની પુષ્ટિ કરતો નથી.",
+    "web.gst.use_customer_name_as_legal_name": "ગ્રાહકનું નામ કાનૂની નામ તરીકે વાપરો",
+    "web.gst.select_a_customer_above_to_use_their_name_": "નામ વાપરવા ઉપર ગ્રાહક પસંદ કરો.",
+    "web.gst.searching_customers_": "ગ્રાહકો શોધી રહ્યા છીએ…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "કોઈ ગ્રાહક મળ્યો નથી. નીચે ઉમેરો.",
+    "web.gst.opening_saved_bill_": "સાચવેલું બિલ ખોલી રહ્યા છીએ…"
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -5157,6 +5202,11 @@
     "web.gst.gst_after_credits": "credits-ന് ശേഷമുള്ള GST",
     "web.gst.some_source_records_need_review_before_using_this_file_for_filing_preparation_": "ഈ ഫയൽ filing തയ്യാറാക്കാൻ ഉപയോഗിക്കുന്നതിന് മുമ്പ് ചില source records പരിശോധിക്കേണ്ടതുണ്ട്.",
     "web.gst.review_gst_record_checks": "GST record പരിശോധനകൾ പരിശോധിക്കുക",
-    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ഇതൊരു സേവ് ചെയ്ത preparation report ആണ്. ഇത് filing അല്ലെങ്കിൽ input-tax യോഗ്യത ഉറപ്പുനൽകുന്നില്ല."
+    "web.gst.this_is_a_saved_preparation_report_it_does_not_confirm_filing_or_input_tax_eligibility_": "ഇതൊരു സേവ് ചെയ്ത preparation report ആണ്. ഇത് filing അല്ലെങ്കിൽ input-tax യോഗ്യത ഉറപ്പുനൽകുന്നില്ല.",
+    "web.gst.use_customer_name_as_legal_name": "ഉപഭോക്താവിന്റെ പേര് നിയമപരമായ പേരായി ഉപയോഗിക്കുക",
+    "web.gst.select_a_customer_above_to_use_their_name_": "പേര് ഉപയോഗിക്കാൻ മുകളിൽ ഉപഭോക്താവിനെ തിരഞ്ഞെടുക്കുക.",
+    "web.gst.searching_customers_": "ഉപഭോക്താക്കളെ തിരയുന്നു…",
+    "web.gst.no_matching_customers_add_a_customer_below_": "ഉപഭോക്താക്കളെ കണ്ടെത്തിയില്ല. താഴെ ചേർക്കുക.",
+    "web.gst.opening_saved_bill_": "സേവ് ചെയ്ത ബിൽ തുറക്കുന്നു…"
   }
 }

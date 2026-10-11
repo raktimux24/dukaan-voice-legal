@@ -2,7 +2,7 @@
 
 import { ReadState, useGstQuery, useGstAction } from "./gst-workspace";
 import { useQuery } from "@tanstack/react-query";
-import { BuyerFields, emptyBuyer, useGstText } from "./gst-ui";
+import { BuyerFields, Check, emptyBuyer, useGstText } from "./gst-ui";
 import { useState } from "react";
 import { useCart } from "../../lib/shop/cart";
 import { formatINR } from "../../lib/shop/money";
@@ -16,13 +16,14 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
   const cartApi = useCart(userId, shop?.id ?? null);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [useCustomerName, setUseCustomerName] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const customers = useQuery({
-    queryKey: ["customer-search", shop?.id, q],
+    queryKey: ["customer-search", userId, shop?.id, q.trim()],
     enabled:
-      !!shop?.id && premium && perms.canManageCustomers && q.trim().length > 1,
+      !!shop?.id && premium && open && !cartApi.cart.customerName,
     queryFn: () => api.getCustomers(shop!.id, { q: q.trim(), limit: 8 }),
   });
 
@@ -37,6 +38,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
   const attached = !!(cart.customerId || cart.customerName);
 
   const clear = () => {
+    setUseCustomerName(false);
     cartApi.patch({
       customerId: null,
       customerName: null,
@@ -55,7 +57,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
     if (!name.trim()) return;
     cartApi.patch({
       customerId: null,
-      buyer: cart.buyer ? { ...cart.buyer, name: name.trim() } : undefined,
+      buyer: useCustomerName ? { ...(cart.buyer ?? emptyBuyer()), name: name.trim() } : cart.buyer,
       customerName: name.trim(),
       customerPhone: normalized,
       customerClientId: cart.customerClientId ?? crypto.randomUUID(),
@@ -93,7 +95,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
       )}
       {open && !attached ? (
         <div className="stack-form">
-          {gst || (premium && perms.canManageCustomers) ? (
+          {gst || premium ? (
             <>
               <Field label={t("checkout.pick_customer", "Find a customer")}>
                 <input
@@ -103,17 +105,14 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
                   onChange={(event) => setQ(event.target.value)}
                 />
               </Field>
+              {premium && customers.isFetching ? <p className="shop-hint">{text("Searching customers…")}</p> : null}
+              {premium && customers.error ? <ReadState query={customers}><span /></ReadState> : null}
+              {premium && customers.isSuccess && !customers.isFetching && !customers.data.customers.length && !parties.data?.length ? (
+                <p className="shop-hint">{text("No matching customers. Add a customer below.")}</p>
+              ) : null}
               {(customers.data?.customers ?? []).length > 0 ? (
                 <div className="shop-list">
                   {customers.data?.customers
-                    .filter(
-                      (customer) =>
-                        !parties.data?.some(
-                          (p) =>
-                            p.clientId === customer.id ||
-                            p.clientId === customer.clientId,
-                        ),
-                    )
                     .map((customer) => (
                       <button
                         key={customer.id}
@@ -156,7 +155,9 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
           {gst ? (
             <ReadState query={parties}>
               <div className="shop-list">
-                {parties.data?.map((p) => {
+                {parties.data?.filter((p) => !customers.data?.customers.some(
+                  (c) => c.id === p.clientId || c.clientId === p.clientId,
+                )).map((p) => {
                   const customer = customers.data?.customers.find(
                     (c) => c.id === p.clientId || c.clientId === p.clientId,
                   );
@@ -217,17 +218,26 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
         <details className="gst-section">
           <summary>{text("GST buyer details (optional)")}</summary>
           <div className="gst-section-body">
+            <Check
+              label={text("Use customer name as legal name")}
+              checked={useCustomerName && !!cart.customerName}
+              onChange={(checked) => {
+                setUseCustomerName(checked);
+                if (checked && cart.customerName) cartApi.patch({
+                  buyer: { ...(cart.buyer ?? emptyBuyer()), name: cart.customerName },
+                });
+              }}
+            />
+            {!cart.customerName ? <p className="shop-hint">{text("Select a customer above to use their name.")}</p> : null}
             <BuyerFields
               key={cart.customerId ?? cart.customerClientId ?? "walk-in"}
               value={
-                cart.buyer ?? { ...emptyBuyer(), name: cart.customerName ?? "" }
+                cart.buyer ?? emptyBuyer()
               }
-              onChange={(buyer) =>
-                cartApi.patch({
-                  buyer,
-                  customerName: buyer.name || cart.customerName,
-                })
-              }
+              onChange={(buyer) => {
+                if (buyer.name !== cart.customerName) setUseCustomerName(false);
+                cartApi.patch({ buyer });
+              }}
             />
             <p className="shop-hint">
               {text(

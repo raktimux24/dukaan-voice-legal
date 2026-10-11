@@ -103,6 +103,8 @@ export function CheckoutScreen() {
   }, [settings.data?.upiPayeeName, settings.data?.upiVpa, shop?.name, total, upiPortion]);
 
   if (!shop || !userId) return <Spinner label="Loading checkout" />;
+  // Clearing a verified cart must not render empty-cart tax validation while navigation commits.
+  if (wentToBill.current) return <Spinner label={text("Opening saved bill…")} />;
 
   const remember = (next: TenderMode) => {
     setMode(next);

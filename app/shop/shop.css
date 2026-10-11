@@ -2871,3 +2871,10 @@ a.party-card:hover {
 .gst-section .form-grid { gap:20px; }
 @media (max-width:760px) { .gst-two-columns { grid-template-columns:1fr; } .gst-section > summary,.gst-section-body { padding:18px; } .gst-table th,.gst-table td { padding:12px 8px; } }
 @media print { .gst-section { border-color:#ccc; background:white; color:black; } .gst-table { color:black; } .gst-document { break-before:page; } .gst-table tr { break-inside:avoid; } }
+
+/* Buyer details live inside a narrow checkout column. */
+.buyer-address-section { grid-column: 1 / -1; min-width: 0; }
+.customer-attach .buyer-fields { grid-template-columns: minmax(0, 1fr); }
+.customer-attach .shop-list-row { width: 100%; }
+.customer-attach .gst-section-body { min-width: 0; }
+.customer-attach .gst-section-body .shop-btn { white-space: normal; }
