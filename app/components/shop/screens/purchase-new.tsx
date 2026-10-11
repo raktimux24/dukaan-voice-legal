@@ -2,7 +2,9 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useShop } from "../context";
-import { Button, Card, PageHeader, Notice } from "../ui";
+import { Button, Card, PageHeader, Notice, ShopDialog } from "../ui";
+import { ProductFormScreen } from "./product-form";
+import type { Product } from "../../../lib/shop/types";
 import { SupplierPicker } from "../gst-supplier";
 import {
   BuyerFields,
@@ -63,7 +65,13 @@ export function PurchaseNewScreen() {
     [reference, setReference] = useState(""),
     [reviewed, setReviewed] = useState(false),
     [movement, setMovement] = useState(false);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [productBusy, setProductBusy] = useState(false);
   const retained = useRef<PurchaseInput | null>(null);
+  const addProductLine = (product: Product) => {
+    setReviewed(false);
+    setLines(rows => [...rows, {key: crypto.randomUUID(), name: product.name, productId: product.id, quantity: 1, price: product.purchasePrice ?? 0, discount: 0, tax: {...(product.gstConfig ?? emptyTax()), reviewed: false}, receiveStock: false, stockMode: "invoice_only"}]);
+  };
   const settings = pos.data?.gstSettings;
   const recipient = recipientDraft ?? {
     ...emptyBuyer(),
@@ -280,31 +288,15 @@ export function PurchaseNewScreen() {
             summary={`${lines.length} ${text("products")}`}
             open
           >
+            {perms.canEditProducts ? <div className="purchase-product-actions"><Button tone="ghost" onClick={() => setAddingProduct(true)}>{text("Add product")}</Button></div> : null}
             <ReadState query={catalog}>
               <SelectField
-                label={text("Add product")}
+                label={text("Choose product")}
                 value=""
                 onChange={(id) => {
                   const row = catalog.data?.find((r) => r.productId === id);
                   if (!row) return;
-                  setReviewed(false);
-                  setLines([
-                    ...lines,
-                    {
-                      key: crypto.randomUUID(),
-                      name: row.product.name,
-                      productId: id,
-                      quantity: 1,
-                      price: row.product.purchasePrice ?? 0,
-                      discount: 0,
-                      tax: {
-                        ...(row.product.gstConfig ?? emptyTax()),
-                        reviewed: false,
-                      },
-                      receiveStock: false,
-                      stockMode: "invoice_only",
-                    },
-                  ]);
+                  addProductLine(row.product);
                 }}
                 options={[
                   ["", text("Choose product")],
@@ -408,7 +400,7 @@ export function PurchaseNewScreen() {
               </Section>
             ))}
           </Section>
-          <Card>
+          <Card className="purchase-review-card">
             {totals ? (
               <Stats
                 items={[
@@ -436,6 +428,7 @@ export function PurchaseNewScreen() {
             />
           </Card>
         </fieldset>
+        {addingProduct ? <ShopDialog className="product-sheet" title={text("Add product")} busy={productBusy} onClose={() => setAddingProduct(false)}><p className="shop-hint">{text("Create the product here, then choose its quantity and stock action on this invoice.")}</p><ProductFormScreen onBusyChange={setProductBusy} onCreated={product => { addProductLine(product); setAddingProduct(false); void catalog.refetch(); }} /></ShopDialog> : null}
         <Button
           disabled={
             action.busy ||

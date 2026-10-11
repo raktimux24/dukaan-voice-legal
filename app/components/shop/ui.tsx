@@ -165,7 +165,7 @@ export function Notice({ error }: { error: unknown }) {
   const key=fallback?((EN_FALLBACK as Record<string,string>)['gst.error.'+code]?'gst.error.'+code:'gst.error.action_failed'):'web.gst.'+raw.toLowerCase().replace(/[^a-z0-9]+/g,'_');
   const message=context?context.t(key,fallback??raw):fallback??raw;
   return (
-    <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
+    <p role="alert" className="shop-notice">
       {message}
     </p>
   );
@@ -209,11 +209,11 @@ export function Spinner({ label = 'Loading' }: { label?: string }) {
   return <p className="text-sm text-muted" role="status">{label}…</p>;
 }
 
-export function ShopDialog({title, onClose, busy = false, children}: {title: string; onClose: () => void; busy?: boolean; children: ReactNode}) {
+export function ShopDialog({title, onClose, busy = false, children, className}: {title: string; onClose: () => void; busy?: boolean; children: ReactNode; className?: string}) {
   const dialog = useRef<HTMLDialogElement>(null);
   const {t} = useShop();
   useEffect(() => { dialog.current?.showModal(); }, []);
-  return <dialog ref={dialog} className="shop-dialog" aria-labelledby="shop-dialog-title" onCancel={event => {event.preventDefault(); if (!busy) onClose();}}>
+  return <dialog ref={dialog} className={cx("shop-dialog", className)} aria-labelledby="shop-dialog-title" onCancel={event => {event.preventDefault(); if (!busy) onClose();}}>
     <div className="shop-dialog-head"><h2 id="shop-dialog-title">{title}</h2><Button tone="quiet" disabled={busy} onClick={onClose}>{t('common.close', 'Close')}</Button></div>
     <div className="shop-dialog-body">{children}</div>
   </dialog>;

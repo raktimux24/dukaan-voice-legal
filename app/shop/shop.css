@@ -2935,3 +2935,21 @@ a.party-card:hover {
 
 .supplier-directory-card { min-height: 0; align-content: start; gap: 8px; padding: 22px; }
 .supplier-directory-card .party-meta { margin-top: 0; overflow-wrap: anywhere; }
+
+.shop-notice { margin: 0; padding: 12px 16px; border: 1px solid #f259594d; border-radius: 12px; background: #f259591a; color: #ff7777; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.purchase-review-card { display: grid; gap: 20px; }
+.purchase-review-card .shop-hint { margin: 0; line-height: 1.7; }
+.purchase-product-actions { display: flex; justify-content: flex-end; }
+.shop-dialog.product-sheet { width: min(920px, calc(100vw - 32px)); }
+.product-sheet .form-layout { grid-template-columns: minmax(0,1fr); }
+.product-sheet .form-aside { position: static; }
+.product-sheet .shop-page { gap: 20px; }
+.shop-profile-card { width: 100%; max-width: none; padding: 28px; }
+.shop-profile-form { display: grid; gap: 24px; }
+.supplier-profile-card { display: grid; gap: 24px; padding: 28px; }
+.supplier-profile-fields { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+.supplier-profile-fields div { display: grid; gap: 8px; min-width: 0; }
+.supplier-profile-fields dt { color: #a1a1aa; font-size: 14px; }
+.supplier-profile-fields dd { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
+.supplier-profile-actions { padding-top: 20px; border-top: 1px solid #2a2a34; }
+@media (max-width: 600px) { .supplier-profile-fields { grid-template-columns: 1fr; } .shop-profile-card, .supplier-profile-card { padding: 20px; } }

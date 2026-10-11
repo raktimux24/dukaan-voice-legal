@@ -546,7 +546,8 @@
     "sales.custom_range": "Custom range",
     "sales.from": "From",
     "sales.to": "To",
-    "sales.apply": "Apply"
+    "sales.apply": "Apply",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "Create the product here, then choose its quantity and stock action on this invoice."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -1095,7 +1096,8 @@
     "sales.custom_range": "अपनी सीमा",
     "sales.from": "से",
     "sales.to": "तक",
-    "sales.apply": "लागू करें"
+    "sales.apply": "लागू करें",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "यहाँ उत्पाद बनाएँ, फिर इस इनवॉइस में उसकी मात्रा और स्टॉक की कार्रवाई चुनें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -1644,7 +1646,8 @@
     "sales.custom_range": "Custom range",
     "sales.from": "Se",
     "sales.to": "Tak",
-    "sales.apply": "Apply"
+    "sales.apply": "Apply",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "Yahan product banayein, phir is invoice mein quantity aur stock action chunein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -2193,7 +2196,8 @@
     "sales.custom_range": "নিজস্ব সীমা",
     "sales.from": "থেকে",
     "sales.to": "পর্যন্ত",
-    "sales.apply": "প্রয়োগ করুন"
+    "sales.apply": "প্রয়োগ করুন",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "এখানে পণ্য তৈরি করুন, তারপর এই ইনভয়েসে তার পরিমাণ এবং স্টকের কাজ বেছে নিন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -2742,7 +2746,8 @@
     "sales.custom_range": "தனிப்பயன் வரம்பு",
     "sales.from": "முதல்",
     "sales.to": "வரை",
-    "sales.apply": "பயன்படுத்து"
+    "sales.apply": "பயன்படுத்து",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "இங்கே பொருளை உருவாக்கி, இந்த இன்வாய்ஸில் அதன் அளவையும் இருப்புச் செயலையும் தேர்ந்தெடுக்கவும்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -3291,7 +3296,8 @@
     "sales.custom_range": "అనుకూల పరిధి",
     "sales.from": "నుంచి",
     "sales.to": "వరకు",
-    "sales.apply": "వర్తింపజేయండి"
+    "sales.apply": "వర్తింపజేయండి",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "ఇక్కడ ఉత్పత్తిని సృష్టించి, ఈ ఇన్‌వాయిస్‌లో పరిమాణం మరియు స్టాక్ చర్యను ఎంచుకోండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -3840,7 +3846,8 @@
     "sales.custom_range": "स्वतःची मर्यादा",
     "sales.from": "पासून",
     "sales.to": "पर्यंत",
-    "sales.apply": "लागू करा"
+    "sales.apply": "लागू करा",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "येथे उत्पादन तयार करा, नंतर या इनव्हॉइसमध्ये त्याचे प्रमाण आणि स्टॉकची कृती निवडा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -4389,7 +4396,8 @@
     "sales.custom_range": "ಕಸ್ಟಮ್ ವ್ಯಾಪ್ತಿ",
     "sales.from": "ಇಂದ",
     "sales.to": "ವರೆಗೆ",
-    "sales.apply": "ಅನ್ವಯಿಸಿ"
+    "sales.apply": "ಅನ್ವಯಿಸಿ",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "ಇಲ್ಲಿ ಉತ್ಪನ್ನವನ್ನು ರಚಿಸಿ, ನಂತರ ಈ ಇನ್‌ವಾಯ್ಸ್‌ನಲ್ಲಿ ಅದರ ಪ್ರಮಾಣ ಮತ್ತು ಸ್ಟಾಕ್ ಕ್ರಮವನ್ನು ಆಯ್ಕೆಮಾಡಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -4938,7 +4946,8 @@
     "sales.custom_range": "પોતાની મર્યાદા",
     "sales.from": "થી",
     "sales.to": "સુધી",
-    "sales.apply": "લાગુ કરો"
+    "sales.apply": "લાગુ કરો",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "અહીં ઉત્પાદન બનાવો, પછી આ ઇન્વોઇસમાં તેનો જથ્થો અને સ્ટોકની કાર્યવાહી પસંદ કરો."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -5487,6 +5496,7 @@
     "sales.custom_range": "ഇഷ്ടാനുസൃത പരിധി",
     "sales.from": "മുതൽ",
     "sales.to": "വരെ",
-    "sales.apply": "പ്രയോഗിക്കുക"
+    "sales.apply": "പ്രയോഗിക്കുക",
+    "web.gst.create_the_product_here_then_choose_its_quantity_and_stock_action_on_this_invoice_": "ഇവിടെ ഉൽപ്പന്നം സൃഷ്ടിക്കുക, തുടർന്ന് ഈ ഇൻവോയ്സിൽ അതിന്റെ അളവും സ്റ്റോക്ക് നടപടിയും തിരഞ്ഞെടുക്കുക."
   }
 }

@@ -32,10 +32,9 @@ export function GstSupplierDetailScreen({ id }: { id: string }) {
       <ReadState query={q}>
         {supplier ? (
           <>
-            <Card>
-              <h2>{supplier.identity.name}</h2>
-              <p>{supplier.identity.gstin || text("Not registered")}</p>
-              <p>{supplier.identity.address}</p>
+            <Card className="supplier-profile-card">
+              <dl className="supplier-profile-fields"><div><dt>GSTIN</dt><dd>{supplier.identity.gstin || text("Not registered")}</dd></div><div><dt>{text("Address")}</dt><dd>{supplier.identity.address || "—"}</dd></div></dl>
+              <div className="shop-actions supplier-profile-actions">
               <Button tone="ghost" onClick={() => setEditing((v) => !v)}>
                 {text("Edit supplier")}
               </Button>
@@ -53,6 +52,7 @@ export function GstSupplierDetailScreen({ id }: { id: string }) {
                   {text("Stock supplier history")}
                 </Button>
               ) : null}
+              </div>
             </Card>
             {editing ? (
               <SupplierEditor

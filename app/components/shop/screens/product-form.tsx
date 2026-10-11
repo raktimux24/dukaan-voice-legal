@@ -7,13 +7,15 @@ import { validateProductTaxDraft } from '../../../lib/shop/gst-core/gst';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { SupplierField } from '../supplier-field';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, cx, inputClass } from '../ui';
+
+import type { Product } from '../../../lib/shop/types';
 
 type Draft = {
   name: string;
@@ -60,7 +62,7 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
   };
 }
 
-export function ProductFormScreen({ productId }: { productId?: string }) {
+export function ProductFormScreen({ productId, onCreated, onBusyChange }: { productId?: string; onCreated?: (product: Product) => void; onBusyChange?: (busy: boolean) => void }) {
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const router = useRouter();
   const text=useGstText();
@@ -79,6 +81,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
   const l1 = enabledL1(shop?.category, shop?.subtype);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
+  useEffect(() => { onBusyChange?.(pending); }, [pending, onBusyChange]);
   const [draft, setDraft] = useState<Draft | null>(null);
   const initial = useMemo(() => {
     if (!shop) return null;
@@ -86,9 +89,9 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
     const sub = first ? l2ForL1(first.code)[0]?.code ?? '' : '';
     if (!productId) {
       return blank(first?.code ?? 'staples', sub, {
-        name: params.get('name') ?? '',
-        barcode: params.get('barcode') ?? '',
-        initialStock: params.get('qty') ?? '0',
+        name: onCreated ? '' : params.get('name') ?? '',
+        barcode: onCreated ? '' : params.get('barcode') ?? '',
+        initialStock: onCreated ? '0' : params.get('qty') ?? '0',
       });
     }
     if (!item) return null;
@@ -133,7 +136,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
     }
     if(!hideCost && form.purchasePrice!=='' && cost===null){setError(Error(text('Enter a valid buying price and a discount between 0 and 100%.')));return;}
     if(autoMrp&&!priceBreakdown){setError(Error(text('Confirm selling price and GST before calculating MRP.')));return;}
-    const buyListItemId = params.get('buyListItemId');
+    const buyListItemId = onCreated ? null : params.get('buyListItemId');
     if(gstConfig){try{validateProductTaxDraft(gstConfig);}catch(e){setError(e);return;}}
     if(form.mrp&&priceBreakdown&&priceBreakdown.gross>Number(form.mrp)&&!autoMrp){setError(new Error(text('Selling price including GST must not exceed MRP.')));return;}
     const body: Record<string, unknown> = {
@@ -161,7 +164,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
         router.push(`/shop/products/${productId}`);
         return;
       }
-      body.initialStock = Number(form.initialStock || 0);
+      body.initialStock = onCreated ? 0 : Number(form.initialStock || 0);
       if (form.supplier) body.supplier = form.supplier;
       if (form.expiryDate) body.expiryDate = form.expiryDate;
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
@@ -169,6 +172,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
       const created = await api.addProduct(shop.id, body);
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
+      if (onCreated) { onCreated(created.product); return; }
       if (addAnother) {
         setNotice(`${created.product.name} added.`);
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
@@ -200,12 +204,13 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
         void handleSubmit();
       }}
     >
-      <PageHeader
+      {!onCreated ? <PageHeader
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
         description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : t('modal.add_product.section_initial_batch', 'Name, category, and a price are enough to start selling.')}
         actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
+      : null}
       <Notice error={error} />
 
       <div className="form-layout">
@@ -277,7 +282,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
                 <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
               </Field>
             </div>
-            {!productId && form.trackStock ? (
+            {!productId && !onCreated && form.trackStock ? (
               <div className="form-grid is-2">
                 <Field label={t('modal.add_product.quantity_label', 'Opening stock')}>
                   <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.initialStock} onChange={(event) => set({ initialStock: event.target.value })} />
@@ -336,7 +341,7 @@ export function ProductFormScreen({ productId }: { productId?: string }) {
             ) : null}
             <div className="grid gap-2">
               <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
-              {!productId ? (
+              {!productId && !onCreated ? (
                 <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>Save and add another</Button>
               ) : null}
             </div>
