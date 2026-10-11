@@ -1,3 +1,4 @@
+import {confirmedCustomerPayment} from './gst-core/customer-payment-outcome';
 import { confirmedCollectionReview } from "./gst-core/collection-review-outcome";
 import { confirmedSaleReturnReceipt } from "./gst-core/sale-return-outcome";
 import { confirmedManualCredit } from "./gst-core/manual-credit-outcome";
@@ -463,6 +464,11 @@ export function bindGstApi(
           confirmedDebitSettlement(v, s, financialScope(s).actorId, id, input),
         `${base(s)}/adjustments/${id}/settlements/request-outcome`,
       ),
+    recordCustomerPayment: (s: string, id: string, input: Parameters<typeof confirmedCustomerPayment>[4]) => financial(
+      s, `${base(s)}/customers/${id}/payments`, input,
+      value => confirmedCustomerPayment(value, s, financialScope(s).actorId, id, input),
+      `${base(s)}/customers/${id}/payments/request-outcome`,
+    ),
     collections: (s: string, id: string, before?: string) =>
       get<{
         items: {

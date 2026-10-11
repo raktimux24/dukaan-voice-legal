@@ -2,18 +2,19 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { SupplierPicker, SupplierEditor } from "../gst-supplier";
+import { SupplierEditor } from "../gst-supplier";
 import { useGstPages, More, ReadState } from "../gst-workspace";
 import type { GstSupplier } from "../../../lib/shop/gst-types";
 import { useState } from "react";
 import { formatDay, formatINR } from "../../../lib/shop/money";
 import { useShop } from "../context";
-import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from "../ui";
+import { Card, NoAccess, Notice, PageHeader, Spinner, Button, ShopDialog, inputClass } from "../ui";
 
 export function SuppliersScreen() {
   const { api, shop, perms, t } = useShop();
   const [q, setQ] = useState("");
-  const [editing, setEditing] = useState<GstSupplier | null>(null);
+  const [supplierBusy, setSupplierBusy] = useState(false);
+  const [adding, setAdding] = useState(false);
   const directory = useGstPages(
     ["suppliers", q],
     (cursor) => api.gst.suppliers(shop!.id, q, cursor),
@@ -49,10 +50,9 @@ export function SuppliersScreen() {
           "web.gst.supplier_directory",
           "Keep supplier billing details and stock history together. Stock spend comes from recorded buying costs.",
         )}
+        actions={<Button onClick={() => setAdding(true)}>{t('web.gst.add_supplier', 'Add supplier')}</Button>}
       />
-      <Card>
-        <SupplierPicker value={editing} onChange={setEditing} />
-      </Card>
+      <FieldSearch q={q} onChange={setQ} label={t('suppliers.search', 'Search suppliers')} />
       <ReadState
         query={directory}
         empty={!directory.data?.pages.some((page) => page.items.length)}
@@ -77,23 +77,8 @@ export function SuppliersScreen() {
         </div>
       </ReadState>
       <More query={directory} />
-      {editing ? (
-        <SupplierEditor
-          key={editing.id}
-          initial={editing}
-          onSaved={() => setEditing(null)}
-        />
-      ) : null}
-      <h2 className="shop-section-title">
-        {t("suppliers.stock_history", "Stock supplier history")}
-      </h2>
-      <input
-        className={`${inputClass} shop-search`}
-        placeholder={t("suppliers.search", "Search suppliers")}
-        value={q}
-        onChange={(event) => setQ(event.target.value)}
-        aria-label={t("suppliers.search", "Search suppliers")}
-      />
+      {adding ? <ShopDialog title={t('web.gst.add_supplier', 'Add supplier')} onClose={() => setAdding(false)} busy={supplierBusy}><SupplierEditor onBusyChange={setSupplierBusy} onSaved={() => {setAdding(false); void directory.refetch();}} /></ShopDialog> : null}
+      <details className="gst-section"><summary><span>{t('suppliers.stock_history', 'Stock supplier history')}</span><span aria-hidden="true">⌄</span></summary><div className="gst-section-body">
       <Notice error={list.error ?? compare.error} />
       {list.isLoading ? <Spinner label="Loading suppliers" /> : null}
       {!list.isLoading && suppliers.length === 0 ? (
@@ -143,6 +128,7 @@ export function SuppliersScreen() {
           </Link>
         ))}
       </div>
+      </div></details>
       {compared.length > 0 ? (
         <Card>
           <h2 className="shop-section-title">
@@ -173,4 +159,8 @@ export function SuppliersScreen() {
       ) : null}
     </div>
   );
+}
+
+function FieldSearch({q,onChange,label}: {q:string;onChange:(value:string)=>void;label:string}) {
+ return <label className="supplier-directory-search"><span>{label}</span><input className={inputClass} value={q} onChange={event=>onChange(event.target.value)} type="search" placeholder={label}/></label>;
 }

@@ -51,6 +51,8 @@ export async function recoverFinancialRequest(
     return invoke(
       gst.importTax(shop, body as Parameters<typeof gst.importTax>[1]),
     );
+  const payment = path.match(/^\/customers\/([^/]+)\/payments$/);
+  if (payment) return invoke(gst.recordCustomerPayment(shop, payment[1], body as Parameters<typeof gst.recordCustomerPayment>[2]));
   let match = path.match(
     /^\/purchases\/([^/]+)\/(itc-review|returns|settlements|settlement-reversals)$/,
   );

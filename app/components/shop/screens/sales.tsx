@@ -73,28 +73,27 @@ export function SalesScreen() {
       />
       <Notice error={error ?? (sales.error && !isPremiumError(sales.error) ? sales.error : null)} />
       {isPremiumError(error) || isPremiumError(sales.error) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
-      <div className="pos-chips" role="tablist" aria-label="Bill type">
+      <Card className="sales-filter-panel">
+      <div className="sales-filter-group"><span className="sales-filter-label">{t('sales.bill_type', 'Bill type')}</span><div className="pos-chips" aria-label={t('sales.bill_type', 'Bill type')}>
         <Chip active={desk === 'all'} onClick={() => setDesk('all')}>{t('sales.status_filter.all', 'All bills')}</Chip>
         <Chip active={desk === 'udhaar'} onClick={() => setDesk('udhaar')}>{t('reports.sales.udhaar', 'Udhaar')}</Chip>
       </div>
-      <div className="flex flex-wrap items-end gap-3">
+      </div><div className="sales-filter-group"><span className="sales-filter-label">{t('sales.date_range', 'Date range')}</span>
         <div className="pos-chips">
           {PERIODS.map((item) => (
             <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{periodLabel(item, t)}</Chip>
           ))}
-          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>Custom range</Chip>
+          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>{t('sales.custom_range', 'Custom range')}</Chip>
         </div>
         {period === 'custom' ? (
-          <div className="flex flex-wrap items-end gap-3">
-            <Field label="From"><input className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
-            <Field label="To"><input className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
-            <Button tone="ghost" onClick={() => {
-              setError(null);
-              setApplied({ from, to });
-            }}>Apply</Button>
-          </div>
+          <form className="sales-custom-range" onSubmit={event => {event.preventDefault(); if (!from || !to || from > to) return; setError(null); setApplied({from, to});}}>
+            <Field label={t('sales.from', 'From')}><input required className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
+            <Field label={t('sales.to', 'To')}><input required min={from || undefined} className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
+            <Button type="submit" tone="ghost" disabled={!from || !to || from > to}>{t('sales.apply', 'Apply')}</Button>
+          </form>
         ) : null}
       </div>
+      </Card>
       {sales.data?.limitedToDays ? <p className="text-sm text-muted">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: sales.data.limitedToDays })}</p> : null}
       {sales.isLoading ? <Spinner label="Loading sales" /> : null}
       <Card flush>

@@ -154,3 +154,22 @@ assert.equal(
 console.log(
   "Financial outcome tests passed: lost response recovery, original identity replay, uncertain outcome retention and delayed account-switch rejection.",
 );
+
+// The customer payment modal must use an immutable identity and confirm the
+// receipt after a lost response, just like native customer collections.
+const customerId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const paymentId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+storage.setFinancialScope(scope);
+const customerPaymentInput = {clientId:paymentId,amount:5,method:'cash'};
+let customerPaymentCalls = [];
+const customerPaymentApi = bindGstApi(async (path, init) => {
+ customerPaymentCalls.push({path,body:JSON.parse(init.body)});
+ if (!path.endsWith('/request-outcome')) throw Error('Response lost');
+ return {status:'recorded', customer:{id:customerId,shopId:scope.shopId,balance:'10.00'}, entry:{id:paymentId,shopId:scope.shopId,customerId,createdBy:scope.actorId,clientId:paymentId,type:'payment',amount:'-5.00',method:'cash',note:null,createdAt:'2026-10-12T00:00:00Z',balanceAfter:'10.00'}, allocations:[]};
+});
+const paymentReceipt = await customerPaymentApi.recordCustomerPayment(scope.shopId,customerId,customerPaymentInput);
+assert.equal(paymentReceipt.customer.balance,10);
+assert.deepEqual(customerPaymentCalls.map(call=>call.body),[customerPaymentInput,customerPaymentInput]);
+assert.equal((await storage.retainedRequests(scope)).find(row=>row.id===paymentId).state,'confirmed');
+await assert.rejects(customerPaymentApi.recordCustomerPayment(scope.shopId,customerId,{...customerPaymentInput,amount:6}));
+console.log('Customer payment modal contract passed: stable identity, lost-response confirmation and edited replay rejection.');

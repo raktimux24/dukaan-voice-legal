@@ -44,7 +44,7 @@ export function CustomersScreen() {
             void api.createCustomer(shop.id, { name: name.trim(), phone: normalized, clientId: crypto.randomUUID() }).then(() => {
               setName('');
               setPhone('');
-              return list.refetch();
+              return Promise.all([list.refetch(), summary.refetch()]);
             }).catch(setError);
           }}
         >
@@ -53,12 +53,14 @@ export function CustomersScreen() {
           <Button type="submit" disabled={!name.trim()}>{t('checkout.add_customer', 'Add customer')}</Button>
         </form>
       </Card>
-      <div className="grid gap-2">
+      <div className="customer-list">
         {(list.data?.customers ?? []).map((customer) => (
-          <Link key={customer.id} href={`/shop/customers/${customer.id}`} className="shop-surface flex justify-between rounded-xl border border-line bg-card p-3">
-            <span>{customer.name}<span className="block text-sm text-muted">{customer.phone}</span></span>
-            <span>{formatINR(customer.balance)}</span>
-          </Link>
+          <Link key={customer.id} href={`/shop/customers/${customer.id}`} className="shop-surface customer-card">
+              <span className="customer-card-identity"><strong>{customer.name}</strong><span>{customer.phone || t('customers.no_phone', 'No phone added')}</span></span>
+              <span className="customer-card-metric"><span>{t('customers.month_purchases', 'Purchases this month')}</span><strong className="num">{customer.monthPurchaseTotal == null ? '—' : formatINR(customer.monthPurchaseTotal)}</strong></span>
+              <span className="customer-card-metric"><span>{t('customers.outstanding', 'Udhaar outstanding')}</span><strong className={`num ${customer.balance > 0 ? 'customer-owing' : ''}`}>{formatINR(customer.balance)}</strong></span>
+              <span className="customer-card-arrow" aria-hidden="true">→</span>
+            </Link>
         ))}
       </div>
     </div>

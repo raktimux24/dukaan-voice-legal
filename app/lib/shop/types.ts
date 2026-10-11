@@ -223,6 +223,9 @@ export type SalesSummary = {
 };
 
 export type Customer = {
+  monthPurchaseTotal?: number;
+  totalBusinessAmount?: number;
+  preferredPaymentMethods?: string[];
   billingPartyId?: string | null;
   billingParty?: {id:string;buyer:Buyer} | null;
   id: string;

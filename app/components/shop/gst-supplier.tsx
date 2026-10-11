@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShop } from "./context";
 import {
@@ -24,10 +24,12 @@ export function SupplierEditor({
   initial,
   onSaved,
   legacyName,
+  onBusyChange,
 }: {
   initial?: GstSupplier;
   onSaved: (v: GstSupplier) => void;
   legacyName?: string;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const { api, shop } = useShop(),
     text = useGstText(),
@@ -43,6 +45,7 @@ export function SupplierEditor({
     },
   );
   const retained = useRef<{ clientId: string; identity: Buyer } | null>(null);
+  useEffect(() => {onBusyChange?.(action.busy || !!retained.current);}, [action.busy, onBusyChange]);
   return (
     <Card>
       <fieldset disabled={action.busy || !!retained.current}>

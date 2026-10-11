@@ -1,13 +1,13 @@
 "use client";
 import { useRef, useState } from "react";
 import { useShop } from "./context";
-import { Button, Card, Pill } from "./ui";
+import { Button, Field, inputClass } from "./ui";
 import { Section, TextField, Check, useGstText, useFiscalDate } from "./gst-ui";
 import { useGstPages, useGstAction, ReadState, More } from "./gst-workspace";
 import { formatINR } from "../../lib/shop/money";
 
 export function GstCollectionReview({ customerId }: { customerId: string }) {
-  const { api, shop, perms, premium } = useShop(),
+  const { api, shop, perms, premium, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
@@ -34,11 +34,12 @@ export function GstCollectionReview({ customerId }: { customerId: string }) {
   const allocations = bills
     .filter((b) => Number(amounts[b.id]) > 0)
     .map((b) => ({ saleId: b.id, amount: Number(amounts[b.id]) }));
-  const total = allocations.reduce((sum, row) => sum + row.amount, 0);
+  const total = allocations.reduce((sum, row) => sum + Math.round(row.amount * 100), 0) / 100;
   const valid =
     selected &&
     total > 0 &&
     total <= Number(selected.unassignedAmount) &&
+    Object.values(amounts).every(value => value === '' || /^\d+(\.\d{1,2})?$/.test(value)) &&
     allocations.every(
       (a) =>
         /^\d+(\.\d{1,2})?$/.test(amounts[a.saleId]) &&
@@ -51,60 +52,39 @@ export function GstCollectionReview({ customerId }: { customerId: string }) {
       title={text("Match received payments to bills")}
       summary={`${rows.length} ${text("payments to review")}`}
     >
-      <p className="shop-hint">
-        {text(
-          "Choose a payment already received, then assign its amount to the unpaid bills it settles. This does not record another payment.",
-        )}
-      </p>
+      <p className="shop-hint">{t('customers.match_hint', 'Link a payment you already received to its bills. Your customer’s balance stays the same.')}</p>
       {action.notice}
-      <fieldset disabled={action.busy || !!saved.current}>
+      <fieldset className="collection-review-form" disabled={action.busy || !!saved.current}>
         <ReadState query={receipts} empty={!rows.length}>
-          {rows.map((row) => (
-            <button
-              className="gst-nav-row"
-              type="button"
-              key={row.id}
-              aria-pressed={ledger === row.id}
-              onClick={() => {
-                setLedger(row.id);
-                setAmounts({});
-                setReviewed(false);
-              }}
-            >
-              <span>
-                {date(row.recordedAt)} · {row.method}
-                <small>
-                  {text("Unassigned")}:{" "}
-                  {formatINR(Number(row.unassignedAmount))}
-                </small>
-              </span>
-              {ledger === row.id ? (
-                <Pill tone="ok">{text("Selected")}</Pill>
-              ) : null}
-            </button>
-          ))}
+          <Field label={t('customers.choose_payment', '1. Choose received payment')}>
+            <select className={inputClass} value={ledger} onChange={event => {setLedger(event.target.value); setAmounts({}); setReviewed(false);}}>
+              <option value="">{t('customers.select_payment', 'Select a payment')}</option>
+              {rows.map(row => <option key={row.id} value={row.id}>{date(row.recordedAt)} · {t('pos.method.' + row.method, row.method ?? '—')} · {formatINR(Number(row.unassignedAmount))} {text('Unassigned')}</option>)}
+            </select>
+          </Field>
         </ReadState>
         <More query={receipts} />
         {selected ? (
           <ReadState query={invoices} empty={!bills.length}>
-            {bills.map((bill) => (
-              <TextField
-                key={bill.id}
-                label={`${text("Bill")} #${bill.saleNumber} · ${text("Unpaid")}: ${formatINR(Number(bill.remainingCredit))}`}
-                type="number"
-                value={amounts[bill.id] ?? ""}
-                onChange={(value) => {
-                  setAmounts({ ...amounts, [bill.id]: value });
-                  setReviewed(false);
-                }}
-              />
-            ))}
+            <h3 className="shop-section-title">{t('customers.choose_bills', '2. Choose bills and amounts')}</h3>
+            <div className="collection-bills">{bills.map(bill => (
+              <div className="collection-bill" key={bill.id}>
+                <div><strong>{text('Bill')} #{bill.saleNumber}</strong><small>{text('Unpaid')}: {formatINR(Number(bill.remainingCredit))}</small></div>
+                <Field label={`${text('Amount assigned')} · ${text('Bill')} #${bill.saleNumber}`}>
+                  <input className={inputClass} type="number" min="0" step="0.01" max={bill.remainingCredit} placeholder="0.00" value={amounts[bill.id] ?? ''} onChange={event => {setAmounts({...amounts, [bill.id]: event.target.value}); setReviewed(false);}} />
+                </Field>
+                <Button tone="quiet" size="sm" onClick={() => {
+                  const usedElsewhere = allocations.filter(a => a.saleId !== bill.id).reduce((sum, a) => sum + Math.round(a.amount * 100), 0);
+                  const available = Math.max(0, Math.round(Number(selected.unassignedAmount) * 100) - usedElsewhere);
+                  setAmounts({...amounts, [bill.id]: (Math.min(available, Math.round(Number(bill.remainingCredit) * 100)) / 100).toFixed(2)}); setReviewed(false);
+                }}>{t('customers.use_remaining', 'Use remaining payment')}</Button>
+              </div>
+            ))}</div>
             <More query={invoices} />
-            <p>
-              {text("Amount assigned")}: {formatINR(total)}
-            </p>
+            <div className="collection-summary"><span>{text('Amount assigned')}: <strong>{formatINR(total)}</strong></span><span>{t('customers.left_to_match', 'Left to match')}: <strong>{formatINR(Number(selected.unassignedAmount) - total)}</strong></span></div>
+            {total > Number(selected.unassignedAmount) ? <p role="alert" className="customer-owing">{t('customers.exceeds_payment', 'Assigned amounts exceed this payment. Reduce the amounts before saving.')}</p> : null}
             <TextField
-              label={text("Review reason")}
+              label={t("customers.match_note", "Note: why these bills?")}
               value={reason}
               onChange={(v) => {
                 setReason(v);

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {useContext, type ReactNode} from 'react';
+import {useContext, useEffect, useRef, type ReactNode} from 'react';
 import { ApiError } from '../../lib/shop/api';
 import { useShop,ShopContext } from './context';
 import {EN_FALLBACK} from '../../lib/shop/en-fallback';
@@ -207,4 +207,14 @@ export function NoAccess({ what }: { what: string }) {
 
 export function Spinner({ label = 'Loading' }: { label?: string }) {
   return <p className="text-sm text-muted" role="status">{label}…</p>;
+}
+
+export function ShopDialog({title, onClose, busy = false, children}: {title: string; onClose: () => void; busy?: boolean; children: ReactNode}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const {t} = useShop();
+  useEffect(() => { dialog.current?.showModal(); }, []);
+  return <dialog ref={dialog} className="shop-dialog" aria-labelledby="shop-dialog-title" onCancel={event => {event.preventDefault(); if (!busy) onClose();}}>
+    <div className="shop-dialog-head"><h2 id="shop-dialog-title">{title}</h2><Button tone="quiet" disabled={busy} onClick={onClose}>{t('common.close', 'Close')}</Button></div>
+    <div className="shop-dialog-body">{children}</div>
+  </dialog>;
 }

@@ -190,5 +190,11 @@
     "source": "server/src/lib/rsp-profile-request.ts",
     "sourceSha256": "684b86ee066c96bea3838b5a67ce788458e156b2c65db857b3b1d0128a81ea77",
     "vendoredSha256": "bc2a0eb9508d13926b469f329e9191b67f8da323e5844536401ff9f31df9dc5e"
+  },
+  {
+    "file": "customer-payment-outcome.ts",
+    "source": "src/lib/pos/customer-payment-outcome.ts",
+    "sourceSha256": "dddc2cc7f552446b03240d1fbddb569b4a89a0b2643dcf2ac65b9e1a5c57ad3f",
+    "vendoredSha256": "dddc2cc7f552446b03240d1fbddb569b4a89a0b2643dcf2ac65b9e1a5c57ad3f"
   }
 ]
