@@ -2932,3 +2932,6 @@ a.party-card:hover {
 .supplier-directory-search { display: grid; gap: 10px; }
 @media(max-width: 900px) { .collection-bill { grid-template-columns: 1fr 1fr; } .collection-bill > .shop-btn { grid-column: 1 / -1; } }
 @media(max-width: 500px) { .collection-bill { grid-template-columns: 1fr; } .shop-dialog-head, .shop-dialog-body { padding: 18px; } }
+
+.supplier-directory-card { min-height: 0; align-content: start; gap: 8px; padding: 22px; }
+.supplier-directory-card .party-meta { margin-top: 0; overflow-wrap: anywhere; }

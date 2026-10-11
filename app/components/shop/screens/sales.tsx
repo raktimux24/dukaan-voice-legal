@@ -21,6 +21,7 @@ function periodLabel(period: (typeof PERIODS)[number], t: (key: string, fallback
 export function SalesScreen() {
   const { api, shop, perms, premium, t } = useShop();
   const [period, setPeriod] = useState<(typeof PERIODS)[number] | 'custom'>('today');
+  const [customOpen, setCustomOpen] = useState(false);
   const [desk, setDesk] = useState<'all' | 'udhaar'>('all');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -81,14 +82,14 @@ export function SalesScreen() {
       </div><div className="sales-filter-group"><span className="sales-filter-label">{t('sales.date_range', 'Date range')}</span>
         <div className="pos-chips">
           {PERIODS.map((item) => (
-            <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{periodLabel(item, t)}</Chip>
+            <Chip key={item} active={period === item} onClick={() => { setPeriod(item); setCustomOpen(false); }}>{periodLabel(item, t)}</Chip>
           ))}
-          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>{t('sales.custom_range', 'Custom range')}</Chip>
+          <Chip active={customOpen || period === 'custom'} onClick={() => setCustomOpen(true)}>{t('sales.custom_range', 'Custom range')}</Chip>
         </div>
-        {period === 'custom' ? (
-          <form className="sales-custom-range" onSubmit={event => {event.preventDefault(); if (!from || !to || from > to) return; setError(null); setApplied({from, to});}}>
-            <Field label={t('sales.from', 'From')}><input required className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
-            <Field label={t('sales.to', 'To')}><input required min={from || undefined} className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
+        {customOpen || period === 'custom' ? (
+          <form className="sales-custom-range" onSubmit={event => {event.preventDefault(); if (!from || !to || from > to) return; setError(null); setApplied({from, to}); setPeriod('custom');}}>
+            <Field label={t('sales.from', 'From')}><input required className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} onInput={(event) => setFrom(event.currentTarget.value)} /></Field>
+            <Field label={t('sales.to', 'To')}><input required min={from || undefined} className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} onInput={(event) => setTo(event.currentTarget.value)} /></Field>
             <Button type="submit" tone="ghost" disabled={!from || !to || from > to}>{t('sales.apply', 'Apply')}</Button>
           </form>
         ) : null}

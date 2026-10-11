@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { SupplierEditor } from "../gst-supplier";
 import { useGstPages, More, ReadState } from "../gst-workspace";
-import type { GstSupplier } from "../../../lib/shop/gst-types";
 import { useState } from "react";
 import { formatDay, formatINR } from "../../../lib/shop/money";
 import { useShop } from "../context";
@@ -64,11 +63,11 @@ export function SuppliersScreen() {
               <Link
                 key={supplier.id}
                 href={"/shop/suppliers/records/" + supplier.id}
-                className="party-card"
+                className="party-card supplier-directory-card"
               >
                 <p className="party-name">{supplier.identity.name}</p>
                 <p className="party-meta">
-                  {supplier.identity.gstin ??
+                  {supplier.identity.gstin ||
                     t("gst.registration.unregistered", "Not registered")}
                 </p>
                 <p className="party-meta">{supplier.identity.address}</p>
