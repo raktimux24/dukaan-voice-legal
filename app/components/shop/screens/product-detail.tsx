@@ -1,15 +1,19 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { labeledL1, labeledL2 } from '../../../lib/shop/catalog';
 import { useCart } from '../../../lib/shop/cart';
-import { formatDay, formatINR, formatWhen } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { AdjustmentReason, StockBatch } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { SupplierField } from '../supplier-field';
+import { ProductTaxHistory } from '../product-tax-history';
 import { Button, Card, Field, Notice, PageHeader, Pill, Spinner, inputClass, isDenied } from '../ui';
 
 const REASONS: AdjustmentReason[] = ['damaged', 'expired', 'theft', 'correction', 'returned_to_supplier', 'personal_use', 'other'];
@@ -26,6 +30,8 @@ function logMentionsProduct(payload: Record<string, unknown>, productId: string)
 }
 
 export function ProductDetailScreen({ productId }: { productId: string }) {
+  const uiText = useUiText();
+  const { formatDay, formatWhen } = useShopDates();
   const { api, shop, perms, hideCost, userId, setNotice, t } = useShop();
   const params = useSearchParams();
   const router = useRouter();
@@ -37,10 +43,18 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
     queryFn: () => api.getAllInventory(shop!.id, hideCost),
   });
   const [showAll, setShowAll] = useState(false);
+  const item = catalog.data?.find((row) => row.productId === productId);
+  const tracksStock = item?.product.trackStock !== false;
+  // Keep next-sale costing independent of the history filter.
+  const activeBatchQuery = useQuery({
+    queryKey: ['batches', shop?.id, productId, false],
+    enabled: !!shop?.id && tracksStock,
+    queryFn: () => api.getBatches(shop!.id, productId, false),
+  });
   const batches = useQuery({
-    queryKey: ['batches', shop?.id, productId, showAll],
+    queryKey: ['batches', shop?.id, productId, showAll || !tracksStock],
     enabled: !!shop?.id,
-    queryFn: () => api.getBatches(shop!.id, productId, showAll),
+    queryFn: () => api.getBatches(shop!.id, productId, showAll || !tracksStock),
   });
   const sales = useQuery({
     queryKey: ['product-sales', shop?.id, productId],
@@ -57,7 +71,6 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
     enabled: !!shop?.id && perms.canEditProducts,
     queryFn: () => api.getBuyList(shop!.id),
   });
-  const item = catalog.data?.find((row) => row.productId === productId);
   const [panel, setPanel] = useState<'adjust' | 'batch' | null>(params.get('batch') === '1' ? 'batch' : null);
   const [removeQty, setRemoveQty] = useState('');
   const [reason, setReason] = useState<AdjustmentReason>('correction');
@@ -72,15 +85,18 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
   const [pending, setPending] = useState(false);
 
   if (!shop) return <Spinner />;
-  if (catalog.isLoading) return <Spinner label="Loading product" />;
-  if (!item) return <Card><p>That product was not found.</p></Card>;
+  if (catalog.isLoading) return <Spinner label={uiText("Loading product")} />;
+  if (!item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
 
   const product = item.product;
   const onBuyList = (buyList.data ?? []).some((row) => row.productId === productId && row.status === 'pending');
-  const activeBatches = (batches.data ?? []).filter((batch) => batch.status !== 'depleted');
-  const nextOutId = activeBatches[0]?.id;
-  const nextCost = activeBatches.find((batch) => batch.purchasePrice != null)?.purchasePrice ?? product.purchasePrice ?? null;
+  const activeBatches = (activeBatchQuery.data ?? []).filter((batch) => batch.status !== 'depleted');
+  const nextOutId = tracksStock ? activeBatches[0]?.id : undefined;
+  const nextCost = tracksStock && (activeBatchQuery.isPending || activeBatchQuery.isError) ? null : (tracksStock ? activeBatches.find((batch) => batch.purchasePrice != null)?.purchasePrice : null) ?? product.purchasePrice ?? null;
   const margin = product.sellingPrice != null && nextCost != null ? product.sellingPrice - nextCost : null;
+  const costedBatches = tracksStock ? activeBatches.filter(batch => batch.purchasePrice != null) : [];
+  const costedQuantity = costedBatches.reduce((sum, batch) => sum + batch.quantity, 0);
+  const averageCost = costedQuantity > 0 ? costedBatches.reduce((sum, batch) => sum + batch.quantity * batch.purchasePrice!, 0) / costedQuantity : null;
   const productLogs = (activity.data?.logs ?? []).filter((log) => logMentionsProduct(log.payload, productId)).slice(0, 5);
 
   const refresh = async () => {
@@ -111,7 +127,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
     }
     const result = cart.addProduct(item, 1);
     if (!result.ok) {
-      setNotice(result.message === 'unpriced' ? 'Set a selling price first.' : result.message ?? 'Could not add this to the bill.');
+      setNotice(result.message === 'unpriced' ? 'Set a selling price first.' : result.message === 'out_of_stock' ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: product.name }) : 'Could not add this to the bill.');
       return;
     }
     router.push('/shop/sell');
@@ -129,19 +145,19 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
       <Notice error={error ?? (batches.error && !isDenied(batches.error) ? batches.error : null)} />
 
       <div className="product-hero">
-        <p className="product-qty">{formatQty(item.quantity, item.unit, { packSize: product.packSize, packLabel: product.packLabel })}</p>
+        <p className="product-qty">{tracksStock ? formatQty(item.quantity, item.unit, { packSize: product.packSize, packLabel: product.packLabel }) : t('pos.no_stock_tracking', 'No stock tracking')}</p>
         <p className="party-meta">{product.sellingPrice != null ? `${formatINR(product.sellingPrice)} / ${item.unit}` : t('home.unpriced', 'No selling price')}</p>
-        {item.stockStatus === 'OUT' || item.stockStatus === 'LOW' ? (
+        {tracksStock && (item.stockStatus === 'OUT' || item.stockStatus === 'LOW') ? (
           <Pill tone={item.stockStatus === 'OUT' ? 'danger' : 'warn'}>{item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out of stock') : t('home.stat_low_stock', 'Running low')}</Pill>
         ) : null}
       </div>
 
-      <div className="product-actions">
-        <button type="button" className="product-action" onClick={() => setPanel((current) => current === 'adjust' ? null : 'adjust')}>
+      <div className="product-actions" style={tracksStock ? undefined : { gridTemplateColumns: '1fr' }}>
+        {tracksStock ? <button type="button" className="product-action" onClick={() => setPanel((current) => current === 'adjust' ? null : 'adjust')}>
           <span>{t('adjust.title', 'Adjust stock')}</span>
           <small>{t('adjust.remove_qty', 'Remove or correct')}</small>
-        </button>
-        {perms.canEditProducts ? (
+        </button> : null}
+        {tracksStock && perms.canEditProducts ? (
           <button type="button" className="product-action is-batch" onClick={() => setPanel((current) => current === 'batch' ? null : 'batch')}>
             <span>{t('modal.product_detail.add_batch', 'Add batch')}</span>
             <small>{t('reports.stock.units_in', 'New stock in')}</small>
@@ -153,7 +169,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
         </button>
       </div>
 
-      {panel === 'adjust' ? (
+      {tracksStock && panel === 'adjust' ? (
         <Card className="stack-form">
           <h2 className="shop-section-title">{t('adjust.title', 'Adjust stock')}</h2>
           <p className="shop-section-sub">{t('adjust.reason_label', 'Removing stock needs a reason.')}</p>
@@ -195,7 +211,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
         </Card>
       ) : null}
 
-      {panel === 'batch' && perms.canEditProducts ? (
+      {tracksStock && panel === 'batch' && perms.canEditProducts ? (
         <Card>
           <form
             className="stack-form"
@@ -230,21 +246,21 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
                 </>
               ) : null}
             </div>
-            <Button type="submit" disabled={pending || !(Number(batchQty) > 0)}>Add batch</Button>
+            <Button type="submit" disabled={pending || !(Number(batchQty) > 0)}>{uiText("Add batch")}</Button>
           </form>
         </Card>
       ) : null}
 
-      <Card flush>
+      {tracksStock || (batches.data?.length ?? 0) > 0 ? <Card flush>
         <div className="card-intro product-batch-head">
           <h2 className="shop-section-title">{t('modal.product_detail.section_batches', 'Batches')}</h2>
-          <div className="shop-seg" role="group" aria-label="Batch list">
-            <button type="button" className={!showAll ? 'is-active' : undefined} onClick={() => setShowAll(false)}>Active</button>
-            <button type="button" className={showAll ? 'is-active' : undefined} onClick={() => setShowAll(true)}>All</button>
-          </div>
+          {tracksStock ? <div className="shop-seg" role="group" aria-label={uiText("Batch list")}>
+            <button type="button" className={!showAll ? 'is-active' : undefined} onClick={() => setShowAll(false)}>{uiText("Active")}</button>
+            <button type="button" className={showAll ? 'is-active' : undefined} onClick={() => setShowAll(true)}>{uiText("All")}</button>
+          </div> : null}
         </div>
-        <p className="product-batch-note">{product.depletionOrder === 'fifo' ? 'The first batch is the one the next sale uses.' : 'The soonest expiry is the one the next sale uses.'}</p>
-        {batches.isLoading ? <p className="shop-list-empty">Loading batches</p> : null}
+        {tracksStock ? <p className="product-batch-note">{product.depletionOrder === 'fifo' ? 'The first batch is the one the next sale uses.' : 'The soonest expiry is the one the next sale uses.'}</p> : null}
+        {batches.isLoading ? <p className="shop-list-empty">{uiText("Loading batches")}</p> : null}
         {!batches.isLoading && (batches.data?.length ?? 0) === 0 ? (
           <p className="shop-list-empty">{showAll ? 'No batches yet.' : 'No active batches. Add one to put stock on the shelf.'}</p>
         ) : null}
@@ -256,7 +272,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
               unit={item.unit}
               nextOut={batch.id === nextOutId}
               hideCost={hideCost}
-              canEdit={perms.canEditProducts}
+              canEdit={tracksStock && perms.canEditProducts}
               editing={editing === batch.id}
               pending={pending}
               onEdit={() => setEditing((current) => current === batch.id ? null : batch.id)}
@@ -264,16 +280,18 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
             />
           ))}
         </div>
-      </Card>
+      </Card> : null}
 
       {perms.canSeeReports && sales.data && (sales.data.units > 0 || sales.data.bills > 0) ? (
         <div className="kpi-grid">
-          <div className="kpi"><p className="kpi-label">Sold · {sales.data.days}d</p><p className="kpi-value">{formatQty(sales.data.units, item.unit)}</p></div>
-          <div className="kpi"><p className="kpi-label">Revenue</p><p className="kpi-value">{formatINR(sales.data.revenue)}</p></div>
-          <div className="kpi"><p className="kpi-label">Cover</p><p className="kpi-value">{sales.data.daysOfCover == null ? '—' : `${sales.data.daysOfCover}d`}</p></div>
-          <div className="kpi"><p className="kpi-label">Last sold</p><p className="kpi-value is-compact">{formatWhen(sales.data.lastSoldAt)}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Sold ·")} {sales.data.days}d</p><p className="kpi-value">{formatQty(sales.data.units, item.unit)}</p></div>
+          <div className="kpi"><p className="kpi-label">{uiText("Revenue")}</p><p className="kpi-value">{formatINR(sales.data.revenue)}</p></div>
+          {tracksStock ? <div className="kpi"><p className="kpi-label">{uiText("Cover")}</p><p className="kpi-value">{sales.data.daysOfCover == null ? '—' : `${sales.data.daysOfCover}d`}</p></div> : null}
+          <div className="kpi"><p className="kpi-label">{uiText("Last sold")}</p><p className="kpi-value is-compact">{formatWhen(sales.data.lastSoldAt)}</p></div>
         </div>
       ) : null}
+
+      <ProductTaxHistory productId={productId} />
 
       <Card>
         <div className="product-batch-head">
@@ -284,13 +302,14 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           {!hideCost ? <div><dt>{t('modal.product_detail.detail_last_paid', 'Last paid')}</dt><dd>{formatINR(product.purchasePrice)}</dd></div> : null}
           <div><dt>{t('modal.product_detail.detail_selling_price', 'Selling price')}</dt><dd>{product.sellingPrice == null ? '—' : formatINR(product.sellingPrice)}</dd></div>
           <div><dt>{t('modal.product_detail.detail_mrp', 'MRP')}</dt><dd>{product.mrp == null ? '—' : formatINR(product.mrp)}</dd></div>
-          {!hideCost ? <div><dt>{t('modal.product_detail.detail_margin', 'Margin on next sale')}</dt><dd>{margin == null || product.sellingPrice == null || product.sellingPrice <= 0 ? '—' : `${formatINR(margin)} · ${Math.round((margin / product.sellingPrice) * 100)}%`}</dd></div> : null}
+          {!hideCost ? <div><dt>{t('modal.product_detail.detail_margin', 'Margin on next sale')}</dt><dd>{margin == null || product.sellingPrice == null || product.sellingPrice <= 0 ? '—' : `${formatINR(margin)} · ${Math.round((margin / product.sellingPrice) * 100)}%${averageCost != null && nextCost != null && Math.abs(averageCost - nextCost) > 0.5 ? ' · ' + t('modal.product_detail.avg_cost', 'avg cost {{amount}}', {amount: formatINR(averageCost)}) : ''}`}</dd></div> : null}
           {product.shortCode ? <div><dt>{t('modal.product_detail.detail_short_code', 'Short code')}</dt><dd>{product.shortCode}</dd></div> : null}
-          <div><dt>{t('modal.product_detail.detail_min_stock', 'Low-stock alert')}</dt><dd>{product.minStockLevel > 0 ? formatQty(product.minStockLevel, item.unit) : '—'}</dd></div>
+          {tracksStock ? <div><dt>{t('modal.product_detail.detail_min_stock', 'Low-stock alert')}</dt><dd>{product.minStockLevel > 0 ? formatQty(product.minStockLevel, item.unit) : '—'}</dd></div> : null}
           <div><dt>{t('modal.product_detail.detail_unit', 'Unit')}</dt><dd>{item.unit}</dd></div>
           <div><dt>{t('modal.add_product.category_label', 'Category')}</dt><dd>{[labeledL1(product.category, (key) => t(key, key)), labeledL2(product.category, product.subcategory, (key) => t(key, key))].filter(Boolean).join(' · ')}</dd></div>
           <div><dt>{t('modal.product_detail.detail_last_updated', 'Updated')}</dt><dd>{formatWhen(item.updatedAt)} · {item.updatedByName}</dd></div>
         </dl>
+        {!hideCost ? <p className="shop-hint">{t('gst.margin_estimate', 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.')}</p> : null}
       </Card>
 
       {productLogs.length > 0 ? (
@@ -309,7 +328,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
 
       {perms.canEditProducts ? (
         <div className="shop-actions">
-          <Button
+          {tracksStock ? <Button
             tone="ghost"
             disabled={pending || onBuyList}
             onClick={() => void run(async () => {
@@ -320,25 +339,23 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
                 category: product.category,
                 productId,
               });
-              setNotice(`${product.name} is on the buy list.`);
+              setNotice(t('modal.product_detail.toast_added_buy_list', '{{name}} added to Buy List', { name: product.name }));
             })}
           >
             {onBuyList ? 'Already on the buy list' : 'Add to buy list'}
-          </Button>
+          </Button> : null}
           <Button
             tone="danger"
             disabled={pending}
             onClick={() => {
-              if (!window.confirm(`Archive ${product.name}?`)) return;
+              if (!window.confirm(t('modal.product_detail.delete_or_archive_message','Remove {{name}} from active products? Products with tax, purchase or bill history are archived and their records are kept.',{name:product.name}))) return;
               void run(async () => {
                 await api.deleteProduct(shop.id, productId);
                 cart.dropProduct(productId);
                 router.push('/shop/products');
               });
             }}
-          >
-            Archive
-          </Button>
+          > {uiText("Archive")} </Button>
         </div>
       ) : null}
     </div>
@@ -366,6 +383,8 @@ function BatchRow({
   onEdit: () => void;
   onSave: (body: Record<string, unknown>) => void;
 }) {
+  const uiText = useUiText();
+  const { formatDay, formatWhen } = useShopDates();
   const { t } = useShop();
   const [qty, setQty] = useState(String(batch.quantity));
   const [nextSupplier, setNextSupplier] = useState(batch.supplier ?? '');
@@ -378,17 +397,18 @@ function BatchRow({
           {formatQty(batch.quantity, unit)}
           {batch.initialQuantity != null && batch.initialQuantity > batch.quantity ? ` left of ${formatQty(batch.initialQuantity, unit)}` : ''}
         </p>
+        {batch.batchNumber ? <p className="shop-list-meta">#{batch.batchNumber}</p> : null}
         <p className="shop-list-meta">
           {[batch.supplier, batch.purchaseDate ? `bought ${formatDay(batch.purchaseDate)}` : null, batch.expiryDate ? `expires ${formatDay(batch.expiryDate)}` : null].filter(Boolean).join(' · ') || 'No supplier or expiry'}
         </p>
         {!hideCost && batch.purchasePrice != null ? <p className="shop-list-meta">{formatINR(batch.purchasePrice)} / {unit}</p> : null}
       </div>
       <div className="batch-row-side">
-        {nextOut ? <Pill tone="saffron">Next out</Pill> : null}
-        {depleted ? <Pill>Depleted</Pill> : null}
+        {nextOut ? <Pill tone="saffron">{uiText("Next out")}</Pill> : null}
+        {depleted ? <Pill>{uiText("Depleted")}</Pill> : null}
         {canEdit ? <Button size="sm" tone="quiet" onClick={onEdit}>{editing ? 'Close' : 'Edit'}</Button> : null}
       </div>
-      {editing ? (
+      {canEdit && editing ? (
         <div className="batch-edit">
           <Field label={t('modal.add_batch.quantity_label', 'Quantity')}><input className={inputClass} inputMode="decimal" value={qty} onChange={(event) => setQty(event.target.value)} /></Field>
           {!hideCost ? <SupplierField value={nextSupplier} onChange={setNextSupplier} /> : null}
@@ -404,9 +424,7 @@ function BatchRow({
               if (Object.keys(body).length === 0) return;
               onSave(body);
             }}
-          >
-            Save batch
-          </Button>
+          > {uiText("Save batch")} </Button>
         </div>
       ) : null}
     </article>

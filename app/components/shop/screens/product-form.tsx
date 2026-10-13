@@ -1,14 +1,17 @@
 'use client';
+
+import { useGstText as useUiText } from "../gst-ui";
 import { TaxFields, Check, TextField, useGstText } from '../gst-ui';
 import type { ProductTax } from '../../../lib/shop/gst-types';
 import { discountedBuyingPrice, productPriceBreakdown } from '../../../lib/shop/gst-core/product-gross-price';
 import { validateProductTaxDraft } from '../../../lib/shop/gst-core/gst';
+import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, remapProductL1 } from '../../../lib/shop/catalog';
+import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, l2ItemType, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
@@ -49,7 +52,7 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
     sellingPrice: '',
     mrp: '',
     purchasePrice: '',
-    trackStock: true,
+    trackStock: l2ItemType(category, subcategory) !== "service",
     shortCode: '',
     packSize: '',
     packLabel: '',
@@ -62,7 +65,8 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
   };
 }
 
-export function ProductFormScreen({ productId, onCreated, onBusyChange }: { productId?: string; onCreated?: (product: Product) => void; onBusyChange?: (busy: boolean) => void }) {
+export function ProductFormScreen({ productId, onCreated, onCancel, onBusyChange }: { productId?: string; onCreated?: (id: string, product: Product) => void | Promise<void>; onCancel?: () => void; onBusyChange?: (busy: boolean) => void }) {
+  const uiText = useUiText();
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const router = useRouter();
   const text=useGstText();
@@ -108,13 +112,13 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
       packSize: item.product.packSize == null ? '' : String(item.product.packSize),
       packLabel: item.product.packLabel ?? '',
     });
-  }, [item, l1, params, productId, shop]);
+  }, [item, l1, params, productId, shop, onCreated]);
   const form = draft ?? initial;
 
   if (!shop) return <Spinner />;
-  if (!perms.canEditProducts) return <NoAccess what="Only an owner or manager can add or edit products." />;
-  if (productId && existing.isLoading) return <Spinner label="Loading product" />;
-  if (productId && !item) return <Card><p>That product was not found.</p></Card>;
+  if (!perms.canEditProducts) return <NoAccess what={uiText("Only an owner or manager can add or edit products.")} />;
+  if (productId && existing.isLoading) return <Spinner label={uiText("Loading product")} />;
+  if (productId && !item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
   if (!form) return <Spinner />;
 
   const subs = l2ForL1(form.category);
@@ -164,7 +168,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
         router.push(`/shop/products/${productId}`);
         return;
       }
-      body.initialStock = onCreated ? 0 : Number(form.initialStock || 0);
+      body.initialStock = !onCreated && form.trackStock ? Number(form.initialStock || 0) : 0;
       if (form.supplier) body.supplier = form.supplier;
       if (form.expiryDate) body.expiryDate = form.expiryDate;
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
@@ -172,9 +176,12 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
       const created = await api.addProduct(shop.id, body);
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
-      if (onCreated) { onCreated(created.product); return; }
+      if (onCreated) {
+        await onCreated(created.product.id, created.product);
+        return;
+      }
       if (addAnother) {
-        setNotice(`${created.product.name} added.`);
+        setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
         window.scrollTo({ top: 0 });
         return;
@@ -207,10 +214,9 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
       {!onCreated ? <PageHeader
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
-        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : t('modal.add_product.section_initial_batch', 'Name, category, and a price are enough to start selling.')}
-        actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
-      />
-      : null}
+        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : uiText('Name, category, and a price are enough to start selling.')}
+        actions={<Button href={onCancel ? undefined : productId ? `/shop/products/${productId}` : '/shop/products'} onClick={onCancel} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
+      /> : null}
       <Notice error={error} />
 
       <div className="form-layout">
@@ -226,12 +232,12 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
               </Field>
               <div className="form-grid is-2">
                 <Field label={t('modal.add_product.category_label', 'Category')}>
-                  <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '' })}>
+                  <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '', trackStock: l2ItemType(event.target.value, l2ForL1(event.target.value)[0]?.code) !== 'service' })}>
                     {l1.map((row) => <option key={row.code} value={row.code}>{labeledL1(row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
                 <Field label={t('modal.add_product.subcategory_label', 'Sub-category')}>
-                  <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value })} required>
+                  <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value, trackStock: l2ItemType(form.category, event.target.value) !== 'service' })} required>
                     {subs.map((row) => <option key={row.code} value={row.code}>{labeledL2(form.category, row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
@@ -256,13 +262,13 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
               <TextField label={text('Buying discount (%)')} type="number" value={buyingDiscount} onChange={setBuyingDiscount}/>
               {cost!=null?<p className="shop-hint">{text('Effective buying cost')}: {formatINR(cost)}</p>:null}
             </div>:null}
-            {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),text('GST is calculated on this selling price after discounts.'))}
+            {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),pos.data?.gstSettings?.registration === 'regular' ? text('GST is calculated on this selling price after discounts.') : undefined)}
             <Notice error={pos.error}/>
-            <p className="shop-hint">{text(pos.data?.gstSettings?.priceMode==='exclusive'?'GST is added to the selling price.':'The selling price includes GST.')}</p>
+            <p className="shop-hint">{text(EN_FALLBACK[!pos.data?.gstSettings || pos.data.gstSettings.registration === 'unknown' ? 'gst.product_price_unknown' : pos.data.gstSettings.registration !== 'regular' ? 'gst.product_price_no_collection' : pos.data.gstSettings.priceMode === 'exclusive' ? 'gst.product_price_exclusive' : 'gst.product_price_inclusive'])}</p>
             <TaxFields value={gstConfig} onChange={setGstDraft}/>
             {priceBreakdown?<div className="gst-price-preview"><span>{text('Before GST')} <b>{formatINR(priceBreakdown.net)}</b></span><span>{text('GST')} <b>{formatINR(priceBreakdown.tax)}</b></span><span>{text('Customer pays')} <b>{formatINR(priceBreakdown.gross)}</b></span></div>:<p className="shop-hint">{text('Set up shop GST and confirm the product tax details to see the GST calculation.')}</p>}
             <Check label={text('Calculate MRP from selling price and GST')} checked={autoMrp} onChange={setAutoMrp}/>
-            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),text('MRP'),text('Selling price including GST must not exceed MRP.'))}
+            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),text('MRP'),text(EN_FALLBACK['gst.mrp_help']))}
           </Card>
 
           <Card className="grid gap-5">
@@ -278,9 +284,9 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
                 </span>
                 <input type="checkbox" className="shop-field" checked={form.trackStock} onChange={(event) => set({ trackStock: event.target.checked })} />
               </label>
-              <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
+              {form.trackStock ? <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
                 <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
-              </Field>
+              </Field> : null}
             </div>
             {!productId && !onCreated && form.trackStock ? (
               <div className="form-grid is-2">
@@ -342,7 +348,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
             <div className="grid gap-2">
               <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
               {!productId && !onCreated ? (
-                <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>Save and add another</Button>
+                <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>{uiText("Save and add another")}</Button>
               ) : null}
             </div>
             {!form.name.trim() ? <p className="text-center text-xs text-faint">{t('modal.add_product.alert_name_required', 'A name is required.')}</p> : null}

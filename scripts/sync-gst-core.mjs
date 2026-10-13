@@ -13,9 +13,15 @@ const files = new Set(manifest.map((row) => row.file.replace(/\.ts$/, "")));
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 for (const entry of manifest) {
   const original = readFileSync(resolve(source, entry.source), "utf8");
-  const content = original.replace(
+  const browserSource = original.replace(
+    /import\s+type\s*\{\s*GstReportSummary\s*\}\s+from\s+['"][^'"]*\/gst-report-summary(?:\.js)?['"];?/g,
+    "import type {GstPreparationSummary as GstReportSummary} from '../gst-types';",
+  );
+  const content = browserSource.replace(
     /(from\s+['"])([^'"]+)(['"])/g,
     (all, start, path, end) => {
+      if (path === "node:crypto") return `${start}../gst-hash${end}`;
+      if (path.endsWith("gst-report-summary.js")) return `${start}./report-decimal${end}`;
       if (path.endsWith("/api/purchases")) return `${start}../gst-types${end}`;
       const name = basename(path).replace(/\.(?:js|ts)$/, "");
       return files.has(name) ? `${start}./${name}${end}` : all;

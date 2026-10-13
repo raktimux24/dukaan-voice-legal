@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -36,6 +38,7 @@ function nearExpiry(item: InventoryItem) {
 
 function matches(item: InventoryItem, filter: string) {
   if (item.product.isActive === false) return false;
+  if (item.product.trackStock === false && ['low_stock', 'out_of_stock', 'near_expiry'].includes(filter)) return false;
   if (filter === 'low_stock') return item.stockStatus === 'LOW';
   if (filter === 'out_of_stock') return item.stockStatus === 'OUT';
   if (filter === 'near_expiry') return nearExpiry(item);
@@ -44,7 +47,8 @@ function matches(item: InventoryItem, filter: string) {
 }
 
 export function ProductsScreen() {
-  const { api, shop, perms, hideCost, t } = useShop();
+  const uiText = useUiText();
+  const { api, shop, perms, hideCost, prefs, t } = useShop();
   const params = useSearchParams();
   const filter = params.get('filter') ?? 'all';
   const [q, setQ] = useState('');
@@ -58,7 +62,7 @@ export function ProductsScreen() {
     return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.includes(text)));
   }, [catalog.data, filter, q]);
 
-  if (!shop) return <Spinner label="Loading products" />;
+  if (!shop) return <Spinner label={uiText("Loading products")} />;
 
   return (
     <div className="shop-page">
@@ -68,7 +72,7 @@ export function ProductsScreen() {
         description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
         actions={
           <>
-            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
+            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost, prefs?.appLanguage))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
             {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
           </>
         }
@@ -81,20 +85,20 @@ export function ProductsScreen() {
         </div>
         <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder={t('products.search', 'Filter by name or barcode')} value={q} onChange={(event) => setQ(event.target.value)} aria-label={t('products.search', 'Filter products')} />
       </div>
-      {catalog.isLoading ? <Spinner label="Loading products" /> : null}
+      {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
       <Card flush>
         <div className="shop-list">
           {rows.map((item) => (
             <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
               <div className="shop-list-main">
                 <p className="shop-list-title">{item.product.name}</p>
-                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {formatQty(item.quantity, item.unit)} {t('reports.stock.on_hand', 'on hand')}</p>
+                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {item.product.trackStock === false ? t('pos.no_stock_tracking', 'Not stock-tracked') : `${formatQty(item.quantity, item.unit)} ${t('reports.stock.on_hand', 'on hand')}`}</p>
               </div>
               <div className="shop-list-right flex items-center gap-4">
                 <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">{t('home.filter_unpriced', 'Unpriced')}</span> : formatINR(item.product.sellingPrice)}</p>
-                <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
+                {item.product.trackStock !== false ? <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
                   {item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : item.stockStatus === 'LOW' ? t('home.stat_low_stock', 'Low') : t('reports.stock.on_hand', 'In stock')}
-                </Pill>
+                </Pill> : null}
               </div>
             </Link>
           ))}

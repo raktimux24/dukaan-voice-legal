@@ -1,9 +1,11 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { auditCsv, downloadText } from '../../../lib/shop/csv';
-import { formatTime } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { AuditLogEntry } from '../../../lib/shop/types';
 import { useShop } from '../context';
 import { Button, Chip, Notice, PageHeader, Spinner } from '../ui';
@@ -66,6 +68,8 @@ function groups(logs: AuditLogEntry[], t: (key: string, fallback: string) => str
 }
 
 export function ActivityScreen() {
+  const uiText = useUiText();
+  const { formatTime } = useShopDates();
   const { api, shop, prefs, t } = useShop();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('all');
   const [error, setError] = useState<unknown>(null);
@@ -83,13 +87,13 @@ export function ActivityScreen() {
       <PageHeader
         kicker={t('reports.title', 'Insights')}
         title={t('activity.title', 'Activity')}
-        description="Every stock change, sale, void, and staff change in this shop."
+        description={uiText("Every stock change, sale, void, and staff change in this shop.")}
         actions={
           <Button
             tone="ghost"
             onClick={() => {
               setError(null);
-              void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows))).catch(setError);
+              void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows, prefs?.appLanguage))).catch(setError);
             }}
           >
             {t('reports.sales.export_csv', 'Export CSV')}
@@ -101,7 +105,7 @@ export function ActivityScreen() {
       </div>
       <Notice error={error ?? logs.error} />
       {logs.data?.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: logs.data.limitedToDays })}</p> : null}
-      {logs.isLoading ? <Spinner label="Loading activity" /> : null}
+      {logs.isLoading ? <Spinner label={uiText("Loading activity")} /> : null}
       {!logs.isLoading && days.length === 0 ? <p className="shop-list-empty">{t('activity.empty_title', 'Nothing recorded for this filter.')}</p> : null}
       {days.map((day) => (
         <section key={day.label}>

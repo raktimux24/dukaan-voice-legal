@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import { useShop } from "./context";
+import { useShopDates } from "./use-shop-dates";
 import { EN_FALLBACK } from "../../lib/shop/en-fallback";
 import { GST_STATES, localizedGstStates } from "../../lib/shop/gst-states";
 import {
@@ -79,16 +80,19 @@ export function SelectField({
   value,
   onChange,
   options,
+  disabled = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: readonly (readonly [string, string])[];
+  disabled?: boolean;
 }) {
   return (
     <Field label={label}>
       <select
         className={inputClass}
+        disabled={disabled}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -228,9 +232,11 @@ export function BuyerFields({
 export function TaxFields({
   value,
   onChange,
+  required = false,
 }: {
   value: ProductTax | null;
   onChange: (v: ProductTax | null) => void;
+  required?: boolean;
 }) {
   const text = useGstText();
   const tax = value ?? emptyTax();
@@ -238,11 +244,11 @@ export function TaxFields({
     onChange({ ...tax, ...p, reviewed: false });
   return (
     <div className="grid gap-4">
-      <Check
+      {!required && <Check
         label={text("Product tax settings")}
         checked={!!value}
         onChange={(v) => onChange(v ? emptyTax() : null)}
-      />
+      />}
       {value ? (
         <>
           <div className="form-grid is-2">
@@ -432,27 +438,7 @@ export function Stats({
   );
 }
 export function useFiscalDate() {
-  const { prefs } = useShop();
-  const locale = useMemo(
-    () =>
-      ({
-        hi: "hi-IN",
-        bn: "bn-IN",
-        ta: "ta-IN",
-        te: "te-IN",
-        kn: "kn-IN",
-        ml: "ml-IN",
-        mr: "mr-IN",
-        gu: "gu-IN",
-      })[prefs?.appLanguage ?? ""] ?? "en-IN",
-    [prefs?.appLanguage],
-  );
-  return (value: string) =>
-    new Date(value).toLocaleString(locale, {
-      timeZone: "Asia/Kolkata",
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+  return useShopDates().formatWhen;
 }
 
 function StructuredBuyerAddress({

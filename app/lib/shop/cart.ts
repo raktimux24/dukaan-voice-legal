@@ -2,11 +2,17 @@
 
 import { useSyncExternalStore } from 'react';
 import { calculateTax, type GstContext, type Buyer, type ProductTax } from './gst-core/gst';
+import {cartLineWithQuantity} from './rsp-cart-quantity';
+import {mixedCartProjection} from './mixed-cart-projection';
+import {ordinaryDocumentType} from './ordinary-document-type';
 import { roundPaise } from './money';
 import { r3 } from './units';
 import type { CreateSalePayload, InventoryItem } from './types';
 
 export type CartLine = {
+  rsp?:import("./types").SaleItemInput["rsp"];
+  gstTaxSnapshot?:import("./gst-core/gst-tax-cache").ProductTaxSnapshot;
+  gstRspSnapshot?:import("./gst-core/gst-rsp-cache").ProductRspSnapshot;
   gstConfig?:ProductTax|null;
   key: string;
   productId: string;
@@ -23,6 +29,9 @@ export type CartLine = {
 };
 
 export type Cart = {
+  inputMethod?: 'manual' | 'voice' | 'scan';
+  paymentHint?: 'cash' | 'upi' | 'credit';
+  mixedDiscountReview?:import("./types").CreateSalePayload["mixedDiscountReview"];
   buyer?:Buyer;
   lines: CartLine[];
   billDiscount: number;
@@ -153,7 +162,11 @@ export function readPending(userId: string, shopId: string) {
 export function writePending(userId: string, shopId: string, pending: PendingSale | null) {
   const key = pendingKey(userId, shopId);
   if (!pending) localStorage.removeItem(key);
-  else localStorage.setItem(key, JSON.stringify(pending));
+  else {
+    const serialized=JSON.stringify(pending);
+    localStorage.setItem(key,serialized);
+    if(localStorage.getItem(key)!==serialized)throw new Error('Could not verify the saved checkout. Check browser storage and retry.');
+  }
   emit();
 }
 
@@ -183,13 +196,17 @@ export function computeTotals(cart: Cart, context?:GstContext|null) {
   const lineDiscounts = roundPaise(cart.lines.reduce((sum, line) => sum + lineDiscount(line), 0));
   const billDiscount = roundPaise(Math.min(Math.max(0, cart.billDiscount), Math.max(0, subtotal - lineDiscounts)));
   const discount = roundPaise(lineDiscounts + billDiscount);
+  const mixed=context&&cart.lines.some(line=>line.rsp)?mixedCartProjection(cart.lines,context,billDiscount,cart.mixedDiscountReview):null;
+  const tax=context&&!mixed?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context):null;
+  if(context&&tax)ordinaryDocumentType(context,tax);
   return {
+    mixed,
     subtotal,
     lineDiscounts,
     billDiscount,
     discount,
-    tax: context?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context):null,
-    total: context?calculateTax(cart.lines.map(line=>({quantity:line.quantity,price:line.price,listPrice:line.listPrice,discount:line.discount,tax:line.gstConfig})),billDiscount,context).total:roundPaise(Math.max(0, subtotal - discount)),
+    tax,
+    total: mixed?Number(mixed.payable):tax?tax.total:roundPaise(Math.max(0, subtotal - discount)),
     itemCount: cart.lines.length,
   };
 }
@@ -219,12 +236,12 @@ export function useCart(userId: string | null, shopId: string | null) {
     cart,
     pending,
     update,
-    addProduct(item: InventoryItem, qty = 1): { ok: boolean; capped: boolean; message?: string } {
+    addProduct(item: InventoryItem, qty = 1, inputMethod: 'manual' | 'voice' | 'scan' = 'manual'): { ok: boolean; capped: boolean; message?: 'unpriced' | 'out_of_stock' | 'capped' } {
       if (!userId || !shopId) return { ok: false, capped: false };
       const current = readCart(userId, shopId);
       const track = item.product.trackStock !== false;
       const available = track ? item.quantity : null;
-      if (track && (available ?? 0) <= 0) return { ok: false, capped: false, message: `${item.product.name} is out of stock.` };
+      if (track && (available ?? 0) <= 0) return { ok: false, capped: false, message: 'out_of_stock' };
       const price = item.product.sellingPrice;
       if (price == null) return { ok: false, capped: false, message: 'unpriced' };
       const existing = current.lines.find((line) => line.productId === item.productId);
@@ -234,9 +251,12 @@ export function useCart(userId: string | null, shopId: string | null) {
         nextQty = r3(available);
         capped = true;
       }
-      if (nextQty <= 0) return { ok: false, capped: false, message: `${item.product.name} is out of stock.` };
+      if (nextQty <= 0) return { ok: false, capped: false, message: 'out_of_stock' };
       const line: CartLine = {
         gstConfig: item.product.gstConfig,
+        gstTaxSnapshot:item.product.gstTaxSnapshot,
+        gstRspSnapshot:item.product.gstRspSnapshot,
+        rsp:existing?.rsp?cartLineWithQuantity(existing,nextQty).rsp:undefined,
         key: existing?.key ?? crypto.randomUUID(),
         productId: item.productId,
         name: item.product.name,
@@ -251,8 +271,8 @@ export function useCart(userId: string | null, shopId: string | null) {
         packLabel: item.product.packLabel,
       };
       const lines = existing ? current.lines.map((row) => (row.key === existing.key ? line : row)) : [...current.lines, line];
-      update({ ...current, lines });
-      return { ok: true, capped, message: capped ? `Only ${available} ${item.unit} of ${item.product.name} can be added.` : undefined };
+      update({ ...current, lines, inputMethod });
+      return { ok: true, capped, message: capped ? 'capped' : undefined };
     },
     setQuantity(lineKey: string, quantity: number) {
       if (!userId || !shopId) return { capped: false };
@@ -266,7 +286,7 @@ export function useCart(userId: string | null, shopId: string | null) {
             next = r3(line.available);
             capped = true;
           }
-          return { ...line, quantity: next };
+          return next>0?cartLineWithQuantity(line,next):{...line,quantity:next};
         })
         .filter((line) => line.quantity > 0);
       update({ ...current, lines });

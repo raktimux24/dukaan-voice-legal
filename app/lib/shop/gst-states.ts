@@ -26,6 +26,7 @@ const names: Record<string, string> = {
   "24": "Gujarat",
   "26": "Dadra & Nagar Haveli and Daman & Diu",
   "27": "Maharashtra",
+  "28": "Andhra Pradesh",
   "29": "Karnataka",
   "30": "Goa",
   "31": "Lakshadweep",

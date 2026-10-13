@@ -20,3 +20,7 @@ tsconfig.tsbuildinfo
 
 # macOS metadata
 .DS_Store
+
+# Generated release evidence (never credentials) and linked local dependencies
+/public/release.json
+/node_modules

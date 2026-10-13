@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -8,6 +10,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
 
 export function BuyListScreen() {
+  const uiText = useUiText();
   const { api, shop, perms, premium, t } = useShop();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -19,7 +22,7 @@ export function BuyListScreen() {
   const [error, setError] = useState<unknown>(null);
 
   if (!shop) return <Spinner />;
-  if (!perms.canEditProducts) return <NoAccess what="The buy list is for the owner and managers." />;
+  if (!perms.canEditProducts) return <NoAccess what={uiText("The buy list is for the owner and managers.")} />;
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['buy-list', shop.id] });
   const aiLocked = (list.data ?? []).some((item) => item.isAiSuggested && !premium);

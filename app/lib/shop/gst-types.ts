@@ -177,7 +177,11 @@ export interface BillingParty {
   updatedAt: string;
 }
 export interface FiscalDocument {
-  integrity?: "verified" | "mismatch" | "legacy_unverifiable";
+  integrity?:
+    | "verified"
+    | "mismatch"
+    | "legacy_unverifiable"
+    | "local_retained";
   id: string;
   shopId: string;
   saleId: string;
@@ -315,6 +319,10 @@ export interface GstHealth {
   };
 }
 export interface TaxHistory {
+  capturedAt?: string;
+  nextEffectiveAt?: string | null;
+  effectiveVersion?: string | null;
+  currentProfileStatus?: 'not_configured' | 'matches' | 'missing' | 'invalid' | 'mismatch';
   currentVersion: string | null;
   nextCursor: string | null;
   items: {
@@ -325,12 +333,40 @@ export interface TaxHistory {
     recordedAt: string;
     effectiveAt?: string;
     scheduled?: boolean;
+    draft?: import("./gst-core/gst").ProductTax | null;
+    disabled?: boolean;
+    scheduleReview?: { actor: string; expectedVersion: string; sourceReference: string; reason: string } | null;
+    cancellationReview?: { actor: string; reason: string } | null;
     cancelledAt?: string | null;
     confirmation?: {
       actor: string;
       actorName?: string | null;
       ownerName?: string | null;
+      grantId?: string | null;
     };
+  }[];
+}
+export interface GstPreparationSummary {
+  afterCredits: { net: string; tax: string; gross: string };
+  discrepancies: { reason: string }[];
+  extendedFilingLines?: {
+    id: string;
+    number: string;
+    section: string;
+    review: string[];
+  }[];
+  hsnPreparation?: {
+    codeType: string;
+    code: string;
+    recipient: string;
+    review: string[];
+  }[];
+  turnoverPreparation?: {
+    shortCodes: string[];
+    review: string[];
+    reportingFinancialYear: string;
+    previousFinancialYear: string;
+    minimumCodeDigits?: number | null;
   }[];
 }
 export interface GstPeriod {
@@ -339,11 +375,23 @@ export interface GstPeriod {
   sequence: number;
   changedSinceClose: boolean;
   currentSourceFingerprint: string;
-  history: { id: string; action: string; createdAt: string; note: string }[];
-  currentSummaries?: Record<string, unknown>;
+  from: string;
+  to: string;
+  history: {
+    id: string;
+    action: string;
+    createdAt: string;
+    note: string;
+    salesExportId: string | null;
+    purchaseExportId: string | null;
+    salesExportHash?: string | null;
+    purchaseExportHash?: string | null;
+  }[];
+  currentSummaries?: Record<"sales" | "purchases", GstPreparationSummary>;
 }
 export interface TurnoverHistory {
   financialYear: string;
+  minimumCodeDigits?: 4 | 6;
   sequence?: number;
   current?: {
     sequence: number;

@@ -31,6 +31,7 @@ export type SubscriptionEntitlement = {
   status: EntitlementStatus;
   plan: BillingPlan | null;
   isPremium: boolean;
+  temporaryPremium?: boolean;
   currentPeriodEnd: string | null;
   trialEnd: string | null;
   // 'auto' = free trial granted on shop creation, no payment method on file.

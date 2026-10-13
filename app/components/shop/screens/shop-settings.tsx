@@ -1,18 +1,22 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useState } from 'react';
 import { CATALOG, remapShopCategory, remapShopSubtype, shopType } from '../../../lib/shop/catalog';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 export function ShopSettingsScreen() {
+  const uiText = useUiText();
   const { shop, perms } = useShop();
   if (!shop) return <Spinner />;
-  if (!perms.canManageShop) return <NoAccess what="Only the owner can change the shop." />;
+  if (!perms.canManageShop) return <NoAccess what={uiText("Only the owner can change the shop.")} />;
   return <ShopSettingsForm key={shop.id} />;
 }
 
 function ShopSettingsForm() {
+  const uiText = useUiText();
   const { api, shop, refreshShops, t } = useShop();
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
@@ -28,7 +32,7 @@ function ShopSettingsForm() {
 
   return (
     <div className="shop-page">
-    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={t('modal.shop_settings.card_title', 'The name and contact details printed on bills and shown to staff.')} />
+    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={uiText('The name and contact details printed on bills and shown to staff.')} />
     <Card className="shop-profile-card">
       <form
         className="shop-profile-form"

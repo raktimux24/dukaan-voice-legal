@@ -4,6 +4,7 @@ import {
   assertScope,
   financialScope,
   requestStatus,
+  retainedRequests,
   sha256,
   withFinancialLock,
   type RetainedRequest,
@@ -51,8 +52,6 @@ export async function recoverFinancialRequest(
     return invoke(
       gst.importTax(shop, body as Parameters<typeof gst.importTax>[1]),
     );
-  const payment = path.match(/^\/customers\/([^/]+)\/payments$/);
-  if (payment) return invoke(gst.recordCustomerPayment(shop, payment[1], body as Parameters<typeof gst.recordCustomerPayment>[2]));
   let match = path.match(
     /^\/purchases\/([^/]+)\/(itc-review|returns|settlements|settlement-reversals)$/,
   );
@@ -162,6 +161,8 @@ export async function recoverFinancialRequest(
         body as Parameters<typeof gst.debitSettlement>[2],
       ),
     );
+  match = path.match(/^\/customers\/([^/]+)\/payments$/);
+  if(match) return invoke(gst.recordCustomerPayment(shop,match[1],body as Parameters<typeof gst.recordCustomerPayment>[2]));
   match = path.match(/^\/customers\/([^/]+)\/collection-reviews$/);
   if (match)
     return invoke(
@@ -187,7 +188,8 @@ export async function closeUnrecordedPurchase(
   if (
     row.actorId !== scope.actorId ||
     row.shopId !== shop ||
-    row.state !== "pending"
+    row.state !== "pending" ||
+    !row.path.startsWith(`/api/shops/${shop}/purchases`)
   )
     throw Error("This saved request cannot be closed here.");
   const suffix = row.path.slice(`/api/shops/${shop}`.length);
@@ -209,10 +211,15 @@ export async function closeUnrecordedPurchase(
               } as Record<string, string>
             )[match[2]]
           : null;
-  if (!operation || !reason.trim())
+  if (!operation || !reason.trim() || reason.length > 500)
     throw Error("Enter a reason and choose a supported purchase request.");
   return withFinancialLock(scope, async () => {
-    const payload = row.payload as Record<string, unknown>;
+    const { canonicalJson } = await import("./gst-core/sale-request-canonical");
+    const current = (await retainedRequests(scope)).find((entry) => entry.id === row.id);
+    if (!current || current.state !== "pending" || current.path !== row.path ||
+        canonicalJson(current.payload) !== canonicalJson(row.payload))
+      throw Error("This saved request cannot be closed here.");
+    const payload = current.payload as Record<string, unknown>;
     const receipt = await api.gst.post<{
       status: string;
       shopId: string;
@@ -228,7 +235,6 @@ export async function closeUnrecordedPurchase(
       reason,
     });
     assertScope(scope);
-    const { canonicalJson } = await import("./gst-core/sale-request-canonical");
     if (
       receipt.status !== "closed" ||
       receipt.shopId !== shop ||

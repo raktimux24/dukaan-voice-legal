@@ -198,8 +198,15 @@ export async function reserveSale(
         tx.abort();
         return;
       }
-      tx.objectStore("state").put(state, key);
-      requests.put(saved ?? row, row.id);
+      if(saved)return; // An idempotent reservation must never roll the counter backward.
+      const allocation=(row.payload as {gstContext?:{allocation?:{id:string;index:number;deviceEpoch?:string}}})?.gstContext?.allocation;
+      const states=tx.objectStore("state"),current=states.get(key);
+      current.onsuccess=()=>{
+        if(allocation&&(current.result?.id!==allocation.id||current.result?.next!==allocation.index||current.result?.deviceEpoch!==allocation.deviceEpoch)){
+          tx.abort();return;
+        }
+        states.put(state,key);requests.put(row,row.id);
+      };
     };
     tx.oncomplete = () => {
       db.close();

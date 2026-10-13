@@ -18,7 +18,11 @@ import {
   ReadState,
   GstAccess,
 } from "../gst-workspace";
+import { closeUnrecordedPurchase, recoverFinancialRequest } from "../../../lib/shop/gst-recovery";
+import { financialScope, retainedRequests, type RetainedRequest } from "../../../lib/shop/gst-storage";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { formatINR } from "../../../lib/shop/money";
+import { canReversePurchaseSettlement } from "../../../lib/shop/gst-core/purchase-settlement";
 import { validateItcReview } from "../../../lib/shop/gst-core/purchase-gst";
 import type {
   InputTaxReview,
@@ -45,11 +49,29 @@ const labels = {
   withinTimeLimit: "Within the permitted time limit",
 };
 export function PurchaseDetailScreen({ id }: { id: string }) {
-  const { api, shop } = useShop(),
+  const { api, shop, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
   const q = useGstQuery(["purchase", id], () => api.gst.purchase(shop!.id, id));
+  const settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id));
+  const pending = useGstQuery(["purchase-pending", id], async () => {
+    const rows = await retainedRequests(financialScope(shop!.id));
+    const prefix = `/api/shops/${shop!.id}/purchases/${id}/`;
+    return rows.filter((row) => row.state === "pending" &&
+      ["itc-review", "returns", "settlements", "settlement-reversals"].some(
+        (suffix) => row.path === prefix + suffix,
+      ));
+  }, true, "always");
+  const [closureReason, setClosureReason] = useState<Record<string, string>>({});
+  async function closeSavedRequest(row: RetainedRequest) {
+    await closeUnrecordedPurchase(api, shop!.id, row, closureReason[row.id] ?? "");
+    if (retained.current?.input.clientId === row.id) retained.current = null;
+    setClosureReason((current) => { const next = { ...current }; delete next[row.id]; return next; });
+    await pending.refetch();
+    await q.refetch();
+    await preview.refetch();
+  }
   const [decision, setDecision] =
       useState<InputTaxReview["decision"]>("deferred"),
     [conditions, setConditions] = useState(initialConditions),
@@ -59,7 +81,15 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     [method, setMethod] = useState<PurchaseSettlementInput["method"]>("cash"),
     [kind, setKind] = useState<PurchaseSettlementInput["kind"]>("payment"),
     [when, setWhen] = useState(new Date().toISOString()),
+    [settlementNote, setSettlementNote] = useState(""),
+    [settlementReference, setSettlementReference] = useState(""),
+    [reverseId, setReverseId] = useState(""),
+    [reverseDate, setReverseDate] = useState(new Date().toISOString()),
+    [reverseNote, setReverseNote] = useState(""),
+    [reverseReference, setReverseReference] = useState(""),
     [creditNumber, setCreditNumber] = useState(""),
+    [creditDate, setCreditDate] = useState(new Date().toISOString()),
+    [creditReference, setCreditReference] = useState(""),
     [reason, setReason] = useState(""),
     [quantities, setQuantities] = useState<Record<string, string>>({}),
     [stock, setStock] = useState<Record<string, boolean>>({});
@@ -75,11 +105,24 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     api.gst.costPreview(shop!.id, id, decision),
   );
   const detail = q.data;
+  const reversalEntry = detail?.settlements.find((entry) => entry.id === reverseId);
+  const reversalBlocked = !!detail && !!reversalEntry && !canReversePurchaseSettlement(detail.grossAmount, detail.returns.map(entry => entry.grossAmount), detail.settlements, reverseId);
+  const duplicateCreditNumber = detail?.returns.some((entry) => entry.supplierCreditNumber === creditNumber) ?? false;
+  const documentConflict = "This supplier document number has already been recorded. Review the existing document before creating another entry.";
   async function mutate(
     operation: string,
     input: NonNullable<typeof retained.current>["input"],
   ) {
     if (!retained.current && operation !== "review") {
+      if (operation === "reversal" && "settlementId" in input &&
+          (!detail?.settlements.some((entry) => entry.id === input.settlementId && !entry.reversesId) ||
+           detail.settlements.some((entry) => entry.reversesId === input.settlementId))) {
+        throw Error(text("The original entry is unavailable. Refresh this invoice. A saved correction can still be retried."));
+      }
+      if (operation === "reversal" && "settlementId" in input && detail &&
+          !canReversePurchaseSettlement(detail.grossAmount, detail.returns.map(entry => entry.grossAmount), detail.settlements, input.settlementId)) {
+        throw Error(t("gst.error.purchase_settlement_reconciliation_required", EN_FALLBACK["gst.error.purchase_settlement_reconciliation_required"]));
+      }
       const at =
         "occurredAt" in input
           ? input.occurredAt
@@ -88,7 +131,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
             : "";
       if (
         !Number.isFinite(Date.parse(at)) ||
-        Date.parse(at) < Date.parse(detail?.issuedAt ?? "") ||
+        Date.parse(at) < Date.parse(
+          operation === "reversal" && "settlementId" in input
+            ? detail?.settlements.find((entry) => entry.id === input.settlementId)?.occurredAt ?? ""
+            : detail?.issuedAt ?? "",
+        ) ||
         Date.parse(at) > Date.now()
       )
         throw Error(
@@ -109,6 +156,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     }
     const saved = retained.current ?? { operation, input };
     retained.current = saved;
+    try {
     if (saved.operation === "review")
       await api.gst.reviewItc(shop!.id, id, saved.input as InputTaxReview);
     else if (saved.operation === "return")
@@ -129,7 +177,30 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
         id,
         saved.input as PurchaseSettlementInput,
       );
+    } finally { await pending.refetch(); }
     retained.current = null;
+    if (saved.operation === "settlement") {
+      setAmount("");
+      setSettlementNote("");
+      setSettlementReference("");
+      setWhen(new Date().toISOString());
+    } else if (saved.operation === "reversal") {
+      setReverseId("");
+      setReverseNote("");
+      setReverseReference("");
+      // A subsequent refund must use the balance after this correction.
+      // Preserve a payment/refund draft the owner has already started.
+      if (!amount.trim()) setWhen(new Date().toISOString());
+    } else if (saved.operation === "return") {
+      setCreditNumber("");
+      setCreditReference("");
+      setReason("");
+      setQuantities({});
+      setStock({});
+      setCreditDate(new Date().toISOString());
+      if (!amount.trim()) setWhen(new Date().toISOString());
+    }
+    await pending.refetch();
     await q.refetch();
     await preview.refetch();
   }
@@ -145,23 +216,33 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
           back={{ href: "/shop/purchases", label: text("Purchases") }}
         />
         {action.notice}
-        {retained.current ? (
+        {pending.error ? <Card>
+          <p>{t("purchase.request_storage_error", EN_FALLBACK["purchase.request_storage_error"])}</p>
+          <Button disabled={action.busy} onClick={() => void pending.refetch()}>{t("purchase.retry_storage", EN_FALLBACK["purchase.retry_storage"])}</Button>
+        </Card> : null}
+        {retained.current || pending.data?.length ? (
           <Card>
-            <p>
-              {text(
-                "A saved request needs confirmation. Retry keeps its original amounts and identity.",
-              )}
-            </p>
-            <Button
-              disabled={action.busy}
-              onClick={() =>
-                void action.run(() =>
-                  mutate(retained.current!.operation, retained.current!.input),
-                )
-              }
-            >
-              {text("Retry saved request")}
-            </Button>
+            <p>{text("A saved request needs confirmation. Retry keeps its original amounts and identity.")}</p>
+            <Button href="/shop/settings/gst/recovery">{text("Resume / check saved requests")}</Button>
+            {retained.current && !pending.data?.some((row) => row.id === retained.current?.input.clientId) ? <Button disabled={action.busy} onClick={() =>
+              void action.run(async () => {
+                try { await mutate(retained.current!.operation, retained.current!.input); }
+                finally { await pending.refetch(); }
+              })
+            }>{text("Retry saved request")}</Button> : null}
+            {pending.data?.map((row) => <Section key={row.id} title={text("Saved financial request")} summary={date(row.createdAt)}>
+              <Button disabled={action.busy} onClick={() => void action.run(async () => {
+                await recoverFinancialRequest(api, shop!.id, row);
+                if (retained.current?.input.clientId === row.id) retained.current = null;
+                await pending.refetch(); await q.refetch(); await preview.refetch();
+              })}>{text("Recover original request")}</Button>
+              {settings.data?.gstPurchaseRequestClosureAvailable ? <Section title={text("Close an unrecorded request")}>
+                <p>{text("The server checks that this request was not recorded before closing it. The original evidence is kept.")}</p>
+                <TextField label={text("Reason")} value={closureReason[row.id] ?? ""} onChange={(value) => setClosureReason((current) => ({ ...current, [row.id]: value }))} />
+                <Button tone="danger" disabled={action.busy || !(closureReason[row.id] ?? "").trim() || (closureReason[row.id] ?? "").length > 500}
+                  onClick={() => void action.run(() => closeSavedRequest(row))}>{text("Confirm closure")}</Button>
+              </Section> : null}
+            </Section>)}
           </Card>
         ) : null}
         <ReadState query={q}>
@@ -192,6 +273,30 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   {detail.snapshot.supplier.name}
                 </h2>
                 <p>
+                  {text(
+                    (
+                      {
+                        regular: "Regular GST",
+                        composition: "Composition",
+                        unregistered: "Not registered",
+                      } as const
+                    )[detail.snapshot.supplierRegistration] ??
+                      "Original registration not recorded",
+                  )}{" "}
+                  ·{" "}
+                  {text(
+                    (
+                      {
+                        tax_invoice: "Tax invoice",
+                        bill_of_supply: "Bill of supply",
+                        commercial_invoice:
+                          "Commercial invoice from unregistered supplier",
+                      } as const
+                    )[detail.snapshot.documentType] ??
+                      "Original registration not recorded",
+                  )}
+                </p>
+                <p>
                   {detail.snapshot.supplier.gstin || text("Not registered")}
                 </p>
                 <p>{detail.snapshot.supplier.address}</p>
@@ -212,38 +317,132 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {detail.items.map((item) => (
+                      {detail.items.map((item) => {
+                        const stockActionKey = `gst.stock_action.${
+                          detail.snapshot.stockActions?.find(
+                            (action) => action.purchaseItemId === item.id,
+                          )?.action ?? (item.batchId ? "legacy" : "invoice_only")
+                        }`;
+                        return (
                         <tr key={item.id}>
                           <td>{item.name}</td>
                           <td>
-                            {item.quantity} {item.unit}
+                            {item.quantity} {text(item.unit)}
                           </td>
                           <td>{formatINR(Number(item.taxAmount))}</td>
                           <td>{formatINR(Number(item.grossAmount))}</td>
                           <td>
-                            {text(
-                              detail.snapshot.stockActions?.find(
-                                (a) => a.purchaseItemId === item.id,
-                              )?.action ??
-                                (item.batchId
-                                  ? "Linked stock"
-                                  : "Invoice only"),
-                            )}
+                            {t(stockActionKey, EN_FALLBACK[stockActionKey])}
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               </Card>
-              <fieldset disabled={action.busy || !!retained.current}>
+              <Section title={text("Invoice details")}>
+                <div className="gst-row">
+                  <span>{text("Net value")}</span>
+                  <b>{formatINR(detail.snapshot.totals.net)}</b>
+                </div>
+                {(["cgst", "sgst", "utgst", "igst"] as const)
+                  .filter((kind) => detail.snapshot.totals[kind] !== 0)
+                  .map((kind) => (
+                    <div className="gst-row" key={kind}>
+                      <span>{kind.toUpperCase()}</span>
+                      <b>{formatINR(detail.snapshot.totals[kind])}</b>
+                    </div>
+                  ))}
+                <div className="gst-row">
+                  <span>{text("State code (for example, 29)")}</span>
+                  <b>{detail.snapshot.supplier.stateCode}</b>
+                </div>
+                {detail.snapshot.goodsMovement ? (
+                  <>
+                    <div className="gst-row">
+                      <span>{text("Reviewed delivery address")}</span>
+                      <b>{detail.snapshot.goodsMovement.deliveryAddress}</b>
+                    </div>
+                    <div className="gst-row">
+                      <span>{text("Destination state")}</span>
+                      <b>
+                        {detail.snapshot.goodsMovement.destinationStateCode}
+                      </b>
+                    </div>
+                  </>
+                ) : null}
+                {(["supplier", "recipient"] as const).map((role) => {
+                  const party = detail.snapshot[role];
+                  return (
+                    <div key={role} className="grid gap-2">
+                      <h3 className="shop-section-title">
+                        {text(
+                          role === "supplier"
+                            ? "Choose supplier"
+                            : "Your shop’s invoice identity",
+                        )}
+                      </h3>
+                      <p>{party.name}</p>
+                      {party.gstin ? <p>{party.gstin}</p> : null}
+                      <p>{party.address}</p>
+                      <div className="gst-row">
+                        <span>{text("State code (for example, 29)")}</span>
+                        <b>{party.stateCode}</b>
+                      </div>
+                      {party.structuredAddress ? (
+                        <>
+                          {[
+                            [
+                              "Address line 1",
+                              party.structuredAddress.address1,
+                            ],
+                            [
+                              "Address line 2 (optional)",
+                              party.structuredAddress.address2,
+                            ],
+                            [
+                              "Locality / city",
+                              party.structuredAddress.location,
+                            ],
+                            [
+                              "Six-digit pincode",
+                              party.structuredAddress.pincode,
+                            ],
+                          ]
+                            .filter(([, value]) => value)
+                            .map(([label, value]) => (
+                              <div className="gst-row" key={label}>
+                                <span>{text(label!)}</span>
+                                <b>{value}</b>
+                              </div>
+                            ))}
+                        </>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </Section>
+              <fieldset disabled={action.busy || !!retained.current || pending.isPending || !!pending.error || !!pending.data?.length}>
                 <Section
                   title={text("Review input tax")}
-                  summary={text(detail.reviews[0]?.decision ?? "Not reviewed")}
+                  summary={detail.reviews[0]
+                    ? t(`purchase.decision_${detail.reviews[0].decision}`, EN_FALLBACK[`purchase.decision_${detail.reviews[0].decision}`])
+                    : text("Not reviewed")}
                 >
                   <p className="shop-hint">
                     {text(
                       "This records your eligibility review. It does not claim or file input tax credit.",
+                    )}
+                  </p>
+                  <p className="shop-hint">
+                    {text(
+                      "Only regular GST recipients purchasing from regular GST suppliers can record eligibility. These are your confirmations; the app does not check the GST portal or supplier payments. This decision does not claim ITC or file a return.",
+                    )}
+                  </p>
+                  <p className="shop-hint">
+                    {text(
+                      "Changing eligibility recalculates acquisition costs for remaining stock and consumed quantities. Review the tax movement and retained cost history before saving.",
                     )}
                   </p>
                   <SelectField
@@ -252,7 +451,15 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     onChange={(v) => setDecision(v as typeof decision)}
                     options={[
                       ["deferred", text("Review later")],
-                      ["reviewed_eligible", text("Reviewed eligible")],
+                      ...(detail.recipientRegistration === "regular" &&
+                      detail.snapshot.supplierRegistration === "regular"
+                        ? [
+                            [
+                              "reviewed_eligible",
+                              text("Reviewed eligible"),
+                            ] as const,
+                          ]
+                        : []),
                       ["ineligible", text("Ineligible")],
                     ]}
                   />
@@ -286,15 +493,21 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                         </span>
                         <small>
                           {text("Inventory cost change")}:{" "}
-                          {row.inventoryAdjustment} ·{" "}
+                          {formatINR(Number(row.inventoryAdjustment))} ·{" "}
                           {text("Consumed cost change")}:{" "}
-                          {row.consumedAdjustment}
+                          {formatINR(Number(row.consumedAdjustment))}
                         </small>
                       </div>
                     ))}
                   </ReadState>
                   <Button
-                    disabled={action.busy || !note.trim() || !reference.trim()}
+                    disabled={
+                      action.busy ||
+                      !preview.isSuccess ||
+                      preview.isFetching ||
+                      !note.trim() ||
+                      !reference.trim()
+                    }
                     onClick={() =>
                       void action.run(async () => {
                         validateItcReview(
@@ -321,8 +534,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                 </Section>
                 <Section
                   title={text("Supplier payments and refunds")}
-                  summary={text(detail.settlement.status)}
+                  summary={text(({
+                    payable: "Still owed to supplier",
+                    supplier_owes: "Recoverable from supplier",
+                    settled: "All settled",
+                  } as Record<string, string>)[detail.settlement.status] ?? "Unavailable")}
                 >
+                  <p className="shop-hint">{text("This records a payment made outside the app. It does not transfer money.")}</p>
                   <div className="form-grid is-2">
                     <SelectField
                       label={text("Entry type")}
@@ -357,21 +575,21 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     />
                     <TextField
                       label={text("Evidence reference")}
-                      value={reference}
-                      onChange={setReference}
+                      value={settlementReference}
+                      onChange={setSettlementReference}
                     />
                     <TextField
                       label={text("Note")}
-                      value={note}
-                      onChange={setNote}
+                      value={settlementNote}
+                      onChange={setSettlementNote}
                     />
                   </div>
                   <Button
                     disabled={
                       action.busy ||
                       !(Number(amount) > 0) ||
-                      !reference.trim() ||
-                      !note.trim()
+                      !settlementReference.trim() ||
+                      !settlementNote.trim()
                     }
                     onClick={() =>
                       void action.run(() =>
@@ -381,8 +599,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                           amount,
                           method,
                           occurredAt: when,
-                          evidenceReference: reference,
-                          note,
+                          evidenceReference: settlementReference,
+                          note: settlementNote,
                         }),
                       )
                     }
@@ -392,7 +610,14 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   {detail.settlements.map((entry) => (
                     <div key={entry.id} className="gst-row">
                       <b>
-                        {text(entry.kind)} · {formatINR(Number(entry.amount))}
+                        {text(({
+                          payment: "Payment to supplier",
+                          supplier_refund: "Refund received from supplier",
+                          payment_reversal: "Payment entry reversed",
+                          supplier_refund_reversal: "Refund entry reversed",
+                        } as Record<string, string>)[entry.kind] ?? entry.kind)} · {formatINR(Number(entry.amount))} · {text(({
+                          cash: "Cash", upi: "UPI", bank: "Bank transfer", card: "Card",
+                        } as Record<string, string>)[entry.method] ?? "Unavailable")}
                       </b>
                       <span>{date(entry.occurredAt)}</span>
                       <small>{entry.evidenceReference}</small>
@@ -402,26 +627,33 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       ) ? (
                         <Button
                           tone="danger"
-                          disabled={
-                            !note.trim() || !reference.trim() || action.busy
-                          }
-                          onClick={() =>
-                            void action.run(() =>
-                              mutate("reversal", {
-                                clientId: crypto.randomUUID(),
-                                settlementId: entry.id,
-                                occurredAt: when,
-                                evidenceReference: reference,
-                                note,
-                              }),
-                            )
-                          }
+                          disabled={action.busy}
+                          onClick={() => {
+                            setReverseId(entry.id);
+                            setReverseDate(new Date().toISOString());
+                            setReverseNote("");
+                            setReverseReference("");
+                          }}
                         >
-                          {text("Record reversal")}
+                          {text("Correct entry")}
                         </Button>
                       ) : null}
                     </div>
                   ))}
+                  {reversalEntry ? (
+                    <Card className="stack-form">
+                      <p>{text("Use only to correct an incorrectly recorded payment or refund. The original entry is retained. This does not transfer money or change tax. Add a reason and evidence; correct dependent refund entries before reversing their payment.")}</p>
+                      <p>{formatINR(Number(reversalEntry.amount))} · {date(reversalEntry.occurredAt)} · {reversalEntry.evidenceReference}</p>
+                      {reversalBlocked ? <p role="alert" className="text-amber-400">{t("gst.error.purchase_settlement_reconciliation_required", EN_FALLBACK["gst.error.purchase_settlement_reconciliation_required"])}</p> : null}
+                      <FiscalDateTimeField label={text("Payment date and time")} value={reverseDate} onChange={setReverseDate} />
+                      <TextField label={text("Reason")} value={reverseNote} onChange={setReverseNote} />
+                      <TextField label={text("Evidence reference")} value={reverseReference} onChange={setReverseReference} />
+                      <Button disabled={action.busy || reversalBlocked || !reverseNote.trim() || !reverseReference.trim()} onClick={() => void action.run(() => mutate("reversal", {
+                        clientId: crypto.randomUUID(), settlementId: reversalEntry.id,
+                        occurredAt: reverseDate, evidenceReference: reverseReference, note: reverseNote,
+                      }))}>{text("Confirm entry reversal")}</Button>
+                    </Card>
+                  ) : null}
                 </Section>
                 <Section title={text("Supplier credit and return")}>
                   <p className="shop-hint">
@@ -434,10 +666,11 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     value={creditNumber}
                     onChange={setCreditNumber}
                   />
+                  {duplicateCreditNumber ? <p role="alert" className="shop-hint text-danger">{text(documentConflict)}</p> : null}
                   <FiscalDateTimeField
                     label={text("Credit date and time")}
-                    value={when}
-                    onChange={setWhen}
+                    value={creditDate}
+                    onChange={setCreditDate}
                   />
                   <TextField
                     label={text("Reason")}
@@ -446,13 +679,14 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   />
                   <TextField
                     label={text("Evidence reference")}
-                    value={reference}
-                    onChange={setReference}
+                    value={creditReference}
+                    onChange={setCreditReference}
                   />
                   {detail.items.map((item) => {
                     const returned = detail.returnItems
                       .filter((r) => r.purchaseItemId === item.id)
                       .reduce((sum, r) => sum + Number(r.quantity), 0);
+                    if (Number(item.quantity) - returned <= 0) return null;
                     return (
                       <div key={item.id} className="gst-row">
                         <TextField
@@ -463,29 +697,32 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                             setQuantities({ ...quantities, [item.id]: v })
                           }
                         />
-                        <Check
+                        {item.batchId ? <Check
                           label={text("Remove this quantity from stock")}
-                          checked={stock[item.id] ?? false}
+                          checked={stock[item.id] ?? true}
                           onChange={(v) => setStock({ ...stock, [item.id]: v })}
-                        />
+                        /> : null}
                       </div>
                     );
                   })}
                   <Button
                     disabled={
                       action.busy ||
-                      !creditNumber.trim() ||
+                      !creditNumber.trim() || duplicateCreditNumber ||
                       !reason.trim() ||
-                      !reference.trim()
+                      !creditReference.trim()
                     }
                     onClick={() =>
                       void action.run(async () => {
+                        if (duplicateCreditNumber) throw Error(text(documentConflict));
+                        if (!/^[A-Za-z0-9/-]{1,16}$/.test(creditNumber))
+                          throw Error(text("Check the supplier credit number, date, reason and reference."));
                         const items = detail.items
-                          .filter((i) => Number(quantities[i.id]) > 0)
+                          .filter((i) => quantities[i.id]?.trim())
                           .map((i) => ({
                             purchaseItemId: i.id,
                             quantity: Number(quantities[i.id]),
-                            removeStock: stock[i.id] ?? false,
+                            removeStock: !!i.batchId && (stock[i.id] ?? true),
                           }));
                         if (!items.length)
                           throw Error(text("Choose quantities to return."));
@@ -499,7 +736,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                             )
                             .reduce((n, r) => n + Number(r.quantity), 0);
                           if (
-                            item.quantity >
+                            !Number.isFinite(item.quantity) || item.quantity <= 0 || item.quantity >
                             Number(original.quantity) - returned
                           )
                             throw Error(
@@ -511,8 +748,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                         await mutate("return", {
                           clientId: crypto.randomUUID(),
                           supplierCreditNumber: creditNumber,
-                          issuedAt: when,
-                          evidenceReference: reference,
+                          issuedAt: creditDate,
+                          evidenceReference: creditReference,
                           reason,
                           items,
                         });
@@ -526,7 +763,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
               <Section title={text("Review and adjustment history")}>
                 {detail.reviews.map((row) => (
                   <div key={row.id} className="gst-row">
-                    <b>{text(row.decision)}</b>
+                    <b>{t(`purchase.decision_${row.decision}`, EN_FALLBACK[`purchase.decision_${row.decision}`])}</b>
                     <span>{date(row.createdAt)}</span>
                     <p>
                       {row.note} · {row.evidenceReference}
@@ -540,6 +777,18 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                       {formatINR(Number(row.grossAmount))}
                     </b>
                     <p>{row.reason}</p>
+                  </div>
+                ))}
+                {detail.costAdjustments.map((row) => (
+                  <div key={row.id} className="gst-row">
+                    <b>{t("purchase.cost_adjustment", EN_FALLBACK["purchase.cost_adjustment"])}</b>
+                    <span>{date(row.createdAt)}</span>
+                    <p>{detail.items.find((item) => item.id === row.purchaseItemId)?.name}</p>
+                    <p>
+                      {t("purchase.inventory", EN_FALLBACK["purchase.inventory"])}: {formatINR(Number(row.inventoryAdjustment))}
+                      {" · "}
+                      {t("purchase.consumed", EN_FALLBACK["purchase.consumed"])}: {formatINR(Number(row.consumedAdjustment))}
+                    </p>
                   </div>
                 ))}
               </Section>

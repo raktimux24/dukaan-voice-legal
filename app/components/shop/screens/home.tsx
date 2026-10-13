@@ -1,9 +1,12 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { formatINR, formatTime } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { InventoryItem, SalesSummary } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
@@ -65,6 +68,8 @@ function stockTone(item: InventoryItem): 'danger' | 'warn' | 'neutral' {
 }
 
 export function HomeScreen() {
+  const uiText = useUiText();
+  const { formatTime } = useShopDates();
   const { api, shop, perms, premium, t } = useShop();
   const shopId = shop?.id ?? '';
   const [query, setQuery] = useState('');
@@ -108,7 +113,7 @@ export function HomeScreen() {
   const attentionItems = useMemo(() => {
     const rank = { OUT: 0, LOW: 1 } as Record<string, number>;
     return (catalog.data ?? [])
-      .filter((item) => item.product.isActive !== false && (item.stockStatus === 'OUT' || item.stockStatus === 'LOW'))
+      .filter((item) => item.product.isActive !== false && item.product.trackStock !== false && (item.stockStatus === 'OUT' || item.stockStatus === 'LOW'))
       .sort((a, b) => (rank[a.stockStatus] ?? 2) - (rank[b.stockStatus] ?? 2) || a.quantity - b.quantity)
       .slice(0, 6);
   }, [catalog.data]);
@@ -118,7 +123,7 @@ export function HomeScreen() {
     return (catalog.data ?? []).filter((item) => item.product.name.toLowerCase().includes(q) || item.product.barcode?.includes(q)).slice(0, 8);
   }, [catalog.data, query]);
 
-  if (!shop) return <Spinner label="Loading shop" />;
+  if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
   const revenueDelta = delta(today.data?.revenue, yesterday.data?.revenue);
   const avgBill = today.data && today.data.bills > 0 ? today.data.revenue / today.data.bills : 0;
@@ -137,7 +142,7 @@ export function HomeScreen() {
       <PageHeader
         kicker={shop.name}
         title={t('nav.home', 'Home')}
-        description="Sales, stock, and what needs attention today."
+        description={uiText("Sales, stock, and what needs attention today.")}
         actions={
           <>
             <Link href="/shop/alerts" className="shop-alert">
@@ -145,6 +150,7 @@ export function HomeScreen() {
               {alerts.data?.counts.total ? <span className="shop-alert-count">{alerts.data.counts.total}</span> : null}
             </Link>
             {perms.canEditProducts ? <Button href="/shop/products/new" tone="ghost">{t('products.add', 'Add product')}</Button> : null}
+            <Button href="/shop/voice" tone="ghost">{t('a11y.voice','Voice command')}</Button>
             <Button href="/shop/sell">{t('home.action_new_sale', 'New sale')}</Button>
           </>
         }
@@ -303,9 +309,9 @@ export function HomeScreen() {
                       </div>
                     </Link>
                   ))}
-                  {recent.isLoading ? <p className="shop-list-empty">Loading bills…</p> : null}
+                  {recent.isLoading ? <p className="shop-list-empty">{uiText("Loading bills…")}</p> : null}
                   {!recent.isLoading && (recent.data?.sales.length ?? 0) === 0 ? (
-                    <p className="shop-list-empty">No bills yet today. <Link href="/shop/sell" className="text-saffron">Start a sale</Link>.</p>
+                    <p className="shop-list-empty">{uiText("No bills yet today.")} <Link href="/shop/sell" className="text-saffron">{uiText("Start a sale")}</Link>.</p>
                   ) : null}
                 </div>
               </Card>
@@ -327,8 +333,8 @@ export function HomeScreen() {
                       <Pill tone={stockTone(item)}>{item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : t('home.stat_low_stock', 'Low')}</Pill>
                     </Link>
                   ))}
-                  {catalog.isLoading ? <p className="shop-list-empty">Checking stock…</p> : null}
-                  {!catalog.isLoading && attentionItems.length === 0 ? <p className="shop-list-empty">Stock looks healthy.</p> : null}
+                  {catalog.isLoading ? <p className="shop-list-empty">{uiText("Checking stock…")}</p> : null}
+                  {!catalog.isLoading && attentionItems.length === 0 ? <p className="shop-list-empty">{uiText("Stock looks healthy.")}</p> : null}
                 </div>
               </Card>
             </section>
@@ -355,9 +361,7 @@ export function HomeScreen() {
                             void api.nudgeEvent(shopId, nudge.id, 'tapped').catch(() => undefined);
                             void api.actNudge(shopId, nudge.id, nudge.action?.params ?? {}).catch(() => undefined);
                           }}
-                        >
-                          Do this
-                        </Button>
+                        > {uiText("Do this")} </Button>
                       ) : null}
                     </div>
                   );
@@ -369,8 +373,8 @@ export function HomeScreen() {
           {!catalog.isLoading && (catalog.data?.length ?? 0) === 0 ? (
             <Card>
               <h2 className="font-display text-xl">{t('home.empty_title', 'No products yet')}</h2>
-              <p className="mt-2 text-muted">Add the first product, then sell it from the counter.</p>
-              {perms.canEditProducts ? <div className="mt-4"><Button href="/shop/products/new">Add product</Button></div> : null}
+              <p className="mt-2 text-muted">{uiText("Add the first product, then sell it from the counter.")}</p>
+              {perms.canEditProducts ? <div className="mt-4"><Button href="/shop/products/new">{uiText("Add product")}</Button></div> : null}
             </Card>
           ) : null}
         </>

@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -13,10 +13,14 @@ function run(file, args, env = process.env) {
 try {
   run(resolve("node_modules/typescript/bin/tsc"), [
     "--ignoreConfig",
+    "--types",
+    "node",
+    "--rootDir",
+    "app/lib",
     "--outDir",
     folder,
     "--target",
-    "ES2020",
+    "ES2022",
     "--lib",
     "ES2022,DOM",
     "--module",
@@ -26,22 +30,140 @@ try {
     "--ignoreDeprecations",
     "6.0",
     "--skipLibCheck",
+    "app/lib/shop/gst-monitor-view.ts",
+    "app/lib/shop/report-review.ts",
+    "app/lib/shop/purchase-draft.ts",
+    "app/lib/shop/gst-core/gst-export-review.ts",
+    "app/lib/shop/browser-push-session.ts",
+    "app/lib/shop/checkout-customer.ts",
+    "app/lib/shop/checkout-rejection.ts",
     "app/lib/shop/gst-api.ts",
+    "app/lib/shop/gst-recovery.ts",
+    "app/lib/shop/api.ts",
+    "app/lib/shop/voice-review.ts",
+    "app/lib/shop/offline-shop-context.ts",
+    "app/lib/shop/browser-audio.ts",
+    "app/lib/shop/pagination.ts",
+    "app/lib/shop/tax-history-refresh.ts",
+    "app/lib/shop/money.ts",
     "app/lib/shop/gst-storage.ts",
+    "app/lib/shop/gst-return-preview.ts",
+    "app/lib/shop/gst-issuance.ts",
+    "app/lib/shop/rsp-cart-entry.ts",
+    "app/lib/shop/gst-print.ts",
+    "app/lib/shop/share-bill.ts",
     "app/lib/shop/gst-document.ts",
+    "app/lib/shop/gst-core/purchase-batch-link.ts",
+    "app/lib/shop/gst-core/purchase-settlement.ts",
     "app/lib/shop/gst-core/product-gross-price.ts",
     "app/lib/shop/gst-core/report-period.ts",
   ]);
+  symlinkSync(resolve("node_modules"), join(folder, "node_modules"), "dir");
   writeFileSync(join(folder, "package.json"), '{"type":"commonjs"}');
+  run(resolve("tests/share-bill-context.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/bill-image-layout.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/share-bill-localization.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
   run(resolve("tests/gst-contracts.mjs"), [], {
     ...process.env,
-    GST_TEST_BUILD: folder,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/report-review.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/purchase-draft.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
   });
   run(resolve("tests/gst-storage.mjs"), [], {
     ...process.env,
-    GST_TEST_BUILD: folder,
+    GST_TEST_BUILD: join(folder, "shop"),
   });
+  run(resolve("tests/purchase-batch-link.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/purchase-reversal.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/purchase-request-closure.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/gst-parity.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/gst-monitor-view.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/checkout-customer.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/local-fiscal-receipt.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/checkout-persistence.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/voice-review.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/offline-shop-context.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/offline-evidence.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/offline-rounding.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/offline-premium.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/offline-evidence-api.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/browser-audio.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/shop-parity-api.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/api-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/pagination.mjs"), [], {
+    ...process.env,
+    GST_TEST_BUILD: join(folder, "shop"),
+  });
+  run(resolve("tests/tax-history-refresh.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/billing-shell.mjs"), []);
+  run(resolve("tests/browser-push-worker.mjs"), []);
+  run(resolve("tests/browser-push-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("scripts/check-gst-core.mjs"), []);
+  run(resolve("tests/purchase-product-handoff.mjs"), []);
+  run(resolve("tests/fiscal-document-render.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
 } finally {
   rmSync(folder, { recursive: true, force: true });
 }
