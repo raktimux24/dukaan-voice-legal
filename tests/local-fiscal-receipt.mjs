@@ -195,6 +195,7 @@ assert.equal((await storage.retainedRequests(plainScope)).length,2);
 assert.equal(await storage.readState(`allocation:${plainScope.actorId}:${plainScope.shopId}`),undefined);
 plainApi.createSale=async(_shop,p)=>{uploaded.push(structuredClone(p));return {sale:{id:randomUUID(),shopId:plainScope.shopId,soldBy:plainScope.actorId,clientId:p.clientId,requestHash:await storage.sha256(canonicalSaleRequest({...p,userId:plainScope.actorId}))}};};
 assert.equal(await syncQueuedSales(plainApi,plainScope.shopId),2);
-assert.deepEqual(uploaded[0],uploaded[2]);assert.deepEqual(uploaded[1],uploaded[3]);
+// Two bills may share a millisecond; verify immutable replay by identity, not incidental IDB tie order.
+for(const original of uploaded.slice(0,2))assert.deepEqual(uploaded.slice(2).find(row=>row.clientId===original.clientId),original);
 assert.equal(await syncQueuedSales(plainApi,plainScope.shopId),0);
 console.log('Ordinary receipts: discount/payment totals, immutable request binding, scope/tamper guards, consecutive queued stock and original reconnect replay passed.');
