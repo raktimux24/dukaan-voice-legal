@@ -359,3 +359,9 @@
     padding: 20px;
   }
 }
+.billing-demo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin: 2rem 0; }
+.billing-demo-grid figure { margin: 0; min-width: 0; }
+.billing-demo-grid img { display: block; width: 100%; max-width: 360px; height: auto; margin: 1rem auto; border-radius: 16px; }
+.billing-demo-grid figcaption { line-height: 1.6; }
+.billing-demo-grid a:focus-visible { outline: 3px solid #ff6b00; outline-offset: 4px; }
+@media (max-width: 640px) { .billing-demo-grid { grid-template-columns: 1fr; } }

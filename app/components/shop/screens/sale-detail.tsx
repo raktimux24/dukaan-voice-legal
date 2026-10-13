@@ -1,21 +1,27 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { GstDocuments } from '../gst-documents';
 import { GstSaleAdjustments } from '../gst-sale-adjustments';
 import { ApiError } from '../../../lib/shop/api';
-import { formatINR, formatWhen } from '../../../lib/shop/money';
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import type { PaymentMethod } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { shareBill, type ShareBillInput } from '../../../lib/shop/share-bill';
+import { financialScope, assertScope } from '../../../lib/shop/gst-storage';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass, isDenied } from '../ui';
 
 const METHOD: Record<string, string> = { cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Udhaar' };
 
 export function SaleDetailScreen({ saleId }: { saleId: string }) {
+  const uiText = useUiText();
+  const { formatWhen } = useShopDates();
   const { api, shop, perms, hideCost, setNotice, t } = useShop();
   const params = useSearchParams();
   const queryClient = useQueryClient();
@@ -39,10 +45,10 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
   const sale = saleQuery.data;
 
   if (!shop) return <Spinner />;
-  if (saleQuery.isLoading) return <Spinner label="Loading bill" />;
-  if (isDenied(saleQuery.error)) return <NoAccess what="You cannot open this bill." />;
+  if (saleQuery.isLoading) return <Spinner label={uiText("Loading bill")} />;
+  if (isDenied(saleQuery.error)) return <NoAccess what={uiText("You cannot open this bill.")} />;
   if (saleQuery.error) return <Notice error={saleQuery.error} />;
-  if (!sale) return <Card><p>That bill was not found.</p></Card>;
+  if (!sale) return <Card><p>{uiText("That bill was not found.")}</p></Card>;
 
   const shortfalls = sale.items.filter((item) => (item.shortfall ?? 0) > 0);
   const windowHours = settings.data?.voidWindowHours;
@@ -75,20 +81,32 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
       discount: sale.discountAmount > 0 ? `−${formatINR(sale.discountAmount)}` : null,
       total: formatINR(sale.total),
       payments: sale.payments.map((payment) => {
-        const label = METHOD[payment.method] ?? payment.method;
+        const label = t(`pos.method.${payment.method}`, METHOD[payment.method] ?? payment.method);
         const extra = [
-          payment.tendered != null ? `received ${formatINR(payment.tendered)}` : null,
-          payment.changeGiven ? `change ${formatINR(payment.changeGiven)}` : null,
+          payment.tendered != null ? `${t('checkout.cash_received', 'Cash received')} ${formatINR(payment.tendered)}` : null,
+          payment.changeGiven ? `${t('checkout.change', 'Change to return')} ${formatINR(payment.changeGiven)}` : null,
         ].filter(Boolean).join(' · ');
         return extra ? `${label} · ${extra} · ${formatINR(payment.amount)}` : `${label} · ${formatINR(payment.amount)}`;
       }),
       footer: pos?.billFooter,
+      labels: {
+        bill: t('bill.bill', 'Bill'),
+        subtotal: t('bill.subtotal', 'Subtotal'),
+        discount: t('bill.discount', 'Discount'),
+        total: t('bill.total', 'Total'),
+        thanks: t('bill.thanks', 'Thank you'),
+      },
     };
-    if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error("Use the verified GST document above to print or download this bill."));return;}
+    if(sale.gstSnapshot||sale.mixedGstSnapshot){setError(new Error(t("bill.use_verified_gst_document", "Use the verified GST document above to print or download this bill.")));return;}
     setSharing(true);
     try {
-      const result = await shareBill(payload);
-      if (result === 'copied') setNotice('Bill copied. The image downloaded so you can send it on WhatsApp.');
+      const scope = financialScope(shop.id);
+      const result = await shareBill(payload, () => { api.assertSession(); assertScope(scope); });
+      if (result === 'copied') setNotice(t('bill.share_copied', 'Bill text copied.'));
+      if (result === 'downloaded') setNotice(t('bill.share_downloaded', 'Bill image downloaded.'));
+    } catch (error) {
+      setError(error instanceof Error && error.message === 'Could not share or download this bill. Try again.'
+        ? new Error(t('bill.share_failed', error.message)) : error);
     } finally {
       setSharing(false);
     }
@@ -105,7 +123,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         />
       </div>
       <Notice error={error} />
-      {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{sale.gstSnapshot?<GstSaleAdjustments sale={sale}/>:null}</>:null}
+      {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{<GstSaleAdjustments sale={sale}/>}</>:null}
       <div className="sale-stage">
         <article className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={`Bill ${sale.saleNumber}`}>
           <header className="receipt-head">
@@ -116,7 +134,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
           </header>
           <div className="receipt-rule" />
           <div className="receipt-meta">
-            <span>Bill #{sale.saleNumber}</span>
+            <span>{uiText("Bill #")}{sale.saleNumber}</span>
             <span>{formatWhen(sale.soldAt)}</span>
           </div>
           <p className={sale.status === 'voided' ? 'receipt-status is-voided' : 'receipt-status'}>
@@ -141,9 +159,9 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
           </ul>
           <div className="receipt-rule" />
           <dl className="receipt-totals">
-            <div><dt>Subtotal</dt><dd>{formatINR(sale.subtotal)}</dd></div>
-            {sale.discountAmount > 0 ? <div><dt>Discount</dt><dd>−{formatINR(sale.discountAmount)}</dd></div> : null}
-            <div className="is-total"><dt>Total</dt><dd>{formatINR(sale.total)}</dd></div>
+            <div><dt>{uiText("Subtotal")}</dt><dd>{formatINR(sale.subtotal)}</dd></div>
+            {sale.discountAmount > 0 ? <div><dt>{uiText("Discount")}</dt><dd>−{formatINR(sale.discountAmount)}</dd></div> : null}
+            <div className="is-total"><dt>{uiText("Total")}</dt><dd>{formatINR(sale.total)}</dd></div>
           </dl>
           <ul className="receipt-pays">
             {sale.payments.map((payment) => (
@@ -161,17 +179,16 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
               </li>
             ))}
           </ul>
-          {sale.creditTotal > 0 ? <p className="receipt-pay"><span>On credit</span><span>{formatINR(sale.creditTotal)}</span></p> : null}
+          {sale.creditTotal > 0 ? <p className="receipt-pay"><span>{uiText("On credit")}</span><span>{formatINR(sale.creditTotal)}</span></p> : null}
           {sale.returns.map((entry) => (
-            <p key={entry.id} className="receipt-qty">
-              Return {formatWhen(entry.createdAt)} · {formatINR(entry.refundAmount)}
+            <p key={entry.id} className="receipt-qty"> {uiText("Return")} {formatWhen(entry.createdAt)} · {formatINR(entry.refundAmount)}
               {entry.refundMethod ? ` by ${METHOD[entry.refundMethod] ?? entry.refundMethod}` : ''}
               {entry.reason ? ` · ${entry.reason}` : ''}
             </p>
           ))}
           {sale.note ? <p className="receipt-qty">{sale.note}</p> : null}
-          {sale.voidReason ? <p className="receipt-qty">Voided: {sale.voidReason}</p> : null}
-          {showCost ? <p className="receipt-cost">Cost {formatINR(sale.costTotal)}</p> : null}
+          {sale.voidReason ? <p className="receipt-qty">{uiText("Voided:")} {sale.voidReason}</p> : null}
+          {showCost ? <p className="receipt-cost">{uiText("Cost")} {formatINR(sale.costTotal)}</p> : null}
           <p className="receipt-foot">{pos?.billFooter || 'Thank you'}</p>
         </article>
         <div className="sale-side no-print">
@@ -181,14 +198,14 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <p className="party-meta">{methods.join(' + ') || sale.paymentStatus}{sale.customer ? ` · ${sale.customer.name}` : ''}</p>
             <div className="shop-actions">
               <Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
-              <Button tone="ghost" disabled={!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={() => window.print()}>Print</Button>
+              <Button tone="ghost" disabled={!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={() => window.print()}>{uiText("Print")}</Button>
               {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>
           {shortfalls.length ? (
             <Card>
-              <p className="font-semibold text-warn">Sold more than was on hand</p>
-              {shortfalls.map((item) => <p key={item.id} className="party-meta">{item.name}: short by {formatQty(item.shortfall ?? 0, item.unit)}</p>)}
+              <p className="font-semibold text-warn">{uiText("Sold more than was on hand")}</p>
+              {shortfalls.map((item) => <p key={item.id} className="party-meta">{item.name}{uiText(": short by")} {formatQty(item.shortfall ?? 0, item.unit)}</p>)}
             </Card>
           ) : null}
         {perms.canVoidOrReturn && !sale.gstSnapshot && !sale.mixedGstSnapshot && sale.status === 'completed' ? (
@@ -200,8 +217,8 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   ? `Open for ${windowHours ?? 'the configured'} hours after the sale.`
                   : `The ${windowHours}-hour void window has closed.`}
               </p>
-              <Field label="Reason">
-                <input className={inputClass} value={voidReason} onChange={(event) => setVoidReason(event.target.value)} placeholder="Optional" />
+              <Field label={uiText("Reason")}>
+                <input className={inputClass} value={voidReason} onChange={(event) => setVoidReason(event.target.value)} placeholder={uiText("Optional")} />
               </Field>
               <Button
                 tone="danger"
@@ -220,8 +237,8 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             </Card>
             <Card className="stack-form">
               <h2 className="shop-section-title">{t('sale_return.title', 'Return')}</h2>
-              <p className="shop-section-sub">Enter how much of each line comes back. Returned stock is put on the shelf again.</p>
-              {returnable.length === 0 ? <p className="party-meta">Every line on this bill has already been returned.</p> : null}
+              <p className="shop-section-sub">{uiText("Enter how much of each line comes back. Returned stock is put on the shelf again.")}</p>
+              {returnable.length === 0 ? <p className="party-meta">{uiText("Every line on this bill has already been returned.")}</p> : null}
               {returnable.map((item) => {
                 const left = item.quantity - item.returnedQuantity;
                 return (
@@ -235,15 +252,15 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   </Field>
                 );
               })}
-              <Field label="Refund">
+              <Field label={uiText("Refund")}>
                 <select className={inputClass} value={refund} onChange={(event) => setRefund(event.target.value as PaymentMethod)}>
-                  <option value="cash">Cash</option>
+                  <option value="cash">{uiText("Cash")}</option>
                   <option value="upi">UPI</option>
-                  {sale.customer ? <option value="credit">Credit</option> : null}
+                  {sale.customer ? <option value="credit">{uiText("Credit")}</option> : null}
                 </select>
               </Field>
-              <Field label="Reason">
-                <input className={inputClass} value={returnReason} onChange={(event) => setReturnReason(event.target.value)} placeholder="Optional" />
+              <Field label={uiText("Reason")}>
+                <input className={inputClass} value={returnReason} onChange={(event) => setReturnReason(event.target.value)} placeholder={uiText("Optional")} />
               </Field>
               <Button
                 disabled={pending || returnable.length === 0}

@@ -4,6 +4,11 @@
  * The full server-fetched catalog merges over this on load; keep in sync with server/src/scripts/translations-source.ts.
  */
 export const EN_FALLBACK: Record<string, string> = {
+  "gst.error.turnover_sequence_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
+  "gst.error.period_sequence_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
+  "gst.error.period_sources_changed_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
+
+  "gst.error.duplicate_purchase_document": "This supplier document number has already been recorded. Review the existing document before creating another entry.",
   "gst.export_saved_copy": "{{register}} saved. Download this exact copy or reopen it below.",
   "gst.export_included_dates": "{{from}} – {{to}} (included)",
   "gst.export_as_of": "As of {{date}}",
@@ -100,6 +105,7 @@ export const EN_FALLBACK: Record<string, string> = {
   "gst.state.24": "Gujarat",
   "gst.state.26": "Dadra & Nagar Haveli and Daman & Diu",
   "gst.state.27": "Maharashtra",
+  "gst.state.28": "Andhra Pradesh",
   "gst.state.29": "Karnataka",
   "gst.state.30": "Goa",
   "gst.state.31": "Lakshadweep",
@@ -1146,7 +1152,7 @@ export const EN_FALLBACK: Record<string, string> = {
     "Refresh the product's GST settings before billing.",
   "gst.error.checkout_in_progress": "Checkout is already being completed.",
   "gst.margin_estimate":
-    "Margin uses recorded purchase cost; input-tax credits are not calculated.",
+    "Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.",
   "gst.bulk_title": "Review product GST in bulk",
   "gst.bulk_instructions": "Select only products with the same reviewed HSN/SAC, classification and rate. This replaces their tax settings for future invoices; issued bills retain their original settings.",
   "gst.bulk_selected": "products selected",

@@ -1,7 +1,7 @@
 import {canonicalJson} from './sale-request-canonical';
 import {verifyPayableRoundingSnapshot} from './payable-rounding-snapshot';
 import {validSavedSaleReturnShape} from './financial-request-shape';
-type Input={requestId?:string;items:{saleItemId:string;quantity:number;restock?:boolean;reason?:string|null}[];refundMethod?:string|null;reason?:string|null;settlement?:{creditReduction:number;moneyRefund:number;method:string;evidenceReference?:string}};
+type Input={requestId?:string;items:{saleItemId:string;quantity:number;restock?:boolean;reason?:string|null}[];refundMethod?:string|null;refundAmount?:number|null;reason?:string|null;settlement?:{creditReduction:number;moneyRefund:number;method:string;evidenceReference?:string}};
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
 const cents=(v:number)=>{const n=Math.round(v*100);return Number.isFinite(v)&&v>=0&&Number.isSafeInteger(n)&&Math.abs(v*100-n)<0.000001?n:null;};
@@ -32,7 +32,7 @@ export function confirmedSaleReturn(result:unknown,shop:string,actor:string,sale
  if(sale.gstSnapshot&&sale.mixedGstSnapshot)return fail();
  if(typeof record.createdAt!=='string'||!Number.isFinite(Date.parse(record.createdAt))||!Array.isArray(sale.returns)||sale.returns.filter(row=>object(row)&&row.id===record.id).length!==1)return fail();
  if(!uuid(record.id)||record.shopId!==shop||record.saleId!==saleId||record.createdBy!==actor||record.requestId!==input.requestId||!uuid(input.requestId)||sale.id!==saleId||sale.shopId!==shop||record.refundAmount!==total.toFixed(2)||record.reason!==(input.reason?.trim()||null)||!Array.isArray(record.items)||record.items.length!==input.items.length||!Array.isArray(sale.returns))return fail();
- const seen=new Set<string>();for(const row of record.items){if(!object(row)||typeof row.saleItemId!=='string'||seen.has(row.saleItemId))return fail();seen.add(row.saleItemId);const saved=input.items.find(i=>i.saleItemId===row.saleItemId);if(!saved||row.quantity!==saved.quantity||row.restock!==(saved.restock!==false)||(typeof row.reason==='string'?row.reason.trim()||null:row.reason)!==(saved.reason?.trim()||null))return fail();}
+ const seen=new Set<string>();for(const row of record.items){if(!object(row)||typeof row.saleItemId!=='string'||seen.has(row.saleItemId))return fail();seen.add(row.saleItemId);const saved=input.items.find(i=>i.saleItemId===row.saleItemId);if(!saved||row.quantity!==saved.quantity||(typeof row.restock!=='boolean'||(typeof record.requestHash==='string'&&/^[a-f0-9]{64}$/.test(record.requestHash)?row.restock&&saved.restock===false:row.restock!==(saved.restock!==false)))||(typeof row.reason==='string'?row.reason.trim()||null:row.reason)!==(saved.reason?.trim()||null))return fail();}
  const retained=sale.returns.find(row=>object(row)&&row.id===record.id);if(!object(retained)||retained.createdBy!==actor||retained.refundAmount!==total)return fail();
  for(const field of ['creditNoteNumber','settlement','items','refundMethod','reason','createdAt'])if(!same(retained[field],record[field]))return fail();
  for(const field of ['netAmount','taxAmount'])if(retained[field]!== (record[field]==null?null:Number(record[field])))return fail();
@@ -49,6 +49,11 @@ export function confirmedSaleReturn(result:unknown,shop:string,actor:string,sale
 /** Native digest verifies invoice evidence before a retained return can be released. */
 export async function confirmedSaleReturnReceipt(result:unknown,shop:string,actor:string,saleId:string,input:Input,total:number,digest:(value:string)=>Promise<string>){
  const sale=confirmedSaleReturn(result,shop,actor,saleId,input,total);
+ // A non-restocked outcome may legitimately differ from the original intent.
+ // Bind that outcome to the exact saved request before releasing its evidence.
+ const hash=object(result)&&object(result.record)?result.record.requestHash:undefined;
+ const requestJson=JSON.stringify({userId:actor,items:input.items.map(row=>({saleItemId:row.saleItemId,quantity:row.quantity,restock:row.restock!==false,reason:row.reason?.trim()||null})).sort((a,b)=>a.saleItemId.localeCompare(b.saleItemId)),refundMethod:input.refundMethod??null,refundAmount:input.refundAmount??null,reason:input.reason?.trim()||null,settlement:input.settlement??null});
+ if(hash!==undefined&&(typeof hash!=='string'||!/^[a-f0-9]{64}$/.test(hash)||await digest(requestJson)!==hash))throw Error('purchase_request_outcome_unconfirmed');
  if(object(sale.roundingEvidence)){
   const evidence=sale.roundingEvidence;
   if(await digest(canonicalJson({document:evidence.document,snapshot:evidence.snapshot}))!==evidence.hash)throw Error('purchase_request_outcome_unconfirmed');

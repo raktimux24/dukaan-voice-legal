@@ -1,15 +1,20 @@
 "use client";
 
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { SupplierEditor } from "../gst-supplier";
 import { useGstPages, More, ReadState } from "../gst-workspace";
 import { useState } from "react";
-import { formatDay, formatINR } from "../../../lib/shop/money";
+import { formatINR } from '../../../lib/shop/money';
+import { useShopDates } from '../use-shop-dates';
 import { useShop } from "../context";
 import { Card, NoAccess, Notice, PageHeader, Spinner, Button, ShopDialog, inputClass } from "../ui";
 
 export function SuppliersScreen() {
+  const uiText = useUiText();
+  const { formatDay } = useShopDates();
   const { api, shop, perms, t } = useShop();
   const [q, setQ] = useState("");
   const [supplierBusy, setSupplierBusy] = useState(false);
@@ -34,7 +39,7 @@ export function SuppliersScreen() {
   if (!shop) return <Spinner />;
   if (!perms.canSeeCost)
     return (
-      <NoAccess what="Suppliers show purchase prices, so helpers cannot open them." />
+      <NoAccess what={uiText("Suppliers show purchase prices, so helpers cannot open them.")} />
     );
 
   const suppliers = list.data?.suppliers ?? [];
@@ -82,7 +87,7 @@ export function SuppliersScreen() {
       {adding ? <ShopDialog title={t('web.gst.add_supplier', 'Add supplier')} onClose={() => setAdding(false)} busy={supplierBusy}><SupplierEditor onBusyChange={setSupplierBusy} onSaved={() => {setAdding(false); void directory.refetch();}} /></ShopDialog> : null}
       <details className="gst-section"><summary><span>{t('suppliers.stock_history', 'Stock supplier history')}</span><span aria-hidden="true">⌄</span></summary><div className="gst-section-body">
       <Notice error={list.error ?? compare.error} />
-      {list.isLoading ? <Spinner label="Loading suppliers" /> : null}
+      {list.isLoading ? <Spinner label={uiText("Loading suppliers")} /> : null}
       {!list.isLoading && suppliers.length === 0 ? (
         <Card>
           <p>
@@ -136,10 +141,7 @@ export function SuppliersScreen() {
           <h2 className="shop-section-title">
             {t("suppliers.tab.compare", "Price compare")}
           </h2>
-          <p className="shop-section-sub">
-            Same product, more than one supplier. The name on the right is the
-            cheaper last price.
-          </p>
+          <p className="shop-section-sub"> {uiText("Same product, more than one supplier. The name on the right is the cheaper last price.")} </p>
           <div className="chart-rows">
             {compared.map((product) => (
               <div key={product.productId} className="chart-row is-compare">
@@ -163,6 +165,6 @@ export function SuppliersScreen() {
   );
 }
 
-function FieldSearch({q,onChange,label}: {q:string;onChange:(value:string)=>void;label:string}) {
- return <label className="supplier-directory-search"><span>{label}</span><input className={inputClass} value={q} onChange={event=>onChange(event.target.value)} type="search" placeholder={label}/></label>;
+function FieldSearch({q, onChange, label}: {q: string; onChange: (value: string) => void; label: string}) {
+  return <label className="supplier-directory-search"><span>{label}</span><input className={inputClass} value={q} onChange={event => onChange(event.target.value)} type="search" placeholder={label}/></label>;
 }

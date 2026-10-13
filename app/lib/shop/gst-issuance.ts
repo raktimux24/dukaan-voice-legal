@@ -1,3 +1,14 @@
+import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt,buildLocalOrdinaryReceipt} from './local-issued-receipt';
+import {assertSaleStock} from './local-stock';
+import {ensureInvoiceAllocation,ensureRoundingGrant} from './invoice-preparation';
+import {buildLocalFiscalReceipt} from './local-fiscal-receipt';
+import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from './gst-core/gst-tax-cache';
+import {rspItemsForIssue} from './rsp-issue-items';
+import {mixedCartProjection} from './mixed-cart-projection';
+import {mixedSaleConfirmationMatches} from './mixed-sale-confirmation';
+import {roundedSaleConfirmationMatches} from './rounded-sale-confirmation';
+import {quoteRoundedReservation} from './rounded-reservation';
+import {localRoundingGrantIssue} from './rounding-grant';
 import {
   financialYear,
   allocationNumber,
@@ -40,15 +51,14 @@ export async function issueSale(
     // The original request survives response loss and browser restart.
     const journal = await retainedRequests(active);
     const saved = journal.find((r) => r.id === body.clientId);
-    if (
-      !saved &&
-      journal.some(
-        (r) => r.state === "pending" && r.path === `/api/shops/${shopId}/sales`,
-      )
-    )
-      throw Error(
-        "A previous bill needs recovery. Open GST recovery before starting another bill.",
-      );
+    if(!saved){
+      const pending=journal.filter(row=>row.state==='pending'&&row.path===`/api/shops/${shopId}/sales`);
+      for(const row of pending){
+        if(!hasLocalIssuedReceipt(row))throw Error('A previous bill needs recovery. Open GST recovery before starting another bill.');
+        await verifyLocalIssuedReceipt(row,active);assertScope(active);
+      }
+    }
+    if(saved && hasLocalIssuedReceipt(saved)){await verifyLocalIssuedReceipt(saved,active);assertScope(active);}
     let payload = saved
       ? (structuredClone(saved.payload) as CreateSalePayload)
       : structuredClone(body);
@@ -60,61 +70,30 @@ export async function issueSale(
       )
     ) {
       const context = payload.gstContext;
-      validateContext(
-        context,
-        calculateTax(
-          payload.items.map((i) => ({
-            quantity: i.quantity,
-            price: i.price ?? 0,
-            listPrice: i.listPrice,
-            discount: i.discount,
-            tax: i.gstConfig,
-          })),
-          payload.discountAmount ?? 0,
-          context,
-        ).total,
-      );
-      const epochKey = `epoch:${active.actorId}`;
-      let deviceEpoch = await readState<string>(epochKey);
-      if (!deviceEpoch) {
-        deviceEpoch = crypto.randomUUID();
-        await writeState(epochKey, deviceEpoch);
+      const stock=await api.getAllInventory(shopId,true,false,true);assertScope(active);
+      assertSaleStock(payload.items,stock);
+
+      let {allocation,deviceEpoch}=await ensureInvoiceAllocation(api,active,context.settings);
+      let taxLines:Parameters<typeof assertCartTaxSnapshots>[0]["lines"]|undefined;
+      // Validate fresh server timelines before reserving a number. Never silently substitute tax rates.
+      if(context.settings.registration==='regular'){
+        const ids=payload.items.map(i=>i.productId);
+        if(ids.some(id=>!id)||new Set(ids).size!==ids.length)throw Error('Each GST line needs a distinct saved product.');
+        const snapshot=await api.getTaxSnapshot(shopId,ids as string[]);assertScope(active);
+        const entries=attachCatalogTaxSnapshot(payload.items.map(item=>({product:{id:item.productId!} as Pick<import("./types").Product,"id"|"gstTaxSnapshot"|"gstRspSnapshot">})),snapshot,shopId);
+        taxLines=payload.items.map((item,index)=>({...item,productId:item.productId!,gstTaxSnapshot:entries[index].product.gstTaxSnapshot,gstRspSnapshot:entries[index].product.gstRspSnapshot}));
+        assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:taxLines},shopId,new Date().toISOString());
       }
-      const key = `allocation:${active.actorId}:${shopId}`;
-      let allocation = await readState<Allocation>(key);
-      const now = new Date();
-      if (
-        !allocation ||
-        allocation.issuer !== context.settings.gstin ||
-        allocation.financialYear !== financialYear(now) ||
-        allocation.next > 100 ||
-        Date.parse(allocation.expiresAt) <= Date.now() ||
-        allocation.gstVersion !== context.settings.version
-      ) {
-        allocation = {
-          ...(await api.gst.provision(shopId, {
-            deviceEpoch,
-            gstVersion: context.settings.version,
-          })),
-          next: 1,
-          gstVersion: context.settings.version,
-        };
-        assertScope(active);
-        if (
-          !/^[a-f0-9-]{36}$/i.test(allocation.id) ||
-          allocation.deviceEpoch !== deviceEpoch ||
-          allocation.issuer !== context.settings.gstin ||
-          allocation.financialYear !== financialYear(now) ||
-          !Number.isInteger(allocation.block) ||
-          allocation.block < 1 ||
-          !Number.isFinite(Date.parse(allocation.expiresAt)) ||
-          Date.parse(allocation.expiresAt) <= now.getTime()
-        )
-          throw Error("The invoice number reservation could not be verified.");
-      }
-      const issuedAt = now.toISOString();
+      const liveSettings=await api.getPosSettings(shopId);assertScope(active);
+      if(liveSettings.gstSettings?.version!==context.settings.version)throw Error('Shop GST settings changed. Refresh checkout before charging.');
+      const prepared=await ensureRoundingGrant(api,active,allocation,deviceEpoch,liveSettings.gstPayableRoundingAvailable===true);
+      allocation=prepared.allocation;const grant=prepared.grant;
+      const key=`allocation:${active.actorId}:${shopId}`;
+      const issuedAt = new Date().toISOString();
+      if(taxLines)assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:taxLines},shopId,issuedAt);
       payload = {
         ...payload,
+        items:rspItemsForIssue(payload.items,issuedAt),
         soldAt: issuedAt,
         gstContext: {
           ...context,
@@ -129,7 +108,18 @@ export async function issueSale(
           },
         },
       };
-      // Store reservation including the request before advancing the counter.
+      const issuedContext=payload.gstContext!;
+      const mixed=payload.items.some(i=>i.rsp);
+      const before=mixed?Number(mixedCartProjection(payload.items.map((i,index)=>({...i,key:`line-${index}`,price:i.price??0,discount:i.discount??0})),issuedContext,payload.discountAmount??0,payload.mixedDiscountReview).payable):calculateTax(payload.items.map(i=>({quantity:i.quantity,price:i.price??0,listPrice:i.listPrice,discount:i.discount,tax:i.gstConfig})),payload.discountAmount??0,issuedContext).total;
+      validateContext(issuedContext,before);
+      if(grant){
+        localRoundingGrantIssue(grant,{shopId,actorId:active.actorId,deviceEpoch,allocationId:allocation.id,issuer:allocation.issuer,financialYear:allocation.financialYear,index:allocation.next,number:allocationNumber(allocation,allocation.next),issuedAt,policyVersion:grant.signedGrant.grant.policy.version});
+        const quote=quoteRoundedReservation(shopId,payload,grant.signedGrant.grant.policy);
+        payload={...payload,roundingGrant:grant,roundingSnapshot:quote.snapshot};
+      }else if(Math.round(payload.payments.reduce((sum,p)=>sum+p.amount,0)*100)!==Math.round(before*100))throw Error('The bill total changed. Refresh checkout and confirm payment again.');
+      const localFiscalReceipt=await buildLocalFiscalReceipt(active,payload);
+      assertScope(active);
+      // Store receipt, original request and advanced counter in one transaction.
       await reserveSale(
         key,
         { ...allocation, next: allocation.next + 1, pending: payload },
@@ -140,8 +130,17 @@ export async function issueSale(
           payload,
           createdAt: issuedAt,
           state: "pending",
+          verification:{localFiscalReceipt},
         },
       );
+    }
+    let ordinaryReceipt;
+    if(!saved&&!payload.gstContext){
+      const settings=await api.getPosSettings(shopId);assertScope(active);
+      if(settings.gstSettings&&['regular','composition'].includes(settings.gstSettings.registration))throw Error('Shop GST settings changed. Refresh checkout before charging.');
+      const stock=await api.getAllInventory(shopId,true,false,true);assertScope(active);
+      assertSaleStock(payload.items,stock);
+      ordinaryReceipt=await buildLocalOrdinaryReceipt(active,payload);assertScope(active);
     }
     const path = `/api/shops/${shopId}/sales`;
     const row: RetainedRequest = {
@@ -149,6 +148,7 @@ export async function issueSale(
       id: payload.clientId,
       path,
       payload,
+      ...(ordinaryReceipt?{verification:{localOrdinaryReceipt:ordinaryReceipt}}:{}),
       createdAt: saved?.createdAt ?? new Date().toISOString(),
       state: "pending",
     };
@@ -199,14 +199,16 @@ export async function verifySale(
       payload.gstContext.settings.registration,
     )
   ) {
-    const snapshot = sale.gstSnapshot;
-    if (
-      sale.gstIntegrity !== "verified" ||
-      !snapshot ||
-      snapshot.invoiceNumber !== payload.gstContext.allocation?.number ||
-      canonicalJson(snapshot.context) !== canonicalJson(payload.gstContext)
-    )
-      throw Error("The saved GST bill could not be verified.");
+    if(payload.roundingSnapshot){
+      if(!roundedSaleConfirmationMatches(sale,scope.shopId,payload)||canonicalJson(sale.roundingEvidence?.snapshot)!==canonicalJson(payload.roundingSnapshot)||canonicalJson(sale.roundingGrant)!==canonicalJson(payload.roundingGrant))throw Error('The saved rounded bill could not be verified.');
+      const evidence=sale.roundingEvidence!;
+      if(evidence.hash!==await sha256(canonicalJson({document:evidence.document,snapshot:evidence.snapshot})))throw Error('The rounding evidence could not be verified.');
+    }else if(payload.items.some(i=>i.rsp)){
+      if(!mixedSaleConfirmationMatches(sale,payload))throw Error('The saved mixed GST bill could not be verified.');
+    }else{
+      const snapshot = sale.gstSnapshot;
+      if(sale.gstIntegrity !== 'verified'||!snapshot||snapshot.invoiceNumber!==payload.gstContext.allocation?.number||canonicalJson(snapshot.context)!==canonicalJson(payload.gstContext))throw Error('The saved GST bill could not be verified.');
+    }
   }
 }
 export async function recoverReservedSales(
@@ -243,4 +245,20 @@ export async function recoverReservedSales(
       state: "pending",
     });
   }
+}
+
+/** Reconnect only replays already-issued original bills; it never creates or edits a request. */
+export async function syncQueuedSales(api:ShopApi,shopId:string,isCurrent:()=>boolean=()=>true) {
+ const active=financialScope(shopId);
+ const rows=(await retainedRequests(active)).filter(row=>row.state==='pending'&&row.path===`/api/shops/${shopId}/sales`).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)||((a.payload as CreateSalePayload).gstContext?.allocation?.index??0)-((b.payload as CreateSalePayload).gstContext?.allocation?.index??0));
+ let confirmed=0;
+ for(const row of rows){
+  if(!isCurrent())break;
+  assertScope(active);
+  if(!hasLocalIssuedReceipt(row))break; // Unissued or uncertain legacy requests require manual review.
+  await verifyLocalIssuedReceipt(row,active);assertScope(active);
+  await issueSale(api,shopId,row.payload as CreateSalePayload);
+  assertScope(active);confirmed++;
+ }
+ return confirmed;
 }

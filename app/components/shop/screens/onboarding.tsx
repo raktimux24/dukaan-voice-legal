@@ -1,5 +1,7 @@
 'use client';
 
+import { useGstText as useUiText } from "../gst-ui";
+
 
 import { SettingsFields, emptySettings, useGstText } from '../gst-ui';
 import { validateSettings } from '../../../lib/shop/gst-core/gst';
@@ -10,6 +12,7 @@ import { Button, Card, Field, inputClass, Notice } from '../ui';
 import { useShop } from '../context';
 
 export function OnboardingScreen() {
+  const uiText = useUiText();
   const { api, refreshShops, selectShop, shops, t } = useShop();
   const router = useRouter();
   const text=useGstText();
@@ -108,7 +111,7 @@ export function OnboardingScreen() {
           </form>
         </Card>
       )}
-      {shops.length > 0 ? <Button tone="ghost" href="/shop">Back to {shops[0]?.name}</Button> : null}
+      {shops.length > 0 ? <Button tone="ghost" href="/shop">{uiText("Back to")} {shops[0]?.name}</Button> : null}
     </div>
   );
 }

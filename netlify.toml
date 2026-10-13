@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run build:verified"
   publish = ".next"
 
 [[headers]]
@@ -27,3 +27,14 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[[headers]]
+  for = "/release.json"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/shop-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/javascript"

@@ -1,10 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import {useContext, useEffect, useRef, type ReactNode} from 'react';
+import {useContext, useEffect, useId, useRef, type ReactNode} from 'react';
 import { ApiError } from '../../lib/shop/api';
 import { useShop,ShopContext } from './context';
 import {EN_FALLBACK} from '../../lib/shop/en-fallback';
+
+function useOptionalUiText() {
+  const context = useContext(ShopContext);
+  return (value: ReactNode): ReactNode => typeof value === 'string' && context
+    ? context.t('web.gst.' + value.toLowerCase().replace(/[^a-z0-9]+/g, '_'), value)
+    : value;
+}
 
 export function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
@@ -65,11 +72,12 @@ export function PageHeader({
   actions?: ReactNode;
   back?: { href: string; label: string };
 }) {
+  const display = useOptionalUiText();
   return (
     <header className="shop-page-head">
       {back ? (
         <Link href={back.href} className="shop-back">
-          ← {back.label}
+          ← {display(back.label)}
         </Link>
       ) : null}
       <div className="shop-page-head-text">
@@ -91,13 +99,14 @@ export function SectionHead({
   sub?: string;
   link?: { href: string; label: string };
 }) {
+  const display = useOptionalUiText();
   return (
     <div className="shop-section-head">
       <div>
-        <h2 className="shop-section-title">{title}</h2>
-        {sub ? <p className="shop-section-sub">{sub}</p> : null}
+        <h2 className="shop-section-title">{display(title)}</h2>
+        {sub ? <p className="shop-section-sub">{display(sub)}</p> : null}
       </div>
-      {link ? <Link href={link.href} className="shop-section-link">{link.label}</Link> : null}
+      {link ? <Link href={link.href} className="shop-section-link">{display(link.label)}</Link> : null}
     </div>
   );
 }
@@ -113,11 +122,12 @@ export function Field({
   children: ReactNode;
   className?: string;
 }) {
+  const display = useOptionalUiText();
   return (
     <label className={cx('block', className)}>
-      <span className="shop-label">{label}</span>
+      <span className="shop-label">{display(label)}</span>
       {children}
-      {hint ? <span className="shop-hint block">{hint}</span> : null}
+      {hint ? <span className="shop-hint block">{display(hint)}</span> : null}
     </label>
   );
 }
@@ -147,10 +157,11 @@ export function Kbd({ children }: { children: ReactNode }) {
 }
 
 export function Empty({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
+  const display = useOptionalUiText();
   return (
     <Card>
-      <h2 className="font-display text-xl text-ink">{title}</h2>
-      <p className="mt-2 text-muted">{body}</p>
+      <h2 className="font-display text-xl text-ink">{display(title)}</h2>
+      <p className="mt-2 text-muted">{display(body)}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </Card>
   );
@@ -197,24 +208,32 @@ export function PremiumLock({ feature }: { shopId?: string; feature?: string }) 
 }
 
 export function NoAccess({ what }: { what: string }) {
+  const display = useOptionalUiText();
   return (
     <Card>
-      <h2 className="font-display text-xl">You do not have access</h2>
-      <p className="mt-2 text-muted">{what}</p>
+      <h2 className="font-display text-xl">{display('You do not have access')}</h2>
+      <p className="mt-2 text-muted">{display(what)}</p>
     </Card>
   );
 }
 
 export function Spinner({ label = 'Loading' }: { label?: string }) {
-  return <p className="text-sm text-muted" role="status">{label}…</p>;
+  const display = useOptionalUiText();
+  return <p className="text-sm text-muted" role="status">{display(label)}…</p>;
 }
+
 
 export function ShopDialog({title, onClose, busy = false, children, className}: {title: string; onClose: () => void; busy?: boolean; children: ReactNode; className?: string}) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   const {t} = useShop();
-  useEffect(() => { dialog.current?.showModal(); }, []);
-  return <dialog ref={dialog} className={cx("shop-dialog", className)} aria-labelledby="shop-dialog-title" onCancel={event => {event.preventDefault(); if (!busy) onClose();}}>
-    <div className="shop-dialog-head"><h2 id="shop-dialog-title">{title}</h2><Button tone="quiet" disabled={busy} onClick={onClose}>{t('common.close', 'Close')}</Button></div>
+  useEffect(() => {
+    const element = dialog.current;
+    if (element && !element.open) element.showModal();
+    return () => { element?.close(); };
+  }, []);
+  return <dialog ref={dialog} className={cx("shop-dialog", className)} aria-labelledby={titleId} onCancel={event => {event.preventDefault(); if (!busy) onClose();}}>
+    <div className="shop-dialog-head"><h2 id={titleId}>{title}</h2><Button tone="quiet" disabled={busy} onClick={onClose}>{t('common.close', 'Close')}</Button></div>
     <div className="shop-dialog-body">{children}</div>
   </dialog>;
 }

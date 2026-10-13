@@ -1,4 +1,6 @@
 "use client";
+
+import { useGstText as useUiText } from "./gst-ui";
 import { useState, useRef, type ReactNode } from "react";
 import {
   useQuery,
@@ -9,6 +11,7 @@ import { useShop } from "./context";
 import { Button, Card, Notice, Spinner, NoAccess } from "./ui";
 import { TextField, useGstText } from "./gst-ui";
 import { financialScope, assertScope } from "../../lib/shop/gst-storage";
+import { gstReviewRejection } from "../../lib/shop/gst-core/gst-review-rejection";
 import {
   currentReportMonth,
   reportPeriod,
@@ -17,6 +20,7 @@ export function useGstQuery<T>(
   key: unknown[],
   load: () => Promise<T>,
   allowed = true,
+  networkMode: 'online'|'always' = 'online',
 ) {
   const { shop, userId } = useShop();
   return useQuery({
@@ -29,6 +33,7 @@ export function useGstQuery<T>(
       return result;
     },
     retry: false,
+    networkMode,
   });
 }
 export function useGstPages<T>(
@@ -126,9 +131,9 @@ export function useGstAction() {
     notice: error ? (
       <Card>
         <Notice error={error} />
-        <Button href="/shop/settings/gst/recovery" tone="quiet">
+        {!gstReviewRejection('turnover',error) && !gstReviewRejection('period',error) ? <Button href="/shop/settings/gst/recovery" tone="quiet">
           {text("Keep any saved request and review recovery")}
-        </Button>
+        </Button> : null}
       </Card>
     ) : null,
   };
@@ -140,11 +145,12 @@ export function GstAccess({
   children: ReactNode;
   owner?: boolean;
 }) {
+  const uiText = useUiText();
   const { shop, perms, role } = useShop();
   if (!shop) return <Spinner />;
   if (owner ? role !== "OWNER" : !perms.canSeeReports)
     return (
-      <NoAccess what="Only authorized shop administrators can review these records." />
+      <NoAccess what={uiText("Only authorized shop administrators can review these records.")} />
     );
   return <>{children}</>;
 }
@@ -159,6 +165,7 @@ export function usePeriod(initial?: { from: string; through: string }) {
   }
   return {
     dates,
+    setDates,
     range,
     error,
     fields: (

@@ -128,3 +128,16 @@ await assert.rejects(() =>
 console.log(
   "GST contract tests passed: selling-price tax, buying discounts, fractional quantities, mixed rates, IST ranges and retained-document tampering.",
 );
+
+// Applied stock behavior can differ from intent, but only the exact saved request can confirm it.
+const {confirmedSaleReturnReceipt}=require(root+'/gst-core/sale-return-outcome.js');
+const returnId='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+const returnInput={requestId:returnId,items:[{saleItemId:returnId,quantity:1,restock:true}],refundMethod:'cash'};
+const digest=async value=>require('node:crypto').createHash('sha256').update(value).digest('hex');
+const requestHash=await digest(JSON.stringify({userId:'actor',items:[{saleItemId:returnId,quantity:1,restock:true,reason:null}],refundMethod:'cash',refundAmount:null,reason:null,settlement:null}));
+const returnRecord={id:returnId,shopId:'shop',saleId:'sale',createdBy:'actor',requestId:returnId,refundAmount:'0.00',createdAt:'2026-10-01T00:00:00Z',reason:null,items:[{saleItemId:returnId,quantity:1,restock:false,reason:null}],refundMethod:'cash',requestHash};
+const returnOutcome={status:'recorded',record:returnRecord,sale:{id:'sale',shopId:'shop',returns:[{...returnRecord,refundAmount:0,netAmount:null,taxAmount:null}]}};
+assert.equal((await confirmedSaleReturnReceipt(returnOutcome,'shop','actor','sale',returnInput,0,digest)).id,'sale');
+await assert.rejects(()=>confirmedSaleReturnReceipt(returnOutcome,'shop','actor','sale',{...returnInput,items:[{...returnInput.items[0],restock:false}]},0,digest),/outcome_unconfirmed/);
+await assert.rejects(()=>confirmedSaleReturnReceipt({...returnOutcome,record:{...returnRecord,requestHash:'0'.repeat(64)}},'shop','actor','sale',returnInput,0,digest),/outcome_unconfirmed/);
+console.log('Untracked return receipt accepts exact original intent and rejects changed intent or corrupt hashes.');

@@ -83,6 +83,7 @@
     "gst.state.24": "गुजरात",
     "gst.state.26": "दादरा एवं नगर हवेली और दमन एवं दीव",
     "gst.state.27": "महाराष्ट्र",
+    "gst.state.28": "आंध्र प्रदेश",
     "gst.state.29": "कर्नाटक",
     "gst.state.30": "गोवा",
     "gst.state.31": "लक्षद्वीप",
@@ -770,7 +771,7 @@
     "gst.error.invalid_invoice_allocation": "इनवॉइस रिज़र्वेशन अमान्य है। बिल बनाने से पहले कनेक्ट करें और नए नंबर रिज़र्व करें।",
     "gst.error.tax_version_unavailable": "बिल बनाने से पहले प्रोडक्ट की GST सेटिंग्स रिफ्रेश करें।",
     "gst.error.checkout_in_progress": "चेकआउट पहले से ही पूरा हो रहा है।",
-    "gst.margin_estimate": "मार्जिन रिकॉर्ड की गई खरीद लागत का उपयोग करता है; input-tax credits की गणना नहीं की जाती है।",
+    "gst.margin_estimate": "मार्जिन का अनुमान दर्ज खरीद लागत पर आधारित है। सहेजी गई इनपुट-टैक्स समीक्षाएँ अधिग्रहण लागत बदल सकती हैं।",
     "gst.bulk_title": "एक साथ प्रोडक्ट GST चेक करें",
     "gst.bulk_instructions": "केवल उन्हीं प्रोडक्ट्स को चुनें जिनकी HSN/SAC, वर्गीकरण और दर एक जैसी चेक की गई हो। यह भविष्य के इनवॉइस के लिए उनकी टैक्स सेटिंग्स को बदल देता है; जारी किए गए बिलों में उनकी मूल सेटिंग्स बरकरार रहती हैं।",
     "gst.bulk_apply": "जांची गई tax सेटिंग लागू करें",
@@ -1175,7 +1176,10 @@
     "bill.fiscal.invoice_cum_bill_of_supply": "इनवॉइस कम बिल ऑफ सप्लाई",
     "bill.fiscal.credit_note": "क्रेडिट नोट",
     "bill.fiscal.nil": "निल-रेटेड",
-    "bill.fiscal.exempt": "छूट प्राप्त"
+    "bill.fiscal.exempt": "छूट प्राप्त",
+    "gst.error.turnover_sequence_conflict": "किसी अन्य समीक्षा ने ये रिकॉर्ड बदल दिए हैं। दोबारा सहेजने से पहले रीफ़्रेश करें और नवीनतम विवरण की समीक्षा करें। अस्वीकृत अनुरोध संदर्भ के लिए सुरक्षित है.",
+    "gst.error.period_sequence_conflict": "किसी अन्य समीक्षा ने ये रिकॉर्ड बदल दिए हैं। दोबारा सहेजने से पहले रीफ़्रेश करें और नवीनतम विवरण की समीक्षा करें। अस्वीकृत अनुरोध संदर्भ के लिए सुरक्षित है.",
+    "gst.error.period_sources_changed_conflict": "किसी अन्य समीक्षा ने ये रिकॉर्ड बदल दिए हैं। दोबारा सहेजने से पहले रीफ़्रेश करें और नवीनतम विवरण की समीक्षा करें। अस्वीकृत अनुरोध संदर्भ के लिए सुरक्षित है."
   },
   "hinglish": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -1788,7 +1792,7 @@
     "gst.error.invalid_invoice_allocation": "Invoice reservation invalid hai. Billing se pehle connect karein aur naye number reserve karein.",
     "gst.error.tax_version_unavailable": "Billing se pehle product ki GST settings refresh karein.",
     "gst.error.checkout_in_progress": "Checkout pehle se hi complete ho raha hai.",
-    "gst.margin_estimate": "Margin recorded purchase cost ka use karta hai; input-tax credits calculate nahi hote.",
+    "gst.margin_estimate": "Margin estimate recorded purchase cost par based hai. Saved input-tax reviews acquisition cost badal sakte hain.",
     "gst.bulk_title": "Bulk mein product GST check karein",
     "gst.bulk_instructions": "Sirf unhi products ko select karein jinka HSN/SAC, classification aur rate same review kiya gaya ho. Yeh future invoices ke liye unki tax settings badal dega; nikale gaye bills mein original settings hi rahengi.",
     "gst.bulk_apply": "Review ki gayi tax settings apply karein",
@@ -2006,6 +2010,7 @@
     "gst.state.24": "Gujarat",
     "gst.state.26": "Dadra & Nagar Haveli and Daman & Diu",
     "gst.state.27": "Maharashtra",
+    "gst.state.28": "Andhra Pradesh",
     "gst.state.29": "Karnataka",
     "gst.state.30": "Goa",
     "gst.state.31": "Lakshadweep",
@@ -2353,7 +2358,10 @@
     "checkout.phone_optional": "Phone (optional)",
     "checkout.use_customer": "Is customer ka istemal karein",
     "checkout.customer_list_premium": "Save kiye gaye customers aur udhaar balance Premium ka hissa hain.",
-    "checkout.no_payment_due": "Bill poora ho gaya · koi payment baki nahi"
+    "checkout.no_payment_due": "Bill poora ho gaya · koi payment baki nahi",
+    "gst.error.turnover_sequence_conflict": "Kisi aur review ne ye records badal diye hain. Dobara save karne se pehle refresh karke latest details review karein. Rejected request reference ke liye rakhi gayi hai.",
+    "gst.error.period_sequence_conflict": "Kisi aur review ne ye records badal diye hain. Dobara save karne se pehle refresh karke latest details review karein. Rejected request reference ke liye rakhi gayi hai.",
+    "gst.error.period_sources_changed_conflict": "Kisi aur review ne ye records badal diye hain. Dobara save karne se pehle refresh karke latest details review karein. Rejected request reference ke liye rakhi gayi hai."
   },
   "ta": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -2450,6 +2458,7 @@
     "gst.state.24": "குஜராத்",
     "gst.state.26": "தாதா & நகர் ஹவேலி மற்றும் டாமன் & டையூ",
     "gst.state.27": "மகாராஷ்டிரா",
+    "gst.state.28": "ஆந்திரப் பிரதேசம்",
     "gst.state.29": "கர்நாடகா",
     "gst.state.30": "கோவா",
     "gst.state.31": "லட்சத்தீவு",
@@ -3209,7 +3218,7 @@
     "gst.error.invalid_invoice_allocation": "இன்வாய்ஸ் ரிசர்வேஷன் செல்லுபடியாகாது. பில்லிங் செய்வதற்கு முன் கனெக்ட் செய்து புதிய எண்களை ரிசர்வ் செய்யவும்.",
     "gst.error.tax_version_unavailable": "பில்லிங் செய்வதற்கு முன் பொருளின் GST செட்டிங்ஸை ரீஃப்ரெஷ் செய்யவும்.",
     "gst.error.checkout_in_progress": "செக்அவுட் ஏற்கனவே நடந்து கொண்டிருக்கிறது.",
-    "gst.margin_estimate": "மார்ஜின் என்பது பதிவு செய்யப்பட்ட கொள்முதல் விலையை பயன்படுத்துகிறது; இன்புட்-டாக்ஸ் கிரெடிட்கள் கணக்கிடப்படவில்லை.",
+    "gst.margin_estimate": "மார்ஜின் மதிப்பீடு பதிவு செய்யப்பட்ட கொள்முதல் செலவை அடிப்படையாகக் கொண்டது. சேமித்த உள்ளீட்டு வரி மதிப்பாய்வுகள் கொள்முதல் செலவை மாற்றலாம்.",
     "gst.bulk_title": "ஒரே நேரத்தில் பல பொருட்களின் GST-ஐ சரிபார்க்கவும்",
     "gst.bulk_instructions": "ஒரே மாதிரியான சரிபார்க்கப்பட்ட HSN/SAC, வகைப்பாடு மற்றும் ரேட் உள்ள பொருட்களை மட்டும் தேர்ந்தெடுக்கவும். இது எதிர்கால இன்வாய்ஸ்களுக்கான அவற்றின் வரி செட்டிங்ஸை மாற்றும்; வழங்கப்பட்ட பில்கள் அவற்றின் அசல் செட்டிங்ஸையே தக்கவைக்கும்.",
     "gst.bulk_selected": "தேர்ந்தெடுக்கப்பட்ட பொருட்கள்",
@@ -3531,7 +3540,10 @@
     "checkout.upi_ref_required": "தேவை",
     "checkout.zero_total": "ஒரு பில்லுக்குத் தொகை தேவை. ஒரு விலையை அமைக்கவும் அல்லது ₹0 வரிகளை நீக்கவும்.",
     "checkout.no_payment_due": "பில்லை முடிக்கவும் · கட்ட வேண்டிய பணம் இல்லை",
-    "bill.fiscal.nil": "ஜீரோ-ரேட்டட்"
+    "bill.fiscal.nil": "ஜீரோ-ரேட்டட்",
+    "gst.error.turnover_sequence_conflict": "மற்றொரு மதிப்பாய்வு இந்தப் பதிவுகளை மாற்றியுள்ளது. மீண்டும் சேமிக்கும் முன் புதுப்பித்து சமீபத்திய விவரங்களை மதிப்பாய்வு செய்யவும். நிராகரிக்கப்பட்ட கோரிக்கை குறிப்புக்காக வைத்துள்ளது.",
+    "gst.error.period_sequence_conflict": "மற்றொரு மதிப்பாய்வு இந்தப் பதிவுகளை மாற்றியுள்ளது. மீண்டும் சேமிக்கும் முன் புதுப்பித்து சமீபத்திய விவரங்களை மதிப்பாய்வு செய்யவும். நிராகரிக்கப்பட்ட கோரிக்கை குறிப்புக்காக வைத்துள்ளது.",
+    "gst.error.period_sources_changed_conflict": "மற்றொரு மதிப்பாய்வு இந்தப் பதிவுகளை மாற்றியுள்ளது. மீண்டும் சேமிக்கும் முன் புதுப்பித்து சமீபத்திய விவரங்களை மதிப்பாய்வு செய்யவும். நிராகரிக்கப்பட்ட கோரிக்கை குறிப்புக்காக வைத்துள்ளது."
   },
   "te": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -3628,6 +3640,7 @@
     "gst.state.24": "గుజరాత్",
     "gst.state.26": "దాద్రా & నగర్ హవేలీ మరియు డామన్ & డయ్యూ",
     "gst.state.27": "మహారాష్ట్ర",
+    "gst.state.28": "ఆంధ్రప్రదేశ్",
     "gst.state.29": "కర్ణాటక",
     "gst.state.30": "గోవా",
     "gst.state.31": "లక్షద్వీప్",
@@ -4386,7 +4399,7 @@
     "gst.error.invalid_invoice_allocation": "ఇన్వాయిస్ రిజర్వేషన్ చెల్లదు. బిల్లింగ్ చేసే ముందు కనెక్ట్ చేసి కొత్త నంబర్లను రిజర్వ్ చేయండి.",
     "gst.error.tax_version_unavailable": "బిల్లింగ్ చేసే ముందు ఉత్పత్తి యొక్క GST సెట్టింగ్‌లను రిఫ్రెష్ చేయండి.",
     "gst.error.checkout_in_progress": "చెక్అవుట్ ఇప్పటికే జరుగుతోంది.",
-    "gst.margin_estimate": "మార్జిన్ రికార్డ్ చేసిన కొనుగోలు ఖర్చును ఉపయోగిస్తుంది; ఇన్‌పుట్-టాక్స్ క్రెడిట్‌లు లెక్కించబడవు.",
+    "gst.margin_estimate": "మార్జిన్ అంచనా నమోదు చేసిన కొనుగోలు ఖర్చుపై ఆధారపడి ఉంటుంది. సేవ్ చేసిన ఇన్‌పుట్ పన్ను సమీక్షలు కొనుగోలు ఖర్చులను మార్చవచ్చు.",
     "gst.bulk_title": "బల్క్‌లో ఉత్పత్తి GSTని సమీక్షించండి",
     "gst.bulk_instructions": "ఒకే సమీక్షించిన HSN/SAC, వర్గీకరణ మరియు రేటు ఉన్న ఉత్పత్తులను మాత్రమే ఎంచుకోండి. ఇది భవిష్యత్తు ఇన్వాయిస్‌ల కోసం వాటి పన్ను సెట్టింగ్‌లను భర్తీ చేస్తుంది; జారీ చేయబడిన బిల్లులు వాటి అసలు సెట్టింగ్‌లను అలాగే ఉంచుతాయి.",
     "gst.bulk_selected": "ఉత్పత్తులు ఎంపిక చేయబడ్డాయి",
@@ -4709,7 +4722,10 @@
     "bill.fiscal.invoice_cum_bill_of_supply": "ఇన్వాయిస్ కమ్ బిల్ ఆఫ్ సప్లై",
     "bill.fiscal.credit_note": "క్రెడిట్ నోట్",
     "bill.fiscal.nil": "నిల్-రేటెడ్",
-    "bill.fiscal.exempt": "ఎగ్జెంప్ట్"
+    "bill.fiscal.exempt": "ఎగ్జెంప్ట్",
+    "gst.error.turnover_sequence_conflict": "మరో సమీక్ష ఈ రికార్డులను మార్చింది. మళ్లీ సేవ్ చేసే ముందు రిఫ్రెష్ చేసి తాజా వివరాలను సమీక్షించండి. తిరస్కరించిన అభ్యర్థన సూచన కోసం భద్రపరచబడింది.",
+    "gst.error.period_sequence_conflict": "మరో సమీక్ష ఈ రికార్డులను మార్చింది. మళ్లీ సేవ్ చేసే ముందు రిఫ్రెష్ చేసి తాజా వివరాలను సమీక్షించండి. తిరస్కరించిన అభ్యర్థన సూచన కోసం భద్రపరచబడింది.",
+    "gst.error.period_sources_changed_conflict": "మరో సమీక్ష ఈ రికార్డులను మార్చింది. మళ్లీ సేవ్ చేసే ముందు రిఫ్రెష్ చేసి తాజా వివరాలను సమీక్షించండి. తిరస్కరించిన అభ్యర్థన సూచన కోసం భద్రపరచబడింది."
   },
   "bn": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -4806,6 +4822,7 @@
     "gst.state.24": "গুজরাট",
     "gst.state.26": "দাদরা ও নগর হাভেলি এবং দমন ও দিউ",
     "gst.state.27": "মহারাষ্ট্র",
+    "gst.state.28": "অন্ধ্রপ্রদেশ",
     "gst.state.29": "কর্ণাটক",
     "gst.state.30": "গোয়া",
     "gst.state.31": "লক্ষদ্বীপ",
@@ -5555,7 +5572,7 @@
     "gst.error.invalid_invoice_allocation": "ইনভয়েস রিজার্ভেশন অবৈধ। বিল করার আগে কানেক্ট করুন এবং নতুন নম্বর রিজার্ভ করুন।",
     "gst.error.tax_version_unavailable": "বিল করার আগে পণ্যের GST সেটিংস রিফ্রেশ করুন।",
     "gst.error.checkout_in_progress": "চেকআউট ইতিমধ্যেই সম্পন্ন হচ্ছে।",
-    "gst.margin_estimate": "মার্জিন রেকর্ড করা ক্রয় খরচ ব্যবহার করে; ইনপুট-ট্যাক্স ক্রেডিট গণনা করা হয় না।",
+    "gst.margin_estimate": "মার্জিনের অনুমান রেকর্ড করা ক্রয় খরচের উপর নির্ভর করে। সংরক্ষিত ইনপুট-ট্যাক্স পর্যালোচনা অধিগ্রহণের খরচ বদলাতে পারে।",
     "gst.bulk_title": "একসাথে পণ্যের GST পর্যালোচনা করুন",
     "gst.bulk_instructions": "শুধুমাত্র একই পর্যালোচনা করা HSN/SAC, শ্রেণিবিন্যাস এবং হার সহ পণ্য নির্বাচন করুন। এটি ভবিষ্যতের ইনভয়েসের জন্য তাদের ট্যাক্স সেটিংস প্রতিস্থাপন করে; ইস্যু করা বিলগুলি তাদের মূল সেটিংস ধরে রাখে।",
     "gst.bulk_selected": "পণ্য নির্বাচিত হয়েছে",
@@ -5887,7 +5904,10 @@
     "checkout.resolve_setup": "বিলিং সেটআপ ঠিক করুন",
     "checkout.upi_ref_required": "প্রয়োজনীয়",
     "checkout.zero_total": "একটি বিলে পরিমাণ থাকতে হবে। একটি দাম সেট করুন অথবা ₹0 লাইনগুলো মুছে ফেলুন।",
-    "checkout.no_payment_due": "বিল সম্পন্ন · কোনো পেমেন্ট বকেয়া নেই"
+    "checkout.no_payment_due": "বিল সম্পন্ন · কোনো পেমেন্ট বকেয়া নেই",
+    "gst.error.turnover_sequence_conflict": "অন্য একটি পর্যালোচনায় এই রেকর্ডগুলো বদলেছে। আবার সেভ করার আগে রিফ্রেশ করে সর্বশেষ বিবরণ যাচাই করুন। প্রত্যাখ্যাত অনুরোধটি তথ্যসূত্র হিসেবে রাখা হয়েছে।",
+    "gst.error.period_sequence_conflict": "অন্য একটি পর্যালোচনায় এই রেকর্ডগুলো বদলেছে। আবার সেভ করার আগে রিফ্রেশ করে সর্বশেষ বিবরণ যাচাই করুন। প্রত্যাখ্যাত অনুরোধটি তথ্যসূত্র হিসেবে রাখা হয়েছে।",
+    "gst.error.period_sources_changed_conflict": "অন্য একটি পর্যালোচনায় এই রেকর্ডগুলো বদলেছে। আবার সেভ করার আগে রিফ্রেশ করে সর্বশেষ বিবরণ যাচাই করুন। প্রত্যাখ্যাত অনুরোধটি তথ্যসূত্র হিসেবে রাখা হয়েছে।"
   },
   "mr": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -5984,6 +6004,7 @@
     "gst.state.24": "गुजरात",
     "gst.state.26": "दादरा आणि नगर हवेली आणि दमण आणि दीव",
     "gst.state.27": "महाराष्ट्र",
+    "gst.state.28": "आंध्र प्रदेश",
     "gst.state.29": "कर्नाटक",
     "gst.state.30": "गोवा",
     "gst.state.31": "लक्षद्वीप",
@@ -6744,7 +6765,7 @@
     "gst.error.invalid_invoice_allocation": "इन्व्हॉइस आरक्षण अवैध आहे. बिल करण्यापूर्वी कनेक्ट करा आणि नवीन क्रमांक राखून ठेवा.",
     "gst.error.tax_version_unavailable": "बिल करण्यापूर्वी उत्पादनाच्या GST सेटिंग्ज रिफ्रेश करा.",
     "gst.error.checkout_in_progress": "चेकआउट आधीच पूर्ण होत आहे.",
-    "gst.margin_estimate": "मार्जिन नोंदवलेल्या खरेदी खर्चाचा वापर करते; इनपुट-टॅक्स क्रेडिट्सची गणना केली जात नाही.",
+    "gst.margin_estimate": "मार्जिनचा अंदाज नोंदवलेल्या खरेदी खर्चावर आधारित आहे. जतन केलेल्या इनपुट-कर पुनरावलोकनांमुळे अधिग्रहण खर्च बदलू शकतो.",
     "gst.bulk_title": "बल्क मध्ये उत्पादनाचे GST तपासा",
     "gst.bulk_instructions": "फक्त समान तपासलेले HSN/SAC, वर्गीकरण आणि दर असलेली उत्पादने निवडा. हे भविष्यातील इन्व्हॉइससाठी त्यांच्या टॅक्स सेटिंग्जची जागा घेते; जारी केलेल्या बिलांमध्ये त्यांच्या मूळ सेटिंग्ज राहतात.",
     "gst.bulk_selected": "उत्पादने निवडली",
@@ -7065,7 +7086,10 @@
     "checkout.resolve_setup": "बिलिंग सेटअप सोडवा",
     "checkout.upi_ref_required": "आवश्यक",
     "checkout.zero_total": "बिलासाठी रक्कम आवश्यक आहे. किंमत सेट करा किंवा ₹0 ओळी काढून टाका.",
-    "checkout.no_payment_due": "बिल पूर्ण करा · कोणतीही देय रक्कम नाही"
+    "checkout.no_payment_due": "बिल पूर्ण करा · कोणतीही देय रक्कम नाही",
+    "gst.error.turnover_sequence_conflict": "दुसऱ्या पुनरावलोकनामुळे या नोंदी बदलल्या आहेत. पुन्हा जतन करण्यापूर्वी रिफ्रेश करून नवीनतम तपशील तपासा. नाकारलेली विनंती संदर्भासाठी ठेवली आहे.",
+    "gst.error.period_sequence_conflict": "दुसऱ्या पुनरावलोकनामुळे या नोंदी बदलल्या आहेत. पुन्हा जतन करण्यापूर्वी रिफ्रेश करून नवीनतम तपशील तपासा. नाकारलेली विनंती संदर्भासाठी ठेवली आहे.",
+    "gst.error.period_sources_changed_conflict": "दुसऱ्या पुनरावलोकनामुळे या नोंदी बदलल्या आहेत. पुन्हा जतन करण्यापूर्वी रिफ्रेश करून नवीनतम तपशील तपासा. नाकारलेली विनंती संदर्भासाठी ठेवली आहे."
   },
   "kn": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -7162,6 +7186,7 @@
     "gst.state.24": "ಗುಜರಾತ್",
     "gst.state.26": "ದಾದ್ರಾ ಮತ್ತು ನಗರ್ ಹವೇಲಿ ಮತ್ತು ದಮನ್ ಮತ್ತು ದಿಯು",
     "gst.state.27": "ಮಹಾರಾಷ್ಟ್ರ",
+    "gst.state.28": "ಆಂಧ್ರಪ್ರದೇಶ",
     "gst.state.29": "ಕರ್ನಾಟಕ",
     "gst.state.30": "ಗೋವಾ",
     "gst.state.31": "ಲಕ್ಷದ್ವೀಪ",
@@ -7921,7 +7946,7 @@
     "gst.error.invalid_invoice_allocation": "ಇನ್‌ವಾಯ್ಸ್ ಕಾಯ್ದಿರಿಸುವಿಕೆ ಅಮಾನ್ಯವಾಗಿದೆ. ಬಿಲ್ಲಿಂಗ್ ಮಾಡುವ ಮೊದಲು ಸಂಪರ್ಕಿಸಿ ಮತ್ತು ಹೊಸ ಸಂಖ್ಯೆಗಳನ್ನು ಕಾಯ್ದಿರಿಸಿ.",
     "gst.error.tax_version_unavailable": "ಬಿಲ್ಲಿಂಗ್ ಮಾಡುವ ಮೊದಲು ಉತ್ಪನ್ನದ GST ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
     "gst.error.checkout_in_progress": "ಚೆಕ್‌ಔಟ್ ಈಗಾಗಲೇ ನಡೆಯುತ್ತಿದೆ.",
-    "gst.margin_estimate": "ಮಾರ್ಜಿನ್ ದಾಖಲಾದ ಖರೀದಿ ವೆಚ್ಚವನ್ನು ಬಳಸುತ್ತದೆ; ಇನ್‌ಪುಟ್-ತೆರಿಗೆ ಕ್ರೆಡಿಟ್‌ಗಳನ್ನು ಲೆಕ್ಕಹಾಕಲಾಗುವುದಿಲ್ಲ.",
+    "gst.margin_estimate": "ಮಾರ್ಜಿನ್ ಅಂದಾಜು ದಾಖಲಾದ ಖರೀದಿ ವೆಚ್ಚವನ್ನು ಆಧರಿಸಿದೆ. ಉಳಿಸಿದ ಇನ್‌ಪುಟ್ ತೆರಿಗೆ ಪರಿಶೀಲನೆಗಳು ಖರೀದಿ ವೆಚ್ಚವನ್ನು ಬದಲಾಯಿಸಬಹುದು.",
     "gst.bulk_title": "ಒಟ್ಟಾರೆಯಾಗಿ ಉತ್ಪನ್ನದ GST ಪರಿಶೀಲಿಸಿ",
     "gst.bulk_instructions": "ಒಂದೇ ಪರಿಶೀಲಿಸಿದ HSN/SAC, ವರ್ಗೀಕರಣ ಮತ್ತು ದರವನ್ನು ಹೊಂದಿರುವ ಉತ್ಪನ್ನಗಳನ್ನು ಮಾತ್ರ ಆಯ್ಕೆಮಾಡಿ. ಇದು ಭವಿಷ್ಯದ ಇನ್‌ವಾಯ್ಸ್‌ಗಳಿಗಾಗಿ ಅವುಗಳ ತೆರಿಗೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತದೆ; ನೀಡಲಾದ ಬಿಲ್‌ಗಳು ಅವುಗಳ ಮೂಲ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತವೆ.",
     "gst.bulk_selected": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ",
@@ -8243,7 +8268,10 @@
     "checkout.resolve_setup": "ಬಿಲ್ಲಿಂಗ್ ಸೆಟಪ್ ಸರಿಪಡಿಸಿ",
     "checkout.upi_ref_required": "ಅಗತ್ಯವಿದೆ",
     "checkout.zero_total": "ಬಿಲ್‌ಗೆ ಮೊತ್ತ ಬೇಕಾಗುತ್ತದೆ. ಬೆಲೆ ನಿಗದಿಪಡಿಸಿ ಅಥವಾ ₹0 ಸಾಲುಗಳನ್ನು ತೆಗೆದುಹಾಕಿ.",
-    "checkout.no_payment_due": "ಬಿಲ್ ಪೂರ್ಣಗೊಳಿಸಿ · ಪಾವತಿಸಲು ಬಾಕಿ ಇಲ್ಲ"
+    "checkout.no_payment_due": "ಬಿಲ್ ಪೂರ್ಣಗೊಳಿಸಿ · ಪಾವತಿಸಲು ಬಾಕಿ ಇಲ್ಲ",
+    "gst.error.turnover_sequence_conflict": "ಮತ್ತೊಂದು ಪರಿಶೀಲನೆಯು ಈ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸಿದೆ. ಮತ್ತೆ ಉಳಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಇತ್ತೀಚಿನ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ತಿರಸ್ಕರಿಸಿದ ವಿನಂತಿಯನ್ನು ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಉಳಿಸಲಾಗಿದೆ.",
+    "gst.error.period_sequence_conflict": "ಮತ್ತೊಂದು ಪರಿಶೀಲನೆಯು ಈ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸಿದೆ. ಮತ್ತೆ ಉಳಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಇತ್ತೀಚಿನ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ತಿರಸ್ಕರಿಸಿದ ವಿನಂತಿಯನ್ನು ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಉಳಿಸಲಾಗಿದೆ.",
+    "gst.error.period_sources_changed_conflict": "ಮತ್ತೊಂದು ಪರಿಶೀಲನೆಯು ಈ ದಾಖಲೆಗಳನ್ನು ಬದಲಾಯಿಸಿದೆ. ಮತ್ತೆ ಉಳಿಸುವ ಮೊದಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ ಇತ್ತೀಚಿನ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ. ತಿರಸ್ಕರಿಸಿದ ವಿನಂತಿಯನ್ನು ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಉಳಿಸಲಾಗಿದೆ."
   },
   "gu": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -8340,6 +8368,7 @@
     "gst.state.24": "ગુજરાત",
     "gst.state.26": "દાદરા અને નગર હવેલી અને દમણ અને દીવ",
     "gst.state.27": "મહારાષ્ટ્ર",
+    "gst.state.28": "આંધ્રપ્રદેશ",
     "gst.state.29": "કર્ણાટક",
     "gst.state.30": "ગોવા",
     "gst.state.31": "લક્ષદ્વીપ",
@@ -9099,7 +9128,7 @@
     "gst.error.invalid_invoice_allocation": "ઇન્વોઇસ રિઝર્વેશન અમાન્ય છે. બિલિંગ કરતા પહેલા કનેક્ટ કરો અને નવા નંબર રિઝર્વ કરો.",
     "gst.error.tax_version_unavailable": "બિલિંગ કરતા પહેલા પ્રોડક્ટના GST સેટિંગ્સ રિફ્રેશ કરો.",
     "gst.error.checkout_in_progress": "ચેકઆઉટ પહેલેથી જ ચાલી રહ્યું છે.",
-    "gst.margin_estimate": "માર્જિન નોંધાયેલ ખરીદી કિંમતનો ઉપયોગ કરે છે; ઇનપુટ-ટેક્સ ક્રેડિટની ગણતરી કરવામાં આવતી નથી.",
+    "gst.margin_estimate": "માર્જિનનો અંદાજ નોંધાયેલ ખરીદી ખર્ચ પર આધારિત છે. સાચવેલી ઇનપુટ-ટેક્સ સમીક્ષાઓથી સંપાદન ખર્ચ બદલાઈ શકે છે.",
     "gst.bulk_title": "બલ્કમાં પ્રોડક્ટ GST તપાસો",
     "gst.bulk_instructions": "ફક્ત સમાન ચકાસાયેલ HSN/SAC, વર્ગીકરણ અને દરવાળી પ્રોડક્ટ્સ પસંદ કરો. આ ભવિષ્યના ઇન્વોઇસ માટે તેમની ટેક્સ સેટિંગ્સ બદલી નાખે છે; જારી કરેલા બિલ તેમની મૂળ સેટિંગ્સ જાળવી રાખે છે.",
     "gst.bulk_selected": "પ્રોડક્ટ્સ પસંદ કરેલ છે",
@@ -9421,7 +9450,10 @@
     "checkout.resolve_setup": "બિલિંગ સેટઅપ ઉકેલો",
     "checkout.upi_ref_required": "જરૂરી છે",
     "checkout.zero_total": "બિલ માટે રકમ જરૂરી છે. કિંમત સેટ કરો અથવા ₹0 લાઈનો કાઢી નાખો.",
-    "checkout.no_payment_due": "બિલ પૂર્ણ કરો · કોઈ ચુકવણી બાકી નથી"
+    "checkout.no_payment_due": "બિલ પૂર્ણ કરો · કોઈ ચુકવણી બાકી નથી",
+    "gst.error.turnover_sequence_conflict": "બીજી સમીક્ષાએ આ રેકોર્ડ બદલ્યા છે. ફરી સાચવતાં પહેલાં રિફ્રેશ કરીને નવીનતમ વિગતો તપાસો. નકારેલી વિનંતી સંદર્ભ માટે રાખવામાં આવી છે.",
+    "gst.error.period_sequence_conflict": "બીજી સમીક્ષાએ આ રેકોર્ડ બદલ્યા છે. ફરી સાચવતાં પહેલાં રિફ્રેશ કરીને નવીનતમ વિગતો તપાસો. નકારેલી વિનંતી સંદર્ભ માટે રાખવામાં આવી છે.",
+    "gst.error.period_sources_changed_conflict": "બીજી સમીક્ષાએ આ રેકોર્ડ બદલ્યા છે. ફરી સાચવતાં પહેલાં રિફ્રેશ કરીને નવીનતમ વિગતો તપાસો. નકારેલી વિનંતી સંદર્ભ માટે રાખવામાં આવી છે."
   },
   "ml": {
     "gst.ui.cgst_20b88e": "CGST",
@@ -9518,6 +9550,7 @@
     "gst.state.24": "ഗുജറാത്ത്",
     "gst.state.26": "ദാദ്ര & നഗർ ഹവേലി ആൻഡ് ദാമൻ & ദിയു",
     "gst.state.27": "മഹാരാഷ്ട്ര",
+    "gst.state.28": "ആന്ധ്രാപ്രദേശ്",
     "gst.state.29": "കർണാടക",
     "gst.state.30": "ഗോവ",
     "gst.state.31": "ലക്ഷദ്വീപ്",
@@ -10278,7 +10311,7 @@
     "gst.error.invalid_invoice_allocation": "ഇൻവോയ്സ് റിസർവേഷൻ അസാധുവാണ്. ബില്ലിംഗ് ചെയ്യുന്നതിന് മുമ്പ് കണക്റ്റ് ചെയ്ത് പുതിയ നമ്പറുകൾ റിസർവ് ചെയ്യുക.",
     "gst.error.tax_version_unavailable": "ബില്ലിംഗ് ചെയ്യുന്നതിന് മുമ്പ് ഉൽപ്പന്നത്തിന്റെ GST ക്രമീകരണങ്ങൾ പുതുക്കുക.",
     "gst.error.checkout_in_progress": "ചെക്ക്ഔട്ട് ഇതിനകം പൂർത്തിയായിക്കൊണ്ടിരിക്കുകയാണ്.",
-    "gst.margin_estimate": "മാർജിൻ രേഖപ്പെടുത്തിയ വാങ്ങൽ വില ഉപയോഗിക്കുന്നു; ഇൻപുട്ട്-ടാക്സ് ക്രെഡിറ്റുകൾ കണക്കാക്കുന്നില്ല.",
+    "gst.margin_estimate": "മാർജിൻ കണക്ക് രേഖപ്പെടുത്തിയ വാങ്ങൽ ചെലവിനെ അടിസ്ഥാനമാക്കുന്നു. സേവ് ചെയ്ത ഇൻപുട്ട് നികുതി അവലോകനങ്ങൾ വാങ്ങൽ ചെലവ് മാറ്റാം.",
     "gst.bulk_title": "ഒറ്റയടിക്ക് ഉൽപ്പന്നത്തിന്റെ GST പരിശോധിക്കുക",
     "gst.bulk_instructions": "ഒരേ പരിശോധിച്ച HSN/SAC, വർഗ്ഗീകരണം, നിരക്ക് എന്നിവയുള്ള ഉൽപ്പന്നങ്ങൾ മാത്രം തിരഞ്ഞെടുക്കുക. ഇത് ഭാവിയിലെ ഇൻവോയ്സുകൾക്കായുള്ള അവയുടെ നികുതി ക്രമീകരണങ്ങൾക്ക് പകരം വയ്ക്കുന്നു; നൽകിയിട്ടുള്ള ബില്ലുകൾ അവയുടെ യഥാർത്ഥ ക്രമീകരണങ്ങൾ നിലനിർത്തുന്നു.",
     "gst.bulk_selected": "തിരഞ്ഞെടുത്ത ഉൽപ്പന്നങ്ങൾ",
@@ -10599,6 +10632,9 @@
     "bill.fiscal.bill_of_supply": "വിതരണ ബിൽ",
     "bill.fiscal.invoice_cum_bill_of_supply": "ഇൻവോയ്സും വിതരണ ബില്ലും",
     "bill.fiscal.credit_note": "ക്രെഡിറ്റ് നോട്ട്",
-    "bill.fiscal.nil": "പൂജ്യം നിരക്ക്"
+    "bill.fiscal.nil": "പൂജ്യം നിരക്ക്",
+    "gst.error.turnover_sequence_conflict": "മറ്റൊരു പരിശോധന ഈ രേഖകൾ മാറ്റിയിട്ടുണ്ട്. വീണ്ടും സംരക്ഷിക്കുന്നതിന് മുമ്പ് പുതുക്കി ഏറ്റവും പുതിയ വിവരങ്ങൾ പരിശോധിക്കുക. നിരസിച്ച അഭ്യർത്ഥന റഫറൻസിനായി സൂക്ഷിച്ചിട്ടുണ്ട്.",
+    "gst.error.period_sequence_conflict": "മറ്റൊരു പരിശോധന ഈ രേഖകൾ മാറ്റിയിട്ടുണ്ട്. വീണ്ടും സംരക്ഷിക്കുന്നതിന് മുമ്പ് പുതുക്കി ഏറ്റവും പുതിയ വിവരങ്ങൾ പരിശോധിക്കുക. നിരസിച്ച അഭ്യർത്ഥന റഫറൻസിനായി സൂക്ഷിച്ചിട്ടുണ്ട്.",
+    "gst.error.period_sources_changed_conflict": "മറ്റൊരു പരിശോധന ഈ രേഖകൾ മാറ്റിയിട്ടുണ്ട്. വീണ്ടും സംരക്ഷിക്കുന്നതിന് മുമ്പ് പുതുക്കി ഏറ്റവും പുതിയ വിവരങ്ങൾ പരിശോധിക്കുക. നിരസിച്ച അഭ്യർത്ഥന റഫറൻസിനായി സൂക്ഷിച്ചിട്ടുണ്ട്."
   }
 }

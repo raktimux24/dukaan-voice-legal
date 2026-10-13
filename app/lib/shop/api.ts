@@ -1,8 +1,16 @@
+import {accountedSales,projectLocalStock,type BillingCatalog} from './local-stock';
+import {retainedRequests} from './gst-storage';
+import type { VoiceProcessResponse, VoiceConfirmRequest, VoiceConfirmResponse } from './voice-types';
+import { collectPages } from './pagination';
+import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-tax-cache';
+import {createOfflineEvidence,type EvidenceScope} from './offline-evidence';
+import {retainEntitlement} from './offline-premium';
 import { bindGstApi } from './gst-api';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
 import { parseRole } from './permissions';
 import type {
+  SpokenAnswer,
   AuditLogEntry,
   BriefResponse,
   BuyListItem,
@@ -18,6 +26,10 @@ import type {
   Product,
   Sale,
   SaleListRow,
+  SaleReturnListRow,
+  ReturnsListSummary,
+  ProductTaxAuthorization,
+  ProductTaxAuthorizationEntry,
   SalesReport,
   SalesSummary,
   ShopRecord,
@@ -102,9 +114,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? '';
 
-export async function apiSend<T>(path: string, getToken: TokenGetter, init?: RequestInit, attempt = 0, metadata?:{id?:string;hash?:string}): Promise<T> {
+export async function apiSend<T>(path: string, getToken: TokenGetter, init?: RequestInit, attempt = 0, metadata?:{id?:string;hash?:string}, assertCurrent:()=>void=()=>{}): Promise<T> {
   if (!apiBaseUrl) throw new ApiError('NEXT_PUBLIC_API_BASE_URL is not configured.', 0, 'missing_api');
+  assertCurrent();
   const token = await getToken(attempt > 0 ? { skipCache: true } : undefined);
+  assertCurrent();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     signal: AbortSignal.timeout(60_000),
@@ -114,12 +128,14 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
       'X-Samaan-GST-Protocol': '2',
       ...init?.headers,
     },
-  });
+  }).catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
 
-  if (response.status === 401 && attempt === 0) return apiSend<T>(path, getToken, init, 1,metadata);
+  if (response.status === 401 && attempt === 0) return apiSend<T>(path, getToken, init, 1,metadata,assertCurrent);
 
   if (!response.ok) {
     const text = await response.text().catch(() => '');
+    assertCurrent();
     let code = '';
     let feature: string | undefined;
     let message = '';
@@ -139,22 +155,27 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
     throw error;
   }
 
-  if(metadata){metadata.id=response.headers.get('X-GST-Export-ID')??undefined;metadata.hash=response.headers.get('X-GST-Export-SHA256')??undefined;}
   if (response.status === 204) return undefined as T;
   const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('text/csv') || contentType.includes('text/plain')) return (await response.text()) as T;
-  return response.json() as Promise<T>;
+  const value = await (contentType.includes('text/csv') || contentType.includes('text/plain') ? response.text() : response.json()).catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
+  if(metadata){metadata.id=response.headers.get('X-GST-Export-ID')??undefined;metadata.hash=response.headers.get('X-GST-Export-SHA256')??undefined;}
+  return value as T;
 }
 
-export async function apiText(path: string, getToken: TokenGetter): Promise<string> {
+export async function apiText(path: string, getToken: TokenGetter, assertCurrent:()=>void=()=>{}): Promise<string> {
   if (!apiBaseUrl) throw new ApiError('NEXT_PUBLIC_API_BASE_URL is not configured.', 0, 'missing_api');
+  assertCurrent();
   const token = await getToken();
+  assertCurrent();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     signal: AbortSignal.timeout(60_000),
     headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+  }).catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
   if (!response.ok) {
     const text = await response.text().catch(() => '');
+    assertCurrent();
     let code = '';
     let feature: string | undefined;
     try {
@@ -166,7 +187,9 @@ export async function apiText(path: string, getToken: TokenGetter): Promise<stri
     }
     throw new ApiError(ERROR_MESSAGES[code] ?? (code || `Request failed with status ${response.status}`), response.status, code, feature);
   }
-  return response.text();
+  const text = await response.text().catch(error=>{assertCurrent();throw error;});
+  assertCurrent();
+  return text;
 }
 
 type ServerInventoryItem = {
@@ -254,11 +277,36 @@ function queryString(params: Record<string, string | number | boolean | undefine
   return text ? `?${text}` : '';
 }
 
-export function bindApi(getToken: TokenGetter) {
-  const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init);
+export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
+  const assertCurrent=()=>{
+    if(evidenceScope?.isSessionCurrent&&!evidenceScope.isSessionCurrent())throw new ApiError('Your sign-in changed. Refresh before trying again.',409,'auth_session_changed');
+  };
+  const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init,0,undefined,assertCurrent);
+  const evidence=evidenceScope?createOfflineEvidence(evidenceScope):null;
+  const readCatalog=async(shopId:string,hideCost:boolean)=>collectPages(async offset=>{
+    const page=await send<{items:ServerInventoryItem[];hasMore:boolean}>(`/api/shops/${shopId}/inventory${queryString({limit:100,offset})}`);
+    return {rows:(page.items??[]).map(item=>mapItem(item,hideCost)),hasMore:page.hasMore};
+  });
+  const validCatalog=(shopId:string)=>(value:unknown):value is InventoryItem[]=>Array.isArray(value)&&new Set(value.map(row=>row?.productId)).size===value.length&&value.every(row=>row&&row.shopId===shopId&&row.product?.shopId===shopId&&row.productId===row.product.id&&typeof row.id==='string'&&typeof row.product.name==='string'&&Number.isFinite(row.quantity)&&row.quantity>=0&&row.unit===row.product.unit);
+  const readTax=async(shopId:string,productIds:string[],completeCatalog=false)=>{
+    const load=()=>send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:'POST',body:JSON.stringify({productIds})});
+    const validate=(value:unknown):value is CatalogTaxSnapshot=>{try{attachCatalogTaxSnapshot(productIds.map(id=>({product:{id}})),value as CatalogTaxSnapshot,shopId);return true;}catch{return false;}};
+    if(!evidence)return load();
+    if(completeCatalog)return evidence.read(shopId,'tax-catalog',load,validate);
+    try{return await evidence.read(shopId,`tax:${[...productIds].sort().join(',')}`,load,validate);}
+    catch(error){
+      const validateCatalog=(value:unknown):value is CatalogTaxSnapshot=>{try{const snapshot=value as CatalogTaxSnapshot;attachCatalogTaxSnapshot(snapshot.products.map(row=>({product:{id:row.productId}})),snapshot,shopId);return true;}catch{return false;}};
+      const snapshot=await evidence.read(shopId,'tax-catalog',()=>Promise.reject(error),validateCatalog);
+      const requested=new Set(productIds);
+      const subset={...snapshot,products:snapshot.products.filter(row=>requested.has(row.productId))};
+      if(!validate(subset))throw error;
+      return subset;
+    }
+  };
 
   return {
-    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};}),
+    assertSession: assertCurrent,
+    gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata,assertCurrent);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
@@ -291,22 +339,31 @@ export function bindApi(getToken: TokenGetter) {
       );
       return { items: (res.items ?? []).map((item) => mapItem(item, hideCost)), total: res.total, hasMore: res.hasMore };
     },
-    getAllInventory: async (shopId: string, hideCost = false) => {
-      const all: InventoryItem[] = [];
-      let offset = 0;
-      let hasMore = true;
-      let guard = 0;
-      while (hasMore && guard < 50) {
-        const page = await send<{ items: ServerInventoryItem[]; total: number; hasMore: boolean }>(
-          `/api/shops/${shopId}/inventory${queryString({ limit: 100, offset })}`,
-        );
-        all.push(...(page.items ?? []).map((item) => mapItem(item, hideCost)));
-        hasMore = page.hasMore;
-        offset += 100;
-        guard += 1;
-      }
+    getAllInventory: async (shopId: string, hideCost = false, coherentTax = false, requireJournal = false) => {
+      // Retained billing catalogs exclude purchase costs, even when the online owner view includes them.
+      let all:InventoryItem[];
+      if(evidence&&evidenceScope){
+        const scope={actorId:evidenceScope.actorId,shopId};let online=false;
+        const load=async():Promise<BillingCatalog>=>{
+          let accountedRequestIds:string[]=[];
+          try{accountedRequestIds=accountedSales(await retainedRequests(scope),scope);}catch(error){if(requireJournal)throw error;/* Storage refusal must not break a connected catalog read. */}
+          const items=await readCatalog(shopId,hideCost);online=true;
+          return {format:'billing_catalog_v2',items,accountedRequestIds};
+        };
+        const validate=(value:unknown):value is BillingCatalog=>{
+          const row=value as BillingCatalog;
+          return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
+        };
+        const snapshot=await evidence.read(shopId,'catalog-v2',load,validate,row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
+        let rows:Awaited<ReturnType<typeof retainedRequests>>;
+        try{rows=await retainedRequests(scope);}catch(error){if(!online||requireJournal)throw error;rows=[];}
+        all=await projectLocalStock(snapshot,rows,scope);
+        if(!evidenceScope.isCurrent(shopId))throw Error('offline_evidence_scope_changed');
+      }else all=await readCatalog(shopId,hideCost);
+      if(coherentTax){const snapshot=await readTax(shopId,all.map(item=>item.product.id),true);return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
     },
+    getTaxSnapshot: readTax,
     getInventoryStats: async (shopId: string) => {
       const stats = await send<InventoryStats>(`/api/shops/${shopId}/inventory/stats`);
       return { ...stats, stockValue: Number(stats.stockValue ?? 0), total: Number(stats.total ?? 0), lowStock: Number(stats.lowStock ?? 0), outOfStock: Number(stats.outOfStock ?? 0), nearExpiry: Number(stats.nearExpiry ?? 0) };
@@ -349,6 +406,12 @@ export function bindApi(getToken: TokenGetter) {
       send<{ sale: Sale; deduplicated: boolean }>(`/api/shops/${shopId}/sales`, { method: 'POST', body: JSON.stringify(payload) }),
     getSales: (shopId: string, params: Record<string, string | number | undefined>) =>
       send<{ sales: SaleListRow[]; total: number; hasMore: boolean; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
+    getReturns: async (shopId: string, params: Record<string, string | number | undefined>) => {
+      const page = await send<{ refunds?: SaleReturnListRow[]; returns?: SaleReturnListRow[]; total: number; hasMore: boolean; limitedToDays: number | null; summary: ReturnsListSummary }>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);
+      return { ...page, refunds: page.refunds ?? page.returns ?? [] };
+    },
+    getProductTaxAuthorizations: (shopId: string) => send<{ managers: ProductTaxAuthorizationEntry[] }>(`/api/shops/${shopId}/pos-settings/gst-product-confirmation-authorizations`),
+    setProductTaxAuthorization: (shopId: string, input: { managerId: string; authorized: boolean; requestId: string; expectedMemberId: string; expectedEventId: string | null }) => send<{authorization: ProductTaxAuthorization}>(`/api/shops/${shopId}/pos-settings/gst-product-confirmation-authorizations`, {method: 'PUT', body: JSON.stringify(input)}),
     getSale: (shopId: string, saleId: string) => send<Sale>(`/api/shops/${shopId}/sales/${saleId}`),
     getProductSales: (shopId: string, productId: string, days = 30) =>
       send<{ days: number; units: number; revenue: number; bills: number; lastSoldAt: string | null; daysOfCover: number | null }>(
@@ -357,7 +420,7 @@ export function bindApi(getToken: TokenGetter) {
     getSalesSummary: (shopId: string, params: Record<string, string | undefined>) =>
       send<SalesSummary>(`/api/shops/${shopId}/sales/summary${queryString(params)}`),
     getTopProducts: (shopId: string, params: Record<string, string | number | undefined>) =>
-      send<{ products: { productId: string | null; name: string; unit: string; quantity: number; revenue: number; bills: number; grossProfit?: number; marginPct?: number | null }[]; limitedToDays: number | null }>(
+      send<{ products: { productId: string | null; name: string; unit: string; quantity: number; revenue: number; bills: number; grossProfit?: number; marginPct?: number | null; fiscalCorrectionNet?: number }[]; limitedToDays: number | null }>(
         `/api/shops/${shopId}/sales/top-products${queryString(params)}`,
       ),
     voidSale: (shopId: string, saleId: string, reason?: string) =>
@@ -367,7 +430,7 @@ export function bindApi(getToken: TokenGetter) {
       saleId: string,
       body: { items: { saleItemId: string; quantity: number; restock?: boolean; reason?: string | null }[]; refundMethod?: PaymentMethod | null; reason?: string | null },
     ) => send<Sale>(`/api/shops/${shopId}/sales/${saleId}/returns`, { method: 'POST', body: JSON.stringify(body) }),
-    salesCsv: (shopId: string, params: Record<string, string | undefined>) => apiText(`/api/shops/${shopId}/sales/export.csv${queryString(params)}`, getToken),
+    salesCsv: (shopId: string, params: Record<string, string | undefined>) => apiText(`/api/shops/${shopId}/sales/export.csv${queryString(params)}`, getToken,assertCurrent),
 
     getCustomers: (shopId: string, params: Record<string, string | number | undefined> = {}) =>
       send<{ customers: Customer[]; total: number; hasMore: boolean }>(`/api/shops/${shopId}/customers${queryString(params)}`),
@@ -379,20 +442,13 @@ export function bindApi(getToken: TokenGetter) {
       send<{ customer: Customer; ledger: LedgerEntry[] }>(`/api/shops/${shopId}/customers/${customerId}`),
     updateCustomer: (shopId: string, customerId: string, body: Record<string, unknown>) =>
       send<{ customer: Customer }>(`/api/shops/${shopId}/customers/${customerId}`, { method: 'PATCH', body: JSON.stringify(body) }),
-    recordPayment: (shopId: string, customerId: string, body: { amount: number; method: 'cash' | 'upi' | 'card'; note?: string }) =>
-      send<{ customer: Customer; entry: LedgerEntry }>(`/api/shops/${shopId}/customers/${customerId}/payments`, { method: 'POST', body: JSON.stringify(body) }),
+
 
     getBuyList: async (shopId: string) => {
-      const all: BuyListItem[] = [];
-      let offset = 0;
-      let hasMore = true;
-      while (hasMore && offset < 2000) {
-        const page = await send<{ items: BuyListItem[]; hasMore: boolean }>(`/api/shops/${shopId}/buy-list${queryString({ limit: 100, offset })}`);
-        all.push(...(page.items ?? []));
-        hasMore = page.hasMore;
-        offset += 100;
-      }
-      return all;
+      return collectPages(async offset => {
+        const page = await send<{items: BuyListItem[]; hasMore: boolean}>(`/api/shops/${shopId}/buy-list${queryString({limit: 100, offset})}`);
+        return {rows: page.items ?? [], hasMore: page.hasMore};
+      });
     },
     addBuyListItem: (shopId: string, input: Record<string, unknown>) =>
       send<{ item: BuyListItem }>(`/api/shops/${shopId}/buy-list`, { method: 'POST', body: JSON.stringify(input) }),
@@ -408,12 +464,20 @@ export function bindApi(getToken: TokenGetter) {
 
     getSalesReport: (shopId: string, period: string) => send<SalesReport>(`/api/shops/${shopId}/reports/sales?period=${period}`),
     getStockReport: (shopId: string, period: string) => send<StockReport>(`/api/shops/${shopId}/reports/stock?period=${period}`),
-    stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken),
-    ask: (shopId: string, question: string, language?: string) =>
-      send<{ answer: string; intent: string | null }>(`/api/shops/${shopId}/analytics/ask`, {
+    stockCsv: (shopId: string, period: string) => apiText(`/api/shops/${shopId}/reports/stock/movement.csv?period=${period}`, getToken,assertCurrent),
+    ask: (shopId: string, question: string, language?: string, voiceFeedbackEnabled = false) =>
+      send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask`, {
         method: 'POST',
-        body: JSON.stringify({ question, language, voiceFeedbackEnabled: false, ttsAsync: false }),
+        body: JSON.stringify({ question, language, voiceFeedbackEnabled, ttsAsync: false }),
       }),
+
+    processVoice: (shopId:string,recording:{audio:string;fileName:string},language:string,context:'counter'|'inventory',voiceFeedbackEnabled:boolean) =>
+      send<VoiceProcessResponse>(`/api/shops/${shopId}/voice/process`, {method:'POST',body:JSON.stringify({...recording,language,context,voiceFeedbackEnabled,ttsAsync:false})}),
+    confirmVoice: (shopId:string,request:VoiceConfirmRequest) =>
+      send<VoiceConfirmResponse>(`/api/shops/${shopId}/voice/confirm`, {method:'POST',body:JSON.stringify({...request,ttsAsync:false})}),
+    askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
+      send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
+    getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),
 
     search: (shopId: string, q: string) =>
       send<{
@@ -422,9 +486,20 @@ export function bindApi(getToken: TokenGetter) {
         suppliers: { name: string; products: number; lastAt: string | null }[];
       }>(`/api/shops/${shopId}/search${queryString({ q })}`),
 
-    getPosSettings: (shopId: string) => send<PosSettings>(`/api/shops/${shopId}/pos-settings`),
-    updatePosSettings: (shopId: string, body: Record<string, unknown>) =>
-      send<PosSettings>(`/api/shops/${shopId}/pos-settings`, { method: 'PUT', body: JSON.stringify(body) }),
+    getPosSettings: (shopId: string) => {
+      const load=()=>send<PosSettings>(`/api/shops/${shopId}/pos-settings`);
+      const validate=(value:unknown):value is PosSettings=>{
+        if(!value||typeof value!=='object')return false;
+        const settings=value as PosSettings,gst=settings.gstSettings;
+        return settings.shopId===shopId&&typeof settings.shopName==='string'&&Number.isFinite(Date.parse(settings.updatedAt))&&Number.isSafeInteger(settings.saleCounter)&&settings.saleCounter>=0&&['cash','upi'].includes(settings.defaultPaymentMethod)&&typeof settings.cardEnabled==='boolean'&&(!gst||(typeof gst.version==='string'&&!!gst.version&&['unknown','unregistered','regular','composition'].includes(gst.registration)&&['inclusive','exclusive'].includes(gst.priceMode)));
+      };
+      return evidence?evidence.read(shopId,'pos-settings',load,validate):load();
+    },
+    updatePosSettings: async (shopId: string, body: Record<string, unknown>) => {
+      await evidence?.clear(shopId,'pos-settings');
+      await evidence?.clear(shopId,'rounding-selection');
+      return send<PosSettings>(`/api/shops/${shopId}/pos-settings`, { method: 'PUT', body: JSON.stringify(body) });
+    },
     uploadUpiQr: (shopId: string, imageBase64: string) =>
       send<PosSettings & { decoded?: { found: boolean; isUpi: boolean; vpa: string | null } }>(`/api/shops/${shopId}/pos-settings/upi-qr`, {
         method: 'POST',
@@ -436,21 +511,29 @@ export function bindApi(getToken: TokenGetter) {
         `/api/shops/${shopId}/audit-log${queryString({ filter, limit: 50, offset })}`,
       ),
     getAllAudit: async (shopId: string) => {
-      const all: AuditLogEntry[] = [];
-      let offset = 0;
-      let hasMore = true;
-      while (hasMore && offset < 5000) {
-        const page = await send<{ logs: AuditLogEntry[]; hasMore: boolean }>(`/api/shops/${shopId}/audit-log${queryString({ filter: 'all', limit: 100, offset })}`);
-        all.push(...(page.logs ?? []));
-        hasMore = page.hasMore;
-        offset += 100;
-      }
-      return all;
+      return collectPages(async offset => {
+        const page = await send<{logs: AuditLogEntry[]; hasMore: boolean}>(`/api/shops/${shopId}/audit-log${queryString({filter: 'all', limit: 100, offset})}`);
+        return {rows: page.logs ?? [], hasMore: page.hasMore};
+      });
     },
 
-    getPreferences: () => send<{ preferences: UserPreferences | null }>('/api/preferences'),
-    updatePreferences: (body: Partial<UserPreferences>) =>
-      send<{ preferences: UserPreferences }>('/api/preferences', { method: 'PATCH', body: JSON.stringify(body) }),
+    getBrowserPush: () => send<{available:boolean;publicKey:string|null}>('/api/devices/web-push'),
+    saveBrowserPush: (subscription:PushSubscriptionJSON,language:string) => send<{success:boolean}>('/api/devices/web-push',{method:'POST',body:JSON.stringify({subscription,language})}),
+    removeBrowserPush: (subscription:PushSubscriptionJSON) => send<{success:boolean}>('/api/devices/web-push',{method:'DELETE',body:JSON.stringify({subscription})}),
+
+    getPreferences: () => {
+      const load=()=>send<{preferences:UserPreferences|null}>('/api/preferences');
+      const validate=(value:unknown):value is {preferences:UserPreferences|null}=>{
+        if(!value||typeof value!=='object'||!('preferences' in value))return false;
+        const p=(value as {preferences:UserPreferences|null}).preferences;
+        return p===null||!!p&&['en','hi','hinglish','bn','ta','te','mr','kn','gu','ml'].includes(p.appLanguage)&&typeof p.voiceLanguage==='string'&&typeof p.voiceFeedbackEnabled==='boolean'&&typeof p.highContrastMode==='boolean'&&['small','medium','large','extra_large'].includes(p.textSize);
+      };
+      return evidence&&evidenceScope?.isSessionCurrent?evidence.read('@account','preferences',load,validate):load();
+    },
+    updatePreferences: async (body: Partial<UserPreferences>) => {
+      await evidence?.clear('@account','preferences');
+      return send<{ preferences: UserPreferences }>('/api/preferences', { method: 'PATCH', body: JSON.stringify(body) });
+    },
     getTranslations: async (lang: string) => {
       const res = await send<unknown>(`/api/translations/${encodeURIComponent(lang)}`);
       return res;
@@ -472,7 +555,15 @@ export function bindApi(getToken: TokenGetter) {
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
     getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
 
-    getEntitlement: (shopId: string) => send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`),
+    getEntitlement: (shopId: string) => {
+      const load=()=>send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`);
+      const validate=(value:unknown):value is import('../subscriptions').SubscriptionEntitlement=>{
+        if(!value||typeof value!=='object')return false;
+        const e=value as import('../subscriptions').SubscriptionEntitlement;
+        return typeof e.isPremium==='boolean'&&['legacy_free','none','trialing','active','past_due','canceled','expired','pending_authentication'].includes(e.status)&&[null,'monthly','annual'].includes(e.plan)&&[e.currentPeriodEnd,e.trialEnd].every(date=>date===null||typeof date==='string'&&Number.isFinite(Date.parse(date)));
+      };
+      return evidence?evidence.read(shopId,'entitlement',load,validate,retainEntitlement):load();
+    },
     deleteAccount: () => send('/api/account', { method: 'DELETE' }),
   };
 }

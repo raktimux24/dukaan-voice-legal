@@ -29,6 +29,8 @@ export type Member = {
 };
 
 export type Product = {
+  gstTaxSnapshot?:import("./gst-core/gst-tax-cache").ProductTaxSnapshot;
+  gstRspSnapshot?:import("./gst-core/gst-rsp-cache").ProductRspSnapshot;
   gstConfig?: ProductTax | null;
   id: string;
   shopId: string;
@@ -74,6 +76,7 @@ export type StockBatch = {
   batchNumber?: string;
   quantity: number;
   initialQuantity?: number | null;
+  purchaseItemId?: string | null;
   purchasePrice?: number;
   purchaseDate?: string;
   expiryDate?: string;
@@ -104,6 +107,7 @@ export type AdjustmentReason =
 export type PaymentMethod = 'cash' | 'upi' | 'card' | 'credit';
 
 export type SaleItemInput = {
+  rsp?: {profile: Parameters<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>[0];valuation: Parameters<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>[1]["valuation"];rounding: Parameters<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>[1]["rounding"]};
   gstConfig?: ProductTax | null;
   listPrice?: number | null;
   productId?: string | null;
@@ -122,6 +126,9 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  mixedDiscountReview?:{policy:"commercial_amount_proportional_v1";reviewed:true;evidenceReference:string};
+  roundingSnapshot?:import("./gst-core/payable-rounding-snapshot").PayableRoundingSnapshot;
+  roundingGrant?:import("./rounding-grant").RetainedRoundingGrant;
   gstContext?: GstContext | null;
   clientId: string;
   soldAt: string;
@@ -135,6 +142,8 @@ export type CreateSalePayload = {
 };
 
 export type SaleItem = {
+  rspSnapshot?:ReturnType<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>|null;
+  netSales?:number|null;
   taxSnapshot?: LineTax | null;
   id: string;
   productId: string | null;
@@ -153,8 +162,12 @@ export type SaleItem = {
 export type Sale = {
   requestHash?: string;
   gstIntegrity?: string;
-  mixedGstSnapshot?:Record<string,unknown>|null;
-  gstSnapshot?: { invoiceNumber:string;renderVersion?:string;context:GstContext;totals:TaxTotals } | null;
+  mixedGstSnapshot?:import("./gst-core/mixed-gst-fiscal").MixedFiscalPayload|null;
+  netSales?:number|null;taxTotal?:number|null;
+  roundingGrant?:import("./rounding-grant").RetainedRoundingGrant|null;
+  roundingEvidence?:import("./gst-core/payable-rounding-evidence").PayableRoundingEvidence|null;
+  returnPlanningError?:string|null;
+  gstSnapshot?: { invoiceNumber:string;documentType?:string;renderVersion?:string;context:GstContext;totals:TaxTotals } | null;
   id: string;
   shopId: string;
   saleNumber: number;
@@ -190,6 +203,7 @@ export type Sale = {
 };
 
 export type SaleListRow = {
+  invoiceNumber?: string | null;
   id: string;
   saleNumber: number;
   status: 'completed' | 'voided';
@@ -223,9 +237,9 @@ export type SalesSummary = {
 };
 
 export type Customer = {
-  monthPurchaseTotal?: number;
-  totalBusinessAmount?: number;
-  preferredPaymentMethods?: string[];
+  monthPurchaseTotal?: number | null;
+  totalBusinessAmount?: number | null;
+  preferredPaymentMethods?: PaymentMethod[] | null;
   billingPartyId?: string | null;
   billingParty?: {id:string;buyer:Buyer} | null;
   id: string;
@@ -277,6 +291,8 @@ export type PosSettings = {
   gstRspProfileReviewsAvailable?: boolean;
   gstRspBillingAvailable?: boolean;
   gstPayableRoundingReviewsAvailable?: boolean;
+  gstPayableRoundingAvailable?:boolean;
+  gstRoundingPolicy?:import("./gst-core/payable-rounding-policy").PayableRoundingPolicy|null;
   shopId: string;
   shopName: string;
   saleCounter: number;
@@ -409,6 +425,9 @@ export type SalesReport = {
     cogs: number;
     grossProfit: number;
     marginPct: number | null;
+    purchaseCostMovement?: {count: number; inventory: string; consumed: string; total: string; dateBasis: 'recorded'; timezone: 'Asia/Kolkata'} | null;
+    collections?: {cash:number;upi:number;card:number};
+    udhaar?: {givenInRange:number;collectedInRange:number;outstandingTotal:number} | null;
     avgBill: number;
     itemsSold: number;
     byMethod: Record<string, number>;
@@ -419,7 +438,7 @@ export type SalesReport = {
   comparison: {
     label: string;
     previous: { revenue: number; bills: number; avgBill: number; itemsSold: number };
-    deltaPct: { revenue: number; bills: number; avgBill: number; itemsSold: number };
+    deltaPct: { revenue: number | null; bills: number | null; avgBill: number | null; itemsSold: number | null };
   } | null;
   byCategory: { category: string; bills: number; units: number; revenue: number; sharePct: number; marginPct: number }[];
   byWeekday: { dow: number; bills: number; revenue: number }[];
@@ -427,29 +446,125 @@ export type SalesReport = {
   basket: { itemsPerBill: number; avgBill: number; discountPctOfGross: number; discountedBills: number } | null;
   returns: { returns: number; returnAmount: number; voids: number; voidAmount: number } | null;
   inputMethods: { method: string; bills: number; revenue: number }[];
+  runRate?: {mtdRevenue:number;daysElapsed:number;daysInMonth:number;projected:number;lastMonthRevenue:number;vsLastMonthPct:number|null} | null;
+  customers?: {bills:number;billsWithCustomer:number;walkIns:number;uniqueCustomers:number;newCustomers:number;returningCustomers:number;top:{customerId:string;name:string;bills:number;revenue:number;fiscalCorrectionNet?:number;owes:number}[]};
+  udhaarAgeing?: {outstanding:number;customers:number;collectionRatePct:number|null;buckets:{bucket:string;customers:number;amount:number}[];stale:{customerId:string;name:string;balance:number;daysSinceCredit:number;daysSincePayment:number|null}[]};
+  paymentByDay?: {date:string;cash:number;upi:number;card:number;credit:number}[];
+  staff?: {userId:string;name:string;bills:number;revenue:number;avgBill:number;itemsPerBill:number;discounts:number;voids:number;fiscalCorrectionNet?:number}[];
+  marginByProduct?: {products:{productId:string|null;name:string;units:number;revenue:number;cogs:number;grossProfit:number;marginPct:number|null;fiscalCorrectionNet?:number}[];overallMarginPct:number|null;lowMarginBestSellers:{name:string;marginPct:number|null}[]};
+  boughtTogether?: {a:string;b:string;times:number}[];
 };
 
-export type StockReport = {
+export interface StockOnHand {
+  products: number;
+  units: number;
+  costValue: number | null;
+  retailValue: number | null;
+  potentialMargin: number | null;
+  byStatus: Record<"OK" | "LOW" | "OUT", { products: number; costValue: number | null }>;
+}
+export interface CategoryValue {
+  category: string;
+  products: number;
+  units: number;
+  costValue: number | null;
+  retailValue: number | null;
+  lowStock: number;
+  outOfStock: number;
+}
+export interface MovementDay {
+  date: string;
+  unitsIn: number;
+  unitsSold: number;
+  unitsAdjusted: number;
+}
+export interface ProductMovement {
+  productId: string;
+  name: string;
+  unit: string;
+  category: string;
+  opening: number;
+  unitsIn: number;
+  unitsSold: number;
+  unitsAdjusted: number;
+  closing: number;
+  sellThroughPct: number | null;
+  daysOfCover: number | null;
+}
+export interface CategoryMovement {
+  category: string;
+  unitsIn: number;
+  unitsSold: number;
+  unitsAdjusted: number;
+  revenue: number;
+  cogs: number | null;
+}
+export interface ShrinkageRow {
+  reason: string;
+  events: number;
+  units: number;
+  costValue: number | null;
+}
+export interface SlowItem {
+  productId: string;
+  name: string;
+  unit: string;
+  onHand: number;
+  costValue: number | null;
+  lastSoldAt: string | null;
+  daysSinceSale: number | null;
+}
+export interface FastItem {
+  productId: string;
+  name: string;
+  unit: string;
+  onHand: number;
+  avgDailySold: number;
+  daysOfCover: number;
+}
+export interface AgeBucket {
+  bucket: "0-30" | "31-60" | "61-90" | "90+";
+  batches: number;
+  units: number;
+  costValue: number | null;
+}
+export interface ExpiryBucket {
+  batches: number;
+  units: number;
+  costValue: number | null;
+}
+export interface ExpiryExposure {
+  within7: ExpiryBucket;
+  within30: ExpiryBucket;
+  within60: ExpiryBucket;
+  items: { productId: string; name: string; unit: string; batchNumber: string | null; expiryDate: string; daysRemaining: number; units: number; costValue: number | null }[];
+}
+export interface SupplierPurchases {
+  supplier: string;
+  batches: number;
+  units: number;
+  costValue: number | null;
+  products: number;
+  lastAt: string;
+}
+export interface StockReport {
+  range: { from: string; to: string };
   premium: boolean;
-  limitedToDays: number | null;
   showCost: boolean;
-  onHand: {
-    products: number;
-    units: number;
-    costValue: number;
-    retailValue: number;
-    potentialMargin: number;
-    byStatus: Record<string, { products: number; costValue: number }>;
-  };
-  byCategory: { category: string; products: number; units: number; costValue: number; retailValue: number; lowStock: number; outOfStock: number }[];
-  movementByDay: { date: string; unitsIn: number; unitsSold: number; unitsAdjusted: number }[];
-  expiry: {
-    within7: { batches: number; units: number };
-    within30: { batches: number; units: number };
-    within60: { batches: number; units: number };
-    items: { productId: string; name: string; unit: string; expiryDate: string; daysRemaining: number; units: number; costValue: number }[];
-  };
-};
+  limitedToDays: number | null;
+  onHand: StockOnHand;
+  byCategory: CategoryValue[];
+  movementByDay: MovementDay[];
+  expiry: ExpiryExposure;
+  byProduct?: ProductMovement[];
+  movementByCategory?: CategoryMovement[];
+  shrinkage?: { rows: ShrinkageRow[]; totalUnits: number; totalCost: number | null; pctOfCogs: number | null };
+  slowStock?: { items: SlowItem[]; valueTiedUp: number | null; thresholdDays: number };
+  fastMovers?: FastItem[];
+  ageing?: AgeBucket[];
+  turnover?: { cogs: number; avgStockValue: number; turns: number | null; daysOfInventory: number | null } | null;
+  suppliers?: SupplierPurchases[];
+}
 
 export type UnifiedAlerts = {
   stock: {
@@ -460,3 +575,15 @@ export type UnifiedAlerts = {
   predictions: { id: string; title: string; description: string; severity: string; productId: string | null }[];
   counts: { total: number; stock: number; expiry: number; ai: number };
 };
+
+export type ProductTaxAuthorization = { id: string; shopId: string; memberId: string; managerId: string; ownerId: string; authorized: boolean; createdAt: string };
+export type ProductTaxAuthorizationEntry = { managerId: string; memberId: string; authorization: ProductTaxAuthorization | null };
+export type SaleReturnListRow = {
+  id: string; saleId: string; saleNumber: number; invoiceNumber?: string | null; createdAt: string;
+  refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
+  itemCount: number; firstItem: string | null; customerName: string | null;
+  settlement?: {creditReduction: string; moneyRefund: string} | null;
+};
+export type ReturnsListSummary = { count: number; amount: number; byMethod: Record<string, number> };
+
+export type SpokenAnswer = {answer:string;intent:string|null;transcript?:string;ttsAudioBase64?:string;ttsJobId?:string};

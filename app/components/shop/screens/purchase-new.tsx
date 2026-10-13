@@ -1,10 +1,18 @@
 "use client";
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { eligiblePurchaseReceipts } from "../../../lib/shop/gst-core/purchase-batch-link";
+import { ProductFormScreen } from "./product-form";
+import { purchaseReviewSignature } from "../../../lib/shop/gst-core/purchase-review-draft";
+import {
+  purchaseDraftTax,
+  purchaseDraftHasPrice,
+  purchaseLineForRequest,
+  type PurchaseDraftLine,
+} from "../../../lib/shop/purchase-draft";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
+import { useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
 import { Button, Card, PageHeader, Notice, ShopDialog } from "../ui";
-import { ProductFormScreen } from "./product-form";
-import type { Product } from "../../../lib/shop/types";
 import { SupplierPicker } from "../gst-supplier";
 import {
   BuyerFields,
@@ -34,16 +42,16 @@ import type {
   PurchaseLineInput,
 } from "../../../lib/shop/gst-types";
 import { formatINR } from "../../../lib/shop/money";
-type Line = PurchaseLineInput & {
-  key: string;
-  name: string;
-  stockMode: "invoice_only" | "receive" | "link";
-};
+import type { Product } from "../../../lib/shop/types";
+type Line = PurchaseDraftLine;
 export function PurchaseNewScreen() {
   const { api, shop, perms } = useShop(),
     text = useGstText(),
     router = useRouter(),
     action = useGstAction();
+  const requestedSupplierId = useSearchParams().get("supplierId") ?? "";
+  const requestedSupplier = useGstQuery(["purchase-supplier", requestedSupplierId],
+    () => api.gst.supplier(shop!.id, requestedSupplierId), !!requestedSupplierId);
   const pos = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
     catalog = useGstQuery(
       ["purchase-products"],
@@ -63,15 +71,19 @@ export function PurchaseNewScreen() {
     [discount, setDiscount] = useState("0"),
     [declared, setDeclared] = useState(""),
     [reference, setReference] = useState(""),
-    [reviewed, setReviewed] = useState(false),
-    [movement, setMovement] = useState(false);
-  const [addingProduct, setAddingProduct] = useState(false);
+    [reviewSignature, setReviewSignature] = useState<string | null>(null),
+    [ordinarySupply, setOrdinarySupply] = useState(false),
+    [addingProduct, setAddingProduct] = useState(false),
+    [movementSignature, setMovementSignature] = useState<string | null>(null);
   const [productBusy, setProductBusy] = useState(false);
   const retained = useRef<PurchaseInput | null>(null);
-  const addProductLine = (product: Product) => {
-    setReviewed(false);
-    setLines(rows => [...rows, {key: crypto.randomUUID(), name: product.name, productId: product.id, quantity: 1, price: product.purchasePrice ?? 0, discount: 0, tax: {...(product.gstConfig ?? emptyTax()), reviewed: false}, receiveStock: false, stockMode: "invoice_only"}]);
-  };
+  const supplierPrefilled = useRef(false);
+  useEffect(() => {
+    if (!supplierPrefilled.current && requestedSupplier.data) {
+      supplierPrefilled.current = true;
+      setSupplier(current => current ?? requestedSupplier.data!);
+    }
+  }, [requestedSupplier.data]);
   const settings = pos.data?.gstSettings;
   const recipient = recipientDraft ?? {
     ...emptyBuyer(),
@@ -81,6 +93,15 @@ export function PurchaseNewScreen() {
     address: settings?.address || pos.data?.shopAddress || "",
     structuredAddress: settings?.structuredAddress,
   };
+  const movementContext = purchaseReviewSignature({
+    supplierId: supplier?.id,
+    supplierRegistration: registration,
+    placeOfSupply: recipient.stateCode,
+    recipientAddress: recipient.address,
+  });
+  const movement = movementSignature === movementContext;
+  const setMovement = (value: boolean) =>
+    setMovementSignature(value ? movementContext : null);
   const reset = () => {
     setReviewed(false);
     setLines((rows) =>
@@ -91,6 +112,21 @@ export function PurchaseNewScreen() {
     fn();
     reset();
   };
+  const taxContext = purchaseReviewSignature({
+    supplierId: supplier?.id,
+    supplierIdentity: supplier?.identity,
+    supplierRegistration: registration,
+    documentType,
+    invoiceNumber,
+    invoiceDate,
+    priceMode: mode,
+    discount,
+    declared,
+    reference,
+    recipient,
+    ordinarySupply,
+    movement,
+  });
   const input: PurchaseInput = {
     clientId: "",
     supplierId: supplier?.id ?? "",
@@ -113,13 +149,25 @@ export function PurchaseNewScreen() {
     discount: Number(discount),
     declaredTotal: Number(declared),
     recipient,
-    lines: lines.map(({ key, name, stockMode, ...line }) => line),
+    lines: lines.map((line) => purchaseLineForRequest(line, taxContext)),
     evidenceReference: reference,
-    reviewed,
+    reviewed: false,
   };
+  const invoiceSignature = purchaseReviewSignature({
+    ...input,
+    clientId: undefined,
+    reviewed: undefined,
+    supplierIdentity: supplier?.identity,
+  });
+  const reviewed = reviewSignature === invoiceSignature;
+  input.reviewed = reviewed;
+  const setReviewed = (value: boolean) =>
+    setReviewSignature(value ? invoiceSignature : null);
   let totals: ReturnType<typeof purchaseTotals> | undefined,
     validation: unknown;
   try {
+    if (lines.some((line) => !purchaseDraftHasPrice(line)))
+      throw Error(text(EN_FALLBACK["purchase.required"]));
     if (lines.some((l) => l.stockMode === "link" && !l.existingBatchId))
       throw Error(text("Select a batch for each linked stock item."));
     if (supplier)
@@ -147,6 +195,22 @@ export function PurchaseNewScreen() {
             },
       ),
     );
+  };
+  const addProductLine = (product: Product) => {
+    setReviewed(false);
+    setLines(rows => rows.length >= 100 ? rows : [...rows, {
+      key: crypto.randomUUID(),
+      name: product.name,
+      trackStock: product.trackStock !== false,
+      productId: product.id,
+      quantity: 1,
+      price: product.purchasePrice ?? 0,
+      priceText: product.purchasePrice == null ? "" : String(product.purchasePrice),
+      discount: 0,
+      tax: { ...(product.gstConfig ?? emptyTax()), reviewed: false },
+      receiveStock: false,
+      stockMode: "invoice_only",
+    }]);
   };
   return (
     <GstAccess>
@@ -178,13 +242,27 @@ export function PurchaseNewScreen() {
             </Button>
           </Card>
         ) : null}
-        <fieldset disabled={action.busy || !!retained.current}>
+        {addingProduct ? (
+          <ShopDialog className="product-sheet" title={text("Add product")} busy={productBusy} onClose={() => setAddingProduct(false)}>
+            <p className="shop-hint">{text("Create the product here, then choose its quantity and stock action on this invoice.")}</p>
+            <ProductFormScreen
+              onBusyChange={setProductBusy}
+              onCreated={(_id, product) => {
+                addProductLine(product);
+                setAddingProduct(false);
+                void catalog.refetch();
+              }}
+            />
+          </ShopDialog>
+        ) : null}
+        <fieldset disabled={action.busy || !!retained.current || addingProduct}>
           <Section
             title={"1 · " + text("Choose supplier")}
             summary={supplier?.identity.name}
             open
           >
             <SupplierPicker value={supplier} onChange={selectSupplier} />
+            {requestedSupplierId && requestedSupplier.isError ? <Notice error={requestedSupplier.error} /> : null}
             <div className="form-grid is-2">
               <SelectField
                 label={text("Supplier registration for this invoice")}
@@ -282,20 +360,26 @@ export function PurchaseNewScreen() {
                 onChange={(v) => change(() => setMovement(v))}
               />
             ) : null}
+            <Check
+              label={text(EN_FALLBACK["purchase.ordinary_supply"])}
+              checked={ordinarySupply}
+              onChange={(value) => change(() => setOrdinarySupply(value))}
+            />
           </Section>
           <Section
             title={"3 · " + text("Products and stock")}
             summary={`${lines.length} ${text("products")}`}
             open
           >
-            {perms.canEditProducts ? <div className="purchase-product-actions"><Button tone="ghost" onClick={() => setAddingProduct(true)}>{text("Add product")}</Button></div> : null}
             <ReadState query={catalog}>
+              {perms.canEditProducts ? <div className="purchase-product-actions"><Button tone="ghost" disabled={lines.length >= 100} onClick={() => setAddingProduct(true)}>{text("Add product")}</Button></div> : null}
               <SelectField
                 label={text("Choose product")}
+                disabled={lines.length >= 100}
                 value=""
                 onChange={(id) => {
                   const row = catalog.data?.find((r) => r.productId === id);
-                  if (!row) return;
+                  if (!row || lines.length >= 100) return;
                   addProductLine(row.product);
                 }}
                 options={[
@@ -319,14 +403,19 @@ export function PurchaseNewScreen() {
                     type="number"
                     value={String(line.quantity)}
                     onChange={(v) =>
-                      updateLine(line.key, { quantity: Number(v) })
+                      updateLine(line.key, {
+                        quantity: Number(v),
+                        existingBatchId: undefined,
+                      })
                     }
                   />
                   <TextField
                     label={text("Buying price (₹)")}
                     type="number"
-                    value={String(line.price)}
-                    onChange={(v) => updateLine(line.key, { price: Number(v) })}
+                    value={line.priceText ?? String(line.price)}
+                    onChange={(v) =>
+                      updateLine(line.key, { price: Number(v), priceText: v })
+                    }
                   />
                   <TextField
                     label={text("Line discount (₹)")}
@@ -336,26 +425,31 @@ export function PurchaseNewScreen() {
                       updateLine(line.key, { discount: Number(v) })
                     }
                   />
-                  <SelectField
-                    label={text("Stock action")}
-                    value={line.stockMode}
-                    onChange={(v) =>
-                      updateLine(line.key, {
-                        stockMode: v as Line["stockMode"],
-                        receiveStock: v === "receive",
-                        existingBatchId: undefined,
-                      })
-                    }
-                    options={[
-                      ["invoice_only", text("Record invoice only")],
-                      ["receive", text("Receive new stock")],
-                      ["link", text("Link existing stock batch")],
-                    ]}
-                  />
+                  {line.trackStock ? (
+                    <SelectField
+                      label={text("Stock action")}
+                      value={line.stockMode}
+                      onChange={(v) =>
+                        updateLine(line.key, {
+                          stockMode: v as Line["stockMode"],
+                          receiveStock: v === "receive",
+                          existingBatchId: undefined,
+                        })
+                      }
+                      options={[
+                        ["invoice_only", text("Record invoice only")],
+                        ["receive", text("Receive new stock")],
+                        ["link", text("Link existing stock batch")],
+                      ]}
+                    />
+                  ) : (
+                    <p className="shop-hint">{text("Record invoice only")}</p>
+                  )}
                 </div>
                 {line.stockMode === "link" ? (
                   <PurchaseBatchPicker
                     productId={line.productId}
+                    quantity={Number(line.quantity)}
                     value={line.existingBatchId ?? ""}
                     onChange={(existingBatchId) =>
                       updateLine(line.key, {
@@ -383,9 +477,14 @@ export function PurchaseNewScreen() {
                   </>
                 ) : null}
                 <TaxFields
-                  value={line.tax}
+                  required
+                  value={purchaseDraftTax(line, taxContext)}
                   onChange={(v) =>
-                    updateLine(line.key, { tax: v ?? emptyTax() }, true)
+                    updateLine(
+                      line.key,
+                      { tax: v ?? emptyTax(), taxReviewContext: taxContext },
+                      true,
+                    )
                   }
                 />
                 <Button
@@ -400,7 +499,7 @@ export function PurchaseNewScreen() {
               </Section>
             ))}
           </Section>
-          <Card className="purchase-review-card">
+          <Card className="purchase-confirmation">
             {totals ? (
               <Stats
                 items={[
@@ -428,13 +527,14 @@ export function PurchaseNewScreen() {
             />
           </Card>
         </fieldset>
-        {addingProduct ? <ShopDialog className="product-sheet" title={text("Add product")} busy={productBusy} onClose={() => setAddingProduct(false)}><p className="shop-hint">{text("Create the product here, then choose its quantity and stock action on this invoice.")}</p><ProductFormScreen onBusyChange={setProductBusy} onCreated={product => { addProductLine(product); setAddingProduct(false); void catalog.refetch(); }} /></ShopDialog> : null}
         <Button
           disabled={
             action.busy ||
+            addingProduct ||
             pos.data?.gstPurchasesAvailable !== true ||
             !supplier ||
-            (!retained.current && (!reviewed || !totals))
+            (!retained.current &&
+              (!declared.trim() || !ordinarySupply || !reviewed || !totals))
           }
           onClick={() =>
             void action.run(async () => {
@@ -442,8 +542,19 @@ export function PurchaseNewScreen() {
                 ...input,
                 clientId: crypto.randomUUID(),
               };
-              if (!retained.current)
+              if (!retained.current) {
+                if (!ordinarySupply)
+                  throw Error(
+                    text(
+                      EN_FALLBACK["gst.error.purchase_supply_not_supported"],
+                    ),
+                  );
+                if (!declared.trim())
+                  throw Error(text(EN_FALLBACK["purchase.required"]));
+                if (lines.some((line) => !purchaseDraftHasPrice(line)))
+                  throw Error(text(EN_FALLBACK["purchase.required"]));
                 purchaseTotals(request, supplier!.identity);
+              }
               retained.current = request;
               const saved = await api.gst.createPurchase(shop!.id, request);
               retained.current = null;
@@ -459,36 +570,52 @@ export function PurchaseNewScreen() {
 }
 
 function PurchaseBatchPicker({
+  quantity,
   productId,
   value,
   onChange,
 }: {
   productId: string;
+  quantity: number;
   value: string;
   onChange: (v: string) => void;
 }) {
-  const { api, shop } = useShop(),
+  const { api, shop, t } = useShop(),
     text = useGstText();
   const q = useGstQuery(["purchase-batches", productId], () =>
-    api.getBatches(shop!.id, productId),
+    api.getBatches(shop!.id, productId, true),
   );
+  const batches = eligiblePurchaseReceipts(q.data ?? [], quantity);
   return (
     <ReadState query={q}>
+      <p className="text-sm text-muted">
+        {t("purchase.link_batch", EN_FALLBACK["purchase.link_batch"])}
+      </p>
       <SelectField
         label={text("Existing stock batch")}
         value={value}
         onChange={onChange}
         options={[
           ["", text("Choose batch")],
-          ...(q.data ?? []).map(
+          ...batches.map(
             (b) =>
               [
                 b.id,
-                `${b.batchNumber || b.id.slice(0, 8)} · ${b.quantity} · ${b.supplier ?? ""}`,
+                `${b.batchNumber || b.id.slice(0, 8)} · ${b.initialQuantity} → ${b.quantity} · ${b.supplier ?? ""}`,
               ] as const,
           ),
         ]}
       />
+      {q.isSuccess && !batches.length ? (
+        <p role="status" className="text-amber-400">
+          {t(
+            "gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f",
+            EN_FALLBACK[
+              "gst.ui.no_eligible_receipt_matches_this_quantity_record_a_receipt_a73a9f"
+            ],
+          )}
+        </p>
+      ) : null}
     </ReadState>
   );
 }

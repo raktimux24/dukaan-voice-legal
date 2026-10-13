@@ -1,5 +1,8 @@
 'use client';
 
+import {prepareOfflineInvoices} from '../../../lib/shop/invoice-preparation';
+import { useGstText as useUiText } from "../gst-ui";
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,13 +19,26 @@ import { Button, Card, Chip, Kbd, Notice, Spinner, cx, inputClass } from '../ui'
 const BARCODE = /^\d{4,}$/;
 
 export function SellScreen() {
+  const uiText = useUiText();
   const { api, shop, userId, perms, hideCost, setNotice, t } = useShop();
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
+  const posSettings=useQuery({queryKey:["pos",shopId],enabled:!!shopId,networkMode:'always',queryFn:()=>api.getPosSettings(shopId)});
+  useQuery({
+    queryKey:['offline-invoice-preparation',userId,shopId,posSettings.data?.gstSettings?.version],
+    enabled:!!shopId&&posSettings.data?.gstAvailable===true&&['regular','composition'].includes(posSettings.data.gstSettings?.registration??''),
+    queryFn:()=>prepareOfflineInvoices(api,shopId),
+    retry:false,
+    refetchOnWindowFocus:false,
+    // Retry successful capabilities before expiry; failed provisioning waits for an explicit revisit.
+    refetchInterval:q=>q.state.status==='success'&&q.state.data?Math.max(60000,Math.min(15*60000,Date.parse(q.state.data.expiresAt)-Date.now()-30000)):false,
+  });
+  const coherentTax=posSettings.data?.gstAvailable===true&&posSettings.data.gstSettings?.registration==="regular";
   const catalog = useQuery({
-    queryKey: ['catalog', shopId, hideCost],
-    enabled: !!shopId,
-    queryFn: () => api.getAllInventory(shopId, hideCost),
+    queryKey: ['catalog', shopId, hideCost, coherentTax],
+    enabled: !!shopId&&!!posSettings.data,
+    networkMode:'always',
+    queryFn: () => api.getAllInventory(shopId, hideCost, coherentTax),
   });
   const boughtWith = useQuery({
     queryKey: ['nudges', shopId, 'checkout'],
@@ -77,7 +93,7 @@ export function SellScreen() {
     return () => window.clearTimeout(timer);
   }, [api, hits.length, query, shopId]);
 
-  if (!shop) return <Spinner label="Loading shop" />;
+  if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
   const totals = computeTotals(cartApi.cart);
   const lineCount = cartApi.cart.lines.length;
@@ -96,7 +112,9 @@ export function SellScreen() {
       setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
       return;
     }
-    if (result.message) setNotice(result.message);
+    if (result.message) setNotice(result.message === 'out_of_stock'
+      ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name })
+      : t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: item.quantity, unit: t(`unit_picker.${item.unit}`, item.unit), name: item.product.name }));
     if (result.ok) setError(null);
   };
 
@@ -153,7 +171,7 @@ export function SellScreen() {
   const choose = (item: InventoryItem) => {
     const tracked = item.product.trackStock !== false;
     if (tracked && item.quantity <= 0) {
-      setNotice(`${item.product.name} is out of stock.`);
+      setNotice(t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name }));
       return;
     }
     if (item.product.sellingPrice == null) {
@@ -175,14 +193,16 @@ export function SellScreen() {
     const existing = cartApi.cart.lines.find((line) => line.productId === item.productId);
     if (existing) {
       const result = cartApi.setQuantity(existing.key, picker.value);
-      if (result.capped) setNotice(`Only ${existing.available} ${existing.unit} of ${existing.name} on hand.`);
+      if (result.capped) setNotice(t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: existing.available ?? 0, unit: t(`unit_picker.${existing.unit}`, existing.unit), name: existing.name }));
     } else {
       const result = cartApi.addProduct(item, picker.value);
       if (result.message === 'unpriced') {
         setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
         return;
       }
-      if (result.message) setNotice(result.message);
+      if (result.message) setNotice(result.message === 'out_of_stock'
+      ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name })
+      : t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: item.quantity, unit: t(`unit_picker.${item.unit}`, item.unit), name: item.product.name }));
       if (!result.ok) return;
     }
     setPicker(null);
@@ -206,7 +226,7 @@ export function SellScreen() {
 
   const clearBill = () => {
     if (lineCount === 0) return;
-    if (!window.confirm('Clear this bill?')) return;
+    if (!window.confirm(t('pos.clear_cart_title','Remove everything from the cart?'))) return;
     cartApi.clear();
     searchRef.current?.focus();
   };
@@ -216,19 +236,20 @@ export function SellScreen() {
       <div className="pos-catalog">
         <div className="shop-page-head">
           <div className="shop-page-head-text">
-            <p className="shop-kicker">Counter</p>
+            <p className="shop-kicker">{uiText("Counter")}</p>
             <h1 className="shop-title">{t('pos.title', 'Sell')}</h1>
           </div>
           <div className="shop-actions">
             {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">{t('products.add', 'Add product')}</Button> : null}
+            <Button href="/shop/voice?mode=sell" tone="ghost" size="sm">{t('a11y.voice','Voice command')}</Button>
             <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
           </div>
         </div>
 
         {cartApi.pending ? (
           <Card tight className="flex flex-wrap items-center justify-between gap-3">
-            <p>A bill is waiting to finish.</p>
-            <Button href="/shop/sell/checkout" tone="ghost" size="sm">Return to checkout</Button>
+            <p>{uiText("A bill is waiting to finish.")}</p>
+            <Button href="/shop/sell/checkout" tone="ghost" size="sm">{uiText("Return to checkout")}</Button>
           </Card>
         ) : null}
         <Notice error={error} />
@@ -247,17 +268,17 @@ export function SellScreen() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={handleSearchKey}
-              aria-label="Find a product to sell"
+              aria-label={uiText("Find a product to sell")}
               autoComplete="off"
               autoFocus
             />
             <div className="pos-search-hint">
               <Kbd>↑↓</Kbd>
-              <Kbd>Enter</Kbd>
+              <Kbd>{uiText("Enter")}</Kbd>
             </div>
           </div>
           {categories.length > 1 ? (
-            <div className="pos-chips" role="tablist" aria-label="Categories">
+            <div className="pos-chips" role="tablist" aria-label={uiText("Categories")}>
               <Chip active={category === 'all'} onClick={() => setCategory('all')}>{t('products.all_categories', 'All')}</Chip>
               {categories.map(([code, label]) => (
                 <Chip key={code} active={category === code} onClick={() => setCategory(code)}>{label}</Chip>
@@ -266,9 +287,9 @@ export function SellScreen() {
           ) : null}
         </div>
 
-        {catalog.isLoading ? <Spinner label="Loading products" /> : null}
+        {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
         {picker ? <QtyPicker key={picker.productId} item={items.find((row) => row.productId === picker.productId) ?? null} value={picker.value} onChange={(value) => setPicker({ productId: picker.productId, value })} onAdd={commitPicker} onClose={() => setPicker(null)} /> : null}
-        <div className="pos-grid" role="listbox" aria-label="Products">
+        <div className="pos-grid" role="listbox" aria-label={uiText("Products")}>
           {hits.map((item, index) => {
             const unpriced = item.product.sellingPrice == null;
             const tracked = item.product.trackStock !== false;
@@ -280,7 +301,7 @@ export function SellScreen() {
                 <div key={item.id} className={cx('pos-tile', index === highlight && query && 'is-highlight')}>
                   <p className="pos-tile-name">{item.product.name}</p>
                   <div className="grid gap-2">
-                    <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} · no price</p>
+                    <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} {uiText("· no price")}</p>
                     <form
                       className="pos-tile-price-form"
                       onSubmit={(event) => {
@@ -332,14 +353,14 @@ export function SellScreen() {
             {perms.canEditProducts ? (
               <>
                 {' '}
-                <Link href={`/shop/products/new?name=${encodeURIComponent(query.trim())}`} className="text-saffron">Add it</Link>.
+                <Link href={`/shop/products/new?name=${encodeURIComponent(query.trim())}`} className="text-saffron">{uiText("Add it")}</Link>.
               </>
             ) : null}
           </Card>
         ) : null}
       </div>
 
-      <aside className="bill shop-surface" aria-label="Current bill">
+      <aside className="bill shop-surface" aria-label={uiText("Current bill")}>
         <div className="bill-head">
           <h2>{t('bill.bill', 'Bill')}</h2>
           <div className="flex items-center gap-3">
@@ -355,7 +376,7 @@ export function SellScreen() {
                 <path d="M9 7V5a3 3 0 0 1 6 0v2" />
               </svg>
               <p>{t('pos.cart_empty', 'Nothing on the bill yet.')}</p>
-              <p className="text-xs text-faint">Search above, scan a barcode, or click a product.</p>
+              <p className="text-xs text-faint">{uiText("Search above, scan a barcode, or click a product.")}</p>
             </div>
           ) : (
             cartApi.cart.lines.map((line) => (
@@ -365,7 +386,7 @@ export function SellScreen() {
                 canEditPrice={perms.canEditProducts}
                 onQuantity={(qty) => {
                   const result = cartApi.setQuantity(line.key, qty);
-                  if (result.capped) setNotice(`Only ${line.available} ${line.unit} of ${line.name} on hand.`);
+                  if (result.capped) setNotice(t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: line.available ?? 0, unit: t(`unit_picker.${line.unit}`, line.unit), name: line.name }));
                 }}
                 onPrice={(price) => cartApi.setPrice(line.key, price)}
                 onRemove={() => cartApi.removeLine(line.key)}
@@ -445,6 +466,7 @@ function QtyPicker({
   onAdd: () => void;
   onClose: () => void;
 }) {
+  const uiText = useUiText();
   const { t } = useShop();
   const unit = item?.unit ?? 'piece';
   const alt = altUnit(unit);
@@ -471,7 +493,7 @@ function QtyPicker({
         </div>
         <button type="button" className="bill-remove" onClick={onClose}>{t('common.close', 'Close')}</button>
       </div>
-      <div className="pos-chips" role="group" aria-label="Quantities">
+      <div className="pos-chips" role="group" aria-label={uiText("Quantities")}>
         {chips.map((chip) => (
           <Chip key={chip} active={Math.abs(value - chip) < 1e-9} onClick={() => onChange(clamp(chip))}>
             {chipLabel(chip, unit, item.product)}
@@ -485,7 +507,7 @@ function QtyPicker({
         <span className="num">{formatINR(r3(value * price))}</span>
       </div>
       {alt ? (
-        <div className="shop-seg" role="group" aria-label="Unit">
+        <div className="shop-seg" role="group" aria-label={uiText("Unit")}>
           <button type="button" className={displayUnit === unit ? 'is-active' : undefined} onClick={() => setDisplayUnit(unit)}>{unit}</button>
           <button type="button" className={displayUnit === alt ? 'is-active' : undefined} onClick={() => setDisplayUnit(alt)}>{alt}</button>
         </div>
@@ -574,6 +596,7 @@ function BillLine({
 }
 
 function CameraScan({ onCode }: { onCode: (code: string) => void }) {
+  const uiText = useUiText();
   const [message, setMessage] = useState<string | null>(null);
   const onCodeRef = useRef(onCode);
   onCodeRef.current = onCode;
@@ -624,7 +647,7 @@ function CameraScan({ onCode }: { onCode: (code: string) => void }) {
   return (
     <Card tight>
       <div id="sell-camera">
-        {message ? <p className="text-sm text-muted">{message}</p> : <p className="text-sm text-muted">Point the camera at a barcode.</p>}
+        {message ? <p className="text-sm text-muted">{message}</p> : <p className="text-sm text-muted">{uiText("Point the camera at a barcode.")}</p>}
       </div>
     </Card>
   );

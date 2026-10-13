@@ -1,4 +1,7 @@
 import {confirmedCustomerPayment} from './gst-core/customer-payment-outcome';
+import {assertRoundingSelection,type RoundingSelection} from './gst-core/payable-rounding-request';
+import {retainedRoundingSelection} from './offline-rounding';
+import type {createOfflineEvidence} from './offline-evidence';
 import { confirmedCollectionReview } from "./gst-core/collection-review-outcome";
 import { confirmedSaleReturnReceipt } from "./gst-core/sale-return-outcome";
 import { confirmedManualCredit } from "./gst-core/manual-credit-outcome";
@@ -7,6 +10,7 @@ import { confirmedDebitSettlement } from "./gst-core/debit-settlement-outcome";
 import { confirmedPeriodEvent } from "./gst-core/period-outcome";
 import { confirmedTurnoverReview } from "./gst-core/turnover-outcome";
 import { confirmedTaxImport } from "./gst-core/tax-import-outcome";
+import { gstReviewRejection } from "./gst-core/gst-review-rejection";
 import type {
   Buyer,
   ProductTax,
@@ -56,6 +60,7 @@ export function bindGstApi(
   register?: (
     path: string,
   ) => Promise<{ content: string; id: string; hash: string }>,
+  evidence?:ReturnType<typeof createOfflineEvidence>|null,
 ) {
   const get = <T>(path: string) => send<T>(path);
   const post = <T>(path: string, body: unknown) =>
@@ -94,12 +99,16 @@ export function bindGstApi(
       assertScope(active);
       try {
         let value: unknown;
+        let originalFailure: unknown;
         try {
           value = await post(path, input);
         } catch (original) {
           if (!outcomePath) throw original;
+          originalFailure = original;
         }
         if (outcomePath) value = await post(outcomePath, input);
+        // Preserve the actionable rejection while keeping the request pending.
+        if (originalFailure && value && typeof value === "object" && "status" in value && value.status === "not_found") throw originalFailure;
         assertScope(active);
         const result = await verify(value);
         assertScope(active);
@@ -110,7 +119,12 @@ export function bindGstApi(
         });
         return result;
       } catch (error) {
+        assertScope(active);
+        const kind = /\/gst-exports\/turnover\/20\d{2}-\d{2}$/.test(path)
+          ? 'turnover' : /\/gst-exports\/periods\/\d{4}-\d{2}$/.test(path) ? 'period' : null;
+        const rejection = kind ? gstReviewRejection(kind, error) : null;
         await requestStatus(id, {
+          ...(rejection ? { state: 'closed' as const, result: { status: 'rejected', code: rejection } } : {}),
           error:
             error instanceof Error
               ? error.message
@@ -126,11 +140,11 @@ export function bindGstApi(
     financial,
     health: (s: string) => get<GstHealth>(`${base(s)}/pos-settings/gst-health`),
     readiness: (s: string) =>
-      get<Record<string, unknown>>(`${base(s)}/pos-settings/gst-readiness`),
-    monitor: (s: string) =>
-      get<GstMonitor>(`${base(s)}/gst-exports/monitor?limit=100`),
+      get<{ generatedAt: string; configurationReady: boolean; profile: {status: 'missing' | 'invalid' | 'unsupported' | 'reviewed'; registration: string}; catalog: {reviewed: number; total: number; incompleteCount: number; incomplete: {productId: string; name: string; reason: 'missing' | 'invalid'}[]; taxProfilesRequired: boolean; truncated: boolean} }>(`${base(s)}/pos-settings/gst-readiness`),
+    monitor: (s: string, limit = 100) =>
+      get<GstMonitor>(`${base(s)}/gst-exports/monitor?limit=${Math.max(1,Math.min(10000,Math.trunc(limit)||100))}`),
     runChecks: (s: string) =>
-      post<{ skipped: boolean }>(`${base(s)}/gst-exports/monitor`, {}),
+      post<{ skipped: boolean; run?: { id: string; status: 'completed'; scannedDocuments: number; issueCount: number } }>(`${base(s)}/gst-exports/monitor`, {}),
     numbers: (s: string, before?: string) =>
       get<{ items: AllocationRow[]; nextCursor: string | null }>(
         `${base(s)}/pos-settings/gst-allocations${before ? "?before=" + encodeURIComponent(before) : ""}`,
@@ -141,6 +155,13 @@ export function bindGstApi(
       ),
     revoke: (s: string, id: string, reason: string) =>
       post(`${base(s)}/pos-settings/gst-devices/${id}/revoke`, { reason }),
+    roundingSelection: async (s:string,issuedAt:string) => {
+      const load=async()=>assertRoundingSelection(s,issuedAt,await post<unknown>(`${base(s)}/pos-settings/rounding-selection`,{issuedAt}));
+      if(!evidence)return load();
+      const validate=(value:unknown):value is RoundingSelection=>{try{const row=value as RoundingSelection;assertRoundingSelection(s,row?.issuedAt,value);return true;}catch{return false;}};
+      return retainedRoundingSelection(s,issuedAt,await evidence.read(s,'rounding-selection',load,validate));
+    },
+    roundingGrant: (s:string,body:{requestId:string;allocationId:string;deviceEpoch:string}) => post<unknown>(`${base(s)}/pos-settings/gst-rounding-grant`,body),
     provision: (s: string, body: { deviceEpoch: string; gstVersion: string }) =>
       post<Allocation>(`${base(s)}/pos-settings/gst-allocation`, body),
     parties: (s: string, q = "") =>
@@ -464,11 +485,7 @@ export function bindGstApi(
           confirmedDebitSettlement(v, s, financialScope(s).actorId, id, input),
         `${base(s)}/adjustments/${id}/settlements/request-outcome`,
       ),
-    recordCustomerPayment: (s: string, id: string, input: Parameters<typeof confirmedCustomerPayment>[4]) => financial(
-      s, `${base(s)}/customers/${id}/payments`, input,
-      value => confirmedCustomerPayment(value, s, financialScope(s).actorId, id, input),
-      `${base(s)}/customers/${id}/payments/request-outcome`,
-    ),
+    recordCustomerPayment: (s:string,id:string,input:Parameters<typeof confirmedCustomerPayment>[4]) => financial(s,`${base(s)}/customers/${id}/payments`,input,v=>confirmedCustomerPayment(v,s,financialScope(s).actorId,id,input),`${base(s)}/customers/${id}/payments/request-outcome`),
     collections: (s: string, id: string, before?: string) =>
       get<{
         items: {

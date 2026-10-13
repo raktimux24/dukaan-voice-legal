@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const {retainedRoundingSelection}=require(process.env.GST_TEST_BUILD+'/offline-rounding.js');
+const shop='11111111-1111-4111-8111-111111111111';
+const from='2026-10-09T12:00:00.000Z',until='2026-10-09T13:00:00.000Z';
+const version='22222222-2222-4222-8222-222222222222';
+const selection={format:'payable_rounding_selection_v1',shopId:shop,issuedAt:from,refreshAt:until,status:'selection_only',selection:{version,createdAt:from,policy:{format:'payable_rounding_policy_v1',version,shopId:shop,mode:'nearest_rupee',effectiveFrom:from,effectiveUntil:until,reviewed:true,evidenceReference:'SYNTHETIC'}}};
+const next='2026-10-09T12:30:00.000Z';
+assert.equal(retainedRoundingSelection(shop,next,selection).issuedAt,next);
+assert.equal(selection.issuedAt,from);
+assert.throws(()=>retainedRoundingSelection(shop,until,selection),/expired/);
+assert.throws(()=>retainedRoundingSelection(shop,'2026-10-09T11:59:59.000Z',selection),/expired/);
+assert.throws(()=>retainedRoundingSelection('33333333-3333-4333-8333-333333333333',next,selection));
+assert.throws(()=>retainedRoundingSelection(shop,next,{...selection,refreshAt:'2026-10-09T12:00:00.000Z'}));
+assert.throws(()=>retainedRoundingSelection(shop,next,{...selection,selection:{...selection.selection,policy:{...selection.selection.policy,shopId:'33333333-3333-4333-8333-333333333333'}}}));
+console.log('Retained rounding preview: exact interval, scope, immutable capture and policy consistency passed.');
