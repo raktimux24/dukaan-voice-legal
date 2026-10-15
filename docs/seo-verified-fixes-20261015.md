@@ -2,7 +2,7 @@
 
 ## Review state
 
-Prepared locally on `seo/verified-seo-main-2026-10-15`, based on the cached, locally available `origin/main` commit `8bb8ee9236f8214d11b474ec32354e2835ccc2fb`. No fetch, push, PR, merge, deployment, production login or customer transaction was performed. The remote tip was not freshly verified. The original acquisition checkout and its untracked SEO evidence were preserved. No secrets or customer records are included in these changes.
+Prepared locally on `seo/verified-seo-main-2026-10-15`, rebased onto freshly fetched `origin/main` commit `9d3d55c820c74ba0cb16f2ec623dee2efb87a965`. A read-only `git fetch origin` succeeded on 15 October 2026. No push, PR merge, deployment, production login or customer transaction was performed. Only the isolated SEO branch was rebased; the original checkout was not altered. The original acquisition checkout and its untracked SEO evidence were preserved. No secrets or customer records are included in these changes.
 
 The original checkout was on an older acquisition branch. Its GST plan still said acceptance was outstanding. The newer main baseline includes the deployed acceptance records below; use those records rather than the stale branch's release description.
 
@@ -18,7 +18,7 @@ The original checkout was on an older acquisition branch. Its GST plan still sai
 - Seven visible questions and matching FAQPage entities in each of eleven homepages. Nine locales previously returned no FAQ entries; English and Hindi already had six. The seventh topic explains scoped GST tools and filing limits.
 - Existing combined SoftwareApplication/MobileApplication/WebApplication entity retained; no duplicate application entity added. App language scope stays separate from website reading locales. Localized schema features include voice/reading and GST distinctions.
 - Home language section, hero, browser section, localized descriptions and laptop article now draw from shared factual answers, removing categorical phone-only/browser-English-only claims. Browser voice is not advertised as accepted or available.
-- Samaan Bol spelling standardized in subscription/pricing strings and public legal/contact metadata/rendering.
+- Samaan Bol spelling standardized only in product display strings, pricing FAQ and public page metadata. Legal-policy body rendering, business-address placeholders and copyright wording retain their upstream values. Contact destinations and identifiers are unchanged.
 - Hindi procedural section added to the existing English guide, with an updated modification date. Existing genuine manual simulator images and their disclosure remain unchanged. No voice demo was fabricated.
 - Added optional `public/llms.txt` summary. It is not a Google ranking requirement. FAQ markup supports semantic consistency; this work does not promise FAQ rich results or rankings.
 
@@ -46,6 +46,14 @@ Logs: `docs/seo-evidence/2026-10-15/`. Authenticated-route checks were explicitl
 
 - Removed unsupported browser-voice availability claims from all locale answers, home hero, guide and llms.txt. Merged/deployed code is not equivalent to a successful real microphone/checkout acceptance run.
 - GST release evidence is historical and scoped: PR #29 documentation commit `bb03c49` records web `e2c4b8330c9d1248437c653af6352b7457175327`, published Netlify deploy `6ac6c2bd37bca600081a1214`, and purchase/Composition/retained-credit/report readback. Later product-tax-history readback records PR #80 main `7c65e2f`, deploy `6ac964d30a75ee0008654e33`. No fresh production check or complete GST acceptance is claimed.
-- The cached reference is dated 13 October 2026, not a freshly fetched remote tip. The task must be rebased/rechecked against a newly fetched remote branch in the eventual review workflow.
+- Fresh remote verification: `git fetch origin` advanced main from `8bb8ee9` to `9d3d55c`. The sole upstream change adds `check:release` and `build:verified` scripts and sets Netlify to `build:verified`; no product-feature source or acceptance record changed. Rebase conflict resolution preserves both upstream release gates and the new SEO test command.
 - Initial tests ran on the final working source before commit `6cd28e5`, not as a postcommit run on that hash. A fresh postcommit verification of the corrected final commit is required and recorded with the delivered review report.
 - The scoped code review found no additional blocking SEO rendering/schema regressions. Authenticated financial behavior, microphone recognition, printer/device behavior, native-speaker quality and current production state remain outside the checks.
+
+## Remote-baseline and branding follow-up
+
+- Rebased the isolated branch onto freshly fetched origin/main `9d3d55c820c74ba0cb16f2ec623dee2efb87a965`. No push or remote/PR merge.
+- Product evidence was rechecked against the upstream diff: no voice/GST/language implementation or release-evidence change occurred. Previously stated acceptance limits remain.
+- Earlier SEO revisions changed the brand token in eleven business-address placeholders and ten localized copyright strings, and applied a broad brand replacement while rendering legal-policy bodies. Those changes were too broad for unverified legal identity and are restored to upstream values.
+- No registered legal entity was independently verified or renamed. Business-address and copyright fields, legal source bodies, support/developer email destinations, postal/address values and link destinations are preserved exactly against upstream. Remaining brand edits are product display references.
+- Final applicable verification includes the newly introduced upstream release gate (GST regression suite, translation coverage and TypeScript), production build, SEO regression and rendered locale checks. Exact resulting commit and postcommit logs are delivered in the final report.

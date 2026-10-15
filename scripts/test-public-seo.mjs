@@ -54,7 +54,7 @@ try {
     const laptop = getLaptopCopy(code);
     assert.equal(laptop.phoneBody, answers[4].a, `${code}: browser feature consistency`);
     assert.deepEqual(laptop.faq[0], answers[4]);
-    assert.ok(!JSON.stringify(getSubscriptionStrings(code)).includes('Samaan-Bol'), `${code}: pricing branding`);
+    assert.ok(!JSON.stringify(getSubscriptionStrings(code).pricing).includes('Samaan-Bol'), `${code}: pricing branding`);
     console.log(`PASS ${code}: FAQ, GST, languages, pricing, metadata, sitemap, browser copy`);
   }
   assert.deepEqual(pricingOfferSchema.offers.map(x => x.price), ['499', '3999']);

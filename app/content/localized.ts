@@ -202,7 +202,7 @@ function adaptHome(html: string, locale: Locale) {
 function adaptLegal(html: string, locale: Locale, page: PageKind) {
   const switcher = languageSwitcher(locale, page);
 
-  return localizeLinks(html, locale).replaceAll('Samaan-Bol', 'Samaan Bol').replace(
+  return localizeLinks(html, locale).replace(
     /<a href="([^"]+)" class="back">([\s\S]*?)<\/a>/,
     `<div class="legal-topbar"><a href="$1" class="back">$2</a>${switcher}</div>`,
   );

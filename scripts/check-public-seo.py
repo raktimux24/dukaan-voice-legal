@@ -65,7 +65,7 @@ def check(locale):
    assert [x['price'] for x in offer['offers']]==['499','3999'],(prefix,'Premium prices')
    faq=next(x for x in blocks if x.get('@type')=='FAQPage')
    assert all(q['name'] in unescape(body) and q['acceptedAnswer']['text'] in unescape(body) for q in faq['mainEntity']),(prefix,'pricing FAQ parity')
-   assert 'Samaan-Bol' not in unescape(body),(prefix,'pricing branding')
+   assert all('Samaan-Bol' not in q['name']+q['acceptedAnswer']['text'] for q in faq['mainEntity']),(prefix,'pricing FAQ branding')
  if locale:
   status,url,_=get(prefix+'/refund-policy');assert status==200 and url.endswith('/refund-policy') and not url.endswith(prefix+'/refund-policy'),(prefix,'legacy redirect')
  return prefix or '/'

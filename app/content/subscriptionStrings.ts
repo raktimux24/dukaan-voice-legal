@@ -260,7 +260,7 @@ const en: SubscriptionStrings = {
       'We aim to respond within 2 business days. Refund and billing requests may require Razorpay payment identifiers for verification.',
     businessHeading: 'Business address',
     businessBody:
-      'Samaan Bol, India. Registered business address and GSTIN will be shown here once confirmed for Razorpay/GST invoice compliance.',
+      'Samaan-Bol, India. Registered business address and GSTIN will be shown here once confirmed for Razorpay/GST invoice compliance.',
   },
 };
 
@@ -282,7 +282,7 @@ const hi: SubscriptionStrings = {
     refund: 'रिफ़ंड नीति',
     privacy: 'गोपनीयता नीति',
     terms: 'सेवा की शर्तें',
-    copyright: '© Samaan Bol. भारतीय रिटेल के लिए वॉयस-फ़र्स्ट इन्वेंट्री।',
+    copyright: '© Samaan-Bol. भारतीय रिटेल के लिए वॉयस-फ़र्स्ट इन्वेंट्री।',
   },
   plans: {
     monthlyLabel: 'मासिक',
@@ -407,7 +407,7 @@ const hi: SubscriptionStrings = {
       'हम 2 कार्य दिवसों के भीतर प्रतिक्रिया देने का लक्ष्य रखते हैं। रिफ़ंड और बिलिंग अनुरोधों के लिए सत्यापन हेतु Razorpay भुगतान पहचानकर्ताओं की आवश्यकता हो सकती है।',
     businessHeading: 'व्यापारिक पता',
     businessBody:
-      'Samaan Bol, भारत। Razorpay/GST इनवॉइस अनुपालन के लिए पुष्टि होने पर पंजीकृत व्यापारिक पता और GSTIN यहाँ दिखाया जाएगा।',
+      'Samaan-Bol, भारत। Razorpay/GST इनवॉइस अनुपालन के लिए पुष्टि होने पर पंजीकृत व्यापारिक पता और GSTIN यहाँ दिखाया जाएगा।',
   },
 };
 
@@ -429,7 +429,7 @@ const bn: SubscriptionStrings = {
     refund: 'রিফান্ড নীতি',
     privacy: 'গোপনীয়তা নীতি',
     terms: 'পরিষেবার শর্তাবলী',
-    copyright: '© Samaan Bol. ভারতীয় রিটেলের জন্য ভয়েস-ফার্স্ট ইনভেন্টরি।',
+    copyright: '© Samaan-Bol. ভারতীয় রিটেলের জন্য ভয়েস-ফার্স্ট ইনভেন্টরি।',
   },
   plans: { monthlyLabel: 'মাসিক', annualLabel: 'বার্ষিক', monthlyDescription: 'প্রিমিয়াম — মাসিক', annualDescription: 'প্রিমিয়াম — বার্ষিক' },
   pricing: {
@@ -525,7 +525,7 @@ const bn: SubscriptionStrings = {
     responseHeading: 'প্রতিক্রিয়ার সময়',
     responseBody: 'আমরা ২টি কার্যদিবসের মধ্যে প্রতিক্রিয়া জানানোর লক্ষ্য রাখি। রিফান্ড ও বিলিং অনুরোধের যাচাইয়ের জন্য Razorpay পেমেন্ট শনাক্তকারী প্রয়োজন হতে পারে।',
     businessHeading: 'ব্যবসায়িক ঠিকানা',
-    businessBody: 'Samaan Bol, ভারত। Razorpay/GST ইনভয়েস সম্মতির জন্য নিশ্চিত হলে নিবন্ধিত ব্যবসায়িক ঠিকানা ও GSTIN এখানে দেখানো হবে।',
+    businessBody: 'Samaan-Bol, ভারত। Razorpay/GST ইনভয়েস সম্মতির জন্য নিশ্চিত হলে নিবন্ধিত ব্যবসায়িক ঠিকানা ও GSTIN এখানে দেখানো হবে।',
   },
 };
 
@@ -547,7 +547,7 @@ const ta: SubscriptionStrings = {
     refund: 'பணத்திரும்பும் கொள்கை',
     privacy: 'தனியுரிமைக் கொள்கை',
     terms: 'சேவை விதிமுறைகள்',
-    copyright: '© Samaan Bol. இந்திய சில்லறை வணிகத்திற்கான குரல்-முதல் சரக்கு.',
+    copyright: '© Samaan-Bol. இந்திய சில்லறை வணிகத்திற்கான குரல்-முதல் சரக்கு.',
   },
   plans: { monthlyLabel: 'மாதாந்திர', annualLabel: 'வருடாந்திர', monthlyDescription: 'பிரீமியம் — மாதாந்திர', annualDescription: 'பிரீமியம் — வருடாந்திர' },
   pricing: {
@@ -643,7 +643,7 @@ const ta: SubscriptionStrings = {
     responseHeading: 'பதில் நேரம்',
     responseBody: '2 வேலை நாட்களுக்குள் பதிலளிக்க முயற்சிக்கிறோம். பணத்திரும்பல் மற்றும் பில்லிங் கோரிக்கைகளுக்கு சரிபார்ப்பிற்காக Razorpay கட்டண அடையாளங்காட்டிகள் தேவைப்படலாம்.',
     businessHeading: 'வணிக முகவரி',
-    businessBody: 'Samaan Bol, இந்தியா. Razorpay/GST இன்வாய்ஸ் இணக்கத்திற்கு உறுதிப்படுத்தப்பட்ட பிறகு பதிவு செய்யப்பட்ட வணிக முகவரி மற்றும் GSTIN இங்கு காட்டப்படும்.',
+    businessBody: 'Samaan-Bol, இந்தியா. Razorpay/GST இன்வாய்ஸ் இணக்கத்திற்கு உறுதிப்படுத்தப்பட்ட பிறகு பதிவு செய்யப்பட்ட வணிக முகவரி மற்றும் GSTIN இங்கு காட்டப்படும்.',
   },
 };
 
@@ -665,7 +665,7 @@ const te: SubscriptionStrings = {
     refund: 'రీఫండ్ విధానం',
     privacy: 'గోప్యతా విధానం',
     terms: 'సేవా నిబంధనలు',
-    copyright: '© Samaan Bol. భారతీయ రిటైల్ కోసం వాయిస్-ఫస్ట్ ఇన్వెంటరీ.',
+    copyright: '© Samaan-Bol. భారతీయ రిటైల్ కోసం వాయిస్-ఫస్ట్ ఇన్వెంటరీ.',
   },
   plans: { monthlyLabel: 'నెలవారీ', annualLabel: 'వార్షిక', monthlyDescription: 'ప్రీమియం — నెలవారీ', annualDescription: 'ప్రీమియం — వార్షిక' },
   pricing: {
@@ -761,7 +761,7 @@ const te: SubscriptionStrings = {
     responseHeading: 'ప్రతిస్పందన సమయం',
     responseBody: 'మేము 2 వ్యాపార రోజులలో ప్రతిస్పందించడానికి లక్ష్యంగా పెట్టుకుంటాము. రీఫండ్ మరియు బిల్లింగ్ అభ్యర్థనలకు ధృవీకరణ కోసం Razorpay చెల్లింపు గుర్తింపులు అవసరం కావచ్చు.',
     businessHeading: 'వ్యాపార చిరునామా',
-    businessBody: 'Samaan Bol, భారతదేశం. Razorpay/GST ఇన్వాయిస్ సమ్మతి కోసం నిర్ధారించబడిన తర్వాత నమోదిత వ్యాపార చిరునామా మరియు GSTIN ఇక్కడ చూపబడతాయి.',
+    businessBody: 'Samaan-Bol, భారతదేశం. Razorpay/GST ఇన్వాయిస్ సమ్మతి కోసం నిర్ధారించబడిన తర్వాత నమోదిత వ్యాపార చిరునామా మరియు GSTIN ఇక్కడ చూపబడతాయి.',
   },
 };
 
@@ -783,7 +783,7 @@ const mr: SubscriptionStrings = {
     refund: 'परतावा धोरण',
     privacy: 'गोपनीयता धोरण',
     terms: 'सेवा अटी',
-    copyright: '© Samaan Bol. भारतीय किरकोळ व्यवसायासाठी व्हॉइस-फर्स्ट इन्व्हेंटरी.',
+    copyright: '© Samaan-Bol. भारतीय किरकोळ व्यवसायासाठी व्हॉइस-फर्स्ट इन्व्हेंटरी.',
   },
   plans: { monthlyLabel: 'मासिक', annualLabel: 'वार्षिक', monthlyDescription: 'प्रीमियम — मासिक', annualDescription: 'प्रीमियम — वार्षिक' },
   pricing: {
@@ -879,7 +879,7 @@ const mr: SubscriptionStrings = {
     responseHeading: 'प्रतिसाद वेळ',
     responseBody: 'आम्ही 2 कामकाजाच्या दिवसांत प्रतिसाद देण्याचे लक्ष्य ठेवतो. परतावा आणि बिलिंग विनंत्यांसाठी पडताळणीसाठी Razorpay पेमेंट ओळखकर्ते आवश्यक असू शकतात.',
     businessHeading: 'व्यावसायिक पत्ता',
-    businessBody: 'Samaan Bol, भारत. Razorpay/GST इनव्हॉइस अनुपालनासाठी पुष्टी झाल्यावर नोंदणीकृत व्यावसायिक पत्ता आणि GSTIN येथे दर्शविला जाईल.',
+    businessBody: 'Samaan-Bol, भारत. Razorpay/GST इनव्हॉइस अनुपालनासाठी पुष्टी झाल्यावर नोंदणीकृत व्यावसायिक पत्ता आणि GSTIN येथे दर्शविला जाईल.',
   },
 };
 
@@ -901,7 +901,7 @@ const kn: SubscriptionStrings = {
     refund: 'ಮರುಪಾವತಿ ನೀತಿ',
     privacy: 'ಗೌಪ್ಯತೆ ನೀತಿ',
     terms: 'ಸೇವಾ ನಿಯಮಗಳು',
-    copyright: '© Samaan Bol. ಭಾರತೀಯ ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರಕ್ಕಾಗಿ ಧ್ವನಿ-ಮೊದಲ ದಾಸ್ತಾನು.',
+    copyright: '© Samaan-Bol. ಭಾರತೀಯ ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರಕ್ಕಾಗಿ ಧ್ವನಿ-ಮೊದಲ ದಾಸ್ತಾನು.',
   },
   plans: { monthlyLabel: 'ಮಾಸಿಕ', annualLabel: 'ವಾರ್ಷಿಕ', monthlyDescription: 'ಪ್ರೀಮಿಯಂ — ಮಾಸಿಕ', annualDescription: 'ಪ್ರೀಮಿಯಂ — ವಾರ್ಷಿಕ' },
   pricing: {
@@ -997,7 +997,7 @@ const kn: SubscriptionStrings = {
     responseHeading: 'ಪ್ರತಿಕ್ರಿಯೆ ಸಮಯ',
     responseBody: 'ನಾವು 2 ಕೆಲಸದ ದಿನಗಳಲ್ಲಿ ಪ್ರತಿಕ್ರಿಯಿಸಲು ಗುರಿಯನ್ನು ಹೊಂದಿದ್ದೇವೆ. ಮರುಪಾವತಿ ಮತ್ತು ಬಿಲ್ಲಿಂಗ್ ವಿನಂತಿಗಳಿಗೆ ಪರಿಶೀಲನೆಗಾಗಿ Razorpay ಪಾವತಿ ಗುರುತಿಸುವಿಕೆಗಳು ಬೇಕಾಗಬಹುದು.',
     businessHeading: 'ವ್ಯಾಪಾರ ವಿಳಾಸ',
-    businessBody: 'Samaan Bol, ಭಾರತ. Razorpay/GST ಇನ್‌ವಾಯ್ಸ್ ಅನುಸರಣೆಗಾಗಿ ದೃಢೀಕರಿಸಿದ ನಂತರ ನೋಂದಾಯಿತ ವ್ಯಾಪಾರ ವಿಳಾಸ ಮತ್ತು GSTIN ಅನ್ನು ಇಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.',
+    businessBody: 'Samaan-Bol, ಭಾರತ. Razorpay/GST ಇನ್‌ವಾಯ್ಸ್ ಅನುಸರಣೆಗಾಗಿ ದೃಢೀಕರಿಸಿದ ನಂತರ ನೋಂದಾಯಿತ ವ್ಯಾಪಾರ ವಿಳಾಸ ಮತ್ತು GSTIN ಅನ್ನು ಇಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ.',
   },
 };
 
@@ -1019,7 +1019,7 @@ const gu: SubscriptionStrings = {
     refund: 'રિફંડ નીતિ',
     privacy: 'ગોપનીયતા નીતિ',
     terms: 'સેવા શરતો',
-    copyright: '© Samaan Bol. ભારતીય રિટેલ માટે વોઇસ-ફર્સ્ટ ઇન્વેન્ટરી.',
+    copyright: '© Samaan-Bol. ભારતીય રિટેલ માટે વોઇસ-ફર્સ્ટ ઇન્વેન્ટરી.',
   },
   plans: { monthlyLabel: 'માસિક', annualLabel: 'વાર્ષિક', monthlyDescription: 'પ્રીમિયમ — માસિક', annualDescription: 'પ્રીમિયમ — વાર્ષિક' },
   pricing: {
@@ -1115,7 +1115,7 @@ const gu: SubscriptionStrings = {
     responseHeading: 'પ્રતિસાદ સમય',
     responseBody: 'અમે 2 કાર્યકારી દિવસોમાં પ્રતિસાદ આપવાનું લક્ષ્ય રાખીએ છીએ. રિફંડ અને બિલિંગ વિનંતીઓ માટે ચકાસણી માટે Razorpay પેમેન્ટ ઓળખકર્તાઓની જરૂર પડી શકે છે.',
     businessHeading: 'વ્યવસાય સરનામું',
-    businessBody: 'Samaan Bol, ભારત. Razorpay/GST ઇનવોઇસ અનુપાલન માટે પુષ્ટિ થયા પછી નોંધાયેલ વ્યવસાય સરનામું અને GSTIN અહીં બતાવવામાં આવશે.',
+    businessBody: 'Samaan-Bol, ભારત. Razorpay/GST ઇનવોઇસ અનુપાલન માટે પુષ્ટિ થયા પછી નોંધાયેલ વ્યવસાય સરનામું અને GSTIN અહીં બતાવવામાં આવશે.',
   },
 };
 
@@ -1137,7 +1137,7 @@ const ml: SubscriptionStrings = {
     refund: 'റീഫണ്ട് നയം',
     privacy: 'സ്വകാര്യതാ നയം',
     terms: 'സേവന വ്യവസ്ഥകൾ',
-    copyright: '© Samaan Bol. ഇന്ത്യൻ റീട്ടെയിലിനായി വോയ്സ്-ഫസ്റ്റ് ഇൻവെന്ററി.',
+    copyright: '© Samaan-Bol. ഇന്ത്യൻ റീട്ടെയിലിനായി വോയ്സ്-ഫസ്റ്റ് ഇൻവെന്ററി.',
   },
   plans: { monthlyLabel: 'പ്രതിമാസം', annualLabel: 'വാർഷികം', monthlyDescription: 'പ്രീമിയം — പ്രതിമാസം', annualDescription: 'പ്രീമിയം — വാർഷികം' },
   pricing: {
@@ -1233,7 +1233,7 @@ const ml: SubscriptionStrings = {
     responseHeading: 'പ്രതികരണ സമയം',
     responseBody: 'ഞങ്ങൾ 2 പ്രവൃത്തി ദിവസങ്ങൾക്കുള്ളിൽ പ്രതികരിക്കാൻ ലക്ഷ്യമിടുന്നു. റീഫണ്ടും ബില്ലിംഗ് അഭ്യർത്ഥനകൾക്കും സ്ഥിരീകരണത്തിനായി Razorpay പേയ്മെന്റ് ഐഡന്റിഫയറുകൾ ആവശ്യമായി വന്നേക്കാം.',
     businessHeading: 'ബിസിനസ് വിലാസം',
-    businessBody: 'Samaan Bol, ഇന്ത്യ. Razorpay/GST ഇൻവോയ്സ് അനുസരണത്തിനായി സ്ഥിരീകരിച്ച ശേഷം രജിസ്റ്റർ ചെയ്ത ബിസിനസ് വിലാസവും GSTIN-ഉം ഇവിടെ കാണിക്കും.',
+    businessBody: 'Samaan-Bol, ഇന്ത്യ. Razorpay/GST ഇൻവോയ്സ് അനുസരണത്തിനായി സ്ഥിരീകരിച്ച ശേഷം രജിസ്റ്റർ ചെയ്ത ബിസിനസ് വിലാസവും GSTIN-ഉം ഇവിടെ കാണിക്കും.',
   },
 };
 
@@ -1255,7 +1255,7 @@ const pa: SubscriptionStrings = {
     refund: 'ਰਿਫੰਡ ਨੀਤੀ',
     privacy: 'ਗੋਪਨੀਯਤਾ ਨੀਤੀ',
     terms: 'ਸੇਵਾ ਸ਼ਰਤਾਂ',
-    copyright: '© Samaan Bol. ਭਾਰਤੀ ਰਿਟੇਲ ਲਈ ਵੌਇਸ-ਫਸਟ ਇਨਵੈਂਟਰੀ।',
+    copyright: '© Samaan-Bol. ਭਾਰਤੀ ਰਿਟੇਲ ਲਈ ਵੌਇਸ-ਫਸਟ ਇਨਵੈਂਟਰੀ।',
   },
   plans: { monthlyLabel: 'ਮਾਸਿਕ', annualLabel: 'ਸਾਲਾਨਾ', monthlyDescription: 'ਪ੍ਰੀਮੀਅਮ — ਮਾਸਿਕ', annualDescription: 'ਪ੍ਰੀਮੀਅਮ — ਸਾਲਾਨਾ' },
   pricing: {
@@ -1351,7 +1351,7 @@ const pa: SubscriptionStrings = {
     responseHeading: 'ਜਵਾਬ ਸਮਾਂ',
     responseBody: 'ਅਸੀਂ 2 ਕੰਮ ਕਾਜ ਦੇ ਦਿਨਾਂ ਅੰਦਰ ਜਵਾਬ ਦੇਣ ਦਾ ਟੀਚਾ ਰੱਖਦੇ ਹਾਂ। ਰਿਫੰਡ ਅਤੇ ਬਿਲਿੰਗ ਬੇਨਤੀਆਂ ਲਈ ਤਸਦੀਕ ਲਈ Razorpay ਭੁਗਤਾਨ ਪਛਾਣਕਰਤਾਵਾਂ ਦੀ ਲੋੜ ਹੋ ਸਕਦੀ ਹੈ।',
     businessHeading: 'ਕਾਰੋਬਾਰੀ ਪਤਾ',
-    businessBody: 'Samaan Bol, ਭਾਰਤ। Razorpay/GST ਇਨਵੌਇਸ ਪਾਲਣਾ ਲਈ ਪੁਸ਼ਟੀ ਹੋਣ ਤੋਂ ਬਾਅਦ ਰਜਿਸਟਰਡ ਕਾਰੋਬਾਰੀ ਪਤਾ ਅਤੇ GSTIN ਇੱਥੇ ਦਿਖਾਇਆ ਜਾਵੇਗਾ।',
+    businessBody: 'Samaan-Bol, ਭਾਰਤ। Razorpay/GST ਇਨਵੌਇਸ ਪਾਲਣਾ ਲਈ ਪੁਸ਼ਟੀ ਹੋਣ ਤੋਂ ਬਾਅਦ ਰਜਿਸਟਰਡ ਕਾਰੋਬਾਰੀ ਪਤਾ ਅਤੇ GSTIN ਇੱਥੇ ਦਿਖਾਇਆ ਜਾਵੇਗਾ।',
   },
 };
 
@@ -1373,7 +1373,7 @@ const or: SubscriptionStrings = {
     refund: 'ରିଫଣ୍ଡ ନୀତି',
     privacy: 'ଗୋପନୀୟତା ନୀତି',
     terms: 'ସେବା ସର୍ତ୍ତାବଳୀ',
-    copyright: '© Samaan Bol. ଭାରତୀୟ ଖୁଚୁରା ବ୍ୟବସାୟ ପାଇଁ ଭଏସ୍-ଫାର୍ଷ୍ଟ ଇନଭେଣ୍ଟରୀ।',
+    copyright: '© Samaan-Bol. ଭାରତୀୟ ଖୁଚୁରା ବ୍ୟବସାୟ ପାଇଁ ଭଏସ୍-ଫାର୍ଷ୍ଟ ଇନଭେଣ୍ଟରୀ।',
   },
   plans: { monthlyLabel: 'ମାସିକ', annualLabel: 'ବାର୍ଷିକ', monthlyDescription: 'ପ୍ରିମିୟମ୍ — ମାସିକ', annualDescription: 'ପ୍ରିମିୟମ୍ — ବାର୍ଷିକ' },
   pricing: {
@@ -1469,7 +1469,7 @@ const or: SubscriptionStrings = {
     responseHeading: 'ପ୍ରତିକ୍ରିୟା ସମୟ',
     responseBody: 'ଆମେ 2 କାର୍ଯ୍ୟ ଦିବସ ମଧ୍ୟରେ ପ୍ରତିକ୍ରିୟା ଦେବାକୁ ଲକ୍ଷ୍ୟ ରଖୁଛୁ। ରିଫଣ୍ଡ ଏବଂ ବିଲିଂ ଅନୁରୋଧ ପାଇଁ ସତ୍ୟାପନ ପାଇଁ Razorpay ପେମେଣ୍ଟ ଚିହ୍ନଟକାରୀ ଆବଶ୍ୟକ ହୋଇପାରେ।',
     businessHeading: 'ବ୍ୟବସାୟ ଠିକଣା',
-    businessBody: 'Samaan Bol, ଭାରତ। Razorpay/GST ଇନଭଏସ୍ ଅନୁପାଳନ ପାଇଁ ନିଶ୍ଚିତ ହେବା ପରେ ପଞ୍ଜିକୃତ ବ୍ୟବସାୟ ଠିକଣା ଏବଂ GSTIN ଏଠାରେ ଦେଖାଯିବ।',
+    businessBody: 'Samaan-Bol, ଭାରତ। Razorpay/GST ଇନଭଏସ୍ ଅନୁପାଳନ ପାଇଁ ନିଶ୍ଚିତ ହେବା ପରେ ପଞ୍ଜିକୃତ ବ୍ୟବସାୟ ଠିକଣା ଏବଂ GSTIN ଏଠାରେ ଦେଖାଯିବ।',
   },
 };
 
