@@ -12,7 +12,8 @@
     "check:gst-core": "node scripts/check-gst-core.mjs",
     "test:translations": "node scripts/test-translations.mjs",
     "check:release": "npm run test:gst && npm run test:translations && tsc --noEmit",
-    "build:verified": "npm run check:release && npm run build"
+    "build:verified": "npm run check:release && npm run build",
+    "test:seo": "node scripts/test-public-seo.mjs"
   },
   "repository": {
     "type": "git",

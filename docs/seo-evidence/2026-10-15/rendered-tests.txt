@@ -1,0 +1,14 @@
+PASS /
+PASS /hi
+PASS /bn
+PASS /ta
+PASS /te
+PASS /mr
+PASS /kn
+PASS /gu
+PASS /ml
+PASS /pa
+PASS /or
+PASS guide, Hindi steps, manual capture disclosure, llms.txt and sitemap
+Public routes, store links, refund redirects, canonical/hreflang, pricing and schema visibility passed.
+Authenticated-route checks skipped (--public-only); browser behavior still requires QA.

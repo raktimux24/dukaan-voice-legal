@@ -1,4 +1,5 @@
 import type { Locale } from '../i18n';
+import { productAnswers } from './productAnswers';
 import { laptopLocales } from './laptopLocales';
 
 export type LaptopCopy = {
@@ -112,5 +113,16 @@ const hindi: LaptopCopy = {
 const laptopCopy: Partial<Record<Locale, LaptopCopy>> = { hi: hindi, ...laptopLocales };
 
 export function getLaptopCopy(locale: Locale): LaptopCopy {
-  return laptopCopy[locale] ?? english;
+  // Share verified capability copy with the homepage so translations cannot drift.
+  const copy = laptopCopy[locale] ?? english;
+  const answers = productAnswers(locale);
+  const browser = answers[4];
+  return {
+    ...copy,
+    description: browser.a,
+    lead: answers[0].a,
+    phoneHeading: browser.q,
+    phoneBody: browser.a,
+    faq: [browser, ...copy.faq.slice(1)],
+  };
 }

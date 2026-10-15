@@ -1,0 +1,97 @@
+> dukaan-voice-legal@1.0.0 build
+> next build --webpack
+
+▲ Next.js 16.2.6 (webpack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.7s
+  Running TypeScript ...
+  Finished TypeScript in 6.0s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/134) ...
+  Generating static pages using 9 workers (33/134)
+  Generating static pages using 9 workers (66/134)
+  Generating static pages using 9 workers (100/134)
+✓ Generating static pages using 9 workers (134/134) in 488ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /[locale]
+├ ƒ /[locale]/account
+├ ƒ /[locale]/billing-on-a-laptop
+├ ƒ /[locale]/contact
+├ ƒ /[locale]/pricing
+├ ƒ /[locale]/privacy-policy
+├ ƒ /[locale]/terms-of-service
+├ ƒ /[locale]/udhaar
+├ ƒ /account
+├ ƒ /billing-on-a-laptop
+├ ƒ /contact
+├ ƒ /guides/voice-billing-for-kirana
+├ ○ /icon.svg
+├ ○ /manifest.webmanifest
+├ ○ /opengraph-image
+├ ƒ /pricing
+├ ƒ /privacy-policy
+├ ƒ /refund-policy
+├ ○ /robots.txt
+├ ƒ /shop
+├ ƒ /shop/activity
+├ ƒ /shop/adjustments/[id]
+├ ƒ /shop/alerts
+├ ƒ /shop/brief
+├ ƒ /shop/buy-list
+├ ƒ /shop/customers
+├ ƒ /shop/customers/[id]
+├ ƒ /shop/onboarding
+├ ƒ /shop/products
+├ ƒ /shop/products/[id]
+├ ƒ /shop/products/[id]/edit
+├ ƒ /shop/products/[id]/gst
+├ ƒ /shop/products/[id]/gst/rsp
+├ ƒ /shop/products/gst
+├ ƒ /shop/products/new
+├ ƒ /shop/purchases
+├ ƒ /shop/purchases/[id]
+├ ƒ /shop/purchases/new
+├ ƒ /shop/reports
+├ ƒ /shop/sales
+├ ƒ /shop/sales/[id]
+├ ƒ /shop/sales/refunds
+├ ƒ /shop/sell
+├ ƒ /shop/sell/checkout
+├ ƒ /shop/settings
+├ ƒ /shop/settings/gst
+├ ƒ /shop/settings/gst/checks
+├ ƒ /shop/settings/gst/devices
+├ ƒ /shop/settings/gst/exports
+├ ƒ /shop/settings/gst/numbers
+├ ƒ /shop/settings/gst/periods
+├ ƒ /shop/settings/gst/providers
+├ ƒ /shop/settings/gst/recovery
+├ ƒ /shop/settings/gst/recovery/[requestId]
+├ ƒ /shop/settings/gst/rounding
+├ ƒ /shop/settings/gst/turnover
+├ ƒ /shop/settings/payments
+├ ƒ /shop/settings/shop
+├ ƒ /shop/settings/staff
+├ ƒ /shop/settings/subscription
+├ ƒ /shop/sso-callback
+├ ƒ /shop/suppliers
+├ ƒ /shop/suppliers/[name]
+├ ƒ /shop/suppliers/records/[id]
+├ ƒ /shop/voice
+├ ○ /sitemap.xml
+├ ƒ /subscription/return
+├ ƒ /terms-of-service
+├ ○ /twitter-image
+└ ƒ /udhaar
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

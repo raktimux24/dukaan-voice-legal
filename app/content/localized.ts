@@ -1,6 +1,6 @@
 import { defaultLocale, type Locale, type PageKind, localizedPath, locales } from '../i18n';
 import { homeHtml, proofSectionHtml } from './home';
-import { productAnswersHtml } from './productAnswers';
+import { productAnswers, productAnswersHtml } from './productAnswers';
 import { privacyHtml } from './privacy';
 import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
@@ -170,18 +170,21 @@ function adaptHome(html: string, locale: Locale) {
     .replace(/<span class="hero-rotate-word">(?:Punjabi|Odia)<\/span>/g, '')
     .replaceAll('10 Indian languages + English', '8 Indian languages + English')
     .replaceAll('Malayalam, Punjabi, Odia, English.', 'Malayalam, English.')
-    .replace(/(<section class="languages-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${getLocaleHomeSlots(locale)?.f2Body ?? 'Voice: Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam and English, including Hinglish. Read this website in your preferred language below. The browser shop is currently in English.'}${after}`)
+    .replace(/(<section class="languages-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${productAnswers(locale)[3].a}${after}`)
 
     .replace(/<div class="lang-grid reveal">[\s\S]*?<\/div>/, `<div class="lang-grid reveal">${locales.map(item => `<a class="lang-chip" href="${localizedPath(item.code, 'home')}" lang="${item.hreflang}">${item.nativeLabel}</a>`).join('')}</div>`)
 
     .replace('</nav>', '</nav><main id="main-content">')
     .replace('<footer>', `${productAnswersHtml(locale)}<section class="guide-discovery"><div class="container"><a href="/guides/voice-billing-for-kirana" lang="en">How to use voice billing in your kirana store${locale === 'en' ? '' : ' (English guide)'} →</a></div></section></main><footer>`)
+    .replace(/(<section class="web-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${productAnswers(locale)[4].a}${after}`)
     .replace(/<h4>/g, '<h2>').replace(/<\/h4>/g, '</h2>');
+
+  acquisitionHtml = acquisitionHtml.replace(/<p class="hero-sub">[\s\S]*?<\/p>/, `<p class="hero-sub">${productAnswers(locale)[0].a}</p>`);
 
   if (locale === 'en') {
     acquisitionHtml = acquisitionHtml
       .replace('You already said it out loud.<br>The bill should keep up.', 'Voice billing for your kirana.')
-      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Samaan Bol turns a spoken sale into a bill on your phone. Review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the sale. Speak in 8 Indian languages or English, including Hinglish. Use the same shop on a laptop.</p>');
+      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Samaan Bol turns a spoken sale into a bill on your phone. Review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the sale. Speak in 8 Indian languages or English, including Hinglish. Use the same shop on a laptop with search and barcode scanning.</p>');
   }
 
   if (locale === 'pa' || locale === 'or') {

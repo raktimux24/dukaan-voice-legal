@@ -1,0 +1,14 @@
+> dukaan-voice-legal@1.0.0 test:seo
+> node scripts/test-public-seo.mjs
+
+PASS en: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS hi: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS bn: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS ta: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS te: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS mr: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS kn: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS gu: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS ml: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS pa: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
+PASS or: FAQ, GST, languages, pricing, metadata, sitemap, browser copy
