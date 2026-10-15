@@ -6,11 +6,11 @@ import { HomeEffects } from '../components/HomeEffects';
 import { pageMetadata } from '../seo';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Refund Policy — Samaan-Bol',
-  description: 'Read the Samaan-Bol refund policy for Razorpay subscription payments, cancellations, renewal access, and refund timelines.',
+  title: 'Refund Policy — Samaan Bol',
+  description: 'Read the Samaan Bol refund policy for Razorpay subscription payments, cancellations, renewal access, and refund timelines.',
   path: '/refund-policy',
   page: 'refund',
-  keywords: ['Samaan-Bol refund policy', 'Razorpay subscription refund', 'UPI Autopay cancellation'],
+  keywords: ['Samaan Bol refund policy', 'Razorpay subscription refund', 'UPI Autopay cancellation'],
   languageAlternates: false,
 });
 
@@ -24,7 +24,7 @@ export default function RefundPolicyPage() {
       <main className="subscription-main">
         <section className="subscription-section">
           <h1>Refund Policy</h1>
-          <p className="subscription-lead">Samaan-Bol Premium subscriptions are billed through Razorpay. This policy explains refunds, cancellations, and renewal access.</p>
+          <p className="subscription-lead">Samaan Bol Premium subscriptions are billed through Razorpay. This policy explains refunds, cancellations, and renewal access.</p>
           <div className="subscription-panel">
             <ul className="policy-list">
               <li>First charges are eligible for a 7-day no-questions refund window.</li>

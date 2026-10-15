@@ -6,11 +6,11 @@ import { LegalEffects } from '../components/LegalEffects';
 import { pageMetadata } from '../seo';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Privacy Policy — Samaan-Bol',
-  description: 'Read the Samaan-Bol privacy policy for voice recordings, account data, inventory data, third-party services, storage, and account deletion.',
+  title: 'Privacy Policy — Samaan Bol',
+  description: 'Read the Samaan Bol privacy policy for voice recordings, account data, inventory data, third-party services, storage, and account deletion.',
   path: '/privacy-policy',
   page: 'privacy',
-  keywords: ['Samaan-Bol privacy policy', 'voice inventory app privacy', 'inventory app data privacy India'],
+  keywords: ['Samaan Bol privacy policy', 'voice inventory app privacy', 'inventory app data privacy India'],
 });
 
 export default function PrivacyPolicyPage() {

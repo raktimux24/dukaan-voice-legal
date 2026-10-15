@@ -1,3 +1,4 @@
+import { productAnswers } from './productAnswers';
 import type { Locale } from '../i18n';
 
 export type LocaleSeo = {
@@ -59,19 +60,6 @@ const localeSeo: Partial<Record<Locale, LocaleSeo>> = {
   },
 };
 
-const browserNote: Partial<Record<Locale, string>> = {
-  hi: ' लैपटॉप पर वही दुकान ब्राउज़र में चलती है। वॉइस फ़ोन पर रहती है।',
-  bn: ' ল্যাপটপে একই দোকান ব্রাউজারে চলে। ভয়েস ফোনে থাকে।',
-  ta: ' லேப்டாப்பில் அதே கடை உலாவியில் ஓடும். வாய்ஸ் போனில் இருக்கும்.',
-  pa: ' ਲੈਪਟਾਪ ’ਤੇ ਉਹੀ ਦੁਕਾਨ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਚੱਲਦੀ ਹੈ। ਵੌਇਸ ਫੋਨ ’ਤੇ ਰਹਿੰਦੀ ਹੈ।',
-  te: ' ల్యాప్‌టాప్‌లో అదే దుకాణం బ్రౌజర్‌లో నడుస్తుంది. వాయిస్ ఫోన్‌లో ఉంటుంది.',
-  mr: ' लॅपटॉपवर तीच दुकान ब्राउझरमध्ये चालते. व्हॉइस फोनवर राहते.',
-  kn: ' ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ ಅದೇ ಅಂಗಡಿ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ನಡೆಯುತ್ತದೆ. ವಾಯ್ಸ್ ಫೋನ್‌ನಲ್ಲಿ ಇರುತ್ತದೆ.',
-  gu: ' લેપટોપ પર એ જ દુકાન બ્રાઉઝરમાં ચાલે છે. વૉઇસ ફોન પર રહે છે.',
-  ml: ' ലാപ്‌ടോപ്പിൽ അതേ കട ബ്രൗസറിൽ ഓടും. വോയ്‌സ് ഫോണിൽ നിൽക്കും.',
-  or: ' ଲ୍ୟାପଟପ୍‌ରେ ସେହି ଦୋକାନ ବ୍ରାଉଜରରେ ଚାଲେ। ଭଏସ୍ ଫୋନରେ ରହେ।',
-};
-
 const browserFeature: Partial<Record<Locale, string>> = {
   hi: 'ब्राउज़र में वही दुकान: बिक्री, स्टॉक, बिल',
   bn: 'ব্রাউজারে একই দোকান: বিক্রি, স্টক, বিল',
@@ -88,12 +76,12 @@ const browserFeature: Partial<Record<Locale, string>> = {
 export function getLocaleSeo(locale: Locale): (LocaleSeo & { websiteDescription: string }) | undefined {
   const seo = localeSeo[locale];
   if (!seo) return undefined;
-  const description = `${seo.description}${browserNote[locale] ?? ''}`;
+  const description = productAnswers(locale)[0].a;
   const feature = browserFeature[locale];
   return {
     ...seo,
     description,
-    featureList: feature ? [...seo.featureList, feature] : seo.featureList,
+    featureList: [...seo.featureList, ...(feature ? [feature] : []), productAnswers(locale)[3].a, productAnswers(locale)[6].a],
     websiteDescription: description,
   };
 }

@@ -7,11 +7,11 @@ import { getSubscriptionStrings } from '../content/subscriptionStrings';
 import { pageMetadata } from '../seo';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Contact Support — Samaan-Bol',
-  description: 'Contact Samaan-Bol support for app help, subscription billing, refunds, invoices, and account questions.',
+  title: 'Contact Support — Samaan Bol',
+  description: 'Contact Samaan Bol support for app help, subscription billing, refunds, invoices, and account questions.',
   path: '/contact',
   page: 'contact',
-  keywords: ['Samaan-Bol contact', 'Samaan-Bol support', 'voice inventory app support'],
+  keywords: ['Samaan Bol contact', 'Samaan Bol support', 'voice inventory app support'],
 });
 
 export default function ContactPage() {
