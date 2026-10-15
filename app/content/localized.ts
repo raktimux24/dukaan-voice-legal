@@ -184,7 +184,7 @@ function adaptHome(html: string, locale: Locale) {
   if (locale === 'en') {
     acquisitionHtml = acquisitionHtml
       .replace('You already said it out loud.<br>The bill should keep up.', 'Voice billing for your kirana.')
-      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Samaan Bol turns a spoken sale into a bill on your phone. Review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the sale. Speak in 8 Indian languages or English, including Hinglish. Use the same shop on a laptop, with voice on microphone-supported browsers.</p>');
+      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Samaan Bol turns a spoken sale into a bill on your phone. Review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the sale. Speak in 8 Indian languages or English, including Hinglish. Use the same shop on a laptop with search and barcode scanning.</p>');
   }
 
   if (locale === 'pa' || locale === 'or') {

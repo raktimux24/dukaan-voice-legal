@@ -13,7 +13,7 @@ const faq = [
   { q: 'What should I check before completing a voice bill?', a: 'Check the matched product, quantity, unit, price and customer. A spoken command can be misheard, especially in a noisy shop. Correct the cart before you complete the sale.' },
   { q: 'What if an item is not recognized?', a: 'Check whether the product exists in your shop catalogue. Search or select it manually, then check its quantity and price. Do not accept a different product simply because its name sounds similar.' },
   { q: 'Can a spoken command confirm UPI payment?', a: 'No. Showing a UPI QR and receiving payment are separate steps. Confirm the payment yourself before marking the sale as paid.' },
-  { q: 'Can the owner use a laptop while a helper uses a phone?', a: 'Yes. Use the same shop with the appropriate team membership. Browser billing supports search, barcode scanning and Premium voice on browsers with microphone recording support. Voice needs internet and microphone permission; review the draft before checkout.' },
+  { q: 'Can the owner use a laptop while a helper uses a phone?', a: 'Yes. Use the same shop with the appropriate team membership. Use search or barcode scanning in the browser and the phone app for voice billing. Phone and browser sales belong to the same shop; review the bill before checkout.' },
 ];
 export const metadata: Metadata = pageMetadata({ title, description, path, languageAlternates: false });
 
@@ -95,7 +95,7 @@ export default function VoiceBillingGuide() {
         <section className="subscription-section">
           <h2>When voice is not the right input</h2>
           <p>If the shop is noisy or a name is repeatedly misheard, use manual product selection or barcode scanning and check the quantity. If there is no internet connection, do not rely on voice processing. Avoid repeating a sale until you know whether the previous attempt completed.</p>
-          <p>On a laptop, use search or scanning in the browser. Premium voice is also available in browsers that support microphone recording, with internet and microphone permission. <Link href="/billing-on-a-laptop">See the phone and laptop workflow</Link>.</p>
+          <p>On a laptop, use search or scanning in the browser. For voice billing, use the phone app and review the recognized items before checkout. <Link href="/billing-on-a-laptop">See the phone and laptop workflow</Link>.</p>
         </section>
         <section className="subscription-section">
           <h2>Questions at the counter</h2>

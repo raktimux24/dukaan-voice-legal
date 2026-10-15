@@ -22,7 +22,7 @@ export const seoKeywords = [
 ];
 
 export const defaultDescription =
-  'Voice billing for kirana stores on phone and browser. Cash, UPI QR and udhaar. GST billing records and review exports; no GST return filing.';
+  'Kirana voice billing on your phone, with the same shop in a browser. Cash, UPI QR and udhaar. GST records and review exports; no GST return filing.';
 
 export const defaultTitle = 'Samaan Bol — Kirana voice billing, phone and browser';
 

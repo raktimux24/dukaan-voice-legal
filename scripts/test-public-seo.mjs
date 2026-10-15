@@ -50,6 +50,7 @@ try {
     assert.equal(meta.alternates.languages['x-default'], '/');
     for (const locale of locales) assert.equal(meta.alternates.languages[locale.hreflang], localizedPath(locale.code, 'home'));
     assert.ok(sitemap.some(item => new URL(item.url).pathname.replace(/\/$/, '') === path.replace(/\/$/, '')), `${code}: sitemap`);
+    assert.ok(!html.includes('microphone-supported browsers') && !html.includes('browser shop includes Premium voice'), `${code}: no unaccepted browser-voice availability claim`);
     const laptop = getLaptopCopy(code);
     assert.equal(laptop.phoneBody, answers[4].a, `${code}: browser feature consistency`);
     assert.deepEqual(laptop.faq[0], answers[4]);

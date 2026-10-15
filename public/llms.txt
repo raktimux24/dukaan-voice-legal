@@ -4,7 +4,7 @@
 
 - [Home](https://samaanbol.space/): Product overview and visible questions and answers.
 - [Pricing](https://samaanbol.space/pricing): Free download and manual plan. Premium is ₹499/month or ₹3,999/year. New shops receive a 7-day in-app Premium trial without a card.
-- [Voice billing guide](https://samaanbol.space/guides/voice-billing-for-kirana): Review products, quantities and prices before completing a sale. Voice needs internet; browser recording also needs microphone support and permission.
+- [Voice billing guide](https://samaanbol.space/guides/voice-billing-for-kirana): Review products, quantities and prices before completing a sale. Phone-app voice needs internet. Use search or barcode scanning for browser billing.
 - [Contact](https://samaanbol.space/contact): Product support.
 
 Voice choices: Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, English and Hinglish. Website reading is available in eleven languages, including Punjabi and Odia; this does not imply Punjabi or Odia voice or app-interface support.

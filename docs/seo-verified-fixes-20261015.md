@@ -2,7 +2,7 @@
 
 ## Review state
 
-Prepared locally on `seo/verified-seo-main-2026-10-15`, based on locally available `origin/main` commit `8bb8ee9236f8214d11b474ec32354e2835ccc2fb`. No push, PR, merge, deployment, production login or customer transaction was performed. The original acquisition checkout and its untracked SEO evidence were preserved. No secrets or customer records are included in these changes.
+Prepared locally on `seo/verified-seo-main-2026-10-15`, based on the cached, locally available `origin/main` commit `8bb8ee9236f8214d11b474ec32354e2835ccc2fb`. No fetch, push, PR, merge, deployment, production login or customer transaction was performed. The remote tip was not freshly verified. The original acquisition checkout and its untracked SEO evidence were preserved. No secrets or customer records are included in these changes.
 
 The original checkout was on an older acquisition branch. Its GST plan still said acceptance was outstanding. The newer main baseline includes the deployed acceptance records below; use those records rather than the stale branch's release description.
 
@@ -10,14 +10,14 @@ The original checkout was on an older acquisition branch. Its GST plan still sai
 
 - **GST:** `docs/gst-web-parity-plan-20261007.md` and `docs/gst-web-parity-acceptance-20261008.md` record a released web implementation and persisted Composition billing, retained ordinary credit notes, purchase invoices and saved purchase CSV exports. Source routes under `app/shop/settings/gst`, `app/shop/purchases`, and the tax/profile/document implementations in `app/lib/shop` support scoped wording about settings, tax profiles, billing/purchase records and review exports. These are existing acceptance records, not new live acceptance in this SEO task. Export records are not government filing. Special RSP/rounding issuance and provider activation remain gated; no universal GST compliance claim is made.
 - **Voice:** the mobile repository's `src/components/ui/language-picker.tsx` offers English, Hindi, Hinglish, Tamil, Telugu, Bengali, Marathi, Kannada, Gujarati and Malayalam. `app/components/shop/screens/settings.tsx` and `app/lib/shop/translations.ts` use the same preference choices for browser UI. Punjabi and Odia are not selectable app/voice languages. `app/i18n.ts` exposes eleven website reading locales, including Punjabi and Odia. Therefore eleven website locales must not be presented as eleven voice or app UI languages.
-- **Browser voice:** `app/components/shop/screens/voice.tsx`, `app/components/shop/voice-capture.tsx`, `app/lib/shop/browser-audio.ts` and `app/lib/shop/voice-review.ts` implement Premium microphone capture, server processing, review and cart preparation. Copy now states internet, microphone support and permission requirements. This is implementation verification, not a new real-device/browser voice acceptance or voice-recognition capture.
+- **Browser voice:** `app/components/shop/screens/voice.tsx`, `app/components/shop/voice-capture.tsx`, `app/lib/shop/browser-audio.ts` and `app/lib/shop/voice-review.ts` implement Premium microphone capture, server processing, review and cart preparation. Merge `bd4b078` added sale-to-cart voice flows. However, `docs/mobile-web-parity-audit-20261009.md` explicitly leaves real microphone recognition, stock changes and voice checkout as acceptance gates. Independent final review found that the first SEO commit overreached by advertising browser voice availability. The follow-up removes those availability claims. Public copy describes search/scan in the browser and phone-app voice, without falsely asserting that browser voice is absent.
 - **Pricing:** existing free manual plan, free download, 7-day in-app trial for new shops, ₹499/month and ₹3,999/year remain distinct. Zero-price application schema still describes the download, not free Premium.
 
 ## Changes
 
 - Seven visible questions and matching FAQPage entities in each of eleven homepages. Nine locales previously returned no FAQ entries; English and Hindi already had six. The seventh topic explains scoped GST tools and filing limits.
 - Existing combined SoftwareApplication/MobileApplication/WebApplication entity retained; no duplicate application entity added. App language scope stays separate from website reading locales. Localized schema features include voice/reading and GST distinctions.
-- Home language section, hero, browser section, localized descriptions and laptop article now draw from shared factual answers, removing stale phone-only/browser-English-only claims.
+- Home language section, hero, browser section, localized descriptions and laptop article now draw from shared factual answers, removing categorical phone-only/browser-English-only claims. Browser voice is not advertised as accepted or available.
 - Samaan Bol spelling standardized in subscription/pricing strings and public legal/contact metadata/rendering.
 - Hindi procedural section added to the existing English guide, with an updated modification date. Existing genuine manual simulator images and their disclosure remain unchanged. No voice demo was fabricated.
 - Added optional `public/llms.txt` summary. It is not a Google ranking requirement. FAQ markup supports semantic consistency; this work does not promise FAQ rich results or rankings.
@@ -37,7 +37,15 @@ Logs: `docs/seo-evidence/2026-10-15/`. Authenticated-route checks were explicitl
 
 ## Remaining review decisions
 
-1. Native-speaker review of the nine new localized marketing FAQ sets before publication; automated parity does not validate fluency or every translated nuance.
+1. Native-speaker review of the nine new localized marketing FAQ sets before publication. All new translated FAQ copy, the Hindi additions and revised localized wording have only model drafting and automated structural review; no independent human linguistic review was performed. Automated parity does not validate fluency or every translated nuance.
 2. Real voice-flow screenshots require a controlled synthetic demo, successful microphone/STT processing and review, with permission to operate the chosen test shop/device. Existing manual screenshots remain truthfully labelled.
 3. Public App Store/Play descriptions were not edited. Align them through the store publication workflow after reviewing the website wording; no store write or release was authorized here.
 4. Special billing eligibility, provider activation and tax filing must not be broadened by copy review. This change makes no claim of universal GST compliance or government submission.
+
+## Independent final review
+
+- Removed unsupported browser-voice availability claims from all locale answers, home hero, guide and llms.txt. Merged/deployed code is not equivalent to a successful real microphone/checkout acceptance run.
+- GST release evidence is historical and scoped: PR #29 documentation commit `bb03c49` records web `e2c4b8330c9d1248437c653af6352b7457175327`, published Netlify deploy `6ac6c2bd37bca600081a1214`, and purchase/Composition/retained-credit/report readback. Later product-tax-history readback records PR #80 main `7c65e2f`, deploy `6ac964d30a75ee0008654e33`. No fresh production check or complete GST acceptance is claimed.
+- The cached reference is dated 13 October 2026, not a freshly fetched remote tip. The task must be rebased/rechecked against a newly fetched remote branch in the eventual review workflow.
+- Initial tests ran on the final working source before commit `6cd28e5`, not as a postcommit run on that hash. A fresh postcommit verification of the corrected final commit is required and recorded with the delivered review report.
+- The scoped code review found no additional blocking SEO rendering/schema regressions. Authenticated financial behavior, microphone recognition, printer/device behavior, native-speaker quality and current production state remain outside the checks.
