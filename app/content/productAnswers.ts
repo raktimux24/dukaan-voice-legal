@@ -31,5 +31,5 @@ export function productAnswersHtml(locale: Locale) {
   const answers = productAnswers(locale);
   if (!answers.length) return '';
   const title = productAnswersTitle(locale);
-  return `<section class="product-answers" id="questions"><div class="container"><h2>${title}</h2><div class="faq-list">${answers.map(({q,a})=>`<details open><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></div></section>`;
+  return `<section class="product-answers" id="questions" aria-labelledby="questions-title"><div class="container"><h2 id="questions-title">${title}</h2><div class="faq-list">${answers.map(({q,a}, index)=>`<details${index === 0 ? ' open' : ''}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></div></section>`;
 }
