@@ -111,10 +111,12 @@ export function AccountDashboard({
   locale,
   lockedShopId,
   embedded = false,
+  managementOnly = false,
 }: {
   locale: Locale;
   lockedShopId?: string;
   embedded?: boolean;
+  managementOnly?: boolean;
 }) {
   const t = getSubscriptionStrings(locale);
   const a = getAccountStrings(locale);
@@ -133,6 +135,8 @@ export function AccountDashboard({
   const [notice, setNotice] = useState('');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoiceError, setInvoiceError] = useState('');
+  const [loadedInvoiceScope, setLoadedInvoiceScope] = useState('');
+  const invoiceScope = `${user?.id ?? ''}:${selectedShopId}`;
   const planInitialized = useRef('');
   const activeShop = useRef(selectedShopId);
   activeShop.current = selectedShopId;
@@ -205,26 +209,27 @@ export function AccountDashboard({
     let active = true;
     setInvoices([]);
     setInvoiceError('');
+    setLoadedInvoiceScope('');
     if (isOwner && selectedShopId) {
       getToken().then(token => getInvoices(selectedShopId, token)).then(result => {
-        if (active) setInvoices(result.invoices);
-      }).catch(() => { if (active) setInvoiceError('Payment history could not be loaded. Please refresh to retry.'); });
+        if (active) { setInvoices(result.invoices); setLoadedInvoiceScope(invoiceScope); }
+      }).catch(() => { if (active) { setInvoiceError('Payment history could not be loaded. Please refresh to retry.'); setLoadedInvoiceScope(invoiceScope); } });
     }
     return () => { active = false; };
-  }, [getToken, isOwner, selectedShopId, entitlement?.currentPeriodEnd]);
+  }, [getToken, isOwner, selectedShopId, entitlement?.currentPeriodEnd, invoiceScope]);
 
   const status = entitlement?.status;
   const mandate = hasMandate(entitlement);
   const isTrial = status === 'trialing';
   const canSubscribe =
-    !!entitlement &&
+    !managementOnly && !!entitlement &&
     !entitlement.pendingReason && !entitlement.cancellationPending && !entitlement.billingSyncPending &&
     (status === 'none' ||
       status === 'expired' ||
       status === 'canceled' ||
       (status === 'pending_authentication' && !mandate) ||
       (isTrial && !mandate));
-  const canManage = !!entitlement && mandate && !entitlement.cancellationPending && !entitlement.billingSyncPending && (status === 'active' || status === 'past_due' || status === 'pending_authentication' || isTrial);
+  const canManage = !managementOnly && !!entitlement && mandate && !entitlement.cancellationPending && !entitlement.billingSyncPending && (status === 'active' || status === 'past_due' || status === 'pending_authentication' || isTrial);
   const canCancel =
     !!entitlement &&
     !entitlement.cancelAtPeriodEnd && !entitlement.cancellationPending &&
@@ -402,7 +407,7 @@ export function AccountDashboard({
   return (
     <section className="subscription-section">
       {embedded ? null : <h1>{t.account.heading}</h1>}
-      {embedded ? null : <p className="subscription-lead">{t.account.leadWithEmail(accountEmail)}</p>}
+      {embedded ? null : <p className="subscription-lead">{managementOnly ? accountEmail : t.account.leadWithEmail(accountEmail)}</p>}
 
       {error ? <div className="subscription-alert">{error}</div> : null}
       {notice ? <div className="subscription-alert success">{notice}</div> : null}
@@ -433,13 +438,13 @@ export function AccountDashboard({
           <h2>{selectedShop?.name ?? t.account.selectShop}</h2>
           {entitlement?.billingSyncPending ? <p role="status">Billing updates are temporarily unavailable. This is your last recorded status. Refresh before making a new change.</p> : null}
           {entitlement?.cancellationPending ? <p role="status">Cancellation is still being confirmed. We will retry automatically; do not set up another subscription.</p> : null}
-          {lead && !entitlement?.billingSyncPending && !entitlement?.cancellationPending ? <p className="muted">{lead}</p> : null}
+          {lead && !entitlement?.billingSyncPending && !entitlement?.cancellationPending ? <p className="muted">{managementOnly ? a.managementLead : lead}</p> : null}
 
           {!isOwner && entitlement ? (
             <div className="subscription-alert" style={{ marginTop: '1rem' }}>
               <p style={{ margin: 0 }}>{a.ownerOnly}</p>
               <p className="muted" style={{ margin: '8px 0 0' }}>
-                {a.signedInAs(accountEmail, roleLabel)}
+                {managementOnly ? `${accountEmail} · ${roleLabel}` : a.signedInAs(accountEmail, roleLabel)}
               </p>
               <div className="portal-actions" style={{ marginTop: '1rem' }}>
                 <button className="subscription-button" type="button" onClick={() => void signOut()}>
@@ -457,19 +462,25 @@ export function AccountDashboard({
                   ? a.pendingSwitchTitle(planLabel(entitlement.pendingPlan, t), formatDate(entitlement.scheduledSwitchAt, t))
                   : a.pendingPaymentTitle(formatDate(entitlement.scheduledSwitchAt, t))}
               </strong>
-              <p className="muted">{a.pendingBody}</p>
-              <p className="muted">{entitlement.canCancelPendingSwitch ? a.pendingNeedsAuth : "The replacement is authorised. To stop future billing, cancel the subscription below."}</p>
+              {managementOnly ? null : <p className="muted">{a.pendingBody}</p>}
+              {managementOnly ? null : <p className="muted">{entitlement.canCancelPendingSwitch ? a.pendingNeedsAuth : "The replacement is authorised. To stop future billing, cancel the subscription below."}</p>}
               {isOwner ? (
                 <div className="portal-actions">
-                  <button className="subscription-button" type="button" disabled={!!busy || !!entitlement.billingSyncPending || !entitlement.canCancelPendingSwitch} onClick={resumePendingAuthorisation}>
+                  {!managementOnly ? <button className="subscription-button" type="button" disabled={!!busy || !!entitlement.billingSyncPending || !entitlement.canCancelPendingSwitch} onClick={resumePendingAuthorisation}>
                     {a.pendingAuthorise}
-                  </button>
+                  </button> : null}
                   <button className="subscription-button secondary" type="button" disabled={!!busy || !!entitlement.billingSyncPending || !entitlement.canCancelPendingSwitch} onClick={dropPendingSwitch}>
                     {a.pendingKeepCurrent}
                   </button>
                   <button className="subscription-button danger" type="button" disabled={!!busy} onClick={cancel}>{t.account.cancelSubscription}</button>
                 </div>
               ) : null}
+            </div>
+          ) : null}
+
+          {managementOnly && isOwner && canCancel && !entitlement?.pendingReason ? (
+            <div className="portal-actions">
+              <button className="subscription-button danger" type="button" disabled={!!busy} onClick={cancel}>{t.account.cancelSubscription}</button>
             </div>
           ) : null}
 
@@ -542,8 +553,8 @@ export function AccountDashboard({
           ) : null}
 
           <h3>{t.account.paymentHistory}</h3>
-          {invoiceError ? <p role="alert">{invoiceError}</p> : null}
-          {invoices.length ? (
+          {isOwner && loadedInvoiceScope === invoiceScope && invoiceError ? <p role="alert">{invoiceError}</p> : null}
+          {isOwner && loadedInvoiceScope === invoiceScope && invoices.length ? (
             <table className="invoice-table">
               <thead>
                 <tr>
@@ -561,7 +572,7 @@ export function AccountDashboard({
                       {(invoice.currency ?? 'INR') === 'INR' ? '₹' : invoice.currency} {invoice.amount}
                     </td>
                     <td>{invoice.status ?? t.account.invoicePaid}</td>
-                    <td>{invoice.invoiceUrl ? <a href={invoice.invoiceUrl}>{t.account.invoiceDownload}</a> : t.account.invoicePending}</td>
+                    <td>{invoice.invoiceUrl && (!managementOnly || invoice.status === 'paid') ? <a href={invoice.invoiceUrl} rel="noreferrer">{t.account.invoiceDownload}</a> : t.account.invoicePending}</td>
                   </tr>
                 ))}
               </tbody>
@@ -575,7 +586,7 @@ export function AccountDashboard({
             <a className="subscription-button secondary" href="samaan-bol://subscription/return">
               {a.openInApp}
             </a>
-            {embedded ? null : (
+            {embedded || managementOnly ? null : (
               <Link className="subscription-button secondary" href={localizedPath(locale, 'pricing')}>
                 {t.account.backToPricing}
               </Link>
@@ -587,8 +598,9 @@ export function AccountDashboard({
   );
 }
 
-export function AccountClient({ locale = defaultLocale }: { locale?: Locale }) {
+export function AccountClient({ locale = defaultLocale, managementOnly = false }: { locale?: Locale; managementOnly?: boolean }) {
   const t = getSubscriptionStrings(locale);
+  const a = getAccountStrings(locale);
   const searchParams = useSearchParams();
   const ticket = searchParams.get('ticket');
   const { isLoaded, isSignedIn } = useUser();
@@ -639,13 +651,13 @@ export function AccountClient({ locale = defaultLocale }: { locale?: Locale }) {
       {!isSignedIn ? (
         <section className="subscription-section">
           <h1>{t.account.signedOutHeading}</h1>
-          <p className="subscription-lead">{t.account.signedOutLead}</p>
+          <p className="subscription-lead">{managementOnly ? a.managementSignIn : t.account.signedOutLead}</p>
           <div className="subscription-panel sign-in-panel">
-            <SignIn routing="hash" forceRedirectUrl={`${localizedPath(locale, "account")}?${new URLSearchParams([...searchParams.entries()].filter(([key]) => key !== "ticket"))}`} />
+            <SignIn routing="hash" withSignUp={!managementOnly} forceRedirectUrl={`${managementOnly ? '/account/mobile' : localizedPath(locale, "account")}?${new URLSearchParams([...searchParams.entries()].filter(([key]) => key !== "ticket"))}`} />
           </div>
         </section>
       ) : (
-        <AccountDashboard locale={locale} />
+        <AccountDashboard locale={locale} managementOnly={managementOnly} />
       )}
     </>
   );
