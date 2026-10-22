@@ -26,6 +26,7 @@ function render(status,{role='OWNER',pending=false,managementOnly=true,invoiceSc
       if(id==='next/link')return ({children,...props})=>React.createElement('a',props,children);
       if(id.startsWith('.')) {
         let resolved=path.resolve(path.dirname(file),id);
+        if(resolved.endsWith('.json'))return JSON.parse(fs.readFileSync(resolved,'utf8'));
         resolved=['.ts','.tsx'].map(ext=>resolved+ext).find(p=>fs.existsSync(p));
         if(!resolved)throw Error('Unresolved module '+id);
         return load(resolved);
