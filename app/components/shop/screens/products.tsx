@@ -73,6 +73,7 @@ export function ProductsScreen() {
         actions={
           <>
             <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost, prefs?.appLanguage))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
+            {perms.canEditProducts ? <Button tone="ghost" href="/shop/products/import">{t('imports.title','Import products')}</Button> : null}
             {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
           </>
         }
