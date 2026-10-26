@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductBarcodeCard} from '../product-barcode';
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -168,6 +169,8 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           <small>{t('pos.add_to_cart', 'Add to the bill')}</small>
         </button>
       </div>
+
+      <ProductBarcodeCard productId={productId}/>
 
       {tracksStock && panel === 'adjust' ? (
         <Card className="stack-form">

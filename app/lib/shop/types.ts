@@ -36,6 +36,7 @@ export type Product = {
   shopId: string;
   name: string;
   barcode?: string;
+  barcodeAliases?:string[];barcodeConflict?:boolean;
   category: string;
   subcategory?: string | null;
   unit: string;

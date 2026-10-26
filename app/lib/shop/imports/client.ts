@@ -15,7 +15,7 @@ export function bindInventoryImports(send:ImportSend){
 export type InventoryImportsApi=ReturnType<typeof bindInventoryImports>;
 export function importErrorKey(error:unknown){
  const code=(error as {code?:string})?.code?.replace(/^import_/,'')??'failed';
- const aliases:Record<string,string>={invalid_mapping:'mapping_help',name_required:'issue.name_required',owner_stock:'issue.owner_stock',cell_too_long:'issue.text_long',too_many_rows:'error.too_large',unsupported_workbook:'error.invalid_file',nothing_to_import:'error.resolve_errors',already_started:'error.stale_review'};
+ const aliases:Record<string,string>={barcode_replace_required:'error.barcode_replace_required',invalid_mapping:'mapping_help',name_required:'issue.name_required',owner_stock:'issue.owner_stock',cell_too_long:'issue.text_long',too_many_rows:'error.too_large',unsupported_workbook:'error.invalid_file',nothing_to_import:'error.resolve_errors',already_started:'error.stale_review'};
  if(aliases[code])return 'imports.'+aliases[code];
  return 'imports.error.'+(['failed','unavailable','stale_review','not_allowed','file_type','invalid_file','too_large','resolve_errors'].includes(code)?code:'failed');
 }
