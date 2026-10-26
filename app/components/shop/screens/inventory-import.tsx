@@ -14,8 +14,7 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
  const w=useInventoryImport(api,{shopId,actorId},allowed,()=>crypto.randomUUID());
  const [limit,setLimit]=useState(50),input=useRef<HTMLInputElement>(null),[confirmed,setConfirmed]=useState(false);
  const {job,options,busy}=w;const counts=importCounts(job?.rows??[]),categories=w.metadata.data?.categories??[];
- const top=useRef<HTMLDivElement>(null);
- useEffect(()=>{top.current?.scrollIntoView({block:'start',behavior:'auto'});},[w.phase,job?.id,job?.state==='applied']);
+ useEffect(()=>{window.scrollTo({top:0,behavior:'auto'});},[w.phase,job?.id,job?.state==='applied']);
  const message=w.error??w.metadata.error;const available=w.metadata.data?.available===true;
  const choose=async(file:File|undefined)=>{
   if(!file)return;if(file.size>10*1024*1024){w.setError({code:'import_too_large'});return;}
@@ -24,7 +23,7 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
  const fieldLabel=(field:string)=>t('imports.field.'+field);
  const display=(field:string,value:unknown)=>value===null||value===undefined?'—':field==='category'?t('catalog.l1.'+value):field==='subcategory'?t('catalog.l2.'+value):field==='unit'&&['piece','packet','dozen','crate'].includes(String(value))?t('imports.unit.'+value):String(value);
  if(!allowed)return <Card><p>{t('imports.error.not_allowed')}</p></Card>;
- return <div ref={top} className="shop-page import-page">
+ return <div className="shop-page import-page">
   <PageHeader title={t('imports.title')} description={t('imports.help')} back={{href:backHref,label:t('products.title')}}/>
   <nav className="import-steps" aria-label={t('imports.title')}>{['upload','map','review'].map((step,index)=><span key={step} aria-current={index===(w.phase==='upload'?0:w.phase==='mapping'?1:2)?'step':undefined}>{t('imports.step_'+step)}</span>)}</nav>
   {message?<div className="import-notice" role="alert"><p>{t(!w.error&&[404,503].includes((w.metadata.error as {status?:number})?.status??0)?'imports.error.unavailable':importErrorKey(message))}</p><Button tone="ghost" onClick={()=>{if(job)void w.open(job.id);else void w.metadata.refetch();}}>{t('imports.refresh')}</Button></div>:null}
