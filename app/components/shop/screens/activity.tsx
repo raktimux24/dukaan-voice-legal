@@ -26,6 +26,7 @@ const FILTERS = [
 ] as const;
 
 const ACTION_KEYS: Record<string, [string, string]> = {
+  party_import:['imports.source','File import'],
   inventory_import:['imports.source','File import'],
   sale: ['activity.filter_sales', 'Sale'],
   sale_created: ['activity.filter_sales', 'Sale'],
@@ -116,7 +117,7 @@ export function ActivityScreen() {
               <li key={log.id} className={`timeline-item ${tone(log.actionType)}`}>
                 <div>
                   <p className="timeline-title">{ACTION_KEYS[log.actionType] ? t(ACTION_KEYS[log.actionType][0], ACTION_KEYS[log.actionType][1]) : log.actionType.replaceAll('_', ' ')}</p>
-                  <p className="timeline-meta">{log.actionType==='inventory_import'?t('imports.activity','Imported {{name}} (row {{row}})',{name:String(log.payload?.productName??''),row:Number(log.payload?.sourceRow??0)}):log.description}</p>
+                  <p className="timeline-meta">{['inventory_import','party_import'].includes(log.actionType)?t('imports.activity','Imported {{name}} (row {{row}})',{name:String(log.payload?.productName??log.payload?.partyName??''),row:Number(log.payload?.sourceRow??0)}):log.description}</p>
                   <p className="timeline-meta">{log.userName} · {log.inputMethod==='import'?t('imports.source','File import'):log.inputMethod}</p>
                 </div>
                 <time className="timeline-when" dateTime={log.createdAt}>{formatTime(log.createdAt)}</time>

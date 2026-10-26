@@ -1,4 +1,5 @@
 "use client";
+import {PartyProfileCard} from '../party-profile';
 import { useState } from "react";
 import { useShop } from "../context";
 import { Card, Button, PageHeader, NoAccess } from "../ui";
@@ -54,6 +55,7 @@ export function GstSupplierDetailScreen({ id }: { id: string }) {
                 </Button>
               ) : null}
             </Card>
+            <PartyProfileCard kind="supplier" id={id}/>
             {editing ? (
               <SupplierEditor
                 key={supplier.id}

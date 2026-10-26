@@ -11,7 +11,7 @@ import { useState } from "react";
 import { formatINR } from '../../../lib/shop/money';
 import { useShopDates } from '../use-shop-dates';
 import { useShop } from "../context";
-import { Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from "../ui";
+import { Button, Card, NoAccess, Notice, PageHeader, Spinner, inputClass } from "../ui";
 
 export function SuppliersScreen() {
   const uiText = useUiText();
@@ -55,6 +55,7 @@ export function SuppliersScreen() {
           "Keep supplier billing details and stock history together. Stock spend comes from recorded buying costs.",
         )}
       />
+      <Button href="/shop/suppliers/import" tone="ghost">{t('partiesImport.supplier_title','Import suppliers')}</Button>
       <Card>
         <SupplierPicker value={editing} onChange={setEditing} />
       </Card>
