@@ -96,8 +96,9 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         </form>
       </Card>
       <GstCollectionReview customerId={customerId}/>
+      <PartyProfileCard kind="customer" id={customerId}/>
       <Card>
-        <PartyProfileCard kind="customer" id={customerId}/><h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
+        <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
         <div className="mt-3 grid gap-2 text-sm">
           {(detail.data?.ledger ?? []).map((entry) => (
             <div key={entry.id} className="flex justify-between gap-3 border-t border-line pt-2">
