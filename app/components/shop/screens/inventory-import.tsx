@@ -1,6 +1,6 @@
 'use client';
 
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useInventoryImport} from '../../../lib/shop/imports/workflow';
 import {IMPORT_FIELDS,importCounts,inferImportMapping,type ImportTemplate} from '../../../lib/shop/imports/contract';
 import {importErrorKey,type InventoryImportsApi} from '../../../lib/shop/imports/client';
@@ -14,6 +14,8 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
  const w=useInventoryImport(api,{shopId,actorId},allowed,()=>crypto.randomUUID());
  const [limit,setLimit]=useState(50),input=useRef<HTMLInputElement>(null),[confirmed,setConfirmed]=useState(false);
  const {job,options,busy}=w;const counts=importCounts(job?.rows??[]),categories=w.metadata.data?.categories??[];
+ const top=useRef<HTMLDivElement>(null);
+ useEffect(()=>{top.current?.scrollIntoView({block:'start',behavior:'auto'});},[w.phase,job?.id,job?.state==='applied']);
  const message=w.error??w.metadata.error;const available=w.metadata.data?.available===true;
  const choose=async(file:File|undefined)=>{
   if(!file)return;if(file.size>10*1024*1024){w.setError({code:'import_too_large'});return;}
@@ -22,7 +24,7 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
  const fieldLabel=(field:string)=>t('imports.field.'+field);
  const display=(field:string,value:unknown)=>value===null||value===undefined?'—':field==='category'?t('catalog.l1.'+value):field==='subcategory'?t('catalog.l2.'+value):field==='unit'&&['piece','packet','dozen','crate'].includes(String(value))?t('imports.unit.'+value):String(value);
  if(!allowed)return <Card><p>{t('imports.error.not_allowed')}</p></Card>;
- return <div className="shop-page import-page">
+ return <div ref={top} className="shop-page import-page">
   <PageHeader title={t('imports.title')} description={t('imports.help')} back={{href:backHref,label:t('products.title')}}/>
   <nav className="import-steps" aria-label={t('imports.title')}>{['upload','map','review'].map((step,index)=><span key={step} aria-current={index===(w.phase==='upload'?0:w.phase==='mapping'?1:2)?'step':undefined}>{t('imports.step_'+step)}</span>)}</nav>
   {message?<div className="import-notice" role="alert"><p>{t(!w.error&&[404,503].includes((w.metadata.error as {status?:number})?.status??0)?'imports.error.unavailable':importErrorKey(message))}</p><Button tone="ghost" onClick={()=>{if(job)void w.open(job.id);else void w.metadata.refetch();}}>{t('imports.refresh')}</Button></div>:null}
@@ -35,7 +37,7 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
     <div className="import-template-actions">{(['xlsx','csv'] as const).map(format=><Button key={format} tone="ghost" disabled={busy||!available} onClick={()=>void w.run(async guard=>{const file=await api.template(shopId,format,language);guard();download(file);})}>{t('imports.download_template')} · {format.toUpperCase()}</Button>)}</div>
     <p className="shop-hint">{t('imports.template_help')}</p>
    </Card>
-   <Card><h2 className="shop-section-title">{t('imports.history')}</h2>{w.metadata.data?.jobs.length?w.metadata.data.jobs.map(j=><button key={j.id} className="shop-list-row w-full" disabled={busy} onClick={()=>void w.open(j.id)}><span className="shop-list-main"><span className="shop-list-title">{j.filename}</span><span className="shop-list-meta">{t('imports.state.'+j.state)}</span></span><span>{j.applied}/{j.total}</span></button>):<p className="shop-hint">{t('imports.no_history')}</p>}</Card>
+   <Card><h2 className="shop-section-title">{t('imports.history')}</h2>{w.metadata.data?.jobs.length?w.metadata.data.jobs.map(j=><button key={j.id} className="shop-list-row w-full" aria-label={j.filename+' · '+t('imports.state.'+j.state)+' · '+t('imports.progress',{done:j.applied,total:j.total})} disabled={busy} onClick={()=>void w.open(j.id)}><span className="shop-list-main"><span className="shop-list-title">{j.filename}</span><span className="shop-list-meta">{t('imports.state.'+j.state)}</span></span><span>{j.applied}/{j.total}</span></button>):<p className="shop-hint">{t('imports.no_history')}</p>}</Card>
   </>:null}
   {job&&options&&w.phase==='mapping'?<Card>
    <h2 className="shop-section-title">{job.filename}</h2><p className="shop-hint">{t('imports.mapping_help')}</p>
