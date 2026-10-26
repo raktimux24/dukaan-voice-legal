@@ -1,4 +1,5 @@
 'use client';
+import {SUPPORTED_LANGUAGES} from '../../lib/shop/languages';
 import {BROWSER_PUSH_OWNER,disconnectBrowserPush} from './browser-notifications';
 import {assertPushSession,beginPushSession,pushSession,withPushSession} from '../../lib/shop/browser-push-session';
 
@@ -21,7 +22,7 @@ import {BillingShell,clearBillingShell} from './billing-shell';
 import { ShopContext, type ShopContextValue } from './context';
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
-const APP_LANGUAGES = new Set(['en', 'hi', 'hinglish', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml']);
+const APP_LANGUAGES = new Set<string>(SUPPORTED_LANGUAGES.map(l=>l.code));
 
 function flattenStrings(value: unknown, prefix = '', out: Record<string, string> = {}) {
   if (typeof value === 'string') {

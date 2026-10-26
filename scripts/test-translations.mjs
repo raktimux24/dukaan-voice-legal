@@ -30,10 +30,19 @@ const require = createRequire(new URL('../app/lib/shop/translations.ts', import.
 const loadTs = (filename) => {
   const exports = {};
   const source = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true } }).outputText;
-  new Function('require', 'exports', source)((id) => id === './en-fallback' ? loadTs('app/lib/shop/en-fallback.ts') : require(id), exports);
+  new Function('require', 'exports', source)((id) => id === './en-fallback' ? loadTs('app/lib/shop/en-fallback.ts') : id === './languages' ? loadTs('app/lib/shop/languages.ts') : require(id), exports);
   return exports;
 };
 const { translateUi } = loadTs('app/lib/shop/translations.ts');
+const retail = JSON.parse(fs.readFileSync('app/lib/shop/retail-locales.json', 'utf8'));
+for (const language of ['en', ...languages]) {
+  assert.deepEqual(Object.keys(retail[language]).sort(), Object.keys(retail.en).sort());
+  for (const [key, text] of Object.entries(retail[language])) {
+    const vars = Object.fromEntries([...text.matchAll(/\{\{(\w+)\}\}/g)].map(match => [match[1], '2']));
+    const expected = text.replace(/\{\{\w+\}\}/g, '2');
+    assert.equal(translateUi(language, { [key]: 'stale server text' }, key, key, vars), expected, language + ':' + key);
+  }
+}
 // An older general catalog must not replace current bundled GST guidance.
 assert.equal(translateUi('en', { 'gst.margin_estimate': 'Margin uses recorded purchase cost; input-tax credits are not calculated.' }, 'gst.margin_estimate', 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.'), 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.');
 assert.equal(translateUi('en', { 'nav.products': 'Products' }, 'nav.products', 'Products'), translateUi('en', {}, 'nav.products', 'Products'));

@@ -1,12 +1,15 @@
+import retailLocales from './retail-locales.json';
+import {SUPPORTED_LANGUAGES} from './languages';
 import { EN_FALLBACK } from './en-fallback';
 import source from './locales/en.json';
 import gstLocales from './gst-locales.json';
 import webLocales from './gst-web-locales.json';
 
-export const APP_LANGUAGES = ['en', 'hi', 'hinglish', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml'] as const;
+export const APP_LANGUAGES = SUPPORTED_LANGUAGES.map(language=>language.code);
+const retail = retailLocales as Record<string, Record<string, string>>;
 const mobile = gstLocales as Record<string, Record<string, string>>;
 const web = webLocales as Record<string, Record<string, string>>;
-const english: Record<string, string> = { ...source, ...EN_FALLBACK, ...web.en };
+const english: Record<string, string> = { ...source, ...EN_FALLBACK, ...web.en, ...retail.en };
 const currentEnglishGst = Object.fromEntries(Object.entries(english).filter(([key]) => key.startsWith('gst.')));
 const keysByText = new Map<string, string[]>();
 for (const [key, value] of Object.entries(english)) {
@@ -16,7 +19,7 @@ for (const [key, value] of Object.entries(english)) {
 }
 
 export function translateUi(language: string, dictionary: Record<string, string>, key: string, fallback: string, vars?: Record<string, string | number>) {
-  const catalogs = [web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [currentEnglishGst] : []), dictionary];
+  const catalogs = [retail[language] ?? {}, web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [currentEnglishGst] : []), dictionary];
   const webKey = 'web.gst.' + fallback.toLowerCase().replace(/[^a-z0-9]+/g, '_');
   const candidates = [webKey, key, ...(keysByText.get(fallback) ?? [])];
   let text = fallback;
@@ -25,7 +28,7 @@ export function translateUi(language: string, dictionary: Record<string, string>
       const value = catalog[candidate];
       const tokens = value?.match(/\{\{?(\w+)\}?\}/g) ?? [];
       const complete = tokens.every(token => vars && token.replace(/[{}]/g, '') in vars);
-      if (value && complete && value !== candidate && (language === 'en' || value !== english[candidate])) {
+      if (value && complete && value !== candidate && (language === 'en' || value !== english[candidate] || retail[language]?.[candidate] === value)) {
         text = value;
         break outer;
       }
