@@ -1,4 +1,5 @@
 'use client';
+import {PartyProfileCard} from '../party-profile';
 import {GstCustomerPayment} from '../gst-customer-payment';
 
 import { useGstText as useUiText } from "../gst-ui";
@@ -96,7 +97,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
       </Card>
       <GstCollectionReview customerId={customerId}/>
       <Card>
-        <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
+        <PartyProfileCard kind="customer" id={customerId}/><h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
         <div className="mt-3 grid gap-2 text-sm">
           {(detail.data?.ledger ?? []).map((entry) => (
             <div key={entry.id} className="flex justify-between gap-3 border-t border-line pt-2">

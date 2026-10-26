@@ -1,3 +1,4 @@
+import {bindPartyImports} from './party-imports/client';
 import {bindInventoryImports} from './imports/client';
 import {accountedSales,projectLocalStock,type BillingCatalog} from './local-stock';
 import {retainedRequests} from './gst-storage';
@@ -308,6 +309,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
   return {
     assertSession: assertCurrent,
     imports:bindInventoryImports(send),
+    customerImports:bindPartyImports(send,'customer'),supplierImports:bindPartyImports(send,'supplier'),
     gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata,assertCurrent);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');

@@ -27,6 +27,7 @@ export function CustomersScreen() {
   return (
     <div className="shop-page">
       <PageHeader kicker={t('customers.title', 'People')} title={t('customers.title', 'Customers')} description={t('customers.empty_subtitle', 'Profiles and the udhaar ledger. Credit sales at checkout land here.')} />
+      <Button href="/shop/customers/import" tone="ghost">{t('partiesImport.customer_title','Import customers')}</Button>
       <div className="dash-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
         <div className="shop-stat shop-stat--warn"><span className="shop-stat-n num">{summary.isLoading ? '…' : formatINR(summary.data?.outstandingTotal)}</span><span className="shop-stat-l">{t('customers.outstanding', 'Outstanding udhaar')}</span></div>
         <div className="shop-stat"><span className="shop-stat-n num">{summary.data?.debtorCount ?? '…'}</span><span className="shop-stat-l">{t('customers.debtors', 'People with udhaar')}</span></div>
