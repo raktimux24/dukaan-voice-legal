@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import type { BarcodeRequest } from "../../../lib/shop/barcodes/contract";
 import { useBarcodes } from "../../../lib/shop/barcodes/workflow";
 import { barcodeErrorKey } from "../../../lib/shop/barcodes/client";
 import { useShop } from "../context";
@@ -17,6 +18,17 @@ export function ProductBarcodesScreen() {
     { shopId: shop?.id ?? "", actorId: userId ?? "" },
     perms.canEditProducts,
   );
+  const [review, setReview] = useState<BarcodeRequest | null>(null);
+  const reviewPanel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (review) {
+      reviewPanel.current?.focus();
+      reviewPanel.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [review]);
   const [search, setSearch] = useState(""),
     [selected, setSelected] = useState<string[]>([]),
     [limit, setLimit] = useState(40),
@@ -24,6 +36,7 @@ export function ProductBarcodesScreen() {
     [value, setValue] = useState(""),
     [reason, setReason] = useState("");
   useEffect(() => {
+    setReview(null);
     setSelected([]);
     setSearch("");
     setReplace(false);
@@ -41,27 +54,22 @@ export function ProductBarcodesScreen() {
           i.value?.toLowerCase().includes(search.toLowerCase())),
     ),
     visible = filtered.slice(0, limit),
-    blocked = w.busy || !!w.pending || offline;
+    blocked = w.busy || !!w.pending || offline || !!review;
   const ids = selected.filter((id) =>
     items.some((i) => i.id === id && i.active && !i.value),
   );
   useEffect(() => {
     if (productId && single && !single.value) setSelected([productId]);
   }, [productId, single?.value]);
-  const generate = () => {
-    if (window.confirm(t("barcodes.generate_confirm", { count: ids.length })))
-      void w.apply({
-        clientId: crypto.randomUUID(),
-        kind: "generate",
-        productIds: ids,
-      });
-  };
+  const generate = () =>
+    setReview({
+      clientId: crypto.randomUUID(),
+      kind: "generate",
+      productIds: ids,
+    });
   const replaceCode = () => {
-    if (
-      single?.value &&
-      window.confirm(t("barcodes.replace_confirm", { name: single.name }))
-    )
-      void w.apply({
+    if (single?.value)
+      setReview({
         clientId: crypto.randomUUID(),
         kind: "replace",
         productId: single.id,
@@ -92,6 +100,63 @@ export function ProductBarcodesScreen() {
         </Card>
       ) : (
         <>
+          {review ? (
+            <div
+              ref={reviewPanel}
+              role="alertdialog"
+              aria-label={t(
+                review.kind === "generate"
+                  ? "barcodes.generate"
+                  : "barcodes.replace",
+              )}
+              tabIndex={-1}
+            >
+              <Card className="stack-form">
+                <h2 className="shop-section-title">
+                  {t(
+                    review.kind === "generate"
+                      ? "barcodes.generate"
+                      : "barcodes.replace",
+                  )}
+                </h2>
+                <p>
+                  {review.kind === "generate"
+                    ? t("barcodes.generate_confirm", {
+                        count: review.productIds.length,
+                      })
+                    : t("barcodes.replace_confirm", {
+                        name: single?.name ?? "",
+                      })}
+                </p>
+                {review.kind === "replace" ? (
+                  <p className="break-all font-semibold">{review.value}</p>
+                ) : null}
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    tone="ghost"
+                    disabled={w.busy}
+                    onClick={() => setReview(null)}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    disabled={w.busy || offline}
+                    onClick={() => {
+                      const input = review;
+                      setReview(null);
+                      void w.apply(input);
+                    }}
+                  >
+                    {t(
+                      review.kind === "generate"
+                        ? "barcodes.generate"
+                        : "barcodes.replace_save",
+                    )}
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          ) : null}
           {problem ? (
             <Card>
               <div role="alert">
