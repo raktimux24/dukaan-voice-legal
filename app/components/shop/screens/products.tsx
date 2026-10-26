@@ -59,7 +59,7 @@ export function ProductsScreen() {
   });
   const rows = useMemo(() => {
     const text = q.trim().toLowerCase();
-    return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.includes(text)));
+    return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.toLowerCase().includes(text) || item.product.barcodeAliases?.some(code=>code.toLowerCase().includes(text))));
   }, [catalog.data, filter, q]);
 
   if (!shop) return <Spinner label={uiText("Loading products")} />;
@@ -73,6 +73,7 @@ export function ProductsScreen() {
         actions={
           <>
             <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost, prefs?.appLanguage))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
+            {perms.canEditProducts ? <Button tone="ghost" href="/shop/products/barcodes">{t('barcodes.title','Product barcodes')}</Button> : null}
             {perms.canEditProducts ? <Button tone="ghost" href="/shop/products/import">{t('imports.title','Import products')}</Button> : null}
             {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
           </>

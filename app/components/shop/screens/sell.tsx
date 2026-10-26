@@ -1,4 +1,6 @@
 'use client';
+import {isBarcodeQuery,cachedBarcodeMatches} from '../../../lib/shop/barcodes/contract';
+import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 
 import {prepareOfflineInvoices} from '../../../lib/shop/invoice-preparation';
 import { useGstText as useUiText } from "../gst-ui";
@@ -71,7 +73,7 @@ export function SellScreen() {
     const pool = category === 'all' ? items : items.filter((item) => item.product.category === category);
     if (!q) return pool.slice(0, 60);
     return pool
-      .filter((item) => item.product.name.toLowerCase().includes(q) || item.product.barcode?.includes(q) || item.product.shortCode?.toLowerCase() === q)
+      .filter((item) => item.product.name.toLowerCase().includes(q) || item.product.barcode?.toLowerCase().includes(q) || item.product.barcodeAliases?.some(code=>code.toLowerCase().includes(q)) || item.product.shortCode?.toLowerCase() === q)
       .sort((a, b) => {
         const aStarts = a.product.name.toLowerCase().startsWith(q) ? 0 : 1;
         const bStarts = b.product.name.toLowerCase().startsWith(q) ? 0 : 1;
@@ -128,10 +130,11 @@ export function SellScreen() {
         setQuery('');
         return;
       }
+      if(code.startsWith('SB-')){setNotice(t('barcodes.error.not_found','This code is unavailable in this shop.'));return;}
       if (perms.canEditProducts) router.push(`/shop/products/new?barcode=${encodeURIComponent(code)}`);
       else setNotice('No product for that barcode. Ask a manager to add it.');
     } catch (caught) {
-      setError(caught);
+      if((caught as {code?:string}).code?.startsWith('barcode_'))setNotice(t(barcodeErrorKey(caught),barcodeErrorKey(caught)));else setError(caught);
     }
   };
 
@@ -154,7 +157,7 @@ export function SellScreen() {
     event.preventDefault();
     const q = query.trim();
     if (!q) return;
-    if (BARCODE.test(q)) {
+    if (BARCODE.test(q)||isBarcodeQuery(q)||cachedBarcodeMatches(items,q).length) {
       void lookup(q);
       return;
     }

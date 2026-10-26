@@ -1,3 +1,4 @@
+import {bindBarcodes} from './barcodes/client';
 import {bindPartyImports} from './party-imports/client';
 import {bindInventoryImports} from './imports/client';
 import {accountedSales,projectLocalStock,type BillingCatalog} from './local-stock';
@@ -211,6 +212,7 @@ type ServerInventoryItem = {
     shopId: string;
     name: string;
     barcode: string | null;
+    barcodeAliases?:string[];barcodeConflict?:boolean;
     category: string;
     subcategory?: string | null;
     unit: string;
@@ -249,6 +251,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
       shopId: item.product.shopId,
       name: item.product.name,
       barcode: item.product.barcode || undefined,
+      barcodeAliases:item.product.barcodeAliases,barcodeConflict:item.product.barcodeConflict,
       category: item.product.category,
       subcategory: item.product.subcategory ?? null,
       unit: item.product.unit,
@@ -308,6 +311,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
 
   return {
     assertSession: assertCurrent,
+    barcodes:bindBarcodes(send),
     imports:bindInventoryImports(send),
     customerImports:bindPartyImports(send,'customer'),supplierImports:bindPartyImports(send,'supplier'),
     gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata,assertCurrent);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
