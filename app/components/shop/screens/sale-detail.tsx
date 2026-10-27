@@ -1,4 +1,5 @@
 'use client';
+import {IssuedDocumentButton} from '../document-preview';
 
 import { useGstText as useUiText } from "../gst-ui";
 
@@ -186,6 +187,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
               {entry.reason ? ` · ${entry.reason}` : ''}
             </p>
           ))}
+          {sale.returns.filter(r=>r.documentPresentation).map(r=><IssuedDocumentButton key={r.id} issued={r.documentPresentation!}/>)}
           {sale.note ? <p className="receipt-qty">{sale.note}</p> : null}
           {sale.voidReason ? <p className="receipt-qty">{uiText("Voided:")} {sale.voidReason}</p> : null}
           {showCost ? <p className="receipt-cost">{uiText("Cost")} {formatINR(sale.costTotal)}</p> : null}
@@ -197,8 +199,8 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <p className="sale-complete-total">{formatINR(sale.total)}</p>
             <p className="party-meta">{methods.join(' + ') || sale.paymentStatus}{sale.customer ? ` · ${sale.customer.name}` : ''}</p>
             <div className="shop-actions">
-              <Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
-              <Button tone="ghost" disabled={!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={() => window.print()}>{uiText("Print")}</Button>
+              {sale.documentPresentationError?<p role="alert" className="text-danger">{t("documents.error.integrity","")}</p>:sale.documentPresentation?<IssuedDocumentButton issued={sale.documentPresentation}/>:<><Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
+              <Button tone="ghost" disabled={!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={() => window.print()}>{uiText("Print")}</Button></>}
               {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>

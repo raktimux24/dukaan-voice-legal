@@ -1,3 +1,4 @@
+import {bindDocuments} from './documents/client';
 import {bindProductBulk} from './product-bulk/client';
 import {bindBarcodes} from './barcodes/client';
 import {bindPartyImports} from './party-imports/client';
@@ -312,6 +313,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
 
   return {
     assertSession: assertCurrent,
+    documents:bindDocuments(send),
     productBulk:bindProductBulk(send),
     barcodes:bindBarcodes(send),
     imports:bindInventoryImports(send),

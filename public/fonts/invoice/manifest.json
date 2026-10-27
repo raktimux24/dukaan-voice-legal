@@ -1,0 +1,53 @@
+{
+  "version": "noto-20261027-v1",
+  "fonts": [
+    {
+      "id": "notosans",
+      "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosans",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosansbengali",
+      "sha256": "dcd42978094e584a849c84a51450eeac40c8826057d566ea6d4b9627a403a05a",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosansbengali",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosansdevanagari",
+      "sha256": "14ec4af41f27482216d1c2229f417ff9b1425e1babb014e57d1d40d03229853e",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosansdevanagari",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosansgujarati",
+      "sha256": "9901d8552f1dd5d2c50dbd4caa6f6e174e74e8264f06594ab259ae6e7b1ac428",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosansgujarati",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosanskannada",
+      "sha256": "cca4f3b3a8cb12fb261f1b43baf5d2f7f59d90fe123d41f0065ed3a183997ec9",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosanskannada",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosansmalayalam",
+      "sha256": "312e0e7c3cc15fa09eb42a8f749eeb246b593ed420e3c81aafe8d910c3a6fb56",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosansmalayalam",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosanstamil",
+      "sha256": "aa3a9b321f4b0bb2c40203ffbde9af89713227866e0e13f76e5b9eeea727cf88",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosanstamil",
+      "license": "OFL-1.1"
+    },
+    {
+      "id": "notosanstelugu",
+      "sha256": "e618af7bf999df192ed4f388eba2e563f2b5015034e9cbb317b5bd793bd7334d",
+      "source": "https://github.com/google/fonts/tree/main/ofl/notosanstelugu",
+      "license": "OFL-1.1"
+    }
+  ]
+}

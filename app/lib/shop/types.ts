@@ -1,3 +1,4 @@
+import type {DocumentContextRef,DocumentContextView,IssuedDocument} from './documents/contract';
 import type { GstContext, GstSettings, ProductTax, TaxTotals, LineTax, Buyer } from './gst-types';
 import type { Role } from './permissions';
 
@@ -127,6 +128,7 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  documentPresentation?:DocumentContextRef;
   mixedDiscountReview?:{policy:"commercial_amount_proportional_v1";reviewed:true;evidenceReference:string};
   roundingSnapshot?:import("./gst-core/payable-rounding-snapshot").PayableRoundingSnapshot;
   roundingGrant?:import("./rounding-grant").RetainedRoundingGrant;
@@ -161,6 +163,8 @@ export type SaleItem = {
 };
 
 export type Sale = {
+  documentPresentation?:IssuedDocument|null;
+  documentPresentationError?:string|null;
   requestHash?: string;
   gstIntegrity?: string;
   mixedGstSnapshot?:import("./gst-core/mixed-gst-fiscal").MixedFiscalPayload|null;
@@ -194,6 +198,7 @@ export type Sale = {
   items: SaleItem[];
   payments: { id: string; method: PaymentMethod; kind: string; amount: number; tendered: number | null; changeGiven: number | null; reference: string | null }[];
   returns: {
+    documentPresentation?:IssuedDocument|null;
     id: string;
     items: { saleItemId: string; quantity: number; restock: boolean; reason: string | null }[];
     refundMethod: PaymentMethod | null;
@@ -279,6 +284,8 @@ export type BuyListItem = {
 };
 
 export type PosSettings = {
+  documentBranding?:DocumentContextView|null;
+  documentBrandingAvailable?:boolean;
   gstSettings?: GstSettings | null;
   gstProtocol?: number;
   gstAvailable?: boolean;

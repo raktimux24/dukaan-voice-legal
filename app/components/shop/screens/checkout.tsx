@@ -176,6 +176,7 @@ export function CheckoutScreen() {
     if (payments.length === 0) payments.push({ method: 'cash', amount: 0, tendered: 0 });
     const customer=checkoutCustomer({...cartApi.cart,customerPhone:phone&&phone!=='invalid'?phone:null},customerClientId,retained);
     return {
+      ...((retained?retained.documentPresentation:settings.data?.documentBranding?.ref)?{documentPresentation:retained?retained.documentPresentation:settings.data?.documentBranding?.ref}:{}),
       gstContext,
       mixedDiscountReview:cartApi.cart.mixedDiscountReview,
       soldAt,
