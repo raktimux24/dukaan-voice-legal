@@ -4,8 +4,8 @@ import {inferPartyMapping,type PartyJob,type PartyOptions} from './contract';
 import type {PartyImportsApi} from './client';
 
 /** One controller drives native and web; every asynchronous result stays actor/shop scoped. */
-export function usePartyImport(api:PartyImportsApi,scope:{shopId:string;actorId:string;generation?:number},enabled:boolean,newId:()=>string){
- const key=api.kind+':'+scope.actorId+':'+scope.shopId+':'+(scope.generation??0),current=useRef(key);current.current=key;
+export function usePartyImport(api:PartyImportsApi,scope:{shopId:string;actorId:string;generation?:number},enabled:boolean,newId:()=>string,openingSessionId?:string){
+ const key=api.kind+':'+scope.actorId+':'+scope.shopId+':'+(scope.generation??0)+':'+(openingSessionId??''),current=useRef(key);current.current=key;
  const running=useRef(false);
  const qc=useQueryClient(),[job,setJob]=useState<PartyJob|null>(null),[options,setOptions]=useState<PartyOptions|null>(null),[phase,setPhase]=useState<'upload'|'mapping'|'review'>('upload'),[error,setError]=useState<unknown>(null),[busy,setBusy]=useState(false);
  const metadata=useQuery({queryKey:['partyImports',scope.shopId,api.kind,scope.actorId,scope.generation],queryFn:()=>api.metadata(scope.shopId),enabled:enabled&&!!scope.shopId&&!!scope.actorId,retry:false});
@@ -20,7 +20,7 @@ export function usePartyImport(api:PartyImportsApi,scope:{shopId:string;actorId:
   setPhase(next.state==='uploaded'?'mapping':'review');
  };
  const invalidate=()=>Promise.all(['customers','customer','customerSummary','customers-summary','suppliers','gstSuppliers','gstSupplier','gst','partyImports','partyProfile','auditLog'].map(query=>qc.invalidateQueries({queryKey:[query,scope.shopId]})));
- const upload=(file:{filename:string;base64:string})=>run(async guard=>{const next=await api.upload(scope.shopId,{...file,clientId:newId()});guard();receive(next);await metadata.refetch();});
+ const upload=(file:{filename:string;base64:string})=>run(async guard=>{const next=await api.upload(scope.shopId,{...file,clientId:newId(),...(openingSessionId?{openingSessionId}:{})});guard();receive(next);await metadata.refetch();});
  const open=(id:string)=>run(async guard=>{const next=await api.get(scope.shopId,id);guard();receive(next);});
  const review=(nextOptions=options)=>run(async guard=>{if(!job||!nextOptions)return;const next=await api.review(scope.shopId,job.id,job.version,nextOptions);guard();receive(next);});
  const commit=()=>run(async guard=>{

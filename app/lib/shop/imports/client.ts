@@ -5,7 +5,7 @@ export function bindInventoryImports(send:ImportSend){
  return {
   metadata:(shop:string)=>send<ImportMetadata>(path(shop)),
   template:(shop:string,format:'xlsx'|'csv',lang:string)=>send<ImportTemplate>(path(shop)+`/template?format=${format}&lang=${encodeURIComponent(lang)}`),
-  upload:(shop:string,input:{clientId:string;filename:string;base64:string})=>send<ImportJob>(path(shop),{method:'POST',body:JSON.stringify(input)}),
+  upload:(shop:string,input:{clientId:string;filename:string;base64:string;openingSessionId?:string})=>send<ImportJob>(path(shop),{method:'POST',body:JSON.stringify(input)}),
   get:(shop:string,id:string)=>send<ImportJob>(path(shop)+'/'+encodeURIComponent(id)),
   review:(shop:string,id:string,version:number,options:ImportOptions)=>send<ImportJob>(path(shop)+'/'+encodeURIComponent(id)+'/review',{method:'POST',body:JSON.stringify({version,options})}),
   commit:(shop:string,id:string,version:number,clientId:string)=>send<ImportJob>(path(shop)+'/'+encodeURIComponent(id)+'/commit',{method:'POST',body:JSON.stringify({version,clientId})}),
@@ -15,7 +15,7 @@ export function bindInventoryImports(send:ImportSend){
 export type InventoryImportsApi=ReturnType<typeof bindInventoryImports>;
 export function importErrorKey(error:unknown){
  const code=(error as {code?:string})?.code?.replace(/^import_/,'')??'failed';
- const aliases:Record<string,string>={barcode_replace_required:'error.barcode_replace_required',invalid_mapping:'mapping_help',name_required:'issue.name_required',owner_stock:'issue.owner_stock',cell_too_long:'issue.text_long',too_many_rows:'error.too_large',unsupported_workbook:'error.invalid_file',nothing_to_import:'error.resolve_errors',already_started:'error.stale_review'};
+ const aliases:Record<string,string>={opening_limit:'error.opening_limit',barcode_replace_required:'error.barcode_replace_required',invalid_mapping:'mapping_help',name_required:'issue.name_required',owner_stock:'issue.owner_stock',cell_too_long:'issue.text_long',too_many_rows:'error.too_large',unsupported_workbook:'error.invalid_file',nothing_to_import:'error.resolve_errors',already_started:'error.stale_review'};
  if(aliases[code])return 'imports.'+aliases[code];
  return 'imports.error.'+(['failed','unavailable','stale_review','not_allowed','file_type','invalid_file','too_large','resolve_errors'].includes(code)?code:'failed');
 }
