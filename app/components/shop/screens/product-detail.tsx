@@ -321,7 +321,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           <div className="detail-list">
             {productLogs.map((log) => (
               <div key={log.id}>
-                <dt>{['barcode_generated','barcode_replaced'].includes(log.actionType)?t(log.actionType==='barcode_generated'?'barcodes.activity_generated':'barcodes.activity_replaced',log.description??'',{name:String(log.payload?.productName??product.name)}):log.description}</dt>
+                <dt>{log.actionType==='product_bulk_edit'?t('bulk.activity','Bulk edited {{name}} · batch {{batch}}',{name:String(log.payload?.productName??''),batch:Number(log.payload?.batch??1)}):['barcode_generated','barcode_replaced'].includes(log.actionType)?t(log.actionType==='barcode_generated'?'barcodes.activity_generated':'barcodes.activity_replaced',log.description??'',{name:String(log.payload?.productName??product.name)}):log.description}</dt>
                 <dd>{log.userName} · {formatWhen(log.createdAt)}</dd>
               </div>
             ))}
