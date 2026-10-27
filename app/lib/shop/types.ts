@@ -128,6 +128,7 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  creditTerms?:import("./credit/contract").CreditTerms;
   estimateSource?:import("./estimates/contract").EstimateSource;
   documentPresentation?:DocumentContextRef;
   mixedDiscountReview?:{policy:"commercial_amount_proportional_v1";reviewed:true;evidenceReference:string};

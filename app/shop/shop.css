@@ -27,6 +27,7 @@
 /* ------------------------------------------------------------------ */
 
 .shop-root {
+  --font-display: var(--font-dm-sans), Inter, sans-serif;
   --rail-w: 248px;
   --topbar-h: 60px;
   --gutter: 20px;
@@ -69,7 +70,7 @@
 }
 
 .shop-root :where(h1, h2, h3) {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: #eaeae6;
@@ -121,7 +122,7 @@
   align-items: center;
   gap: 10px;
   padding: 0 8px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: #eaeae6;
@@ -135,7 +136,7 @@
   border-radius: 10px;
   background: #ff6b00;
   color: #0a0a0f;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 16px;
   font-weight: 700;
 }
@@ -150,7 +151,7 @@
 
 .shop-rail-shop-name {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.2;
@@ -283,7 +284,7 @@
 }
 
 .shop-topbar-shop strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 15px;
   line-height: 1.2;
   white-space: nowrap;
@@ -386,7 +387,7 @@
 
 .shop-title {
   margin-top: 4px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 28px;
   font-weight: 650;
   letter-spacing: -0.03em;
@@ -416,7 +417,7 @@
 }
 
 .shop-section-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -580,7 +581,7 @@ a.shop-list-row:hover {
 .shop-seg button {
   border-radius: 9px;
   padding: 9px 14px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #8a8a90;
@@ -608,7 +609,7 @@ a.shop-list-row:hover {
   border-radius: 10px;
   padding: 10px 16px;
   min-height: 40px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -828,7 +829,7 @@ a.shop-list-row:hover {
 }
 
 .dash-revenue-n {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: clamp(38px, 4.6vw, 52px);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -864,7 +865,7 @@ a.shop-list-row:hover {
 
 .dash-fact-n {
   margin-top: 2px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -976,7 +977,7 @@ a.shop-list-row:hover {
 
 .shop-stat-n {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -1125,7 +1126,7 @@ a.shop-list-row:hover {
 }
 
 .pos-tile-price {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1199,7 +1200,7 @@ a.shop-list-row:hover {
 }
 
 .bill-line-total {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 15px;
   font-weight: 600;
   text-align: right;
@@ -1331,7 +1332,7 @@ a.shop-list-row:hover {
 }
 
 .bill-total-row.is-grand strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -1377,7 +1378,7 @@ a.shop-list-row:hover {
 }
 
 .tender-change strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -1416,7 +1417,7 @@ a.shop-list-row:hover {
 }
 
 .form-summary-name {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -1447,7 +1448,7 @@ a.shop-list-row:hover {
 }
 
 .form-margin strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   color: #32d583;
 }
@@ -1698,7 +1699,7 @@ a.party-card:hover {
 }
 
 .party-name {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   font-weight: 650;
 }
@@ -1710,7 +1711,7 @@ a.party-card:hover {
 }
 
 .party-spend {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
@@ -1763,7 +1764,7 @@ a.party-card:hover {
 }
 
 .kpi-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 24px;
   font-weight: 650;
 }
@@ -1777,7 +1778,7 @@ a.party-card:hover {
   border-radius: 999px;
   background: rgba(255, 107, 0, 0.16);
   color: #ff8a33;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-weight: 700;
 }
 
@@ -1988,7 +1989,7 @@ a.party-card:hover {
 .receipt-status { text-align: center; }
 
 .receipt-shop {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 22px;
   font-weight: 700;
 }
@@ -2071,7 +2072,7 @@ a.party-card:hover {
 
 .receipt-totals .is-total {
   margin-top: 4px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 700;
 }
@@ -2232,14 +2233,14 @@ a.party-card:hover {
 
 .pos-picker-step strong {
   min-width: 88px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   text-align: center;
 }
 
 .pos-picker-step .num {
   margin-left: auto;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
 }
 
@@ -2251,7 +2252,7 @@ a.party-card:hover {
 }
 
 .product-qty {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 40px;
   font-weight: 650;
   line-height: 1.1;
@@ -2443,7 +2444,7 @@ a.party-card:hover {
 }
 
 .sale-complete-total {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 40px;
   font-weight: 700;
 }
@@ -2639,7 +2640,7 @@ a.party-card:hover {
 }
 
 .shop-root .auth-heading h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.8px;
@@ -2810,7 +2811,7 @@ a.party-card:hover {
 
 .shop-root .auth-g {
   color: #4285f4;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 700;
 }
@@ -2843,7 +2844,7 @@ a.party-card:hover {
 }
 
 .shop-root .auth-done h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -2971,3 +2972,6 @@ a.party-card:hover {
 
 /* Opening positions: visible destinations and sequential forms. */
 .opening-page{max-width:960px}.opening-stack{display:grid;gap:16px;min-width:0}.opening-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.opening-actions>.shop-btn{white-space:normal;text-align:left}.opening-text{line-height:1.6;overflow-wrap:anywhere}.opening-text.muted{color:var(--muted,#a0a0a8)}.opening-text.danger{color:#ff6b77}.opening-text.accent{color:#ff8c3a}.opening-check{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border,#30303a);border-radius:12px;line-height:1.5}.opening-check input{margin-top:5px;accent-color:#ff6b00;min-width:18px;min-height:18px}.opening-page input:focus-visible,.opening-page button:focus-visible,.opening-check:focus-within{outline:2px solid #ff6b00;outline-offset:3px}.opening-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;border:1px solid #ff6b0066;border-radius:14px;background:#ff6b000d}.opening-nav strong{display:block}.opening-nav p{color:var(--muted,#a0a0a8);margin-top:5px}.opening-nav>span{font-size:24px;color:#ff8c3a}@media(max-width:600px){.opening-actions>.shop-btn{flex:1 1 145px}.opening-page .shop-card{padding:16px}}
+
+/* Shared retail workflows follow the mobile DM Sans/Inter system. */
+.retail-workspace{max-width:1040px}.retail-workspace .opening-text{max-width:78ch}.retail-workspace .opening-stack>label{max-width:640px}.retail-workspace .shop-btn{min-height:44px;white-space:normal}.retail-workspace .opening-actions{align-items:center}.shop-root .shop-hint{color:#a0a0a8}.retail-workspace .shop-surface{border:1px solid #34343e;border-radius:14px;background:rgba(30,30,38,.75)}.retail-workspace iframe{max-width:none}.retail-workspace input:focus-visible,.retail-workspace select:focus-visible,.retail-workspace textarea:focus-visible,.retail-workspace button:focus-visible{outline:2px solid #ff6b00;outline-offset:3px}@media(max-width:600px){.retail-workspace .shop-card{padding:16px}.retail-workspace .opening-actions>.shop-btn{flex:1 1 145px}}

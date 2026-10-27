@@ -1,4 +1,6 @@
 'use client';
+import {useCheckoutCredit,CheckoutCreditView} from '../../../lib/shop/credit/checkout';
+import {cashWebUi} from './cashbook';
 import {assertEstimateCart} from '../../../lib/shop/estimates/handoff';
 import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt} from '../../../lib/shop/local-issued-receipt';
 
@@ -145,8 +147,9 @@ export function CheckoutScreen() {
   const hasCustomer = !!(cartApi.cart.customerId || cartApi.cart.customerName?.trim());
   const udhaarLocked = creditPortion > 0 && !premium;
   const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
+  const creditReview=useCheckoutCredit(api.credit,shop?.id??'',userId??'',cartApi.cart.customerId??null,cartApi.cart.customerPhone??null,hasCustomer,creditPortion);
   const [estimateReviewed,setEstimateReviewed]=useState(false);
-  const canCharge = (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
+  const canCharge = creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
 
   const upiText = useMemo(() => {
     const vpa = settings.data?.upiVpa;
@@ -182,6 +185,7 @@ export function CheckoutScreen() {
       ...((retained?retained.documentPresentation:settings.data?.documentBranding?.ref)?{documentPresentation:retained?retained.documentPresentation:settings.data?.documentBranding?.ref}:{}),
       gstContext,
       mixedDiscountReview:cartApi.cart.mixedDiscountReview,
+      ...(creditPortion>0&&creditReview.terms?{creditTerms:creditReview.terms}:{}),
       soldAt,
       inputMethod: cartApi.cart.inputMethod ?? 'manual',
       items: cartApi.cart.lines.map((line) => ({
@@ -204,7 +208,10 @@ export function CheckoutScreen() {
   };
 
   const handleCharge = async (fresh: boolean) => {
-    if (charging.current || !canCharge) return;
+    if(charging.current)return;
+    const retained=readPending(userId,shop.id);
+    if(retained?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)){charging.current=true;setBusy(true);setError(null);try{const result=await issueSale(api,shop.id,retained.payload);wentToBill.current=true;router.replace(`/shop/sales/${result.sale.id}?recorded=again`);cartApi.clear()}catch(e){setError(new Error(t('credit.error.'+String((e as any)?.code??'credit_failed').replace(/^credit_/,''),t('credit.error.failed','The saved bill still needs confirmation.'))))}finally{charging.current=false;setBusy(false)}return;}
+    if(!canCharge)return;
     if(creditPortion>0&&!premiumAt(entitlement)){setError(new Error(t('checkout.customer_list_premium','Saved customers and udhaar balances are part of Premium.')));return;}
     const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
     if (phone === 'invalid') {
@@ -268,6 +275,7 @@ export function CheckoutScreen() {
         setOfflineSaved(true);
         setError(new Error('Connection lost. The server outcome is not confirmed. The saved checkout will retry with the same request ID when the connection returns.'));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
+      else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('credit_'))setError(new Error(t('credit.error.'+((caught as any).code??(caught as any).message).slice(7),'')));
       else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('estimates_'))setError(new Error(t('estimates.error.'+((caught as any).code??(caught as any).message).slice(10),'')));
       else {
         // Retain the original uncertain or rejected request for recovery.
@@ -334,6 +342,8 @@ export function CheckoutScreen() {
             </Card>
           ) : null}
 
+          <CheckoutCreditView w={creditReview} ui={cashWebUi} t={(k,v)=>t(k,k,v)}/>
+          {cartApi.pending?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)?<Button tone="ghost" disabled={busy} onClick={()=>void handleCharge(false)}>{t('credit.retry','Check / retry saved action')}</Button>:null}
           {mode === 'credit' ? (
             <Card className="grid gap-3">
               <h3 className="shop-section-title">{t('pos.method.credit', 'Udhaar')}</h3>
