@@ -292,20 +292,23 @@ export function useOpenings(
       setPending,
     );
   const applyAll = async (s: OpeningSession) => {
-    while (s.state !== "complete") {
-      await safeCount();
-      const result = await retained({
-        sessionId: s.id,
-        operation: "apply",
-        payload: {
-          clientId: newId(),
-          version: s.version,
-          localPendingCount: 0,
-        },
-      });
-      guard();
-      s = result as OpeningSession;
-      receive(s, "review");
+    try {
+      while (s.state !== "complete") {
+        await safeCount();
+        const result = await retained({
+          sessionId: s.id,
+          operation: "apply",
+          payload: {
+            clientId: newId(),
+            version: s.version,
+            localPendingCount: 0,
+          },
+        });
+        guard();
+        s = result as OpeningSession;
+        receive(s, "review");
+      }
+    } finally {
       await refresh();
     }
     setMessage("opening.done");
