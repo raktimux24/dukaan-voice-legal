@@ -2928,3 +2928,10 @@ a.party-card:hover {
 
 /* Import instructions and progress must remain readable on dark cards. */
 .import-page .shop-hint { color: #a0a0a8; }
+
+/* Bulk sessions contain long translated history labels and price operations. */
+.bulk-editor { min-width:0; grid-template-columns:minmax(0,1fr); }
+.bulk-editor > *, .bulk-editor .form-grid > label, .bulk-editor .stack-form > * { min-width:0; max-width:100%; }
+.bulk-editor .shop-btn { min-width:0; max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; }
+.bulk-editor .shop-field { min-width:0; max-width:100%; }
+.bulk-editor .shop-page-desc, .bulk-editor .import-confirm { overflow-wrap:anywhere; }
