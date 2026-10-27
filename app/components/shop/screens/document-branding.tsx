@@ -78,32 +78,11 @@ function Editor() {
                   <h2 className="shop-section-title">
                     {t("documents.layout")}
                   </h2>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                    {DOCUMENT_LAYOUTS.map((layout) => (
-                      <button
-                        key={layout}
-                        type="button"
-                        disabled={blocked}
-                        aria-pressed={w.draft.layout === layout}
-                        onClick={() => w.edit({ layout })}
-                        className={
-                          "rounded-xl border p-4 text-left disabled:opacity-40 " +
-                          (w.draft.layout === layout
-                            ? "border-saffron bg-saffron/10"
-                            : "border-line bg-elevated")
-                        }
-                      >
-                        <span
-                          className="mb-3 block w-fit rounded border border-current px-2 py-3 text-xs"
-                          aria-hidden="true"
-                        >
-                          {layout === "receipt"
-                            ? "80 mm"
-                            : layout.toUpperCase()}
-                        </span>
-                        {t("documents." + layout)}
-                      </button>
-                    ))}
+                  <div role="group" aria-label={t("documents.layout")} style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,marginTop:16}}>
+                    {DOCUMENT_LAYOUTS.map(layout=><button key={layout} type="button" disabled={blocked} aria-pressed={w.draft.layout===layout} onClick={()=>w.edit({layout})} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:10,minHeight:110,minWidth:0,padding:14,borderRadius:12,border:'1px solid '+(w.draft.layout===layout?'#FF6B00':'#3A3A46'),background:w.draft.layout===layout?'rgba(255,107,0,.12)':'#1E1E26',color:w.draft.layout===layout?'#FF943F':'#EAEAE6',textAlign:'left',fontSize:13,fontWeight:600,lineHeight:1.4,opacity:blocked?.45:1,cursor:blocked?'not-allowed':'pointer'}}>
+                      <svg aria-hidden="true" viewBox="0 0 32 40" style={{display:'block',width:26,height:34}} fill="none" stroke="currentColor" strokeWidth="1.5"><path d={layout==='receipt'?'M4 2H28V36L24 33L20 36L16 33L12 36L8 33L4 36Z':'M5 2H22L28 8V38H5Z'}/><path d="M10 14H23M10 20H23M10 26H20"/></svg>
+                      <span>{t("documents."+layout)}</span>
+                    </button>)}
                   </div>
                   <Field
                     label={t("documents.language")}
