@@ -157,6 +157,7 @@ export function HomeScreen() {
         }
       />
 
+      {perms.canSeeReports?<Link href="/shop/cashbook" className="opening-nav"><div><strong>{t('cashbook.title','Expenses & cashbook')}</strong><p>{t('cashbook.intro','Track expenses and reconcile your cash till.')}</p></div><span aria-hidden="true">→</span></Link>:null}
       {opening.data&&["not_started","in_progress"].includes(opening.data.setup)?<Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.saved_setups","Saved setups")}</p></div><span aria-hidden="true">→</span></Link>:null}
       <input
         className="shop-field is-lg"
