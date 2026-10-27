@@ -35,7 +35,7 @@ export function ProductBulkScreen() {
     setLimit(40);
   }, [w.job?.id, w.job?.version]);
   useEffect(() => {
-    const scope = shop?.id + ":" + userId;
+    const scope = shop?.id + ":" + userId+":"+params.toString();
     if (!shop || !userId || !w.meta.isSuccess || initialized.current === scope)
       return;
     initialized.current = scope;
