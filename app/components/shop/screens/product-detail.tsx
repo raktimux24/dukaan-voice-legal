@@ -140,7 +140,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
         back={{ href: '/shop/products', label: t('products.title', 'Products') }}
         kicker={labeledL1(product.category, (key) => t(key, key))}
         title={product.name}
-        description={[product.barcode ? `Barcode ${product.barcode}` : null, labeledL2(product.category, product.subcategory, (key) => t(key, key)) || null].filter(Boolean).join(' · ') || undefined}
+        description={[product.barcode || null, labeledL2(product.category, product.subcategory, (key) => t(key, key)) || null].filter(Boolean).join(' · ') || undefined}
         actions={perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="ghost">{t('common.edit', 'Edit details')}</Button> : null}
       />
       <Notice error={error ?? (batches.error && !isDenied(batches.error) ? batches.error : null)} />
@@ -321,7 +321,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           <div className="detail-list">
             {productLogs.map((log) => (
               <div key={log.id}>
-                <dt>{log.description}</dt>
+                <dt>{['barcode_generated','barcode_replaced'].includes(log.actionType)?t(log.actionType==='barcode_generated'?'barcodes.activity_generated':'barcodes.activity_replaced',log.description??'',{name:String(log.payload?.productName??product.name)}):log.description}</dt>
                 <dd>{log.userName} · {formatWhen(log.createdAt)}</dd>
               </div>
             ))}
