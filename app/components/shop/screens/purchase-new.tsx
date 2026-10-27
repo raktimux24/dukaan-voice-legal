@@ -44,11 +44,13 @@ import type {
 import { formatINR } from "../../../lib/shop/money";
 type Line = PurchaseDraftLine;
 export function PurchaseNewScreen() {
-  const { api, shop, perms } = useShop(),
+  const { api, shop, perms, t:poText } = useShop(),
     text = useGstText(),
     router = useRouter(),
     action = useGstAction();
-  const requestedSupplierId = useSearchParams().get("supplierId") ?? "";
+  const poParams=useSearchParams(),poOrderId=poParams.get('poOrderId'),poReceiptId=poParams.get('poReceiptId');
+  const requestedSupplierId = poParams.get("supplierId") ?? "";
+  const poSource=useGstQuery(['poInvoiceSource',poOrderId,poReceiptId],()=>api.purchaseOrders.invoice(shop!.id,poOrderId!,poReceiptId!),!!poOrderId&&!!poReceiptId);
   const requestedSupplier = useGstQuery(["purchase-supplier", requestedSupplierId],
     () => api.gst.supplier(shop!.id, requestedSupplierId), !!requestedSupplierId);
   const pos = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
@@ -74,6 +76,8 @@ export function PurchaseNewScreen() {
     [ordinarySupply, setOrdinarySupply] = useState(false),
     [addingProduct, setAddingProduct] = useState(false),
     [movementSignature, setMovementSignature] = useState<string | null>(null);
+  const poLoaded=useRef(false);
+  useEffect(()=>{if(poSource.data&&!poLoaded.current){poLoaded.current=true;setLines(poSource.data.lines.map(l=>({key:crypto.randomUUID(),name:l.name,trackStock:true,productId:l.productId,quantity:Number(l.quantity),price:Number(l.price),priceText:l.price,discount:0,tax:{...((l.gstConfig as any)??emptyTax()),reviewed:false},receiveStock:false,existingBatchId:l.batchId,stockMode:'link' as const}))) }},[poSource.data]);
   const retained = useRef<PurchaseInput | null>(null);
   const supplierPrefilled = useRef(false);
   useEffect(() => {
@@ -115,7 +119,7 @@ export function PurchaseNewScreen() {
     supplierIdentity: supplier?.identity,
     supplierRegistration: registration,
     documentType,
-    invoiceNumber,
+    invoiceNumber:invoiceNumber.trim(),
     invoiceDate,
     priceMode: mode,
     discount,
@@ -126,6 +130,7 @@ export function PurchaseNewScreen() {
     movement,
   });
   const input: PurchaseInput = {
+    ...(poOrderId&&poReceiptId?{poReceipt:{orderId:poOrderId,receiptId:poReceiptId}}:{}),
     clientId: "",
     supplierId: supplier?.id ?? "",
     supplierRegistration: registration,
@@ -140,7 +145,7 @@ export function PurchaseNewScreen() {
           },
         }
       : {}),
-    invoiceNumber,
+    invoiceNumber:invoiceNumber.trim(),
     invoiceDate,
     priceMode: mode,
     placeOfSupply: recipient.stateCode,
@@ -164,6 +169,7 @@ export function PurchaseNewScreen() {
   let totals: ReturnType<typeof purchaseTotals> | undefined,
     validation: unknown;
   try {
+    if(poReceiptId&&!poSource.data?.lines.length)throw Error(poText('po.invoice_unavailable','Linked receipt is unavailable or already invoiced.'));
     if (lines.some((line) => !purchaseDraftHasPrice(line)))
       throw Error(text(EN_FALLBACK["purchase.required"]));
     if (lines.some((l) => l.stockMode === "link" && !l.existingBatchId))
@@ -178,6 +184,7 @@ export function PurchaseNewScreen() {
     reset();
   };
   const updateLine = (key: string, part: Partial<Line>, taxEdit = false) => {
+    if(poReceiptId){delete part.quantity;delete part.receiveStock;delete part.existingBatchId;delete part.stockMode;}
     setReviewed(false);
     setLines((rows) =>
       rows.map((l) =>
@@ -204,6 +211,7 @@ export function PurchaseNewScreen() {
             "Choose a supplier, enter the original invoice and confirm how each product affects stock.",
           )}
         />
+        {poReceiptId?<Card><p>{poText('po.invoice_help','These goods are already in stock. Review the supplier invoice prices and tax details.')}</p></Card>:null}
         {action.notice}
         <ReadState query={pos}>
           {pos.data?.gstPurchasesAvailable !== true ? (
@@ -241,7 +249,7 @@ export function PurchaseNewScreen() {
             summary={supplier?.identity.name}
             open
           >
-            <SupplierPicker value={supplier} onChange={selectSupplier} />
+            {poReceiptId?<p>{supplier?.identity.name}</p>:<SupplierPicker value={supplier} onChange={selectSupplier} />}
             {requestedSupplierId && requestedSupplier.isError ? <Notice error={requestedSupplier.error} /> : null}
             <div className="form-grid is-2">
               <SelectField
@@ -352,7 +360,7 @@ export function PurchaseNewScreen() {
             open
           >
             <ReadState query={catalog}>
-              <Button tone="quiet" onClick={() => setAddingProduct(true)}>
+              <Button tone="quiet" disabled={!!poReceiptId} onClick={() => setAddingProduct(true)}>
                 {text(
                   EN_FALLBACK[
                     "gst.ui.add_a_missing_product_then_return_to_this_invoice_92fbf4"
@@ -361,7 +369,7 @@ export function PurchaseNewScreen() {
               </Button>
               <SelectField
                 label={text("Add product")}
-                disabled={lines.length >= 100}
+                disabled={!!poReceiptId||lines.length >= 100}
                 value=""
                 onChange={(id) => {
                   const row = catalog.data?.find((r) => r.productId === id);
@@ -409,6 +417,7 @@ export function PurchaseNewScreen() {
                   <TextField
                     label={text("Quantity")}
                     type="number"
+                    disabled={!!poReceiptId}
                     value={String(line.quantity)}
                     onChange={(v) =>
                       updateLine(line.key, {
@@ -436,6 +445,7 @@ export function PurchaseNewScreen() {
                   {line.trackStock ? (
                     <SelectField
                       label={text("Stock action")}
+                      disabled={!!poReceiptId}
                       value={line.stockMode}
                       onChange={(v) =>
                         updateLine(line.key, {
@@ -454,7 +464,7 @@ export function PurchaseNewScreen() {
                     <p className="shop-hint">{text("Record invoice only")}</p>
                   )}
                 </div>
-                {line.stockMode === "link" ? (
+                {line.stockMode === "link" && !poReceiptId ? (
                   <PurchaseBatchPicker
                     productId={line.productId}
                     quantity={Number(line.quantity)}
@@ -497,6 +507,7 @@ export function PurchaseNewScreen() {
                 />
                 <Button
                   tone="danger"
+                  disabled={!!poReceiptId}
                   onClick={() => {
                     setLines(lines.filter((l) => l.key !== line.key));
                     setReviewed(false);
@@ -559,7 +570,8 @@ export function PurchaseNewScreen() {
                   );
                 if (!declared.trim())
                   throw Error(text(EN_FALLBACK["purchase.required"]));
-                if (lines.some((line) => !purchaseDraftHasPrice(line)))
+                if(poReceiptId&&!poSource.data?.lines.length)throw Error(poText('po.invoice_unavailable','Linked receipt is unavailable or already invoiced.'));
+    if (lines.some((line) => !purchaseDraftHasPrice(line)))
                   throw Error(text(EN_FALLBACK["purchase.required"]));
                 purchaseTotals(request, supplier!.identity);
               }

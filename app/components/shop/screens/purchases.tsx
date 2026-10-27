@@ -17,7 +17,7 @@ import {
 import { currentReportMonth } from "../../../lib/shop/gst-core/report-period";
 import { formatINR } from "../../../lib/shop/money";
 export function PurchasesScreen() {
-  const { api, shop, perms, offline } = useShop(),
+  const { api, shop, perms, offline, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     period = usePeriod();
@@ -61,6 +61,7 @@ export function PurchasesScreen() {
             </Button>
           }
         />
+        <Card><Button href="/shop/purchase-orders" tone="ghost">{t('po.title','Purchase orders')} →</Button></Card>
         <Button tone="ghost" href="/shop/settings/gst/recovery">
           {text("Resume / check saved requests")}
         </Button>
