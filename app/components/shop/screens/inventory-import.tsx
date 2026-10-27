@@ -27,7 +27,7 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
  const display=(field:string,value:unknown)=>value===null||value===undefined?'—':field==='category'?t('catalog.l1.'+value):field==='subcategory'?t('catalog.l2.'+value):field==='unit'&&['piece','packet','dozen','crate'].includes(String(value))?t('imports.unit.'+value):String(value);
  if(!allowed)return <Card><p>{t('imports.error.not_allowed')}</p></Card>;
  return <div className="shop-page import-page">
-  <PageHeader title={t('imports.title')} description={t('imports.help')} back={{href:stagingId?openingHref:backHref,label:t('products.title')}}/>
+  <PageHeader title={t('imports.title')} description={t('imports.help')} back={{href:stagingId?openingHref:backHref,label:t(stagingId?'opening.return':'products.title')}}/>
   {stagingId?<Card><p className="shop-hint">{t('opening.import_staged')}</p><Button href={openingHref} tone="ghost">{t('opening.return')}</Button></Card>:null}
   <nav className="import-steps" aria-label={t('imports.title')}>{['upload','map','review'].map((step,index)=><span key={step} aria-current={index===(w.phase==='upload'?0:w.phase==='mapping'?1:2)?'step':undefined}>{t('imports.step_'+step)}</span>)}</nav>
   {message?<div className="import-notice" role="alert"><p>{t(!w.error&&[404,503].includes((w.metadata.error as {status?:number})?.status??0)?'imports.error.unavailable':importErrorKey(message))}</p><Button tone="ghost" onClick={()=>{if(job)void w.open(job.id);else void w.metadata.refetch();}}>{t('imports.refresh')}</Button></div>:null}
