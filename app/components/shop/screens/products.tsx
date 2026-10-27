@@ -219,7 +219,7 @@ export function ProductsScreen() {
               count: selected.length,
             })}
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3"><Button tone="ghost" disabled={blocked} href="/shop/products/bulk">{t('bulk.history','Recent bulk selections')}</Button>
             <Button tone="ghost" disabled={blocked} onClick={()=>{setSelected([]);try{sessionStorage.removeItem('bulk-selection:'+shop?.id+':'+userId);}catch{}}}>{t('bulk.clear','Clear selection')}</Button>
             <Button
               tone="ghost"
