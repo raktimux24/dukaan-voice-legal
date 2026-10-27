@@ -30,6 +30,7 @@ export function GstCustomerPayment({customerId}:{customerId:string}){
    assertScope(scope);setAmount('');setNote('');setAmounts({});
    await qc.invalidateQueries({queryKey:['customer',shop!.id,customerId]});
    await qc.invalidateQueries({queryKey:['customers',shop!.id]});
+   await Promise.all(['customerCredit','followup','followups'].map(k=>qc.invalidateQueries({queryKey:[k,shop!.id]})));
   }finally{await journal.refetch();}
  }
  return <Card className="grid gap-3"><h2 className="shop-section-title">{label('customers.record_payment')}</h2>{action.notice}

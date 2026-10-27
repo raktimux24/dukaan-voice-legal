@@ -52,10 +52,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
             {customer.phone && customer.balance > 0 ? (
               <Button
                 tone="ghost"
-                onClick={() => {
-                  const message = `Namaste ${customer.name}, your balance at ${shop.name} is ${formatINR(customer.balance)}.`;
-                  window.location.href = `sms:${customer.phone}?body=${encodeURIComponent(message)}`;
-                }}
+                href={'/shop/customers/followups?customerId='+customerId}
               >
                 {t('customers.remind', 'Text reminder')}
               </Button>
@@ -70,6 +67,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           <span className="shop-stat-l">{t('customers.outstanding', 'Udhaar outstanding')}</span>
         </div>
       </div>
+      <Button href={'/shop/customers/followups?customerId='+customerId} tone="ghost">{t('followups.title','Payment follow-ups')} →</Button>
       <Button href={'/shop/customers/'+customerId+'/statement'} tone="ghost">{t('credit.title','Statements & credit controls')} →</Button>
       <Notice error={error} />
       <GstCustomerPayment customerId={customerId}/>

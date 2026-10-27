@@ -121,6 +121,7 @@ export function useGstAction() {
         await action();
         setSuccess(true);
         await client.invalidateQueries({ queryKey: ["gst", userId, shop?.id] });
+        await Promise.all(["customerCredit","followup","followups"].map(k=>client.invalidateQueries({queryKey:[k,shop?.id]})));
       } catch (e) {
         setError(e);
       } finally {
