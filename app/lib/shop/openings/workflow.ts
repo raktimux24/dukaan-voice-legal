@@ -252,9 +252,15 @@ export function useOpenings(
       await connected();
       let s = session?.id === id ? session : await api.get(scope.shopId, id);
       guard();
-      s = await api.attach(scope.shopId, id, s.version, kind, importId);
-      guard();
-      receive(s, "edit");
+      if (
+        !s.sources.some(
+          (source) => source.kind === kind && source.importId === importId,
+        )
+      ) {
+        s = await api.attach(scope.shopId, id, s.version, kind, importId);
+        guard();
+      }
+      receive(s, s.state === "draft" ? "edit" : "review");
       setSection(kind);
       await refresh();
     });
