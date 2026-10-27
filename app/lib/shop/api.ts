@@ -1,3 +1,4 @@
+import {bindCredit} from './credit/client';
 import {bindCashbook} from './cashbook/client';
 import {bindEstimates} from './estimates/client';
 import {bindPurchaseOrders} from './purchase-orders/client';
@@ -322,6 +323,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     purchaseOrders:bindPurchaseOrders(send),
     estimates:bindEstimates(send),
     cashbook:bindCashbook(send),
+    credit:bindCredit(send),
     productBulk:bindProductBulk(send),
     barcodes:bindBarcodes(send),
     imports:bindInventoryImports(send),

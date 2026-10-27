@@ -96,6 +96,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         </form>
       </Card>
       <GstCollectionReview customerId={customerId}/>
+      <Button href={'/shop/customers/'+customerId+'/statement'} tone="ghost">{t('credit.title','Statements & credit controls')} →</Button>
       <PartyProfileCard kind="customer" id={customerId}/>
       <Card>
         <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>

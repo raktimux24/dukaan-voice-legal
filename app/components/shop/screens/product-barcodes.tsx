@@ -192,7 +192,7 @@ export function ProductBarcodesScreen() {
             </Card>
           ) : null}
           {w.metadata.isFetching || w.busy ? (
-            <Spinner label={t("barcodes.busy")} />
+            <Spinner label={t(w.busy ? "barcodes.busy" : "common.loading")} />
           ) : null}
           {w.metadata.data?.conflicts.length && !productId ? (
             <Card>

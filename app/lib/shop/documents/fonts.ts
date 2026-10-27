@@ -1,14 +1,18 @@
 import manifest from "../../../../public/fonts/invoice/manifest.json";
-import { documentFonts, documentFontFace } from "./fonts-shared";
+import { documentFonts, textDocumentFonts, documentFontFace } from "./fonts-shared";
 import type { PrintableDocument, DocumentContextView } from "./contract";
 const cache: Record<string, Promise<string>> = {};
 export async function documentFontCss(
   model: PrintableDocument,
   context: DocumentContextView,
 ) {
+  return fontCssIds(documentFonts(model,context));
+}
+export async function textFontCss(text:string){return fontCssIds(textDocumentFonts(text))}
+async function fontCssIds(ids:string[]){
   return (
     await Promise.all(
-      documentFonts(model, context).map(
+      ids.map(
         (id) =>
           (cache[id] ??= (async () => {
             const response = await fetch("/fonts/invoice/" + id + ".ttf");

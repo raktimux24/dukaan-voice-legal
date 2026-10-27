@@ -19,7 +19,9 @@ export function documentFonts(
 ) {
   if (context.payload.fontSet !== DOCUMENT_FONT_SET)
     throw Error("document_update");
-  const text = JSON.stringify([model, context.payload]);
+  return textDocumentFonts(JSON.stringify([model, context.payload]));
+}
+export function textDocumentFonts(text: string) {
   const scripts: Record<string, RegExp> = {
     notosansdevanagari: /[\u0900-\u097f]/,
     notosansbengali: /[\u0980-\u09ff]/,
