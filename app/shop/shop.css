@@ -2975,3 +2975,8 @@ a.party-card:hover {
 
 /* Shared retail workflows follow the mobile DM Sans/Inter system. */
 .retail-workspace{max-width:1040px}.retail-workspace .opening-text{max-width:78ch}.retail-workspace .opening-stack>label{max-width:640px}.retail-workspace .shop-btn{min-height:44px;white-space:normal}.retail-workspace .opening-actions{align-items:center}.shop-root .shop-hint{color:#a0a0a8}.retail-workspace .shop-surface{border:1px solid #34343e;border-radius:14px;background:rgba(30,30,38,.75)}.retail-workspace iframe{max-width:none}.retail-workspace input:focus-visible,.retail-workspace select:focus-visible,.retail-workspace textarea:focus-visible,.retail-workspace button:focus-visible{outline:2px solid #ff6b00;outline-offset:3px}@media(max-width:600px){.retail-workspace .shop-card{padding:16px}.retail-workspace .opening-actions>.shop-btn{flex:1 1 145px}}
+
+/* Import history uses two readable lines and a full-size action target. */
+.import-page .shop-list-title,.import-page .shop-list-meta{display:block;text-align:left}
+.import-page button.shop-list-row{min-height:64px;margin-top:12px;padding:12px 16px;text-align:left;border:1px solid #34343e;border-radius:12px}
+.import-page button.shop-list-row:hover{background:#22222b}
