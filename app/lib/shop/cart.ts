@@ -29,6 +29,7 @@ export type CartLine = {
 };
 
 export type Cart = {
+  estimateSource?:import("./estimates/contract").EstimateSource;
   inputMethod?: 'manual' | 'voice' | 'scan';
   paymentHint?: 'cash' | 'upi' | 'credit';
   mixedDiscountReview?:import("./types").CreateSalePayload["mixedDiscountReview"];

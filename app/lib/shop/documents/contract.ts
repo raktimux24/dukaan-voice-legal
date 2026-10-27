@@ -37,7 +37,7 @@ export type DocumentRow = { label: string; value: string; emphasis?: boolean };
 export type PrintableDocument = {
   version: 1;
   source: {
-    kind: "sale" | "fiscal" | "return" | "sample";
+    kind: "sale" | "fiscal" | "return" | "sample" | "estimate";
     id: string;
     hash?: string;
   };

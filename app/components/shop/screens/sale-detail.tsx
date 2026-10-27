@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import {IssuedDocumentButton} from '../document-preview';
 
 import { useGstText as useUiText } from "../gst-ui";
@@ -124,6 +125,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         />
       </div>
       <Notice error={error} />
+      {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.source','Source estimate')}</Link>:null}
       {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{<GstSaleAdjustments sale={sale}/>}</>:null}
       <div className="sale-stage">
         <article className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={`Bill ${sale.saleNumber}`}>
