@@ -591,7 +591,10 @@
     "documents.pending_sync": "The original branding is retained. Open or export the bill after its saved request synchronizes.",
     "documents.from_photos": "Choose from photos",
     "documents.from_files": "Choose a file",
-    "documents.reload": "Reload saved profile"
+    "documents.reload": "Reload saved profile",
+    "documents.navigation_action": "Customize bills",
+    "pos_settings.preferences_heading": "Payment & billing settings",
+    "pos_settings.preferences_help": "Expand a section to edit. Save your changes below."
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -1185,7 +1188,10 @@
     "documents.pending_sync": "असली ब्रांडिंग रखी गई है। सेव की गई रिक्वेस्ट सिंक होने के बाद बिल खोलें या एक्सपोर्ट करें।",
     "documents.from_photos": "फ़ोटो से चुनें",
     "documents.from_files": "फ़ाइल चुनें",
-    "documents.reload": "सेव की गई प्रोफ़ाइल फिर से लोड करें"
+    "documents.reload": "सेव की गई प्रोफ़ाइल फिर से लोड करें",
+    "documents.navigation_action": "बिल का रूप बदलें",
+    "pos_settings.preferences_heading": "भुगतान और बिल की सेटिंग्स",
+    "pos_settings.preferences_help": "बदलाव करने के लिए कोई सेक्शन खोलें। नीचे जाकर अपने बदलाव सेव करें।"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -1779,7 +1785,10 @@
     "documents.pending_sync": "Original branding save hai. Bill ki saved request sync hone ke baad use kholen ya export karein.",
     "documents.from_photos": "Photos se chunein",
     "documents.from_files": "File chunein",
-    "documents.reload": "Saved profile dobara load karein"
+    "documents.reload": "Saved profile dobara load karein",
+    "documents.navigation_action": "Bill ka look badlein",
+    "pos_settings.preferences_heading": "Payment aur billing settings",
+    "pos_settings.preferences_help": "Badlav karne ke liye section kholein. Apne badlav neeche save karein."
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -2373,7 +2382,10 @@
     "documents.pending_sync": "ஒரிஜினல் பிராண்டிங் அப்படியே இருக்கு. சேவ் பண்ணி, சிங்க் ஆன பிறகு பில்லை ஓபன் பண்ணுங்க அல்லது எக்ஸ்போர்ட் பண்ணுங்க.",
     "documents.from_photos": "புகைப்படங்களிலிருந்து தேர்வு செய்",
     "documents.from_files": "கோப்பைத் தேர்வு செய்",
-    "documents.reload": "சேமித்த சுயவிவரத்தை மீண்டும் ஏற்று"
+    "documents.reload": "சேமித்த சுயவிவரத்தை மீண்டும் ஏற்று",
+    "documents.navigation_action": "பில்களைத் தனிப்பயனாக்கு",
+    "pos_settings.preferences_heading": "கட்டணம் மற்றும் பில் அமைப்புகள்",
+    "pos_settings.preferences_help": "மாற்றங்களைச் செய்ய ஒரு பகுதியைத் திறக்கவும். உங்கள் மாற்றங்களைக் கீழே சேமிக்கவும்."
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -2967,7 +2979,10 @@
     "documents.pending_sync": "అసలు బ్రాండింగ్ అలాగే ఉంచబడింది. సేవ్ చేసిన రిక్వెస్ట్ సింక్ అయిన తర్వాత బిల్లును ఓపెన్ చేయండి లేదా ఎక్స్‌పోర్ట్ చేయండి.",
     "documents.from_photos": "ఫోటోల నుండి ఎంచుకోండి",
     "documents.from_files": "ఫైల్‌ను ఎంచుకోండి",
-    "documents.reload": "సేవ్ చేసిన ప్రొఫైల్‌ను మళ్లీ లోడ్ చేయండి"
+    "documents.reload": "సేవ్ చేసిన ప్రొఫైల్‌ను మళ్లీ లోడ్ చేయండి",
+    "documents.navigation_action": "బిల్లులను అనుకూలీకరించండి",
+    "pos_settings.preferences_heading": "చెల్లింపు మరియు బిల్లింగ్ సెట్టింగ్‌లు",
+    "pos_settings.preferences_help": "మార్చడానికి ఒక విభాగాన్ని తెరవండి. మీ మార్పులను కింద సేవ్ చేయండి."
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -3561,7 +3576,10 @@
     "documents.pending_sync": "আসল ব্র্যান্ডিং রাখা হয়েছে। সেভ করা রিকোয়েস্ট সিঙ্ক হয়ে গেলে বিলটি খুলুন বা এক্সপোর্ট করুন।",
     "documents.from_photos": "ফটো থেকে বেছে নিন",
     "documents.from_files": "একটি ফাইল বেছে নিন",
-    "documents.reload": "সেভ করা প্রোফাইল আবার লোড করুন"
+    "documents.reload": "সেভ করা প্রোফাইল আবার লোড করুন",
+    "documents.navigation_action": "বিলের নকশা বদলান",
+    "pos_settings.preferences_heading": "পেমেন্ট ও বিলের সেটিংস",
+    "pos_settings.preferences_help": "পরিবর্তন করতে একটি বিভাগ খুলুন। নিচে আপনার পরিবর্তনগুলি সেভ করুন।"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -4155,7 +4173,10 @@
     "documents.pending_sync": "मूळ ब्रँडिंग तसेच ठेवले आहे. सेव्ह केलेली रिक्वेस्ट सिंक झाल्यावर बिल उघडा किंवा एक्सपोर्ट करा.",
     "documents.from_photos": "फोटोंमधून निवडा",
     "documents.from_files": "फाइल निवडा",
-    "documents.reload": "सेव्ह केलेले प्रोफाइल पुन्हा लोड करा"
+    "documents.reload": "सेव्ह केलेले प्रोफाइल पुन्हा लोड करा",
+    "documents.navigation_action": "बिलचे स्वरूप बदला",
+    "pos_settings.preferences_heading": "पेमेंट आणि बिल सेटिंग्ज",
+    "pos_settings.preferences_help": "बदल करण्यासाठी विभाग उघडा. तुमचे बदल खाली सेव्ह करा."
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -4749,7 +4770,10 @@
     "documents.pending_sync": "ಮೂಲ ಬ್ರ್ಯಾಂಡಿಂಗ್ ಹಾಗೇ ಉಳಿಸಲಾಗಿದೆ. ಸೇವ್ ಮಾಡಿದ ರಿಕ್ವೆಸ್ಟ್ ಸಿಂಕ್ ಆದ ಮೇಲೆ ಬಿಲ್ ಓಪನ್ ಮಾಡಿ ಅಥವಾ ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮಾಡಿ.",
     "documents.from_photos": "ಫೋಟೋಗಳಿಂದ ಆಯ್ಕೆಮಾಡಿ",
     "documents.from_files": "ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ",
-    "documents.reload": "ಉಳಿಸಿದ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಮತ್ತೆ ಲೋಡ್ ಮಾಡಿ"
+    "documents.reload": "ಉಳಿಸಿದ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಮತ್ತೆ ಲೋಡ್ ಮಾಡಿ",
+    "documents.navigation_action": "ಬಿಲ್ ವಿನ್ಯಾಸ ಬದಲಿಸಿ",
+    "pos_settings.preferences_heading": "ಪಾವತಿ ಮತ್ತು ಬಿಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "pos_settings.preferences_help": "ಬದಲಾಯಿಸಲು ಒಂದು ವಿಭಾಗವನ್ನು ತೆರೆಯಿರಿ. ನಿಮ್ಮ ಬದಲಾವಣೆಗಳನ್ನು ಕೆಳಗೆ ಉಳಿಸಿ."
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -5343,7 +5367,10 @@
     "documents.pending_sync": "મૂળ બ્રાન્ડિંગ જાળવી રાખવામાં આવી છે. સેવ કરેલી રિક્વેસ્ટ સિંક થઈ જાય પછી બિલ ખોલો અથવા એક્સપોર્ટ કરો.",
     "documents.from_photos": "ફોટામાંથી પસંદ કરો",
     "documents.from_files": "ફાઇલ પસંદ કરો",
-    "documents.reload": "સાચવેલી પ્રોફાઇલ ફરી લોડ કરો"
+    "documents.reload": "સાચવેલી પ્રોફાઇલ ફરી લોડ કરો",
+    "documents.navigation_action": "બિલનો દેખાવ બદલો",
+    "pos_settings.preferences_heading": "ચુકવણી અને બિલની સેટિંગ્સ",
+    "pos_settings.preferences_help": "ફેરફાર કરવા માટે વિભાગ ખોલો. તમારા ફેરફારો નીચે સેવ કરો."
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -5937,6 +5964,9 @@
     "documents.pending_sync": "യഥാർത്ഥ ബ്രാൻഡിംഗ് നിലനിർത്തിയിരിക്കുന്നു. സേവ് ചെയ്ത റിക്വസ്റ്റ് സിങ്ക് ആയ ശേഷം ബിൽ തുറക്കുകയോ എക്സ്പോർട്ട് ചെയ്യുകയോ ചെയ്യുക.",
     "documents.from_photos": "ഫോട്ടോകളിൽ നിന്ന് തിരഞ്ഞെടുക്കുക",
     "documents.from_files": "ഒരു ഫയൽ തിരഞ്ഞെടുക്കുക",
-    "documents.reload": "സേവ് ചെയ്ത പ്രൊഫൈൽ വീണ്ടും ലോഡ് ചെയ്യുക"
+    "documents.reload": "സേവ് ചെയ്ത പ്രൊഫൈൽ വീണ്ടും ലോഡ് ചെയ്യുക",
+    "documents.navigation_action": "ബില്ലുകൾ ഇഷ്ടാനുസൃതമാക്കുക",
+    "pos_settings.preferences_heading": "പേയ്‌മെന്റ്, ബില്ലിംഗ് ക്രമീകരണങ്ങൾ",
+    "pos_settings.preferences_help": "മാറ്റങ്ങൾ വരുത്താൻ ഒരു വിഭാഗം തുറക്കുക. നിങ്ങളുടെ മാറ്റങ്ങൾ താഴെ സംരക്ഷിക്കുക."
   }
 }

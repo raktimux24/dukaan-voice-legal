@@ -11,7 +11,7 @@ import { validateSettings } from '../../../lib/shop/gst-core/gst';
 import { useState } from 'react';
 import { ReadState, useGstQuery } from '../gst-workspace';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
+import { Button, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 const VPA = /^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/;
 const MAX_QR = 1_500_000;
@@ -59,9 +59,20 @@ export function PaymentsScreen() {
   return (
     <div className="shop-page">
       <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments & bills')} description={t('pos_settings.upi_explainer', 'The UPI ID and QR shown at checkout.')} />
-      <Notice error={error ?? settings.error} /><Card><Link href="/shop/settings/payments/branding" className="text-saffron font-semibold">{t("documents.title", "Branding & formats")}</Link><p className="mt-2 text-sm text-muted">{t("documents.help", "")}</p></Card>
+      <Notice error={error ?? settings.error} />
+      <Link href="/shop/settings/payments/branding" className="payment-branding-link" aria-describedby="branding-destination-description">
+        <span className="payment-branding-icon" aria-hidden="true"><svg viewBox="0 0 32 40" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 2H22L28 8V38H5Z"/><path d="M10 14H23M10 20H23M10 26H20"/></svg></span>
+        <div className="payment-branding-copy">
+          <h2>{t('documents.title', 'Branding & formats')}</h2>
+          <p id="branding-destination-description">{t('documents.help', '')}</p>
+          <div className="payment-format-list">{(['receipt','a4','a5'] as const).map(layout=><span key={layout}>{t('documents.'+layout, layout)}</span>)}</div>
+        </div>
+        <span className="payment-branding-action">{t('documents.navigation_action', 'Customize bills')}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 12H20M14 6L20 12L14 18"/></svg></span>
+      </Link>
+      <section className="payment-settings-panel" aria-labelledby="payment-settings-title">
+        <div className="payment-settings-heading"><h2 id="payment-settings-title">{t('pos_settings.preferences_heading', 'Payment & billing settings')}</h2><p>{t('pos_settings.preferences_help', 'Expand a section to edit. Save your changes below.')}</p></div>
         <form id="payment-preferences"
-          className="grid gap-4"
+          className="payment-settings-form"
           onSubmit={(event) => {
             event.preventDefault();
             if (vpaInvalid || hoursInvalid) return;
@@ -140,7 +151,8 @@ export function PaymentsScreen() {
         <Button disabled={pending||current.gstSetupAvailable!==true} onClick={()=>{const config=gstDraft??current.gstSettings??emptySettings();try{if(config.registration==='unknown')throw Error(text('Choose your actual GST registration before saving.'));validateSettings({...config,version:config.version||crypto.randomUUID()});}catch(e){setError(e);return;}setPending(true);void api.updatePosSettings(shop.id,{gstSettings:config}).then(()=>{setGstDraft(null);void readiness.refetch(); return settings.refetch();}).catch(setError).finally(()=>setPending(false));}}>{text('Save GST settings')}</Button>
         {current.gstSetupAvailable!==true?<p className="shop-hint">{text('GST setup is unavailable on this server.')}</p>:null}
       </Section>
-      <button form="payment-preferences" type="submit" className="shop-btn shop-btn-primary" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</button>
+      <div className="payment-settings-footer"><button form="payment-preferences" type="submit" className="shop-btn shop-btn-primary" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</button></div>
+      </section>
     </div>
   );
 }
