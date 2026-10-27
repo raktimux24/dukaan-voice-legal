@@ -1,3 +1,4 @@
+import {publishBrandingPos} from './pos-cache';
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { defaultBranding, type BrandingDraft } from "./contract";
@@ -43,14 +44,14 @@ export function useBranding(
     },
     [scope],
   );
-  const run = async <T>(work: () => Promise<T>, done: (v: T) => void) => {
+  const run = async <T>(work: () => Promise<T>, done: (v: T) => void | Promise<void>) => {
     if (running.current || current.current!==scope) return;
     running.current = true;
     setBusy(true);
     setError(null);
     try {
       const value = await work();
-      if (current.current === scope) done(value);
+      if (current.current === scope) await done(value);
     } catch (e) {
       if (current.current === scope) setError(e);
     } finally {
@@ -74,7 +75,8 @@ export function useBranding(
     setPending(request);
     return run(
       () => api.save(shopId, request),
-      (result) => {
+      async(result) => {
+        if(!await publishBrandingPos(cache,shopId,scope,result.context,()=>current.current===scope))return;
         setPending(null);
         setDirty(false);
         cache.setQueryData(["documentBranding", shopId, scope], result);
@@ -85,8 +87,6 @@ export function useBranding(
             ? "documents.saved"
             : "documents.saved_earlier",
         );
-        void cache.invalidateQueries({ queryKey: ["pos"] });
-        void cache.invalidateQueries({ queryKey: ["posSettings"] });
       },
     );
   };
