@@ -253,6 +253,7 @@ export function DocumentPreview({
           <iframe
             ref={frame}
             title={tr("documents.preview_title")}
+              tabIndex={-1}
             srcDoc={html}
             sandbox="allow-scripts allow-same-origin allow-modals"
             onLoad={() => void ready()}

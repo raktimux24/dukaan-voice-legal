@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import {useQuery} from "@tanstack/react-query";
+import { useState,useEffect,useRef } from "react";
 import Link from "next/link";
 import { useShop } from "../context";
 import { useBranding } from "../../../lib/shop/documents/workflow";
@@ -23,7 +24,10 @@ function Editor() {
     prefs?.appLanguage ?? "en",
     () => crypto.randomUUID(),
   );
+  const pos=useQuery({queryKey:["pos",shop?.id],queryFn:()=>api.getPosSettings(shop!.id),enabled:!!shop&&perms.canManageShop});
   const [count, setCount] = useState(20);
+  const dialog=useRef<HTMLDivElement>(null);
+  useEffect(()=>{if(!w.preview)return;const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;document.body.style.overflow='hidden';dialog.current?.focus();const key=(event:KeyboardEvent)=>{if(event.key==='Escape'){event.preventDefault();w.setPreview(null);}if(event.key==='Tab'){const nodes=Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')??[]),first=nodes[0],last=nodes.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialog.current)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}};document.addEventListener('keydown',key);return()=>{document.body.style.overflow=overflow;document.removeEventListener('keydown',key);previous?.focus();};},[w.preview]);
   const blocked = w.busy || !!w.pending || offline;
   const upload = async (kind: "logo" | "signature", file: File | undefined) => {
     if (!file) return;
@@ -152,7 +156,7 @@ function Editor() {
                     {t("documents.payment_help")}
                   </p>
                   <p className="mt-2 break-all">
-                    {w.meta.data.context?.payload.payment.vpa ??
+                    {pos.data?.upiVpa ??
                       t("documents.payment_missing")}
                   </p>
                   <Link
@@ -280,7 +284,7 @@ function Editor() {
                   {t("documents.preview")}
                 </Button>
               </Card>
-              {w.pending ? (
+              {w.pending && !w.busy ? (
                 <p role="status" className="text-warn">
                   {t("documents.uncertain")}
                 </p>
@@ -290,14 +294,14 @@ function Editor() {
                   disabled={w.busy || offline}
                   onClick={() => void w.save()}
                 >
-                  {t(w.pending ? "documents.check_result" : "documents.save")}
+                  {t(w.busy ? "common.loading" : w.pending ? "documents.check_result" : "documents.save")}
                 </Button>
                 <Button
                   tone="ghost"
                   disabled={w.busy || offline}
                   onClick={() => void w.reload()}
                 >
-                  {t("common.refresh")}
+                  {t("gst.health_refresh")}
                 </Button>
               </div>
               {w.saved ? (
@@ -309,6 +313,7 @@ function Editor() {
               {w.preview ? (
                 <div
                   role="dialog"
+                  ref={dialog} tabIndex={-1}
                   aria-modal="true"
                   aria-label={t("documents.preview_title")}
                   className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-3 sm:p-8"
