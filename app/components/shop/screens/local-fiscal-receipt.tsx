@@ -13,7 +13,7 @@ import {documentView} from '../../../lib/shop/gst-document-view';
 import {recoverFinancialRequest} from '../../../lib/shop/gst-recovery';
 import type {CreateSalePayload,Sale} from '../../../lib/shop/types';
 export function LocalFiscalReceiptScreen({requestId}:{requestId:string}) {
- const {api,shop,offline}=useShop(),text=useGstText(),action=useGstAction();
+ const {api,shop,offline,t}=useShop(),text=useGstText(),action=useGstAction();
  const q=useGstQuery(['local-fiscal-receipt',requestId],async()=>{
   const scope=financialScope(shop!.id);
   const row=(await retainedRequests(scope)).find(row=>row.id===requestId);
@@ -34,7 +34,7 @@ export function LocalFiscalReceiptScreen({requestId}:{requestId:string}) {
       {confirmed?.id?<Button href={`/shop/sales/${confirmed.id}`}>{text('Review saved bill')}</Button>:<Button disabled={offline||action.busy} onClick={()=>void action.run(async()=>{await recoverFinancialRequest(api,shop!.id,saved.row);await q.refetch();})}>{text('Recover original request')}</Button>}
      </div>
     </Card>
-    {saved.receipt.kind==='fiscal'&&saved.view?<FiscalDocumentArticle doc={saved.receipt.receipt.document} view={saved.view} local={!confirmed} payments={(saved.row.payload as CreateSalePayload).payments}/>:saved.receipt.kind==='ordinary'?<OrdinaryReceipt receipt={saved.receipt.receipt} pending={!confirmed}/>:null}
+    {(saved.row.payload as CreateSalePayload).documentPresentation?<Card>{t('documents.pending_sync','')}</Card>:saved.receipt.kind==='fiscal'&&saved.view?<FiscalDocumentArticle doc={saved.receipt.receipt.document} view={saved.view} local={!confirmed} payments={(saved.row.payload as CreateSalePayload).payments}/>:saved.receipt.kind==='ordinary'?<OrdinaryReceipt receipt={saved.receipt.receipt} pending={!confirmed}/>:null}
 
    </>:null}
   </ReadState>

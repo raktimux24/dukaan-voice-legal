@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 
 import { useGstText as useUiText } from "../gst-ui";
 
@@ -58,7 +59,7 @@ export function PaymentsScreen() {
   return (
     <div className="shop-page">
       <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments & bills')} description={t('pos_settings.upi_explainer', 'The UPI ID and QR shown at checkout.')} />
-      <Notice error={error ?? settings.error} />
+      <Notice error={error ?? settings.error} /><Card><Link href="/shop/settings/payments/branding" className="text-saffron font-semibold">{t("documents.title", "Branding & formats")}</Link><p className="mt-2 text-sm text-muted">{t("documents.help", "")}</p></Card>
         <form id="payment-preferences"
           className="grid gap-4"
           onSubmit={(event) => {

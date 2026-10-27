@@ -128,8 +128,8 @@
   {
     "file": "sale-request-canonical.ts",
     "source": "server/src/lib/sale-request-canonical.ts",
-    "sourceSha256": "13a1bac709fadcca717741d08d251d86624b687f5fd4a30a8a1c1d2585a322a2",
-    "vendoredSha256": "13a1bac709fadcca717741d08d251d86624b687f5fd4a30a8a1c1d2585a322a2"
+    "sourceSha256": "1245956b1f6fd87b566dc652fd90ab2eca8a5d885ecf3dc01a48f08ca7138e90",
+    "vendoredSha256": "1245956b1f6fd87b566dc652fd90ab2eca8a5d885ecf3dc01a48f08ca7138e90"
   },
   {
     "file": "sale-return-outcome.ts",

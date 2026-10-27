@@ -1,4 +1,5 @@
 "use client";
+import {IssuedDocumentButton} from "./document-preview";
 import type {FiscalDocument} from "../../lib/shop/gst-types";
 import type {SalePaymentInput} from "../../lib/shop/types";
 import type {DocumentView} from "../../lib/shop/gst-document-view";
@@ -27,6 +28,7 @@ export function GstDocuments({ saleId }: { saleId: string }) {
 export function FiscalDocumentArticle({doc,view,local=false,payments}:{doc:FiscalDocument;view:DocumentView;local?:boolean;payments?:SalePaymentInput[]}) {
  const text=useGstText(),date=useFiscalDate();
  const address=(party: {address:string;structuredAddress?:{address1:string;address2?:string;location:string;pincode:string}},version?:string)=>version==='gst_bill_v2'&&party.structuredAddress?[party.structuredAddress.address1,party.structuredAddress.address2,party.structuredAddress.location,party.structuredAddress.pincode].filter(Boolean).join(', '):party.address;
+ if(doc.documentPresentation)return <IssuedDocumentButton issued={doc.documentPresentation}/>;
  return <article className="gst-document" id={'gst-doc-'+doc.id}>
    {local?<p className="shop-hint">{text('Saved locally · awaiting synchronization')}</p>:null}
    <header><p><b>{text(doc.type.replaceAll('_',' '))} {doc.number}</b></p><p>{date(doc.issuedAt)}</p><h2 className="shop-section-title">{view.context.settings.legalName}</h2><p>{address(view.context.settings,view.context.documentRenderVersion)}</p><p>GSTIN {view.context.settings.gstin}</p><p>{text('State / place of supply')}: {view.context.placeOfSupply}</p></header>
