@@ -7,7 +7,7 @@ import { SupplierEditor } from "../gst-supplier";
 import { useGstQuery, ReadState } from "../gst-workspace";
 import { useGstText } from "../gst-ui";
 export function GstSupplierDetailScreen({ id }: { id: string }) {
-  const { api, shop, perms } = useShop(),
+  const { api, shop, perms, t } = useShop(),
     text = useGstText();
   const [editing, setEditing] = useState(false);
   const q = useGstQuery(
@@ -40,6 +40,7 @@ export function GstSupplierDetailScreen({ id }: { id: string }) {
               <Button tone="ghost" onClick={() => setEditing((v) => !v)}>
                 {text("Edit supplier")}
               </Button>
+              <Button href={"/shop/purchase-orders?supplierId="+id}>{t("po.new","New purchase order")}</Button>
               <Button href={"/shop/purchases?supplierId=" + id} tone="ghost">
                 {text("Recorded invoices")}
               </Button>

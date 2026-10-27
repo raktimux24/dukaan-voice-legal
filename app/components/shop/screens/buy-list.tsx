@@ -30,6 +30,7 @@ export function BuyListScreen() {
   return (
     <div className="shop-page">
       <PageHeader kicker={t('reports.stock.on_hand', 'Stock')} title={t('nav.buy_list', 'Buy list')} description={t('buy_list.empty_subtitle', 'What to buy next. Stocking a row adds a batch to the product.')} />
+      <Card><Button href="/shop/purchase-orders">{t('po.title','Purchase orders')} →</Button><p className="mt-2 text-sm text-muted">{t('po.buy_list_help','Select buy-list items to order from a supplier. Receive deliveries against the order.')}</p></Card>
       <Notice error={error ?? list.error} />
       <Card>
         <form
@@ -64,15 +65,17 @@ export function BuyListScreen() {
                 {item.aiReason ? <p className="text-sm text-muted">{item.aiReason}</p> : null}
               </div>
               <div className="flex gap-2">
+                {item.status==='pending'?<Button tone="ghost" href={'/shop/purchase-orders?buyListItemId='+item.id}>{t('po.order_item','Order')}</Button>:null}
                 {item.status !== 'stocked' && !(item.isAiSuggested && !premium) ? (
                   <Button
                     onClick={() => {
+                      if(item.purchaseOrderId){router.push('/shop/purchase-orders?orderId='+item.purchaseOrderId);return;}
                       const qtyParam = item.quantity ?? '';
                       if (item.productId) router.push(`/shop/products/${item.productId}?batch=1&buyListItemId=${item.id}&qty=${qtyParam}`);
                       else router.push(`/shop/products/new?buyListItemId=${item.id}&name=${encodeURIComponent(item.itemName)}&qty=${qtyParam}`);
                     }}
                   >
-                    {t('reports.stock.on_hand', 'Stock')}
+                    {item.purchaseOrderId?t('po.open','Open order'):t('reports.stock.on_hand', 'Stock')}
                   </Button>
                 ) : null}
                 <Button tone="ghost" onClick={() => void api.deleteBuyListItem(shop.id, item.id).then(refresh).catch(setError)}>{t('common.delete', 'Delete')}</Button>

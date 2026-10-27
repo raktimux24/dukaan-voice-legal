@@ -269,6 +269,7 @@ export type LedgerEntry = {
 };
 
 export type BuyListItem = {
+  orderedQuantity?:number;purchaseOrderId?:string;
   id: string;
   shopId: string;
   productId?: string;

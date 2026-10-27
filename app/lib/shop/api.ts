@@ -1,3 +1,4 @@
+import {bindPurchaseOrders} from './purchase-orders/client';
 import {bindOpenings} from './openings/client';
 import {bindDocuments} from './documents/client';
 import {bindProductBulk} from './product-bulk/client';
@@ -316,6 +317,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     assertSession: assertCurrent,
     documents:bindDocuments(send),
     openings:bindOpenings(send),
+    purchaseOrders:bindPurchaseOrders(send),
     productBulk:bindProductBulk(send),
     barcodes:bindBarcodes(send),
     imports:bindInventoryImports(send),
