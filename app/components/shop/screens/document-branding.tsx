@@ -301,7 +301,7 @@ function Editor() {
                   disabled={w.busy || offline}
                   onClick={() => void w.reload()}
                 >
-                  {t("gst.health_refresh")}
+                  {t("documents.reload")}
                 </Button>
               </div>
               {w.saved ? (
