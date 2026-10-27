@@ -120,7 +120,7 @@ export function ActivityScreen() {
                 <div>
                   <p className="timeline-title">{log.inputMethod==='import'?t('imports.source','File import'):ACTION_KEYS[log.actionType] ? t(ACTION_KEYS[log.actionType][0], ACTION_KEYS[log.actionType][1]) : log.actionType.replaceAll('_', ' ')}</p>
                   <p className="timeline-meta">{(['inventory_import','party_import'].includes(log.actionType)||log.inputMethod==='import'&&!!log.payload?.importId)?t('imports.activity','Imported {{name}} (row {{row}})',{name:String(log.payload?.productName??log.payload?.partyName??(log.payload?.identity as {name?:string}|undefined)?.name??''),row:Number(log.payload?.sourceRow??0)}):['barcode_generated','barcode_replaced'].includes(log.actionType)?t(log.actionType==='barcode_generated'?'barcodes.activity_generated':'barcodes.activity_replaced',log.description??'',{name:String(log.payload?.productName??'')}):log.description}</p>
-                  <p className="timeline-meta">{log.userName} · {log.inputMethod==='import'?t('imports.source','File import'):log.inputMethod}</p>
+                  <p className="timeline-meta">{log.userName} · {log.inputMethod==='import'?t('imports.source','File import'):log.inputMethod==='manual'?t('activity.filter_manual','Manual'):log.inputMethod==='voice'?t('activity.filter_voice','Voice'):log.inputMethod}</p>
                 </div>
                 <time className="timeline-when" dateTime={log.createdAt}>{formatTime(log.createdAt)}</time>
               </li>
