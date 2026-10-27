@@ -118,6 +118,10 @@ export function OpeningView({
       );
     else if (d.step === 3) w.setSection("cash");
   }, [d.step, s?.id, w.metadata.data?.customerAvailable]);
+  const unitName = (unit: string) =>
+    ["piece", "packet", "dozen", "crate"].includes(unit)
+      ? t("imports.unit." + unit)
+      : unit;
   const sectionName = (section: OpeningSection) =>
     t("opening.section." + section);
   const nav = (view: typeof w.view) => {
@@ -168,7 +172,7 @@ export function OpeningView({
       <Box card key={row.id}>
         <Text heading>
           {row.name || sectionName(section)}
-          {row.unit ? " · " + row.unit : ""}
+          {row.unit ? " · " + unitName(row.unit) : ""}
         </Text>
         {done(row.id) ? (
           <Text tone="accent">{t("opening.state.complete")}</Text>
@@ -182,7 +186,10 @@ export function OpeningView({
         {section === "stock" ? (
           <>
             <Input
-              label={t("opening.count") + (row.unit ? " · " + row.unit : "")}
+              label={
+                t("opening.count") +
+                (row.unit ? " · " + unitName(row.unit) : "")
+              }
               value={row.quantity}
               type="decimal"
               disabled={blocked || done(row.id)}
@@ -299,7 +306,7 @@ export function OpeningView({
             target.name +
             " · " +
             (target.quantity ?? target.balance ?? "0") +
-            (target.unit ? " " + target.unit : "") +
+            (target.unit ? " " + unitName(target.unit) : "") +
             (target.opening ? " · " + t("opening.existing") : "") +
             " →"
           }
@@ -616,7 +623,7 @@ export function OpeningView({
                       </Text>
                       <Text>
                         {sectionName(row.section)} · {row.before} → {row.after}
-                        {row.unit ? " " + row.unit : ""}
+                        {row.unit ? " " + unitName(row.unit) : ""}
                       </Text>
                       <Text tone="muted">
                         {t("opening.change")} · {row.delta}
@@ -731,7 +738,7 @@ export function OpeningView({
                     {t("opening.entry." + entry.type)} ·{" "}
                     {sectionName(entry.section)} · {entry.before} →{" "}
                     {entry.after}
-                    {entry.unit ? " " + entry.unit : ""}
+                    {entry.unit ? " " + unitName(entry.unit) : ""}
                   </Text>
                   <Text>
                     {t("opening.as_of")} · {entry.asOf} ·{" "}
