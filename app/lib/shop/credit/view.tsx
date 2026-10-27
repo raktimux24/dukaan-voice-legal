@@ -287,7 +287,7 @@ export function CreditView({
                 </Box>
               )}
               <Box card>
-                <Text heading>{tr("retained")}</Text>
+                <Text heading>{tr("saved_statements")}</Text>
                 {d.statements.length ? (
                   d.statements.map((s) => (
                     <Button

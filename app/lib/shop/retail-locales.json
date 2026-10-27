@@ -1153,7 +1153,6 @@
     "credit.from": "From date",
     "credit.to": "To date",
     "credit.create_statement": "Create statement snapshot",
-    "credit.retained": "Saved statements",
     "credit.no_statements": "No saved statements yet.",
     "credit.open_statement": "Open statement",
     "credit.export_help": "The snapshot retains the customer, period, ledger and language at creation. Sharing opens an export; it does not prove delivery.",
@@ -1250,7 +1249,8 @@
     "credit.error.failed": "The action could not be confirmed. Check the saved request before retrying.",
     "credit.no_history": "No changes recorded yet.",
     "credit.ledger_id": "Ledger entry ID",
-    "credit.items": "Bills & dues"
+    "credit.items": "Bills & dues",
+    "credit.saved_statements": "Saved statements"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -2406,7 +2406,6 @@
     "credit.from": "से तारीख",
     "credit.to": "तक तारीख",
     "credit.create_statement": "स्टेटमेंट स्नैपशॉट बनाएं",
-    "credit.retained": "सेव किए गए स्टेटमेंट्स",
     "credit.no_statements": "अभी तक कोई सेव किया हुआ स्टेटमेंट नहीं है।",
     "credit.open_statement": "स्टेटमेंट खोलें",
     "credit.export_help": "स्नैपशॉट बनाते समय कस्टमर, पीरियड, लेजर और भाषा सेव हो जाती है। शेयर करने से एक्सपोर्ट खुलता है; यह डिलीवरी साबित नहीं करता।",
@@ -2503,7 +2502,8 @@
     "credit.error.failed": "एक्शन कन्फर्म नहीं हो सका। फिर से कोशिश करने से पहले सेव की गई रिक्वेस्ट चेक करें।",
     "credit.no_history": "अभी तक कोई बदलाव रिकॉर्ड नहीं हुआ है।",
     "credit.ledger_id": "लेज़र एंट्री आईडी",
-    "credit.items": "बिल और बकाया"
+    "credit.items": "बिल और बकाया",
+    "credit.saved_statements": "सेव किए गए स्टेटमेंट्स"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -3659,7 +3659,6 @@
     "credit.from": "From date",
     "credit.to": "To date",
     "credit.create_statement": "Create statement snapshot",
-    "credit.retained": "Saved statements",
     "credit.no_statements": "Abhi tak koi saved statements nahi hain.",
     "credit.open_statement": "Open statement",
     "credit.export_help": "Snapshot banate samay customer, period, ledger aur language retain rehti hai. Sharing se export open hota hai; yeh delivery proof nahi karta.",
@@ -3756,7 +3755,8 @@
     "credit.error.failed": "Action confirm nahi ho saka. Retry karne se pehle saved request check karein.",
     "credit.no_history": "Abhi tak koi changes record nahi hue hain.",
     "credit.ledger_id": "Ledger entry ID",
-    "credit.items": "Bills aur dues"
+    "credit.items": "Bills aur dues",
+    "credit.saved_statements": "Saved statements"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -4912,7 +4912,6 @@
     "credit.from": "ஆரம்ப தேதி",
     "credit.to": "முடிவு தேதி",
     "credit.create_statement": "ஸ்டேட்மென்ட் ஸ்னாப்ஷாட்டை உருவாக்கு",
-    "credit.retained": "சேவ் செய்யப்பட்ட ஸ்டேட்மென்ட்கள்",
     "credit.no_statements": "இன்னும் சேவ் செய்யப்பட்ட ஸ்டேட்மென்ட்கள் இல்லை.",
     "credit.open_statement": "ஸ்டேட்மென்ட்டை திற",
     "credit.export_help": "ஸ்னாப்ஷாட் உருவாக்கும் போது உள்ள கஸ்டமர், காலம், லெட்ஜர் மற்றும் மொழியை தக்கவைத்துக் கொள்ளும். ஷேர் செய்வது ஒரு எக்ஸ்போர்ட்டை திறக்கும்; அது டெலிவரியை நிரூபிக்காது.",
@@ -5009,7 +5008,8 @@
     "credit.error.failed": "இந்த ஆக்‌ஷனை கன்ஃபார்ம் பண்ண முடியல. மறுபடியும் ட்ரை பண்றதுக்கு முன்னாடி சேவ் பண்ண ரெக்வெஸ்ட்டை செக் பண்ணுங்க.",
     "credit.no_history": "இதுவரைக்கும் எந்த மாற்றமும் ரெக்கார்ட் ஆகல.",
     "credit.ledger_id": "லெட்ஜர் என்ட்ரி ஐடி",
-    "credit.items": "பில்கள் & பாக்கி"
+    "credit.items": "பில்கள் & பாக்கி",
+    "credit.saved_statements": "சேவ் செய்யப்பட்ட ஸ்டேட்மென்ட்கள்"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -6165,7 +6165,6 @@
     "credit.from": "ప్రారంభ తేదీ నుండి",
     "credit.to": "ముగింపు తేదీ వరకు",
     "credit.create_statement": "స్టేట్‌మెంట్ స్నాప్‌షాట్ క్రియేట్ చేయండి",
-    "credit.retained": "సేవ్ చేసిన స్టేట్‌మెంట్స్",
     "credit.no_statements": "ఇంకా సేవ్ చేసిన స్టేట్‌మెంట్స్ లేవు.",
     "credit.open_statement": "స్టేట్‌మెంట్ ఓపెన్ చేయండి",
     "credit.export_help": "స్నాప్‌షాట్ క్రియేట్ చేసిన సమయంలో ఉన్న కస్టమర్, పీరియడ్, లెడ్జర్, లాంగ్వేజ్‌ను అలాగే ఉంచుతుంది. షేర్ చేయడం వల్ల ఎక్స్‌పోర్ట్ ఓపెన్ అవుతుంది; అది డెలివరీని నిరూపించదు.",
@@ -6262,7 +6261,8 @@
     "credit.error.failed": "ఈ చర్యను నిర్ధారించలేకపోయాము. మళ్లీ ప్రయత్నించే ముందు సేవ్ చేసిన రిక్వెస్ట్‌ను తనిఖీ చేయండి.",
     "credit.no_history": "ఇంకా ఎలాంటి మార్పులు నమోదు కాలేదు.",
     "credit.ledger_id": "లెడ్జర్ ఎంట్రీ ID",
-    "credit.items": "బిల్లులు & బకాయిలు"
+    "credit.items": "బిల్లులు & బకాయిలు",
+    "credit.saved_statements": "సేవ్ చేసిన స్టేట్‌మెంట్స్"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -7418,7 +7418,6 @@
     "credit.from": "থেকে তারিখ",
     "credit.to": "থেকে তারিখ",
     "credit.create_statement": "স্টেটমেন্ট স্ন্যাপশট তৈরি করুন",
-    "credit.retained": "সেভ করা স্টেটমেন্ট",
     "credit.no_statements": "এখনো কোনো সেভ করা স্টেটমেন্ট নেই।",
     "credit.open_statement": "স্টেটমেন্ট খুলুন",
     "credit.export_help": "স্ন্যাপশটটি তৈরি করার সময়কার কাস্টমার, সময়কাল, লেজার এবং ভাষা ধরে রাখে। শেয়ার করলে একটি এক্সপোর্ট খোলে; এটি ডেলিভারির প্রমাণ দেয় না।",
@@ -7515,7 +7514,8 @@
     "credit.error.failed": "কাজটা কনফার্ম করা যায়নি। আবার চেষ্টা করার আগে সেভ করা রিকোয়েস্টটা চেক করে নিন।",
     "credit.no_history": "এখনো কোনো পরিবর্তন রেকর্ড করা হয়নি।",
     "credit.ledger_id": "লেজার এন্ট্রি আইডি",
-    "credit.items": "বিল ও পাওনা"
+    "credit.items": "বিল ও পাওনা",
+    "credit.saved_statements": "সেভ করা স্টেটমেন্ট"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -8671,7 +8671,6 @@
     "credit.from": "सुरुवातीची तारीख",
     "credit.to": "शेवटची तारीख",
     "credit.create_statement": "स्टेटमेंट स्नॅपशॉट तयार करा",
-    "credit.retained": "सेव्ह केलेले स्टेटमेंट्स",
     "credit.no_statements": "अजून कोणतेही सेव्ह केलेले स्टेटमेंट्स नाहीत.",
     "credit.open_statement": "स्टेटमेंट उघडा",
     "credit.export_help": "स्नॅपशॉट तयार करताना कस्टमर, कालावधी, लेजर आणि भाषा तशीच राहते. शेअर केल्यावर एक्सपोर्ट उघडते; पण यामुळे डिलिव्हरी सिद्ध होत नाही.",
@@ -8768,7 +8767,8 @@
     "credit.error.failed": "कृती कन्फर्म होऊ शकली नाही. पुन्हा प्रयत्न करण्यापूर्वी सेव्ह केलेली विनंती तपासा.",
     "credit.no_history": "अद्याप कोणतेही बदल नोंदवले गेलेले नाहीत.",
     "credit.ledger_id": "लेजर एंट्री आयडी",
-    "credit.items": "बिलं आणि थकीत"
+    "credit.items": "बिलं आणि थकीत",
+    "credit.saved_statements": "सेव्ह केलेले स्टेटमेंट्स"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -9924,7 +9924,6 @@
     "credit.from": "ಪ್ರಾರಂಭದ ದಿನಾಂಕ",
     "credit.to": "ಮುಕ್ತಾಯದ ದಿನಾಂಕ",
     "credit.create_statement": "ಸ್ಟೇಟ್‌ಮೆಂಟ್ ಸ್ನ್ಯಾಪ್‌ಶಾಟ್ ರಚಿಸಿ",
-    "credit.retained": "ಸೇವ್ ಮಾಡಿದ ಸ್ಟೇಟ್‌ಮೆಂಟ್‌ಗಳು",
     "credit.no_statements": "ಇನ್ನೂ ಯಾವುದೇ ಸೇವ್ ಮಾಡಿದ ಸ್ಟೇಟ್‌ಮೆಂಟ್‌ಗಳಿಲ್ಲ.",
     "credit.open_statement": "ಸ್ಟೇಟ್‌ಮೆಂಟ್ ಓಪನ್ ಮಾಡಿ",
     "credit.export_help": "ಸ್ನ್ಯಾಪ್‌ಶಾಟ್ ರಚಿಸುವಾಗ ಗ್ರಾಹಕರು, ಅವಧಿ, ಲೆಡ್ಜರ್ ಮತ್ತು ಭಾಷೆಯನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತದೆ. ಹಂಚಿಕೊಳ್ಳುವುದರಿಂದ ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಓಪನ್ ಆಗುತ್ತದೆ; ಇದು ಡೆಲಿವರಿಯನ್ನು ಸಾಬೀತುಪಡಿಸುವುದಿಲ್ಲ.",
@@ -10021,7 +10020,8 @@
     "credit.error.failed": "ಕ್ರಿಯೆಯನ್ನು ಖಚಿತಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ಉಳಿಸಿದ ವಿನಂತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ.",
     "credit.no_history": "ಇನ್ನೂ ಯಾವುದೇ ಬದಲಾವಣೆಗಳನ್ನು ದಾಖಲಿಸಿಲ್ಲ.",
     "credit.ledger_id": "ಲೆಡ್ಜರ್ ಎಂಟ್ರಿ ಐಡಿ",
-    "credit.items": "ಬಿಲ್‌ಗಳು ಮತ್ತು ಬಾಕಿ"
+    "credit.items": "ಬಿಲ್‌ಗಳು ಮತ್ತು ಬಾಕಿ",
+    "credit.saved_statements": "ಸೇವ್ ಮಾಡಿದ ಸ್ಟೇಟ್‌ಮೆಂಟ್‌ಗಳು"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -11177,7 +11177,6 @@
     "credit.from": "શરૂઆતની તારીખ",
     "credit.to": "અંતિમ તારીખ",
     "credit.create_statement": "સ્ટેટમેન્ટ સ્નેપશોટ બનાવો",
-    "credit.retained": "સાચવેલા સ્ટેટમેન્ટ્સ",
     "credit.no_statements": "હજુ સુધી કોઈ સાચવેલા સ્ટેટમેન્ટ્સ નથી.",
     "credit.open_statement": "સ્ટેટમેન્ટ ખોલો",
     "credit.export_help": "સ્નેપશોટ બનાવતી વખતે ગ્રાહક, સમયગાળો, લેજર અને ભાષા જાળવી રાખે છે. શેર કરવાથી એક્સપોર્ટ ખુલે છે; તે ડિલિવરી સાબિત કરતું નથી.",
@@ -11274,7 +11273,8 @@
     "credit.error.failed": "આ એક્શન કન્ફર્મ થઈ શક્યું નથી. ફરી પ્રયાસ કરતા પહેલા સેવ કરેલી રિક્વેસ્ટ તપાસો.",
     "credit.no_history": "અત્યાર સુધી કોઈ ફેરફાર નોંધાયો નથી.",
     "credit.ledger_id": "લેજર એન્ટ્રી ID",
-    "credit.items": "બીલ અને બાકી રકમ"
+    "credit.items": "બીલ અને બાકી રકમ",
+    "credit.saved_statements": "સાચવેલા સ્ટેટમેન્ટ્સ"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -12430,7 +12430,6 @@
     "credit.from": "തുടങ്ങുന്ന തിയ്യതി",
     "credit.to": "അവസാനിക്കുന്ന തിയ്യതി",
     "credit.create_statement": "സ്റ്റേറ്റ്‌മെന്റ് സ്നാപ്പ്ഷോട്ട് ഉണ്ടാക്കുക",
-    "credit.retained": "സേവ് ചെയ്ത സ്റ്റേറ്റ്‌മെന്റുകൾ",
     "credit.no_statements": "ഇതുവരെ സേവ് ചെയ്ത സ്റ്റേറ്റ്‌മെന്റുകൾ ഒന്നുമില്ല.",
     "credit.open_statement": "സ്റ്റേറ്റ്‌മെന്റ് തുറക്കുക",
     "credit.export_help": "സ്നാപ്പ്ഷോട്ട് ഉണ്ടാക്കിയ സമയത്തെ കസ്റ്റമർ, കാലയളവ്, ലെഡ്ജർ, ഭാഷ എന്നിവ നിലനിർത്തുന്നു. ഷെയർ ചെയ്യുമ്പോൾ ഒരു എക്സ്പോർട്ട് തുറക്കപ്പെടുന്നു; അത് ഡെലിവറി തെളിയിക്കുന്നില്ല.",
@@ -12527,6 +12526,7 @@
     "credit.error.failed": "ആക്ഷൻ സ്ഥിരീകരിക്കാൻ കഴിഞ്ഞില്ല. വീണ്ടും ശ്രമിക്കുന്നതിന് മുമ്പ് സേവ് ചെയ്ത റിക്വസ്റ്റ് പരിശോധിക്കുക.",
     "credit.no_history": "ഇതുവരെ മാറ്റങ്ങളൊന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.",
     "credit.ledger_id": "ലെഡ്ജർ എൻട്രി ഐഡി",
-    "credit.items": "ബില്ലുകളും കുടിശ്ശികകളും"
+    "credit.items": "ബില്ലുകളും കുടിശ്ശികകളും",
+    "credit.saved_statements": "സേവ് ചെയ്ത സ്റ്റേറ്റ്‌മെന്റുകൾ"
   }
 }
