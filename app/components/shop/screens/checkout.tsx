@@ -1,4 +1,5 @@
 'use client';
+import {assertEstimateCart} from '../../../lib/shop/estimates/handoff';
 import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt} from '../../../lib/shop/local-issued-receipt';
 
 import {financialScope,retainedRequests,assertScope} from '../../../lib/shop/gst-storage';
@@ -144,7 +145,8 @@ export function CheckoutScreen() {
   const hasCustomer = !!(cartApi.cart.customerId || cartApi.cart.customerName?.trim());
   const udhaarLocked = creditPortion > 0 && !premium;
   const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
-  const canCharge = !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
+  const [estimateReviewed,setEstimateReviewed]=useState(false);
+  const canCharge = (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
 
   const upiText = useMemo(() => {
     const vpa = settings.data?.upiVpa;
@@ -176,6 +178,7 @@ export function CheckoutScreen() {
     if (payments.length === 0) payments.push({ method: 'cash', amount: 0, tendered: 0 });
     const customer=checkoutCustomer({...cartApi.cart,customerPhone:phone&&phone!=='invalid'?phone:null},customerClientId,retained);
     return {
+      ...(cartApi.cart.estimateSource?{estimateSource:{...cartApi.cart.estimateSource,reviewed:estimateReviewed}}:{}),
       ...((retained?retained.documentPresentation:settings.data?.documentBranding?.ref)?{documentPresentation:retained?retained.documentPresentation:settings.data?.documentBranding?.ref}:{}),
       gstContext,
       mixedDiscountReview:cartApi.cart.mixedDiscountReview,
@@ -227,12 +230,13 @@ export function CheckoutScreen() {
       setError(new Error('Another bill is being charged. Wait a moment, then retry that bill.'));
       return;
     }
-    const clientId = existing?.fingerprint === fingerprint ? existing.clientId : crypto.randomUUID();
+    const clientId = existing?.fingerprint === fingerprint ? existing.clientId : (cartApi.cart.estimateSource?.saleClientId??crypto.randomUUID());
     const payload: CreateSalePayload = { ...body, clientId };
     charging.current = true;
     setBusy(true);
     setError(null);
     try {
+    if(payload.estimateSource&&!existing)assertEstimateCart(await api.estimates.get(shop.id,payload.estimateSource.estimateId),cartApi.cart);
     writePending(userId, shop.id, {
       clientId,
       payload,
@@ -252,7 +256,7 @@ export function CheckoutScreen() {
         try{
           const scope=financialScope(shop.id);
           const row=(await retainedRequests(scope)).find(row=>row.id===clientId);
-          if(row && hasLocalIssuedReceipt(row)){
+          if(!payload.estimateSource&&row && hasLocalIssuedReceipt(row)){
             await verifyLocalIssuedReceipt(row,scope);assertScope(scope);
             wentToBill.current=true;
             setLocalReceiptId(clientId);
@@ -264,6 +268,7 @@ export function CheckoutScreen() {
         setOfflineSaved(true);
         setError(new Error('Connection lost. The server outcome is not confirmed. The saved checkout will retry with the same request ID when the connection returns.'));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
+      else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('estimates_'))setError(new Error(t('estimates.error.'+((caught as any).code??(caught as any).message).slice(10),'')));
       else {
         // Retain the original uncertain or rejected request for recovery.
         if (caught instanceof ApiError && (caught.code === 'product_archived' || caught.code === 'product_not_found')) {
@@ -319,6 +324,7 @@ export function CheckoutScreen() {
             </div>
           </section>
 
+          {cartApi.cart.estimateSource?<Card><h2>{t('estimates.origin','',{number:cartApi.cart.estimateSource.number})}</h2><p>{t('estimates.checkout_help','')}</p><label className="opening-check"><input type="checkbox" checked={estimateReviewed} onChange={e=>setEstimateReviewed(e.target.checked)}/>{t('estimates.checkout_review','')}</label><Button tone="ghost" href={'/shop/estimates?id='+cartApi.cart.estimateSource.estimateId}>{t('estimates.bill_source','')}</Button></Card>:null}
           {offlineSaved ? (
             <Card>
               <p>{uiText("Checkout saved on this browser. Server confirmation is pending.")}</p>

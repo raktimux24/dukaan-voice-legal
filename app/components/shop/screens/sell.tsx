@@ -364,6 +364,7 @@ export function SellScreen() {
       </div>
 
       <aside className="bill shop-surface" aria-label={uiText("Current bill")}>
+        <div className="p-3 grid gap-2"><Button tone="ghost" href="/shop/estimates">{t('estimates.title','Quotations / estimates')}</Button>{lineCount>0?<Button tone="ghost" href="/shop/estimates?fromCart=1">{t('estimates.save_cart','Save cart as estimate')}</Button>:null}</div>
         <div className="bill-head">
           <h2>{t('bill.bill', 'Bill')}</h2>
           <div className="flex items-center gap-3">

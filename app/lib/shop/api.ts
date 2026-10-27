@@ -1,3 +1,4 @@
+import {bindEstimates} from './estimates/client';
 import {bindPurchaseOrders} from './purchase-orders/client';
 import {bindOpenings} from './openings/client';
 import {bindDocuments} from './documents/client';
@@ -318,6 +319,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     documents:bindDocuments(send),
     openings:bindOpenings(send),
     purchaseOrders:bindPurchaseOrders(send),
+    estimates:bindEstimates(send),
     productBulk:bindProductBulk(send),
     barcodes:bindBarcodes(send),
     imports:bindInventoryImports(send),

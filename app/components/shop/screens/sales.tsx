@@ -64,7 +64,7 @@ export function SalesScreen() {
         kicker="Counter"
         title={t('sales.title', 'Sales')}
         description={sales.data ? t('reports.sales.bills_n', '{{n}} bills', { n: sales.data.pages[0].total }) : undefined}
-        actions={<>
+        actions={<><Button href="/shop/estimates" tone="ghost">{t('estimates.title','Quotations / estimates')}</Button>
           {perms.canSeeReports ? <Button href="/shop/sales/refunds" tone="ghost">{t('refunds.title', 'Refunds')}</Button> : null}
           {perms.canSeeReports ? (
             premium ? (

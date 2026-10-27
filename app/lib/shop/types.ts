@@ -128,6 +128,7 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  estimateSource?:import("./estimates/contract").EstimateSource;
   documentPresentation?:DocumentContextRef;
   mixedDiscountReview?:{policy:"commercial_amount_proportional_v1";reviewed:true;evidenceReference:string};
   roundingSnapshot?:import("./gst-core/payable-rounding-snapshot").PayableRoundingSnapshot;
@@ -163,6 +164,7 @@ export type SaleItem = {
 };
 
 export type Sale = {
+  estimateId?:string|null;
   documentPresentation?:IssuedDocument|null;
   documentPresentationError?:string|null;
   requestHash?: string;
