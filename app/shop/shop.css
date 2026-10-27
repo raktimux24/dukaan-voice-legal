@@ -2935,3 +2935,36 @@ a.party-card:hover {
 .bulk-editor .shop-btn { min-width:0; max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; }
 .bulk-editor .shop-field { min-width:0; max-width:100%; }
 .bulk-editor .shop-page-desc, .bulk-editor .import-confirm { overflow-wrap:anywhere; }
+
+/* Payments: destination navigation is distinct from inline accordion editing. */
+.shop-root .payment-branding-link { display:grid; grid-template-columns:48px minmax(0,1fr) auto; align-items:center; gap:20px; padding:24px; min-width:0; border:1px solid rgba(255,107,0,.5); border-radius:var(--radius-lg); background:linear-gradient(110deg,rgba(255,107,0,.08),rgba(255,107,0,.015)); text-decoration:none; cursor:pointer; transition:border-color .15s ease,background-color .15s ease; }
+.shop-root .payment-branding-link:hover { border-color:var(--color-saffron,#FF6B00); background-color:rgba(255,107,0,.045); }
+.shop-root .payment-branding-link:focus-visible { outline:2px solid var(--color-saffron,#FF6B00); outline-offset:4px; }
+.payment-branding-icon { display:grid; place-items:center; width:48px; height:56px; border-radius:12px; color:var(--color-saffron,#FF6B00); background:rgba(255,107,0,.12); }
+.payment-branding-icon svg { width:26px; height:34px; }
+.payment-branding-copy { min-width:0; }
+.payment-branding-copy h2 { color:var(--color-ink,#EAEAE6); font-size:19px; line-height:1.4; font-weight:600; }
+.payment-branding-copy p { margin-top:5px; max-width:60ch; color:var(--color-muted,#9999A3); font-size:13px; line-height:1.6; }
+.payment-format-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+.payment-format-list span { border:1px solid rgba(255,255,255,.13); border-radius:6px; padding:3px 7px; color:var(--color-muted,#9999A3); font-size:11px; line-height:1.5; }
+.payment-branding-action { display:flex; align-items:center; justify-content:center; gap:10px; min-height:44px; padding:11px 15px; border-radius:10px; background:var(--color-saffron,#FF6B00); color:#0D0D12; font-size:13px; line-height:1.45; font-weight:600; }
+.payment-branding-action svg { width:19px; height:19px; flex-shrink:0; }
+.payment-settings-panel { min-width:0; border:1px solid var(--color-line); border-radius:var(--radius-lg); background:var(--color-card,#15151c); overflow:hidden; }
+.payment-settings-heading { padding:20px 24px; border-bottom:1px solid var(--color-line); }
+.payment-settings-heading h2 { font-weight:600; font-size:15px; }
+.payment-settings-heading p { margin-top:5px; color:var(--color-muted,#9999A3); font-size:13px; line-height:1.6; }
+.payment-settings-form { display:block; }
+.payment-settings-panel .gst-section { border:0; border-bottom:1px solid var(--color-line); border-radius:0; background:transparent; }
+.payment-settings-panel .gst-section > summary { min-height:76px; padding:16px 24px; }
+.payment-settings-panel .gst-section > summary > span:last-child { display:grid; place-items:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; color:var(--color-muted,#9999A3); background:rgba(255,255,255,.045); font-size:20px; }
+.payment-settings-panel .gst-section[open] > summary > span:last-child { color:var(--color-saffron,#FF6B00); background:rgba(255,107,0,.1); }
+.payment-settings-panel .gst-section[open] { background:rgba(255,255,255,.018); }
+.payment-settings-footer { display:flex; justify-content:flex-end; padding:18px 24px; }
+@media(max-width:760px) {
+ .shop-root .payment-branding-link { grid-template-columns:40px minmax(0,1fr); gap:14px; padding:18px; }
+ .payment-branding-icon { width:40px; height:48px; }
+ .payment-branding-action { grid-column:2; justify-self:start; max-width:100%; }
+ .payment-branding-copy h2 { font-size:17px; }
+ .payment-settings-heading,.payment-settings-panel .gst-section > summary,.payment-settings-footer { padding:18px; }
+ .payment-settings-footer .shop-btn { width:100%; }
+}
