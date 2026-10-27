@@ -356,6 +356,7 @@ export function ReportsScreen() {
           ) : <Button href="/shop/settings/subscription" tone="ghost">{t('reports.sales.export_csv', 'CSV')} · {t('subscription.status.active', 'Premium')}</Button>
         }
       />
+      <Button href="/shop/cashbook" tone="ghost">{t('cashbook.title','Expenses & cashbook')} →</Button>
       <div className="shop-toolbar">
         <div className="shop-seg" role="tablist" aria-label={uiText("Report")}>
           <button type="button" role="tab" aria-selected={tab === 'sales'} className={tab === 'sales' ? 'is-active' : undefined} onClick={() => setTab('sales')}>{t('reports.tab.sales', 'Sales')}</button>
