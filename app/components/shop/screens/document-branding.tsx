@@ -160,23 +160,12 @@ function Editor() {
                           className="mt-4 h-24 max-w-full rounded-lg bg-white p-2 object-contain"
                         />
                       ) : null}
-                      <Field
-                        label={t(
-                          "documents." + kind + (id ? "_replace" : "_upload"),
-                        )}
+                      <ImageUpload
+                        label={t("documents." + kind + (id ? "_replace" : "_upload"))}
                         hint={t("documents.image_help")}
-                      >
-                        <input
-                          type="file"
-                          disabled={blocked}
-                          accept="image/png,image/jpeg"
-                          className="block w-full text-sm"
-                          onChange={(e) => {
-                            void upload(kind, e.target.files?.[0]);
-                            e.target.value = "";
-                          }}
-                        />
-                      </Field>
+                        disabled={blocked}
+                        onSelect={file => void upload(kind, file)}
+                      />
                       {id ? (
                         <Button
                           tone="ghost"
@@ -314,4 +303,13 @@ function Editor() {
       )}
     </div>
   );
+}
+
+function ImageUpload({label,hint,disabled,onSelect}:{label:string;hint:string;disabled:boolean;onSelect:(file:File|undefined)=>void}) {
+  const input=useRef<HTMLInputElement>(null);
+  return <div className="mt-4">
+    <Button tone="ghost" disabled={disabled} onClick={()=>input.current?.click()}>{label}</Button>
+    <input ref={input} type="file" hidden tabIndex={-1} aria-label={label} disabled={disabled} accept="image/png,image/jpeg" onChange={event=>{onSelect(event.target.files?.[0]);event.target.value="";}}/>
+    <span className="shop-hint block">{hint}</span>
+  </div>;
 }
