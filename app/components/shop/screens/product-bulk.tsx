@@ -97,7 +97,7 @@ export function ProductBulkScreen() {
   };
   if (!shop) return <Spinner />;
   return (
-    <div className="shop-page">
+    <div className="shop-page bulk-editor">
       <PageHeader
         title={t("bulk.title")}
         description={t("bulk.help")}
@@ -208,7 +208,7 @@ export function ProductBulkScreen() {
                         <Field label={fieldLabel("category")}>
                           <select
                             className={inputClass}
-                            disabled={blocked}
+                            disabled={blocked || !w.next}
                             value={w.draft.category.category}
                             onChange={(e) =>
                               edit({
@@ -230,7 +230,7 @@ export function ProductBulkScreen() {
                         <Field label={fieldLabel("subcategory")}>
                           <select
                             className={inputClass}
-                            disabled={blocked}
+                            disabled={blocked || !w.next}
                             value={w.draft.category.subcategory}
                             onChange={(e) =>
                               edit({
@@ -266,7 +266,7 @@ export function ProductBulkScreen() {
                         >
                           <select
                             className={inputClass}
-                            disabled={blocked}
+                            disabled={blocked || !w.next}
                             value={w.draft[f]!.mode}
                             onChange={(e) =>
                               edit({
@@ -285,7 +285,7 @@ export function ProductBulkScreen() {
                           <input
                             className={inputClass}
                             inputMode="decimal"
-                            disabled={blocked}
+                            disabled={blocked || !w.next}
                             value={w.draft[f]!.value}
                             onChange={(e) =>
                               edit({
@@ -302,7 +302,7 @@ export function ProductBulkScreen() {
                         <input
                           className={inputClass}
                           inputMode="numeric"
-                          disabled={blocked}
+                          disabled={blocked || !w.next}
                           value={
                             Number.isNaN(w.draft.minStockLevel)
                               ? ""
@@ -323,7 +323,7 @@ export function ProductBulkScreen() {
                       <Field label={fieldLabel(f)}>
                         <select
                           className={inputClass}
-                          disabled={blocked}
+                          disabled={blocked || !w.next}
                           value={w.draft.depletionOrder}
                           onChange={(e) =>
                             edit({
