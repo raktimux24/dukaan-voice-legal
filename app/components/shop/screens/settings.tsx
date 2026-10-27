@@ -77,7 +77,6 @@ export function SettingsScreen() {
         </Card>
       ) : null}
       <BrowserNotifications/>
-      {perms.canEditProducts?<Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.help","Bring existing stock and unpaid balances into your shop.")}</p></div><span aria-hidden="true">→</span></Link>:null}
       <Card className="grid gap-4">
         <div>
           <h2 className="shop-section-title">{t('settings.section_language_voice', 'Preferences')}</h2>
@@ -106,6 +105,7 @@ export function SettingsScreen() {
         ) : null}
         </div>
       </Card>
+      {perms.canEditProducts?<section className="opening-stack" aria-label={t("settings.section_data","Data")}><h2 className="shop-section-title">{t("settings.section_data","Data")}</h2><Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.help","Bring existing stock and unpaid balances into your shop.")}</p></div><span aria-hidden="true">→</span></Link></section>:null}
       <Card className="grid gap-4">
         <div>
           <h2 className="shop-section-title">{t('settings.export_data', 'Exports')}</h2>
