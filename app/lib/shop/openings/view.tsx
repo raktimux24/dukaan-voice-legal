@@ -341,7 +341,7 @@ export function OpeningView({
       {w.busy || w.metadata.isPending ? (
         <Busy label={t("opening.loading")} />
       ) : null}
-      {w.pending ? (
+      {w.pending && !w.busy ? (
         <Box card>
           <Text heading>{t("opening.pending_title")}</Text>
           <Text>{t("opening.pending_help")}</Text>
