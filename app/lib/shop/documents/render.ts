@@ -125,7 +125,12 @@ export function sampleDocument(
     source: { kind: "sample", id: "sample" },
     title: t("documents.sample_bill"),
     number: t("documents.sample_number"),
-    date: "27 Oct 2026",
+    date: new Intl.DateTimeFormat(
+      context.payload.config.language === "hinglish"
+        ? "en-IN"
+        : context.payload.config.language + "-IN",
+      { dateStyle: "medium", timeZone: "Asia/Kolkata" },
+    ).format(new Date()),
     identity: context.payload.identity,
     identityLines: [],
     customer: t("documents.sample_customer"),

@@ -44,7 +44,7 @@ export function useBranding(
     [scope],
   );
   const run = async <T>(work: () => Promise<T>, done: (v: T) => void) => {
-    if (running.current) return;
+    if (running.current || current.current!==scope) return;
     running.current = true;
     setBusy(true);
     setError(null);
