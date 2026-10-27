@@ -77,7 +77,7 @@ export function PurchaseNewScreen() {
     [addingProduct, setAddingProduct] = useState(false),
     [movementSignature, setMovementSignature] = useState<string | null>(null);
   const poLoaded=useRef(false);
-  useEffect(()=>{if(poSource.data&&!poLoaded.current){poLoaded.current=true;setLines(poSource.data.lines.map(l=>({key:crypto.randomUUID(),name:l.name,trackStock:true,productId:l.productId,quantity:Number(l.quantity),price:Number(l.price),priceText:l.price,discount:0,tax:{...((l.gstConfig as any)??emptyTax()),reviewed:false},receiveStock:false,existingBatchId:l.batchId,stockMode:'link' as const}))) }},[poSource.data]);
+  useEffect(()=>{if(poSource.data&&!poLoaded.current){poLoaded.current=true;setMode("inclusive");setLines(poSource.data.lines.map(l=>({key:crypto.randomUUID(),name:l.name,trackStock:true,productId:l.productId,quantity:Number(l.quantity),price:Number(l.price),priceText:l.price,discount:0,tax:{...((l.gstConfig as any)??emptyTax()),reviewed:false},receiveStock:false,existingBatchId:l.batchId,stockMode:'link' as const}))) }},[poSource.data]);
   const retained = useRef<PurchaseInput | null>(null);
   const supplierPrefilled = useRef(false);
   useEffect(() => {
