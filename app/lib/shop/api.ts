@@ -429,9 +429,9 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     createSale: (shopId: string, payload: CreateSalePayload) =>
       send<{ sale: Sale; deduplicated: boolean }>(`/api/shops/${shopId}/sales`, { method: 'POST', body: JSON.stringify(payload) }),
     getSales: (shopId: string, params: Record<string, string | number | undefined>) =>
-      send<{ sales: SaleListRow[]; total: number; hasMore: boolean; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
+      send<{ sales: SaleListRow[]; total: number; hasMore: boolean; nextCursor:string|null; queryVersion:number; capturedAt:string; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
     getReturns: async (shopId: string, params: Record<string, string | number | undefined>) => {
-      const page = await send<{ refunds?: SaleReturnListRow[]; returns?: SaleReturnListRow[]; total: number; hasMore: boolean; limitedToDays: number | null; summary: ReturnsListSummary }>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);
+      const page = await send<{ refunds?: SaleReturnListRow[]; returns?: SaleReturnListRow[]; total: number; hasMore: boolean; nextCursor:string|null; queryVersion:number; capturedAt:string; limitedToDays: number | null; summary: ReturnsListSummary }>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);
       return { ...page, refunds: page.refunds ?? page.returns ?? [] };
     },
     getProductTaxAuthorizations: (shopId: string) => send<{ managers: ProductTaxAuthorizationEntry[] }>(`/api/shops/${shopId}/pos-settings/gst-product-confirmation-authorizations`),

@@ -30,6 +30,9 @@ try {
     "--ignoreDeprecations",
     "6.0",
     "--skipLibCheck",
+    "app/lib/shop/counter/scanner.ts",
+    "app/lib/shop/counter/shell.ts",
+    "app/lib/shop/counter/query.ts",
     "app/lib/shop/gst-monitor-view.ts",
     "app/lib/shop/report-review.ts",
     "app/lib/shop/purchase-draft.ts",
@@ -158,6 +161,7 @@ try {
     GST_TEST_BUILD: join(folder, "shop"),
   });
   run(resolve("tests/tax-history-refresh.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/counter-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/billing-shell.mjs"), []);
   run(resolve("tests/browser-push-worker.mjs"), []);
   run(resolve("tests/browser-push-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

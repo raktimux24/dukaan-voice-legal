@@ -15,9 +15,9 @@ async function message(type,url=origin+'/shop/sell'){
 async function request(path,options={}){
  let result;handlers.fetch({request:{url:new URL(path,origin).href,method:options.method??'GET',mode:options.mode??'navigate',headers:new Headers(options.headers)},respondWith:p=>result=p});return result?await result:null;
 }
-transport=async r=>key(r).endsWith('/style.css')?new Response('body{src:url("/_next/static/font.woff2")}'):key(r).includes('/_next/static/')?new Response('bundle'):new Response('<script src="/_next/static/app.js"></script><link href="/_next/static/style.css"/><link href="https://evil.test/leak"/>',{headers:{'content-type':'text/html'}});
+transport=async r=>key(r).endsWith('/style.css')?new Response('body{src:url("/_next/static/font.woff2")} .icon{background:url("data:image/svg+xml,%3Csvg%20filter=url(%23n)%20mask=url(%23n)%3E")}'):key(r).includes('/_next/static/')?new Response('bundle'):new Response('<script src="/_next/static/app.js"></script><link href="/_next/static/style.css"/><link href="https://evil.test/leak"/><script>const diagnostic=\'href="/_next/static/chunks/#n"\';</script>',{headers:{'content-type':'text/html'}});
 await message('WARM_BILLING_SHELL');
-assert.equal(entries.size,6);assert.ok(calls.every(url=>url.startsWith(origin)));
+assert.equal(entries.size,6);assert.ok(calls.every(url=>url.startsWith(origin)));assert.ok(calls.every(url=>!url.includes('%23n')&&!url.includes('#n')));
 entries.delete(origin+'/_next/static/font.woff2');await message('WARM_BILLING_SHELL');assert.ok(entries.has(origin+'/_next/static/font.woff2'));
 transport=async()=>{throw new TypeError('Failed to fetch');};
 assert.match(await (await request('/shop/sell')).text(),/script/);

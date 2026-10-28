@@ -14,15 +14,24 @@ async function prewarm(){
    const response=await fetch(path,{credentials:'same-origin',cache:'no-cache'});
    if(!response.ok||response.redirected||!response.headers.get('content-type')?.includes('text/html'))continue;
    const html=await response.clone().text();
-   const urls=[...html.matchAll(/(?:src|href)="([^"<>]+)"/g)].map(m=>new URL(m[1],self.location.origin)).filter(asset);
+   // Read real opening script/link tags, not src/href text in Next's serialized payload.
+   const urls=[];
+   for(const tag of html.matchAll(/<(?:script|link)\b([^<>]*)>/gi)){
+    const attribute=tag[1].match(/(?:^|\s)(?:src|href)\s*=\s*(["'])(.*?)\1/i);
+    if(!attribute)continue;
+    try{const url=new URL(attribute[2].replaceAll('&amp;','&'),self.location.origin);if(asset(url))urls.push(url);}catch{/* Not a usable asset URL. */}
+   }
    // Persist the HTML only once every resource explicitly referenced by it is available.
    let complete=true;
    const resources=[...new Set(urls.map(u=>u.href))];
    for(const url of resources){
-    try{const cached=await cache.match(url),resource=cached??await fetch(url);if(!resource.ok||resource.type==='opaque'){complete=false;break;}if(url.endsWith('.css')){
+    try{const cached=await cache.match(url),resource=cached??await fetch(url);if(!resource.ok||resource.type==='opaque'){complete=false;break;}if(new URL(url).pathname.endsWith('.css')){
      const css=await resource.clone().text();
-     for(const match of css.matchAll(/url\(["']?([^"')]+)["']?\)/g)){
-      const child=new URL(match[1],url);if(asset(child)&&!resources.includes(child.href))resources.push(child.href);
+     // A quoted data URI may contain its own url(...) text; consume it as one CSS value.
+     for(const match of css.matchAll(/url\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|((?:\\.|[^)\s])+))\s*\)/gi)){
+      const value=(match[1]??match[2]??match[3]??'').trim();
+      if(/^(?:data:|blob:|#)/i.test(value))continue;
+      const child=new URL(value,url);if(asset(child)&&!resources.includes(child.href))resources.push(child.href);
      }
     }
     if(!cached&&!await save(url,resource)){complete=false;break;}}catch{complete=false;break;}

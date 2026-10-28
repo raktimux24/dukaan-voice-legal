@@ -1,4 +1,6 @@
 "use client";
+import {useState} from 'react';
+import {textFontCss} from '../../lib/shop/documents/fonts';
 import {IssuedDocumentButton} from "./document-preview";
 import type {FiscalDocument} from "../../lib/shop/gst-types";
 import type {SalePaymentInput} from "../../lib/shop/types";
@@ -26,7 +28,7 @@ export function GstDocuments({ saleId }: { saleId: string }) {
 }
 
 export function FiscalDocumentArticle({doc,view,local=false,payments}:{doc:FiscalDocument;view:DocumentView;local?:boolean;payments?:SalePaymentInput[]}) {
- const text=useGstText(),date=useFiscalDate();
+ const text=useGstText(),date=useFiscalDate(),{api,t}=useShop(),[printError,setPrintError]=useState(false),[printing,setPrinting]=useState(false);
  const address=(party: {address:string;structuredAddress?:{address1:string;address2?:string;location:string;pincode:string}},version?:string)=>version==='gst_bill_v2'&&party.structuredAddress?[party.structuredAddress.address1,party.structuredAddress.address2,party.structuredAddress.location,party.structuredAddress.pincode].filter(Boolean).join(', '):party.address;
  if(doc.documentPresentation)return <IssuedDocumentButton issued={doc.documentPresentation}/>;
  return <article className="gst-document" id={'gst-doc-'+doc.id}>
@@ -40,6 +42,6 @@ export function FiscalDocumentArticle({doc,view,local=false,payments}:{doc:Fisca
    {view.context.settings.registration==='composition'?<p>{text('Composition taxable person, not eligible to collect tax on supplies')}</p>:<p>{text('Reverse charge: No (local forward-charge supply)')}</p>}
    <p className="shop-hint">{text('Authorised signatory')} __________________</p><p className="shop-hint">{text('The app does not digitally sign GST documents. Sign a printed copy when required.')}</p>
    {payments?<div className="gst-price-preview"><b>{text('Payment')}</b>{payments.map((p,index)=><span key={index}>{text(({cash:'Cash',upi:'UPI',card:'Card',credit:'Udhaar'})[p.method])}<b>{formatINR(p.amount)}</b></span>)}</div>:null}
-   <div className="shop-actions no-print"><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)saveFile(documentHtml(el,doc.number),`samaan-${doc.number.replace(/[^a-zA-Z0-9-]/g,'-')}.html`,'text/html');}}>{text('Download bill')}</Button><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)printDocument(el,doc.number);}}>{text('Print / save PDF')}</Button><Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-${doc.id}.json`,'application/json')}>{text('Download saved document')}</Button></div>
+   {printError?<p role="alert">{t('counter.print_failed','')}</p>:null}<div className="shop-actions no-print"><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)saveFile(documentHtml(el,doc.number),`samaan-${doc.number.replace(/[^a-zA-Z0-9-]/g,'-')}.html`,'text/html');}}>{text('Download bill')}</Button><Button tone="ghost" disabled={printing} onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el){setPrinting(true);setPrintError(false);void textFontCss(JSON.stringify(view)).then(fonts=>printDocument(el,doc.number,fonts,api.assertSession)).catch(()=>setPrintError(true)).finally(()=>setPrinting(false));}}}>{text('Print / save PDF')}</Button><Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-${doc.id}.json`,'application/json')}>{text('Download saved document')}</Button></div>
   </article>;
 }

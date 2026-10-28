@@ -589,10 +589,10 @@ export type ProductTaxAuthorization = { id: string; shopId: string; memberId: st
 export type ProductTaxAuthorizationEntry = { managerId: string; memberId: string; authorization: ProductTaxAuthorization | null };
 export type SaleReturnListRow = {
   id: string; saleId: string; saleNumber: number; invoiceNumber?: string | null; createdAt: string;
-  refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
+  moneyRefund?:number;creditReduction?:number;refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
   itemCount: number; firstItem: string | null; customerName: string | null;
   settlement?: {creditReduction: string; moneyRefund: string} | null;
 };
-export type ReturnsListSummary = { count: number; amount: number; byMethod: Record<string, number> };
+export type ReturnsListSummary = { moneyRefund?:number;creditReduction?:number;count: number; amount: number; byMethod: Record<string, number> };
 
 export type SpokenAnswer = {answer:string;intent:string|null;transcript?:string;ttsAudioBase64?:string;ttsJobId?:string};

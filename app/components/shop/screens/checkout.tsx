@@ -4,7 +4,9 @@ import {cashWebUi} from './cashbook';
 import {assertEstimateCart} from '../../../lib/shop/estimates/handoff';
 import {hasLocalIssuedReceipt,verifyLocalIssuedReceipt} from '../../../lib/shop/local-issued-receipt';
 
-import {financialScope,retainedRequests,assertScope} from '../../../lib/shop/gst-storage';
+import {CounterStatus} from '../counter-status';
+import {canonicalJson} from '../../../lib/shop/gst-core/sale-request-canonical';
+import {withFinancialLock,financialScope,retainedRequests,assertScope} from '../../../lib/shop/gst-storage';
 import { useGstText as useUiText } from "../gst-ui";
 import {attachCatalogTaxSnapshot,assertCartTaxSnapshots} from '../../../lib/shop/gst-core/gst-tax-cache';
 import {RspCheckoutControls} from '../gst-rsp-checkout';
@@ -24,7 +26,7 @@ import {premiumAt} from '../../../lib/shop/offline-premium';
 import { validateContext, type GstContext } from '../../../lib/shop/gst-core/gst';
 import { useGstText } from '../gst-ui';
 import { ApiError } from '../../../lib/shop/api';
-import { computeTotals, readPending, saleFingerprint, useCart, writePending } from '../../../lib/shop/cart';
+import { computeTotals, readCart, readPending, saleFingerprint, useCart, writePending } from '../../../lib/shop/cart';
 import { formatINR, roundPaise } from '../../../lib/shop/money';
 import { normalizeIndianMobile } from '../../../lib/shop/phone';
 import type { CreateSalePayload } from '../../../lib/shop/types';
@@ -77,6 +79,7 @@ export function CheckoutScreen() {
   const [split, setSplit] = useState({ cash: '', upi: '', credit: '', tendered: '' });
   const [error, setError] = useState<unknown>(null);
   const [offlineSaved, setOfflineSaved] = useState(false);
+  const counterLease=useRef(false);
   const [localReceiptId,setLocalReceiptId]=useState<string|null>(null);
   const [restoringReceipt,setRestoringReceipt]=useState(true);
   const [busy, setBusy] = useState(false);
@@ -149,7 +152,7 @@ export function CheckoutScreen() {
   const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
   const creditReview=useCheckoutCredit(api.credit,shop?.id??'',userId??'',cartApi.cart.customerId??null,cartApi.cart.customerPhone??null,hasCustomer,creditPortion);
   const [estimateReviewed,setEstimateReviewed]=useState(false);
-  const canCharge = creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
+  const canCharge = cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
 
   const upiText = useMemo(() => {
     const vpa = settings.data?.upiVpa;
@@ -207,10 +210,10 @@ export function CheckoutScreen() {
     };
   };
 
-  const handleCharge = async (fresh: boolean) => {
+  const chargeInsideLease = async (fresh: boolean) => {
     if(charging.current)return;
     const retained=readPending(userId,shop.id);
-    if(retained?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)){charging.current=true;setBusy(true);setError(null);try{const result=await issueSale(api,shop.id,retained.payload);wentToBill.current=true;router.replace(`/shop/sales/${result.sale.id}?recorded=again`);cartApi.clear()}catch(e){setError(new Error(t('credit.error.'+String((e as any)?.code??'credit_failed').replace(/^credit_/,''),t('credit.error.failed','The saved bill still needs confirmation.'))))}finally{charging.current=false;setBusy(false)}return;}
+    if(retained?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)){charging.current=true;setBusy(true);setError(null);try{const result=await issueSale(api,shop.id,retained.payload);wentToBill.current=true;router.replace(`/shop/sales/${result.sale.id}?recorded=again`);cartApi.clearCharged(retained.clientId,cartApi.cart)}catch(e){setError(new Error(t('credit.error.'+String((e as any)?.code??'credit_failed').replace(/^credit_/,''),t('credit.error.failed','The saved bill still needs confirmation.'))))}finally{charging.current=false;setBusy(false)}return;}
     if(!canCharge)return;
     if(creditPortion>0&&!premiumAt(entitlement)){setError(new Error(t('checkout.customer_list_premium','Saved customers and udhaar balances are part of Premium.')));return;}
     const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
@@ -256,7 +259,7 @@ export function CheckoutScreen() {
       wentToBill.current = true;
       const recorded = result.deduplicated ? 'again' : 'new';
       router.replace(`/shop/sales/${result.sale.id}?recorded=${recorded}`);
-      cartApi.clear();
+      cartApi.clearCharged(clientId,cartApi.cart);
     } catch (caught) {
       const offline = permitsOfflineShopFallback(caught);
       if (offline) {
@@ -267,13 +270,13 @@ export function CheckoutScreen() {
             await verifyLocalIssuedReceipt(row,scope);assertScope(scope);
             wentToBill.current=true;
             setLocalReceiptId(clientId);
-            cartApi.clear();
+            cartApi.clearCharged(clientId,cartApi.cart);
             void queryClient.invalidateQueries({queryKey:['catalog',shop.id]});
             return;
           }
         }catch{/* An unverifiable receipt stays in recovery; never claim an issued bill. */}
         setOfflineSaved(true);
-        setError(new Error('Connection lost. The server outcome is not confirmed. The saved checkout will retry with the same request ID when the connection returns.'));
+        setError(new Error(t('counter.outcome_unknown','')));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
       else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('credit_'))setError(new Error(t('credit.error.'+((caught as any).code??(caught as any).message).slice(7),'')));
       else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('estimates_'))setError(new Error(t('estimates.error.'+((caught as any).code??(caught as any).message).slice(10),'')));
@@ -289,6 +292,8 @@ export function CheckoutScreen() {
       setBusy(false);
     }
   };
+
+  const handleCharge=async(fresh:boolean)=>{if(counterLease.current)return;counterLease.current=true;setBusy(true);setError(null);const expected=canonicalJson(cartApi.cart);try{const active=financialScope(shop.id);await withFinancialLock(active,async()=>{api.assertSession();assertScope(active);if(canonicalJson(readCart(userId,shop.id))!==expected)throw Error(t('counter.draft_changed',''));await chargeInsideLease(fresh)},'counter-checkout')}catch(e){setError(e)}finally{counterLease.current=false;setBusy(false)}};
 
   const setTendered = (value: string) => {
     if (mode === 'split') setSplit((current) => ({ ...current, tendered: value }));
@@ -333,6 +338,7 @@ export function CheckoutScreen() {
           </section>
 
           {cartApi.cart.estimateSource?<Card><h2>{t('estimates.origin','',{number:cartApi.cart.estimateSource.number})}</h2><p>{t('estimates.checkout_help','')}</p><label className="opening-check"><input type="checkbox" checked={estimateReviewed} onChange={e=>setEstimateReviewed(e.target.checked)}/>{t('estimates.checkout_review','')}</label><Button tone="ghost" href={'/shop/estimates?id='+cartApi.cart.estimateSource.estimateId}>{t('estimates.bill_source','')}</Button></Card>:null}
+          <CounterStatus cart={cartApi}/>
           {offlineSaved ? (
             <Card>
               <p>{uiText("Checkout saved on this browser. Server confirmation is pending.")}</p>

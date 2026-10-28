@@ -401,7 +401,8 @@ export function bindGstApi(
         requestId: string;
         items: { saleItemId: string; quantity: number; restock?: boolean }[];
         reason: string;
-        settlement: {
+        refundMethod?: "cash"|"upi"|"card"|"credit";
+        settlement?: {
           creditReduction: number;
           moneyRefund: number;
           method: string;

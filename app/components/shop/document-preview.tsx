@@ -214,18 +214,16 @@ export function DocumentPreview({
       setBusy(false);
     }
   };
-  const print = () => {
+  const print = async () => {
+    if(busy||!pages)return;setBusy(true);setError(null);
     try {
-      check();
-      sheets().forEach((el) => (el.style.display = "flow-root"));
-      frame.current!.contentWindow!.focus();
-      frame.current!.contentWindow!.print();
-      show(page);
+      check();await frame.current!.contentDocument!.fonts.ready;check();
+      // Print CSS exposes every retained sheet without changing the selected screen page.
+      frame.current!.contentWindow!.focus();frame.current!.contentWindow!.print();
       setNotice(tr("documents.print_opened"));
-    } catch (e) {
-      setError(e);
-    }
+    } catch(e){setError(e)}finally{setBusy(false)}
   };
+
   return (
     <div className="grid min-w-0 gap-4" ref={container}>
       <p className="text-sm text-muted">
@@ -300,7 +298,7 @@ export function DocumentPreview({
             >
               {tr("documents.download_png")}
             </Button>
-            <Button tone="ghost" disabled={busy} onClick={print}>
+            <Button tone="ghost" disabled={busy} onClick={()=>void print()}>
               {tr("documents.print")}
             </Button>
           </div>
