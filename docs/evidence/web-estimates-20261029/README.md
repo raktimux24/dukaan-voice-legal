@@ -18,4 +18,14 @@ Temporary development routes and reverse proxy are excluded from the release; ha
 
 ## Live verification
 
-Pending the reviewed deployment. Production verification will use a new explicitly named QA estimate and leave customer estimates, commercial dates and the counter cart untouched.
+The main UI release was merged in PR #146 and published by Netlify deploy `6ae245f5ea8878922bca152c`, commit `46e43f28f9a314d0c9af2a7c1ff7947c9f2fd3a9`, at 2026-10-28 19:00:26 UTC (29 October IST).
+
+- Created `QA Web Estimate UX 20261029`, ID `c0ee82ec-f890-41bd-9d71-ec28a8da0bf6`, and issued **EST-000003 for ₹14.00** in the composition shop. The product now has a saved tax profile; no product or shop tax details were changed during this QA.
+- The persisted record has exactly `create`, `issue`, `share` events, status `issued`, and no sale ID. Product stock remained **2** before and after these actions.
+- Downloaded text matched its issued number, item, quantity, price, total and non-invoice disclaimer. Copy reported success. No message was sent to an external recipient.
+- Document preview retained the issued presentation. PDF export downloaded successfully (74,077 bytes, valid PDF header).
+- Search found the QA estimate; reopening and reloading retained its issued state.
+- Sell → Estimates → Back returned to Sell. Sales → Estimates → Back returned to Sales. The existing counter cart was not edited.
+- A final presentation cleanup clears a completed detail-page confirmation when returning to the list; financial workflow and request replay are unchanged.
+
+![Live estimate sharing](live-share.png)

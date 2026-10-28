@@ -280,6 +280,7 @@
   margin-bottom: 12px;
 }
 .estimate-dialog {
+  margin: auto;
   color: #f5f5f7;
   background: #17171f;
   border: 1px solid #3c3c46;
