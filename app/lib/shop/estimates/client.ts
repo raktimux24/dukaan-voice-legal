@@ -34,6 +34,7 @@ export function bindEstimates(send: Send) {
           name: string;
           agreed?: string;
           current?: string;
+          productId?: string;
         }[];
       }>(root(s) + "/" + encodeURIComponent(id) + "/readiness"),
     document: (s: string, id: string) =>

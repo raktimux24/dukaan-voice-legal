@@ -183,6 +183,7 @@ export function useEstimates(
     offset,
     setOffset,
     busy,
+    clearError: () => setError(""),
     error,
     ready,
     pending,
