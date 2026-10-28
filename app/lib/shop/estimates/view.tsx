@@ -376,7 +376,7 @@ export function EstimatesView({
               key={i}
               tone={["price", "name"].includes(c.kind) ? "muted" : "danger"}
             >
-              {t("estimates.change." + c.kind, {
+              {c.kind==='commerce_state'?t('commerce.error.state'):t("estimates.change." + c.kind, {
                 name: c.name,
                 agreed: c.agreed ?? "",
                 current: c.current ?? "",
@@ -491,7 +491,7 @@ export function EstimatesView({
               disabled={blocked}
             />
           ) : null}
-          {!["converted", "revised"].includes(p.status) &&
+          {!p.commerceOrderId&&!["converted", "revised"].includes(p.status) &&
           p.intent?.phase !== "started" ? (
             <>
               <Input
@@ -519,7 +519,7 @@ export function EstimatesView({
               />
             </>
           ) : null}
-          {["draft", "issued", "accepted"].includes(p.status) && !p.intent ? (
+          {!p.commerceOrderId&&["draft", "issued", "accepted"].includes(p.status) && !p.intent ? (
             <Button
               label={t("estimates.cancel")}
               onPress={() =>

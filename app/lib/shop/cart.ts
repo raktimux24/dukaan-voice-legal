@@ -257,7 +257,7 @@ export function useCart(userId: string | null, shopId: string | null) {
       if (!userId || !shopId) return { ok: false, capped: false };
       const current = readCart(userId, shopId);
       const track = item.product.trackStock !== false;
-      const available = track ? item.quantity : null;
+      const available = track ? Math.max(0,item.quantity-(item.reservedQuantity??0)) : null;
       if (track && (available ?? 0) <= 0) return { ok: false, capped: false, message: 'out_of_stock' };
       const price = item.product.sellingPrice;
       if (price == null) return { ok: false, capped: false, message: 'unpriced' };

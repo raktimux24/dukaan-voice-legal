@@ -58,6 +58,7 @@ export type Product = {
 };
 
 export type InventoryItem = {
+  reservedQuantity?:number;
   id: string;
   productId: string;
   shopId: string;

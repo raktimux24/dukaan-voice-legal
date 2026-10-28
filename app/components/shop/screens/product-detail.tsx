@@ -171,6 +171,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
       </div>
 
       <ProductBarcodeCard productId={productId}/>
+      {perms.canEditProducts?<Button href={'/shop/online-store?productId='+productId} tone="ghost">{t('commerce.title','Online store & orders')}</Button>:null}
 
       {tracksStock && panel === 'adjust' ? (
         <Card className="stack-form">
