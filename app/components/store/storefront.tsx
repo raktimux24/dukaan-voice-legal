@@ -692,7 +692,11 @@ export function Storefront() {
                       <>
                         <button
                           className="store-button"
-                          disabled={busy || !customer.email}
+                          disabled={
+                            busy ||
+                            store.orderingAvailable === false ||
+                            !customer.email
+                          }
                           onClick={() =>
                             void task(async () => {
                               const c = await send<{ id: string }>(
@@ -779,6 +783,7 @@ export function Storefront() {
                           className="store-button primary"
                           disabled={
                             busy ||
+                            store.orderingAvailable === false ||
                             !verified ||
                             !reviewed ||
                             !customer.name.trim() ||
