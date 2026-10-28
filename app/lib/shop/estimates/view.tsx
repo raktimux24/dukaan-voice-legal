@@ -105,6 +105,7 @@ export function EstimatesView({
   const blocked = w.busy || !!w.pending || !w.ready,
     expired = p ? estimateExpired(p) : false;
   useEffect(() => {
+    if (!p) setMessage("");
     setReview(false);
     setReplace(false);
     setNote("");
