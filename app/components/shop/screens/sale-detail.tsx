@@ -135,7 +135,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
       <Notice error={error} />
       {savedReturn.isError?<Card><p role="alert">{t('counter.recovery_storage_error','')}</p></Card>:null}
       {savedReturn.data?<Card><p>{t('counter.pending_outcomes','',{n:1})}</p><Button disabled={pending||offline} onClick={()=>{setPending(true);setError(null);void recoverFinancialRequest(api,shop.id,savedReturn.data!).then(refresh).catch(setError).finally(()=>setPending(false))}}>{t('credit.retry','')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{t('counter.recovery','')}</Button></Card>:null}
-      {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.source','Source estimate')}</Link>:null}
+      {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.bill_source','View source estimate')}</Link>:null}
       {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{<GstSaleAdjustments sale={sale}/>}</>:null}
       <div className="sale-stage">
         <article ref={receipt} className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={t('counter.bill_number','',{number:sale.saleNumber})}>
