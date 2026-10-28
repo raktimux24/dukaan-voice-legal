@@ -253,7 +253,7 @@ function Editor() {
             if (
               current.estimateSource?.intentId === p.intent?.source.intentId
             ) {
-              router.push("/shop/checkout");
+              router.push("/shop/sell/checkout");
               return;
             }
             if (
@@ -270,7 +270,7 @@ function Editor() {
             )
               throw Error("estimates_cart_changed");
             cart.update(cartFromEstimate(p, data) as any);
-            router.push("/shop/checkout");
+            router.push("/shop/sell/checkout");
           }}
           openSale={(id) => router.push("/shop/sales/" + id)}
           renderDocument={(data) => <DocumentPreview {...data} />}
