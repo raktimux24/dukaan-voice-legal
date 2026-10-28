@@ -1,3 +1,4 @@
+import {bindCommerce} from './commerce/client';
 import {bindFollowups} from './followups/client';
 import {bindCredit} from './credit/client';
 import {bindCashbook} from './cashbook/client';
@@ -204,6 +205,7 @@ export async function apiText(path: string, getToken: TokenGetter, assertCurrent
 }
 
 type ServerInventoryItem = {
+  reservedQuantity?:number;
   id: string;
   productId: string;
   shopId: string;
@@ -247,6 +249,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     productId: item.productId,
     shopId: item.shopId,
     quantity: Number(item.quantity),
+    reservedQuantity:item.reservedQuantity??0,
     unit: item.unit,
     stockStatus: item.stockStatus,
     nearestExpiryDate: item.nearestExpiryDate || undefined,
@@ -322,6 +325,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     documents:bindDocuments(send),
     openings:bindOpenings(send),
     purchaseOrders:bindPurchaseOrders(send),
+    commerce:bindCommerce(send),
     estimates:bindEstimates(send),
     cashbook:bindCashbook(send),
     credit:bindCredit(send),

@@ -106,6 +106,7 @@ export function SettingsScreen() {
         ) : null}
         </div>
       </Card>
+      {perms.canEditProducts?<section className="opening-stack"><Link href="/shop/online-store" className="opening-nav"><div><strong>{t('commerce.title','Online store & orders')}</strong><p>{t('commerce.intro','Manage your public catalogue, orders and product QR codes.')}</p></div><span aria-hidden="true">→</span></Link></section>:null}
       {perms.canEditProducts?<section className="opening-stack" aria-label={t("settings.section_data","Data")}><h2 className="shop-section-title">{t("settings.section_data","Data")}</h2><Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.help","Bring existing stock and unpaid balances into your shop.")}</p></div><span aria-hidden="true">→</span></Link></section>:null}
       <Card className="grid gap-4">
         <div>

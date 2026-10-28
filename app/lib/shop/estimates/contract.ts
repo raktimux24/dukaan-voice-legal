@@ -18,6 +18,8 @@ export interface EstimateDraft {
   lines: Omit<EstimateLine, "tax">[];
 }
 export interface EstimateSource {
+  collectionConfirmed?:boolean;
+  commerceOrderId?:string;
   estimateId: string;
   intentId: string;
   deviceId: string;
@@ -27,6 +29,7 @@ export interface EstimateSource {
   reviewed?: boolean;
 }
 export interface Estimate {
+  commerceOrderId?:string;
   id: string;
   shopId: string;
   createdBy: string;

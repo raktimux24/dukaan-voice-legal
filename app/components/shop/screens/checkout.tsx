@@ -84,6 +84,9 @@ export function CheckoutScreen() {
   const [restoringReceipt,setRestoringReceipt]=useState(true);
   const [busy, setBusy] = useState(false);
   const [confirmOld, setConfirmOld] = useState(false);
+  const [collectionReviewed,setCollectionReviewed]=useState(false);
+  const commerceCheckout=!!cartApi.cart.estimateSource?.commerceOrderId;
+  useEffect(()=>setCollectionReviewed(false),[mode,cartApi.cart.estimateSource?.commerceOrderId,cartApi.cart.lines,cartApi.cart.billDiscount]);
   const charging = useRef(false);
   const wentToBill = useRef(false);
   const chargeRef = useRef<(fresh: boolean) => Promise<void>>(async () => {});
@@ -104,13 +107,14 @@ export function CheckoutScreen() {
   },[shop?.id,userId]);
 
   useEffect(() => {
+    if(commerceCheckout){if(mode!=='cash'&&mode!=='upi')setMode('cash');return;}
     if (!shop || !userId || mode) return;
     const last = localStorage.getItem(`samaan-last-method:${userId}:${shop.id}`) as TenderMode | null;
     const fallback = settings.data?.defaultPaymentMethod ?? 'cash';
     const known = last === 'cash' || last === 'upi' || last === 'card' || last === 'credit' || last === 'split';
     const next = cartApi.cart.paymentHint ?? (known ? last : fallback);
     setMode(next === 'card' && !settings.data?.cardEnabled ? 'cash' : next);
-  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId]);
+  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId,commerceCheckout]);
 
   useEffect(() => {
     if (!offlineSaved) return;
@@ -152,7 +156,7 @@ export function CheckoutScreen() {
   const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
   const creditReview=useCheckoutCredit(api.credit,shop?.id??'',userId??'',cartApi.cart.customerId??null,cartApi.cart.customerPhone??null,hasCustomer,creditPortion);
   const [estimateReviewed,setEstimateReviewed]=useState(false);
-  const canCharge = cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
+  const canCharge = (!commerceCheckout||collectionReviewed) && cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
 
   const upiText = useMemo(() => {
     const vpa = settings.data?.upiVpa;
@@ -184,7 +188,7 @@ export function CheckoutScreen() {
     if (payments.length === 0) payments.push({ method: 'cash', amount: 0, tendered: 0 });
     const customer=checkoutCustomer({...cartApi.cart,customerPhone:phone&&phone!=='invalid'?phone:null},customerClientId,retained);
     return {
-      ...(cartApi.cart.estimateSource?{estimateSource:{...cartApi.cart.estimateSource,reviewed:estimateReviewed}}:{}),
+      ...(cartApi.cart.estimateSource?{estimateSource:{...cartApi.cart.estimateSource,reviewed:estimateReviewed,...(commerceCheckout?{collectionConfirmed:collectionReviewed}:{})}}:{}),
       ...((retained?retained.documentPresentation:settings.data?.documentBranding?.ref)?{documentPresentation:retained?retained.documentPresentation:settings.data?.documentBranding?.ref}:{}),
       gstContext,
       mixedDiscountReview:cartApi.cart.mixedDiscountReview,
@@ -279,6 +283,7 @@ export function CheckoutScreen() {
         setError(new Error(t('counter.outcome_unknown','')));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
       else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('credit_'))setError(new Error(t('credit.error.'+((caught as any).code??(caught as any).message).slice(7),'')));
+      else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('commerce_'))setError(new Error(t('commerce.error.'+((caught as any).code??(caught as any).message).slice(9),'')));
       else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('estimates_'))setError(new Error(t('estimates.error.'+((caught as any).code??(caught as any).message).slice(10),'')));
       else {
         // Retain the original uncertain or rejected request for recovery.
@@ -303,7 +308,7 @@ export function CheckoutScreen() {
   chargeRef.current = handleCharge;
   if(localReceiptId)return <LocalFiscalReceiptScreen requestId={localReceiptId}/>;
   if(restoringReceipt)return <Spinner label={uiText('Loading checkout')}/>;
-  const modes: TenderMode[] = ['cash', 'upi', ...(settings.data?.cardEnabled ? (['card'] as TenderMode[]) : []), 'credit', 'split'];
+  const modes: TenderMode[] = cartApi.cart.estimateSource?.commerceOrderId?['cash','upi']:['cash', 'upi', ...(settings.data?.cardEnabled ? (['card'] as TenderMode[]) : []), 'credit', 'split'];
 
   return (
     <div className="shop-page">
@@ -338,6 +343,7 @@ export function CheckoutScreen() {
           </section>
 
           {cartApi.cart.estimateSource?<Card><h2>{t('estimates.origin','',{number:cartApi.cart.estimateSource.number})}</h2><p>{t('estimates.checkout_help','')}</p><label className="opening-check"><input type="checkbox" checked={estimateReviewed} onChange={e=>setEstimateReviewed(e.target.checked)}/>{t('estimates.checkout_review','')}</label><Button tone="ghost" href={'/shop/estimates?id='+cartApi.cart.estimateSource.estimateId}>{t('estimates.bill_source','')}</Button></Card>:null}
+          {commerceCheckout?<Card><label className="opening-check"><input type="checkbox" checked={collectionReviewed} onChange={e=>setCollectionReviewed(e.target.checked)}/>{t('commerce.confirm_collection','',{amount:total.toFixed(2)})}</label><p className="text-sm text-muted">{t('commerce.payment_help','')}</p></Card>:null}
           <CounterStatus cart={cartApi}/>
           {offlineSaved ? (
             <Card>

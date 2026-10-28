@@ -64,7 +64,7 @@ export function SellScreen() {
   const closeCamera=()=>{setCameraOn(false);searchRef.current?.focus()};
   const [picker, setPicker] = useState<{ productId: string; value: number } | null>(null);
 
-  const items = useMemo(() => (catalog.data ?? []).filter((item) => item.product.isActive !== false), [catalog.data]);
+  const items = useMemo(() => (catalog.data ?? []).map(item=>({...item,quantity:Math.max(0,item.quantity-(item.reservedQuantity??0)),reservedQuantity:0})).filter((item) => item.product.isActive !== false), [catalog.data]);
 
   const categories = useMemo(() => {
     const seen = new Map<string, string>();
