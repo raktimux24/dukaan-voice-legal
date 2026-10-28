@@ -107,13 +107,14 @@ export function CheckoutScreen() {
   },[shop?.id,userId]);
 
   useEffect(() => {
+    if(commerceCheckout){if(mode!=='cash'&&mode!=='upi')setMode('cash');return;}
     if (!shop || !userId || mode) return;
     const last = localStorage.getItem(`samaan-last-method:${userId}:${shop.id}`) as TenderMode | null;
     const fallback = settings.data?.defaultPaymentMethod ?? 'cash';
     const known = last === 'cash' || last === 'upi' || last === 'card' || last === 'credit' || last === 'split';
     const next = cartApi.cart.paymentHint ?? (known ? last : fallback);
     setMode(next === 'card' && !settings.data?.cardEnabled ? 'cash' : next);
-  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId]);
+  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId,commerceCheckout]);
 
   useEffect(() => {
     if (!offlineSaved) return;
