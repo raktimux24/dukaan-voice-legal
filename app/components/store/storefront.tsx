@@ -29,7 +29,10 @@ async function send<T>(path: string, body?: unknown): Promise<T> {
     signal: AbortSignal.timeout(20000),
   });
   const data = await r.json();
-  if (!r.ok) throw Error(data.error ?? "commerce_failed");
+  if (!r.ok)
+    throw Object.assign(Error(data.error ?? "commerce_failed"), {
+      status: r.status,
+    });
   return data;
 }
 const hexToken = () =>
@@ -257,10 +260,35 @@ export function Storefront() {
     }
     setPending(request);
     setPendingQuote(pendingQuote ?? quote);
-    const result = await send<{ id: string; token: string }>(
-      "/" + id + "/orders",
-      request,
-    );
+    let result: { id: string; token: string };
+    try {
+      result = await send<{ id: string; token: string }>(
+        "/" + id + "/orders",
+        request,
+      );
+    } catch (e: any) {
+      // Only definite, transaction-rejected requests may be edited. Lost replies retain their identity.
+      if (
+        [400, 404, 409].includes(e.status) &&
+        /^commerce_(changed|stock|quantity|customer|product|fulfilment|payment|tax|verify|email|unpublished|not_found|amount|invalid)$/.test(
+          e.message,
+        )
+      ) {
+        sessionStorage.removeItem(key);
+        if (alive.current) {
+          setPending(null);
+          setPendingQuote(null);
+          setQuote(null);
+          setReviewed(false);
+          if (e.message === "commerce_verify") {
+            setVerified(false);
+            setChallenge("");
+            setCode("");
+          }
+        }
+      }
+      throw e;
+    }
     if (!alive.current) return;
     sessionStorage.removeItem(key);
     sessionStorage.removeItem("store-cart:" + id);
