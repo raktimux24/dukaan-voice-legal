@@ -1622,7 +1622,17 @@
     "commerce.error.share": "Sharing is unavailable on this device. Try again on a supported device.",
     "commerce.error.unavailable": "Online store setup is temporarily unavailable. Try again later.",
     "commerce.error.failed": "The request could not be confirmed. Retry the original saved action.",
-    "commerce.confirm_collection": "I checked that ₹{{amount}} was received in cash or the shop bank app."
+    "commerce.confirm_collection": "I checked that ₹{{amount}} was received in cash or the shop bank app.",
+    "commerce.unit.kg": "kg",
+    "commerce.unit.g": "g",
+    "commerce.unit.liter": "liter",
+    "commerce.unit.ml": "mL",
+    "commerce.unit.piece": "piece",
+    "commerce.unit.dozen": "dozen",
+    "commerce.unit.pack": "pack",
+    "commerce.unit.box": "box",
+    "commerce.unit.crate": "crate",
+    "commerce.unit.meter": "meter"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3247,7 +3257,17 @@
     "commerce.error.share": "इस डिवाइस पर शेयरिंग उपलब्ध नहीं है। सपोर्टेड डिवाइस पर फिर से कोशिश करें।",
     "commerce.error.unavailable": "ऑनलाइन स्टोर सेटअप कुछ समय के लिए उपलब्ध नहीं है। बाद में फिर से कोशिश करें।",
     "commerce.error.failed": "रिक्वेस्ट कन्फर्म नहीं हो सकी। ओरिजिनल सेव किए गए एक्शन को फिर से करें।",
-    "commerce.confirm_collection": "मैंने चेक कर लिया है कि ₹{{amount}} नकद या दुकान के बैंक ऐप में मिल गए हैं।"
+    "commerce.confirm_collection": "मैंने चेक कर लिया है कि ₹{{amount}} नकद या दुकान के बैंक ऐप में मिल गए हैं।",
+    "commerce.unit.kg": "किलो",
+    "commerce.unit.g": "ग्राम",
+    "commerce.unit.liter": "लीटर",
+    "commerce.unit.ml": "मिलीलीटर",
+    "commerce.unit.piece": "नग",
+    "commerce.unit.dozen": "दर्जन",
+    "commerce.unit.pack": "पैक",
+    "commerce.unit.box": "डिब्बा",
+    "commerce.unit.crate": "क्रेट",
+    "commerce.unit.meter": "मीटर"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -4872,7 +4892,17 @@
     "commerce.error.share": "Is device par sharing available nahi hai. Supported device par phir se try karein.",
     "commerce.error.unavailable": "Online store setup abhi temporarily unavailable hai. Baad mein phir se try karein.",
     "commerce.error.failed": "Request confirm nahi ho payi. Original saved action ko phir se retry karein.",
-    "commerce.confirm_collection": "Maine check kar liya hai ki ₹{{amount}} cash ya shop bank app mein receive ho gaya hai."
+    "commerce.confirm_collection": "Maine check kar liya hai ki ₹{{amount}} cash ya shop bank app mein receive ho gaya hai.",
+    "commerce.unit.kg": "kilo",
+    "commerce.unit.g": "gram",
+    "commerce.unit.liter": "liter",
+    "commerce.unit.ml": "mL",
+    "commerce.unit.piece": "piece",
+    "commerce.unit.dozen": "darjan",
+    "commerce.unit.pack": "pack",
+    "commerce.unit.box": "box",
+    "commerce.unit.crate": "crate",
+    "commerce.unit.meter": "meter"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -6497,7 +6527,17 @@
     "commerce.error.share": "இந்த டிவைஸ்ல ஷேர் பண்ண முடியாது. சப்போர்ட் பண்ற டிவைஸ்ல மறுபடியும் ட்ரை பண்ணுங்க.",
     "commerce.error.unavailable": "ஆன்லைன் ஸ்டோர் செட்டப் கொஞ்ச நேரத்துக்கு கிடைக்காது. அப்புறமா ட்ரை பண்ணுங்க.",
     "commerce.error.failed": "கோரிக்கையை உறுதிப்படுத்த முடியல. சேவ் பண்ணியிருந்த செயலை மறுபடியும் ட்ரை பண்ணுங்க.",
-    "commerce.confirm_collection": "₹{{amount}} ரொக்கமாகவோ அல்லது கடை UPI-யிலோ பெறப்பட்டதா என சரிபார்த்தேன்."
+    "commerce.confirm_collection": "₹{{amount}} ரொக்கமாகவோ அல்லது கடை UPI-யிலோ பெறப்பட்டதா என சரிபார்த்தேன்.",
+    "commerce.unit.kg": "கிலோ",
+    "commerce.unit.g": "கிராம்",
+    "commerce.unit.liter": "லிட்டர்",
+    "commerce.unit.ml": "மில்லிலிட்டர்",
+    "commerce.unit.piece": "எண்",
+    "commerce.unit.dozen": "டஜன்",
+    "commerce.unit.pack": "பேக்",
+    "commerce.unit.box": "பெட்டி",
+    "commerce.unit.crate": "கிரேட்",
+    "commerce.unit.meter": "மீட்டர்"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -8122,7 +8162,17 @@
     "commerce.error.share": "ఈ డివైజ్‌లో షేరింగ్ అందుబాటులో లేదు. సపోర్ట్ ఉన్న డివైజ్‌లో మళ్లీ ప్రయత్నించండి.",
     "commerce.error.unavailable": "ఆన్‌లైన్ స్టోర్ సెటప్ తాత్కాలికంగా అందుబాటులో లేదు. తర్వాత మళ్లీ ప్రయత్నించండి.",
     "commerce.error.failed": "రిక్వెస్ట్ కన్ఫర్మ్ కాలేదు. ఒరిజినల్ సేవ్ చేసిన యాక్షన్ మళ్లీ చేయండి.",
-    "commerce.confirm_collection": "₹{{amount}} నగదు రూపంలో లేదా షాప్ బ్యాంక్ యాప్‌లో రసీదు అయినట్లు నేను ధృవీకరించాను."
+    "commerce.confirm_collection": "₹{{amount}} నగదు రూపంలో లేదా షాప్ బ్యాంక్ యాప్‌లో రసీదు అయినట్లు నేను ధృవీకరించాను.",
+    "commerce.unit.kg": "కిలో",
+    "commerce.unit.g": "గ్రాము",
+    "commerce.unit.liter": "లీటరు",
+    "commerce.unit.ml": "మిల్లీలీటరు",
+    "commerce.unit.piece": "పీస్",
+    "commerce.unit.dozen": "డజను",
+    "commerce.unit.pack": "ప్యాక్",
+    "commerce.unit.box": "పెట్టె",
+    "commerce.unit.crate": "క్రేట్",
+    "commerce.unit.meter": "మీటరు"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -9747,7 +9797,17 @@
     "commerce.error.share": "এই ডিভাইসে শেয়ারিং উপলব্ধ নেই। সাপোর্টেড ডিভাইসে আবার চেষ্টা করুন।",
     "commerce.error.unavailable": "অনলাইন স্টোর সেটআপ সাময়িকভাবে উপলব্ধ নেই। পরে আবার চেষ্টা করুন।",
     "commerce.error.failed": "রিকোয়েস্টটি কনফার্ম করা যায়নি। আসল সেভ করা কাজটি আবার করুন।",
-    "commerce.confirm_collection": "আমি যাচাই করে দেখেছি যে ক্যাশ বা শপের ব্যাঙ্ক অ্যাপে ₹{{amount}} জমা হয়েছে।"
+    "commerce.confirm_collection": "আমি যাচাই করে দেখেছি যে ক্যাশ বা শপের ব্যাঙ্ক অ্যাপে ₹{{amount}} জমা হয়েছে।",
+    "commerce.unit.kg": "কিলো",
+    "commerce.unit.g": "গ্রাম",
+    "commerce.unit.liter": "লিটার",
+    "commerce.unit.ml": "মিলিলিটার",
+    "commerce.unit.piece": "পিস",
+    "commerce.unit.dozen": "ডজন",
+    "commerce.unit.pack": "প্যাক",
+    "commerce.unit.box": "বাক্স",
+    "commerce.unit.crate": "ক্রেট",
+    "commerce.unit.meter": "মিটার"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -11372,7 +11432,17 @@
     "commerce.error.share": "या डिव्हाइसवर शेअरिंग उपलब्ध नाही. सपोर्टेड डिव्हाइसवर पुन्हा प्रयत्न करा.",
     "commerce.error.unavailable": "ऑनलाइन स्टोअर सेटअप तात्पुरते उपलब्ध नाही. नंतर पुन्हा प्रयत्न करा.",
     "commerce.error.failed": "रिक्वेस्ट कन्फर्म होऊ शकली नाही. मूळ सेव्ह केलेली कृती पुन्हा करा.",
-    "commerce.confirm_collection": "मी तपासले की ₹{{amount}} रोख किंवा शॉप बँक ॲपमध्ये जमा झाले आहेत."
+    "commerce.confirm_collection": "मी तपासले की ₹{{amount}} रोख किंवा शॉप बँक ॲपमध्ये जमा झाले आहेत.",
+    "commerce.unit.kg": "किलो",
+    "commerce.unit.g": "ग्रॅम",
+    "commerce.unit.liter": "लिटर",
+    "commerce.unit.ml": "मिलिलिटर",
+    "commerce.unit.piece": "नग",
+    "commerce.unit.dozen": "डझन",
+    "commerce.unit.pack": "पॅक",
+    "commerce.unit.box": "डबा",
+    "commerce.unit.crate": "क्रेट",
+    "commerce.unit.meter": "मीटर"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -12997,7 +13067,17 @@
     "commerce.error.share": "ಈ ಸಾಧನದಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳುವುದು ಲಭ್ಯವಿಲ್ಲ. ಬೆಂಬಲಿತ ಸಾಧನದಲ್ಲಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "commerce.error.unavailable": "ಆನ್‌ಲೈನ್ ಸ್ಟೋರ್ ಸೆಟಪ್ ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ. ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "commerce.error.failed": "ವಿನಂತಿಯನ್ನು ಖಚಿತಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮೂಲ ಉಳಿಸಿದ ಕ್ರಿಯೆಯನ್ನು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
-    "commerce.confirm_collection": "₹{{amount}} ಹಣವನ್ನು ನಗದು ಅಥವಾ ಅಂಗಡಿಯ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ ಎಂದು ನಾನು ಪರಿಶೀಲಿಸಿದ್ದೇನೆ."
+    "commerce.confirm_collection": "₹{{amount}} ಹಣವನ್ನು ನಗದು ಅಥವಾ ಅಂಗಡಿಯ ಬ್ಯಾಂಕ್ ಆ್ಯಪ್‌ನಲ್ಲಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ ಎಂದು ನಾನು ಪರಿಶೀಲಿಸಿದ್ದೇನೆ.",
+    "commerce.unit.kg": "ಕಿಲೋ",
+    "commerce.unit.g": "ಗ್ರಾಂ",
+    "commerce.unit.liter": "ಲೀಟರ್",
+    "commerce.unit.ml": "ಮಿಲಿಲೀಟರ್",
+    "commerce.unit.piece": "ನಗ",
+    "commerce.unit.dozen": "ಡಜನ್",
+    "commerce.unit.pack": "ಪ್ಯಾಕ್",
+    "commerce.unit.box": "ಪೆಟ್ಟಿಗೆ",
+    "commerce.unit.crate": "ಕ್ರೇಟ್",
+    "commerce.unit.meter": "ಮೀಟರ್"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -14622,7 +14702,17 @@
     "commerce.error.share": "આ ડિવાઇસ પર શેરિંગ ઉપલબ્ધ નથી. સપોર્ટેડ ડિવાઇસ પર ફરી પ્રયાસ કરો.",
     "commerce.error.unavailable": "ઓનલાઈન સ્ટોર સેટઅપ અસ્થાયી રૂપે ઉપલબ્ધ નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.",
     "commerce.error.failed": "રિક્વેસ્ટ કન્ફર્મ થઈ શકી નથી. મૂળ સેવ કરેલી એક્શન ફરી કરો.",
-    "commerce.confirm_collection": "મેં તપાસ કરી કે ₹{{amount}} રોકડ અથવા દુકાનની બેંક એપમાં મળી ગયા છે."
+    "commerce.confirm_collection": "મેં તપાસ કરી કે ₹{{amount}} રોકડ અથવા દુકાનની બેંક એપમાં મળી ગયા છે.",
+    "commerce.unit.kg": "કિલો",
+    "commerce.unit.g": "ગ્રામ",
+    "commerce.unit.liter": "લિટર",
+    "commerce.unit.ml": "મિલિલિટર",
+    "commerce.unit.piece": "નંગ",
+    "commerce.unit.dozen": "ડઝન",
+    "commerce.unit.pack": "પેક",
+    "commerce.unit.box": "બોક્સ",
+    "commerce.unit.crate": "ક્રેટ",
+    "commerce.unit.meter": "મીટર"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -16247,6 +16337,16 @@
     "commerce.error.share": "ഈ ഡിവൈസിൽ ഷെയറിംഗ് ലഭ്യമല്ല. പിന്തുണയ്ക്കുന്ന ഡിവൈസിൽ വീണ്ടും ശ്രമിക്കുക.",
     "commerce.error.unavailable": "ഓൺലൈൻ സ്റ്റോർ സജ്ജീകരണം താൽക്കാലികമായി ലഭ്യമല്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.",
     "commerce.error.failed": "റിക്വസ്റ്റ് സ്ഥിരീകരിക്കാൻ കഴിഞ്ഞില്ല. ആദ്യം സേവ് ചെയ്ത ആക്ഷൻ വീണ്ടും ശ്രമിക്കുക.",
-    "commerce.confirm_collection": "ക്യാഷായോ ഷോപ്പ് ബാങ്ക് ആപ്പായോ ₹{{amount}} ലഭിച്ചുവെന്ന് ഞാൻ ഉറപ്പുവരുത്തി."
+    "commerce.confirm_collection": "ക്യാഷായോ ഷോപ്പ് ബാങ്ക് ആപ്പായോ ₹{{amount}} ലഭിച്ചുവെന്ന് ഞാൻ ഉറപ്പുവരുത്തി.",
+    "commerce.unit.kg": "കിലോ",
+    "commerce.unit.g": "ഗ്രാം",
+    "commerce.unit.liter": "ലിറ്റർ",
+    "commerce.unit.ml": "മില്ലിലിറ്റർ",
+    "commerce.unit.piece": "എണ്ണം",
+    "commerce.unit.dozen": "ഡസൻ",
+    "commerce.unit.pack": "പാക്ക്",
+    "commerce.unit.box": "പെട്ടി",
+    "commerce.unit.crate": "ക്രേറ്റ്",
+    "commerce.unit.meter": "മീറ്റർ"
   }
 }
