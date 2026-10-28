@@ -57,6 +57,14 @@ function Editor() {
     t = (key: string, vars?: Record<string, string | number>) =>
       translate(key, key, vars),
     cart = useCart(userId, shop?.id ?? null);
+  const origin = useRef(
+    params.get("from") === "sell" || params.get("fromCart") === "1"
+      ? "sell"
+      : "sales",
+  ).current;
+  const listPath = "/shop/estimates" + (origin === "sell" ? "?from=sell" : "");
+  const detailPath = (id: string) =>
+    listPath + (origin === "sell" ? "&" : "?") + "id=" + id;
   const initial = useMemo(() => {
     if (params.get("fromCart") !== "1" || !cart.cart.lines.length) return {};
     try {
@@ -92,7 +100,7 @@ function Editor() {
   useEffect(() => {
     if (p?.id) {
       opened.current = p.id;
-      router.replace("/shop/estimates?id=" + p.id, { scroll: false });
+      router.replace(detailPath(p.id), { scroll: false });
     }
   }, [p?.id]);
   const back = () => {
@@ -105,8 +113,8 @@ function Editor() {
       opened.current = "";
       w.clearError();
       w.setOrder(null);
-      router.replace("/shop/estimates", { scroll: false });
-    } else router.push("/shop/sales");
+      router.replace(listPath, { scroll: false });
+    } else router.push("/shop/" + origin);
   };
   const ui = {
     ...openingWebUi,
@@ -136,7 +144,10 @@ function Editor() {
         disabled={blocked}
         onClick={back}
       >
-        ← {t(editing ? "common.back" : p || id ? "estimates.all" : "nav.sales")}
+        ←{" "}
+        {t(
+          editing ? "common.back" : p || id ? "estimates.all" : "nav." + origin,
+        )}
       </button>
       <PageHeader
         title={
@@ -180,14 +191,24 @@ function Editor() {
           hideIntro
           hideBackButton
           hideDraftEdit
-          renderEditor={(props) => <EstimateEditor {...props} guard={guard} />}
+          renderEditor={(props) => (
+            <EstimateEditor
+              {...props}
+              guard={guard}
+              cancel={() => {
+                props.cancel();
+                if (params.get("fromCart"))
+                  router.replace(listPath, { scroll: false });
+              }}
+            />
+          )}
           renderList={(props) =>
             w.list.isPending ? null : (
               <EstimateList
                 {...props}
                 open={(id) => {
                   opened.current = id;
-                  router.push("/shop/estimates?id=" + id, { scroll: false });
+                  router.push(detailPath(id), { scroll: false });
                   props.open(id);
                 }}
               />

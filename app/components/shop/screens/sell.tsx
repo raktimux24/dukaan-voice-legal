@@ -253,7 +253,7 @@ export function SellScreen() {
             <h1 className="shop-title">{t('pos.title', 'Sell')}</h1>
           </div>
           <div className="shop-actions">
-            <Button href="/shop/estimates" tone="ghost" size="sm">{t('estimates.mobile.title_short','Estimates')}</Button>
+            <Button href="/shop/estimates?from=sell" tone="ghost" size="sm">{t('estimates.mobile.title_short','Estimates')}</Button>
             {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">{t('products.add', 'Add product')}</Button> : null}
             <Button href="/shop/voice?mode=sell" tone="ghost" size="sm">{t('a11y.voice','Voice command')}</Button>
             <Button tone="ghost" size="sm" onClick={() => {setUsbOn(false);setCameraOn(v=>!v);if(cameraOn)searchRef.current?.focus()}}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
@@ -378,7 +378,7 @@ export function SellScreen() {
       </div>
 
       <aside className="bill shop-surface" aria-label={uiText("Current bill")}>
-        <div className="p-3 grid gap-2">{lineCount>0?<Button tone="ghost" href="/shop/estimates?fromCart=1">{t('estimates.save_cart','Save cart as estimate')}</Button>:null}</div>
+        <div className="p-3 grid gap-2">{lineCount>0?<Button tone="ghost" href="/shop/estimates?fromCart=1&from=sell">{t('estimates.save_cart','Save cart as estimate')}</Button>:null}</div>
         <div className="bill-head">
           <h2>{t('bill.bill', 'Bill')}</h2>
           <div className="flex items-center gap-3">

@@ -466,6 +466,7 @@ function EstimateDialog({
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     ref.current?.showModal();
+    ref.current?.querySelector<HTMLInputElement>("input")?.focus();
   }, []);
   return (
     <dialog
