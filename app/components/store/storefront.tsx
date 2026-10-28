@@ -13,6 +13,7 @@ import type {
   OrderQuote,
   PublicStore,
 } from "../../lib/shop/commerce/contract";
+import { commerceUnit } from "../../lib/shop/commerce/contract";
 import "./store.css";
 type Item = Omit<OnlineListing, "productId">;
 type Store = Omit<PublicStore, "items"> & { items: Item[] };
@@ -82,7 +83,7 @@ export function Storefront() {
     [privateToken, setPrivateToken] = useState("");
   const tr = (k: string, v?: Record<string, string | number>) =>
       translateUi(lang, {}, "commerce." + k, "commerce." + k, v),
-    unit = (v: string) => translateUi(lang, {}, "unit_picker." + v, v),
+    unit = (v: string) => (commerceUnit(v) ? tr("unit." + commerceUnit(v)) : v),
     key = "store-order-pending:" + id;
   useEffect(() => {
     alive.current = true;
@@ -269,8 +270,8 @@ export function Storefront() {
     } catch (e: any) {
       // Only definite, transaction-rejected requests may be edited. Lost replies retain their identity.
       if (
-        [400, 404, 409].includes(e.status) &&
-        /^commerce_(changed|stock|quantity|customer|product|fulfilment|payment|tax|verify|email|unpublished|not_found|amount|invalid)$/.test(
+        [400, 403, 404, 409].includes(e.status) &&
+        /^commerce_(changed|stock|quantity|customer|product|fulfilment|payment|tax|verification|email|unpublished|not_found|amount|invalid)$/.test(
           e.message,
         )
       ) {
@@ -280,7 +281,7 @@ export function Storefront() {
           setPendingQuote(null);
           setQuote(null);
           setReviewed(false);
-          if (e.message === "commerce_verify") {
+          if (e.message === "commerce_verification") {
             setVerified(false);
             setChallenge("");
             setCode("");
@@ -426,6 +427,7 @@ export function Storefront() {
                     ·{" "}
                     {new Date(e.at).toLocaleString(
                       lang === "hinglish" ? "en-IN" : lang + "-IN",
+                      { timeZone: "Asia/Kolkata" },
                     )}
                     {e.note ? " · " + e.note : ""}
                   </p>

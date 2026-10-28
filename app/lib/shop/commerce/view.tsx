@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { OpeningUi } from "../openings/view";
 import type { useCommerce } from "./workflow";
 import type { OnlineListing, StoreConfig, OrderState } from "./contract";
+import { commerceUnit } from "./contract";
 export function CommerceView({
   w,
   ui,
@@ -26,6 +27,8 @@ export function CommerceView({
   const { Box, Text, Input, Check, Button, Busy } = ui,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("commerce." + k, v),
+    unitLabel = (unit: string) =>
+      commerceUnit(unit) ? tr("unit." + commerceUnit(unit)) : unit,
     s = w.store.data?.store,
     p = w.order,
     [tab, setTab] = useState<"setup" | "products" | "orders">(
@@ -210,7 +213,7 @@ export function CommerceView({
                     <Text>
                       {tr("price_unit", {
                         price: l.price,
-                        unit: t("unit_picker." + l.unit),
+                        unit: unitLabel(l.unit),
                       })}
                     </Text>
                   </Box>
@@ -288,7 +291,7 @@ export function CommerceView({
               <Text>
                 {tr("price_unit", {
                   price: listing.price,
-                  unit: t("unit_picker." + listing.unit),
+                  unit: unitLabel(listing.unit),
                 })}
               </Text>
               <Text tone="muted">{tr("price_help")}</Text>
@@ -330,7 +333,7 @@ export function CommerceView({
               <Text>
                 {tr("price_unit", {
                   price: l.price,
-                  unit: t("unit_picker." + l.unit),
+                  unit: unitLabel(l.unit),
                 })}
               </Text>
               {!l.supported ? (
@@ -391,8 +394,7 @@ export function CommerceView({
               </Text>
               {p.lines.map((l) => (
                 <Text key={l.listingId}>
-                  {l.name} · {l.quantity} {t("unit_picker." + l.unit)} · ₹
-                  {l.price}
+                  {l.name} · {l.quantity} {unitLabel(l.unit)} · ₹{l.price}
                 </Text>
               ))}
               <Text heading>{tr("total_amount", { amount: p.total })}</Text>

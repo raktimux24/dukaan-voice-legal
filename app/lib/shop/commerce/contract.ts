@@ -140,3 +140,34 @@ export const commerceUuid = (v: unknown): v is string =>
   /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
     v,
   );
+
+/** Display aliases never convert stock or change the unit retained on the order. */
+export function commerceUnit(unit: string): string | null {
+  const aliases: Record<string, string> = {
+    kg: "kg",
+    kilogram: "kg",
+    g: "g",
+    gram: "g",
+    l: "liter",
+    liter: "liter",
+    litre: "liter",
+    ml: "ml",
+    piece: "piece",
+    pc: "piece",
+    pcs: "piece",
+    unit: "piece",
+    dozen: "dozen",
+    packet: "pack",
+    pack: "pack",
+    box: "box",
+    crate: "crate",
+    m: "meter",
+    meter: "meter",
+    metre: "meter",
+  };
+  const key = unit.trim().toLowerCase();
+  return Object.hasOwn(aliases, key) ? aliases[key] : null;
+}
+export function commerceFractionalUnit(unit: string): boolean {
+  return ["kg", "g", "liter", "ml", "meter"].includes(commerceUnit(unit) ?? "");
+}
