@@ -55,6 +55,7 @@ try {
     "app/lib/shop/rsp-cart-entry.ts",
     "app/lib/shop/gst-print.ts",
     "app/lib/shop/share-bill.ts",
+    "app/lib/shop/estimates/editor.ts",
     "app/lib/shop/gst-document.ts",
     "app/lib/shop/gst-core/purchase-batch-link.ts",
     "app/lib/shop/gst-core/purchase-settlement.ts",
@@ -63,6 +64,7 @@ try {
   ]);
   symlinkSync(resolve("node_modules"), join(folder, "node_modules"), "dir");
   writeFileSync(join(folder, "package.json"), '{"type":"commonjs"}');
+  run(resolve("tests/estimate-editor.mjs"), [], { ...process.env, GST_TEST_BUILD: join(folder, "shop") });
   run(resolve("tests/share-bill-context.mjs"), [], {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),

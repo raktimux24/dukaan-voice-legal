@@ -28,6 +28,12 @@ export interface EstimateSource {
   number: string;
   reviewed?: boolean;
 }
+export interface EstimateTaxIssue {
+  phase: "issue" | "billing";
+  code: "missing" | "invalid" | "unsupported" | "settings";
+  productId?: string;
+  name?: string;
+}
 export interface Estimate {
   commerceOrderId?:string;
   id: string;
@@ -50,6 +56,7 @@ export interface Estimate {
   priceMode: "inclusive" | "exclusive";
   settingsVersion: string;
   supported?: boolean;
+  taxIssues?: EstimateTaxIssue[];
   tax: string;
   net: string;
   total: string;
