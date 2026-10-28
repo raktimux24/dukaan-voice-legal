@@ -1,4 +1,7 @@
 'use client';
+import {serialScanner} from '../../../lib/shop/counter/scanner';
+import {UsbCounterScanner,CounterCamera} from '../counter-scanner';
+import {CounterStatus} from '../counter-status';
 import {isBarcodeQuery,cachedBarcodeMatches} from '../../../lib/shop/barcodes/contract';
 import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 
@@ -22,7 +25,7 @@ const BARCODE = /^\d{4,}$/;
 
 export function SellScreen() {
   const uiText = useUiText();
-  const { api, shop, userId, perms, hideCost, setNotice, t } = useShop();
+  const { api, shop, userId, perms, hideCost, offline, setNotice, t } = useShop();
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
   const posSettings=useQuery({queryKey:["pos",shopId],enabled:!!shopId,networkMode:'always',queryFn:()=>api.getPosSettings(shopId)});
@@ -49,13 +52,16 @@ export function SellScreen() {
   });
   const queryClient = useQueryClient();
   const router = useRouter();
-  const searchRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null),usbRef=useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [highlight, setHighlight] = useState(0);
   const [error, setError] = useState<unknown>(null);
   const [priceDraft, setPriceDraft] = useState<Record<string, string>>({});
   const [cameraOn, setCameraOn] = useState(false);
+  const [usbOn,setUsbOn]=useState(false),scanQueue=useRef(serialScanner()),alive=useRef(true);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false}},[]);
+  const closeCamera=()=>{setCameraOn(false);searchRef.current?.focus()};
   const [picker, setPicker] = useState<{ productId: string; value: number } | null>(null);
 
   const items = useMemo(() => (catalog.data ?? []).filter((item) => item.product.isActive !== false), [catalog.data]);
@@ -107,9 +113,9 @@ export function SellScreen() {
     })
     .slice(0, 3);
 
-  const add = (item: InventoryItem) => {
+  const add = (item: InventoryItem,source:'manual'|'scan'='manual') => {
     const step = stepFor(item.unit);
-    const result = cartApi.addProduct(item, step >= 1 ? 1 : step);
+    const result = cartApi.addProduct(item, step >= 1 ? 1 : step,source);
     if (result.message === 'unpriced') {
       setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
       return;
@@ -120,23 +126,27 @@ export function SellScreen() {
     if (result.ok) setError(null);
   };
 
-  const lookup = async (code: string) => {
+  const lookup = (code: string) => scanQueue.current(async()=> {
+    if(!alive.current)return;
     setError(null);
     try {
-      const hit = await api.lookupBarcode(shop.id, code, hideCost);
+      const cached=cachedBarcodeMatches(items,code);
+      if((offline||navigator.onLine===false)&&cached.length!==1)throw Error(t('counter.offline_scan_miss',''));
+      const hit=(offline||navigator.onLine===false)?{found:true,item:cached[0]}:await api.lookupBarcode(shop.id,code,hideCost);
+      if(!alive.current)return;api.assertSession();
       if (hit.found && hit.item && hit.item.product.isActive !== false) {
         if (isWeightOrVolume(hit.item.unit) || (hit.item.product.packSize ?? 0) > 0) choose(hit.item);
-        else add(hit.item);
+        else add(hit.item,'scan');
         setQuery('');
         return;
       }
       if(code.startsWith('SB-')){setNotice(t('barcodes.error.not_found','This code is unavailable in this shop.'));return;}
       if (perms.canEditProducts) router.push(`/shop/products/new?barcode=${encodeURIComponent(code)}`);
-      else setNotice('No product for that barcode. Ask a manager to add it.');
+      else setNotice(t('counter.scanner_not_found',''));
     } catch (caught) {
       if((caught as {code?:string}).code?.startsWith('barcode_'))setNotice(t(barcodeErrorKey(caught),barcodeErrorKey(caught)));else setError(caught);
     }
-  };
+  });
 
   const handleSearchKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown') {
@@ -210,7 +220,7 @@ export function SellScreen() {
     }
     setPicker(null);
     setQuery('');
-    searchRef.current?.focus();
+    (usbOn?usbRef.current:searchRef.current)?.focus();
   };
 
   const savePrice = async (item: InventoryItem) => {
@@ -245,7 +255,7 @@ export function SellScreen() {
           <div className="shop-actions">
             {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">{t('products.add', 'Add product')}</Button> : null}
             <Button href="/shop/voice?mode=sell" tone="ghost" size="sm">{t('a11y.voice','Voice command')}</Button>
-            <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
+            <Button tone="ghost" size="sm" onClick={() => {setUsbOn(false);setCameraOn(v=>!v);if(cameraOn)searchRef.current?.focus()}}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
           </div>
         </div>
 
@@ -255,8 +265,11 @@ export function SellScreen() {
             <Button href="/shop/sell/checkout" tone="ghost" size="sm">{uiText("Return to checkout")}</Button>
           </Card>
         ) : null}
+        <CounterStatus cart={cartApi}/>
         <Notice error={error} />
-        {cameraOn ? <CameraScan onCode={(code) => { setCameraOn(false); void lookup(code); }} /> : null}
+        <Button tone="ghost" onClick={()=>{setCameraOn(false);setUsbOn(v=>!v);if(usbOn)searchRef.current?.focus()}}>{t('counter.scanner_mode','')}</Button>
+        {usbOn?<UsbCounterScanner inputRef={usbRef} onCode={code=>void lookup(code)} onClose={()=>{setUsbOn(false);searchRef.current?.focus()}}/>:null}
+        {cameraOn ? <CounterCamera onCode={code=>{closeCamera();void lookup(code)}} onClose={closeCamera}/> : null}
 
         <div className="pos-toolbar">
           <div className="pos-search">
@@ -291,7 +304,7 @@ export function SellScreen() {
         </div>
 
         {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
-        {picker ? <QtyPicker key={picker.productId} item={items.find((row) => row.productId === picker.productId) ?? null} value={picker.value} onChange={(value) => setPicker({ productId: picker.productId, value })} onAdd={commitPicker} onClose={() => setPicker(null)} /> : null}
+        {picker ? <QtyPicker key={picker.productId} item={items.find((row) => row.productId === picker.productId) ?? null} value={picker.value} onChange={(value) => setPicker({ productId: picker.productId, value })} onAdd={commitPicker} onClose={()=>{setPicker(null);(usbOn?usbRef.current:searchRef.current)?.focus()}} /> : null}
         <div className="pos-grid" role="listbox" aria-label={uiText("Products")}>
           {hits.map((item, index) => {
             const unpriced = item.product.sellingPrice == null;
@@ -596,63 +609,5 @@ function BillLine({
         </button>
       </div>
     </div>
-  );
-}
-
-function CameraScan({ onCode }: { onCode: (code: string) => void }) {
-  const uiText = useUiText();
-  const [message, setMessage] = useState<string | null>(null);
-  const onCodeRef = useRef(onCode);
-  onCodeRef.current = onCode;
-  useEffect(() => {
-    const video = document.createElement('video');
-    const host = document.getElementById('sell-camera');
-    if (!host) return;
-    host.appendChild(video);
-    video.className = 'mt-2 w-full rounded-lg';
-    video.muted = true;
-    video.playsInline = true;
-    let stop = false;
-    let stream: MediaStream | null = null;
-    const formats = ['ean_13', 'ean_8', 'code_128', 'upc_a', 'upc_e', 'qr_code'] as const;
-    void (async () => {
-      const native = (window as unknown as { BarcodeDetector?: new (opts?: { formats?: string[] }) => { detect: (source: HTMLVideoElement) => Promise<{ rawValue?: string }[]> } }).BarcodeDetector;
-      const Detector = native ?? (await import('barcode-detector')).BarcodeDetector;
-      if (stop) return;
-      const detector = new Detector({ formats: [...formats] });
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        video.srcObject = stream;
-        await video.play();
-      } catch {
-        if (!stop) setMessage('Camera permission was blocked. Use a USB scanner instead.');
-        return;
-      }
-      const tick = async () => {
-        if (stop) return;
-        const codes = await detector.detect(video).catch(() => []);
-        const value = codes[0]?.rawValue;
-        if (value) {
-          onCodeRef.current(value);
-          return;
-        }
-        requestAnimationFrame(() => void tick());
-      };
-      void tick();
-    })().catch(() => {
-      if (!stop) setMessage('The camera reader could not start. A USB scanner can type into the search box.');
-    });
-    return () => {
-      stop = true;
-      stream?.getTracks().forEach((track) => track.stop());
-      video.remove();
-    };
-  }, []);
-  return (
-    <Card tight>
-      <div id="sell-camera">
-        {message ? <p className="text-sm text-muted">{message}</p> : <p className="text-sm text-muted">{uiText("Point the camera at a barcode.")}</p>}
-      </div>
-    </Card>
   );
 }

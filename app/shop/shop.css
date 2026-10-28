@@ -2980,3 +2980,5 @@ a.party-card:hover {
 .import-page .shop-list-title,.import-page .shop-list-meta{display:block;text-align:left}
 .import-page button.shop-list-row{min-height:64px;margin-top:12px;padding:12px 16px;text-align:left;border:1px solid #34343e;border-radius:12px}
 .import-page button.shop-list-row:hover{background:#22222b}
+
+.counter-filters{display:grid;gap:16px;min-width:0}.counter-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px}.counter-date-range{display:flex;flex-wrap:wrap;align-items:end;gap:14px}.counter-date-range>p{flex-basis:100%}.counter-register-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.counter-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px}.counter-help-list{padding-left:20px;margin:12px 0;display:grid;gap:10px}.counter-filters .shop-field{max-width:100%}

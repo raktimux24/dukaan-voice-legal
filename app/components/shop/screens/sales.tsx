@@ -1,136 +1,24 @@
 'use client';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {useInfiniteQuery,useQueryClient} from '@tanstack/react-query';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { ApiError } from '../../../lib/shop/api';
-import { downloadText } from '../../../lib/shop/csv';
-import { formatINR } from '../../../lib/shop/money';
-import { useFiscalDate } from '../gst-ui';
-import { useShop } from '../context';
-import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, Pill, PremiumLock, Spinner, isPremiumError } from '../ui';
-
-const PERIODS = ['today', 'yesterday', 'week', 'month'] as const;
-
-function periodLabel(period: (typeof PERIODS)[number], t: (key: string, fallback: string) => string) {
-  if (period === 'today') return t('sales.period.today', 'Today');
-  if (period === 'yesterday') return t('common.time_yesterday', 'Yesterday');
-  if (period === 'week') return t('sales.period.7d', 'Week');
-  return t('sales.period.month', 'Month');
-}
-
-export function SalesScreen() {
-  const uiText = useUiText();
-  const when = useFiscalDate();
-  const { api, shop, userId, perms, premium, t } = useShop();
-  const [period, setPeriod] = useState<(typeof PERIODS)[number] | 'custom'>('today');
-  const [status, setStatus] = useState<'all' | 'completed' | 'voided'>('all');
-  const [desk, setDesk] = useState<'all' | 'udhaar'>('all');
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [applied, setApplied] = useState({ from: '', to: '' });
-  const [error, setError] = useState<unknown>(null);
-  const lastGood = useRef(applied);
-  const params = period === 'custom' ? { from: applied.from, to: applied.to } : { period };
-  const sales = useInfiniteQuery({
-    queryKey: ['sales', userId, shop?.id, period, applied.from, applied.to, status],
-    enabled: !!shop?.id && (period !== 'custom' || (!!applied.from && !!applied.to)),
-    initialPageParam: 0,
-    queryFn: ({pageParam}) => api.getSales(shop!.id, { ...params, status: status === 'all' ? undefined : status, limit: 50, offset: pageParam }),
-    getNextPageParam: (last, _pages, offset) => last.hasMore && last.sales.length ? offset + last.sales.length : undefined,
-  });
-
-  useEffect(() => {
-    if (sales.isSuccess) lastGood.current = applied;
-  }, [applied, sales.isSuccess]);
-
-  useEffect(() => {
-    if (sales.error instanceof ApiError && sales.error.code === 'invalid_range') {
-      setError(sales.error);
-      setApplied(lastGood.current);
-    }
-  }, [sales.error]);
-
-  if (!shop) return <Spinner />;
-  if (!perms.canSell) return <NoAccess what={uiText("You cannot view sales.")} />;
-
-  const rows = (sales.data?.pages.flatMap(page => page.sales) ?? []).filter((sale) => desk === 'all' || sale.creditTotal > 0 || sale.paymentStatus === 'credit' || sale.paymentStatus === 'partial');
-
-  return (
-    <div className="shop-page">
-      <PageHeader
-        kicker="Counter"
-        title={t('sales.title', 'Sales')}
-        description={sales.data ? t('reports.sales.bills_n', '{{n}} bills', { n: sales.data.pages[0].total }) : undefined}
-        actions={<><Button href="/shop/estimates" tone="ghost">{t('estimates.title','Quotations / estimates')}</Button>
-          {perms.canSeeReports ? <Button href="/shop/sales/refunds" tone="ghost">{t('refunds.title', 'Refunds')}</Button> : null}
-          {perms.canSeeReports ? (
-            premium ? (
-              <Button
-                tone="ghost"
-                onClick={() => {
-                  void api.salesCsv(shop.id, period === 'custom' ? { from: applied.from, to: applied.to } : { period }).then((csv) => downloadText(`sales-${period}.csv`, csv)).catch(setError);
-                }}
-              >
-                {t('reports.sales.export_csv', 'Export CSV')}
-              </Button>
-            ) : <Button href="/shop/settings/subscription" tone="ghost">{t('reports.sales.export_csv', 'CSV')} · {t('subscription.status.active', 'Premium')}</Button>
-          ) : null}
-        </>}
-      />
-      <Notice error={error ?? (sales.error && !isPremiumError(sales.error) ? sales.error : null)} />
-      {isPremiumError(error) || isPremiumError(sales.error) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
-      <div className="pos-chips" role="tablist" aria-label={uiText("Bill type")}>
-        <Chip active={desk === 'all'} onClick={() => setDesk('all')}>{t('sales.status_filter.all', 'All bills')}</Chip>
-        <Chip active={desk === 'udhaar'} onClick={() => setDesk('udhaar')}>{t('reports.sales.udhaar', 'Udhaar')}</Chip>
-      </div>
-      <div className="pos-chips" role="tablist" aria-label={t('sales.title', 'Sales')}>
-        {(['all', 'completed', 'voided'] as const).map(value => <Chip key={value} active={status === value} onClick={() => setStatus(value)}>{t(`sales.status_filter.${value}`, value === 'all' ? 'All bills' : value === 'completed' ? 'Completed' : 'Voided')}</Chip>)}
-      </div>
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="pos-chips">
-          {PERIODS.map((item) => (
-            <Chip key={item} active={period === item} onClick={() => setPeriod(item)}>{periodLabel(item, t)}</Chip>
-          ))}
-          <Chip active={period === 'custom'} onClick={() => setPeriod('custom')}>{uiText("Custom range")}</Chip>
-        </div>
-        {period === 'custom' ? (
-          <div className="flex flex-wrap items-end gap-3">
-            <Field label={uiText("From")}><input className="shop-field" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></Field>
-            <Field label={uiText("To")}><input className="shop-field" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></Field>
-            <Button tone="ghost" onClick={() => {
-              setError(null);
-              setApplied({ from, to });
-            }}>{uiText("Apply")}</Button>
-          </div>
-        ) : null}
-      </div>
-      {sales.data?.pages[0]?.limitedToDays ? <p className="text-sm text-muted">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: sales.data.pages[0].limitedToDays })}</p> : null}
-      {sales.isLoading ? <Spinner label={uiText("Loading sales")} /> : null}
-      <Card flush>
-        <div className="shop-list">
-          {rows.map((sale) => (
-            <Link key={sale.id} href={`/shop/sales/${sale.id}`} className="shop-list-row">
-              <div className="shop-list-main">
-                <p className="shop-list-title">
-                  #{sale.invoiceNumber ?? sale.saleNumber}
-                  {sale.customerName ? ` · ${sale.customerName}` : ''}
-                  {sale.firstItem ? <span className="text-muted"> · {sale.firstItem}{sale.itemCount > 1 ? ` +${sale.itemCount - 1}` : ''}</span> : null}
-                </p>
-                <p className="shop-list-meta">{when(sale.soldAt)} · {sale.sellerName}</p>
-              </div>
-              <div className="shop-list-right flex items-center gap-4">
-                <p className="num font-semibold">{formatINR(sale.total)}</p>
-                {sale.status === 'voided' ? <Pill tone="danger">{t('sales.status_filter.voided', 'Voided')}</Pill> : sale.paymentStatus === 'credit' ? <Pill tone="warn">{t('reports.sales.udhaar', 'Udhaar')}</Pill> : sale.paymentStatus === 'partial' ? <Pill tone="warn">{uiText("Partial")}</Pill> : <Pill tone="ok">{t('bill.paid', 'Paid')}</Pill>}
-              </div>
-            </Link>
-          ))}
-          {sales.isSuccess && rows.length === 0 ? <p className="shop-list-empty">{t('sales.empty_title', 'No bills in this range.')}</p> : null}
-        </div>
-      </Card>
-      {sales.hasNextPage ? <Button tone="ghost" disabled={sales.isFetchingNextPage} onClick={() => void sales.fetchNextPage()}>{sales.isFetchingNextPage ? t('common.loading', 'Loading') : uiText('Load more')}</Button> : null}
-    </div>
-  );
+import {useState} from 'react';
+import {downloadText} from '../../../lib/shop/csv';
+import {formatINR} from '../../../lib/shop/money';
+import {useFiscalDate} from '../gst-ui';
+import {useShop} from '../context';
+import {CounterNotice,CounterFiltersView,useCounterFilters} from '../counter-filters';
+import {Button,Card,NoAccess,Notice,PageHeader,Pill,PremiumLock,Spinner,isPremiumError} from '../ui';
+export function SalesScreen(){
+ const qc=useQueryClient();
+ const {api,shop,userId,perms,premium,prefs,t}=useShop(),when=useFiscalDate(),{filters,params,href,change}=useCounterFilters('sales'),[error,setError]=useState<unknown>(null),tr=(k:string,v?:Record<string,string|number>)=>t('counter.'+k,'',v);
+ const awaitingRange=filters.period==='custom'&&(!filters.from||!filters.to);
+ const sales=useInfiniteQuery({queryKey:['sales',shop?.id,userId,params],enabled:!!shop&&perms.canSell&&(filters.period!=='custom'||!!filters.from&&!!filters.to),initialPageParam:null as string|null,queryFn:({pageParam})=>api.getSales(shop!.id,{...params,limit:50,cursor:pageParam??undefined}),getNextPageParam:last=>last.nextCursor??undefined});
+ if(!shop)return <Spinner/>;if(!perms.canSell)return <Card><h2>{tr('access_denied')}</h2><p>{tr('sales_no_access')}</p></Card>;
+ const rows=sales.data?.pages.flatMap(p=>p.sales)??[],first=sales.data?.pages[0];
+ return <div className="shop-page retail-workspace"><PageHeader kicker={tr('counter')} title={t('sales.title','Sales')} description={first?tr('results',{n:first.total}):tr('discovery_help')} actions={<><Button href="/shop/estimates" tone="ghost">{t('estimates.title','')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{tr('recovery')}</Button>{perms.canSeeReports?<Button href="/shop/sales/refunds" tone="ghost">{tr('refunds_title')}</Button>:null}{perms.canSeeReports?<Button tone="ghost" href={premium?undefined:'/shop/settings/subscription'} onClick={premium?()=>{setError(null);void api.salesCsv(shop.id,{...params,register:'1',language:prefs?.appLanguage??'en'}).then(csv=>downloadText('sales.csv',csv)).catch(setError)}:undefined}>{tr('export_register')}{!premium?' · Premium':''}</Button>:null}</>}/>
+ <CounterFiltersView kind="sales" value={filters} onChange={change}/><CounterNotice error={error??(isPremiumError(sales.error)?null:sales.error)}/>{isPremiumError(error)||isPremiumError(sales.error)?<PremiumLock shopId={shop.id} feature="pos_reports"/>:null}
+ {first?.limitedToDays?<p className="text-sm text-muted">{t('activity.free_limit_title','',{days:first.limitedToDays})}</p>:null}<p className="text-sm text-muted">{tr('snapshot_help')}</p>
+ <div className="counter-register-actions"><Button tone="ghost" disabled={sales.isFetching} onClick={()=>{setError(null);void sales.refetch()}}>{tr('refresh')}</Button>{sales.isError?<Button tone="ghost" onClick={()=>void qc.resetQueries({queryKey:['sales',shop.id,userId,params]})}>{tr('reset_pages')}</Button>:null}</div>
+ {awaitingRange?<p role="status">{tr('error.invalid_range')}</p>:null}{!awaitingRange&&sales.isPending?<Spinner label={t('common.loading','')}/>:null}<Card flush><div className="shop-list">{rows.map(sale=><Link key={sale.id} href={'/shop/sales/'+sale.id+'?returnTo='+encodeURIComponent(href)} className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{sale.invoiceNumber??'#'+sale.saleNumber}{sale.customerName?' · '+sale.customerName:''}{sale.firstItem?<span className="text-muted"> · {sale.firstItem}{sale.itemCount>1?' +'+(sale.itemCount-1):''}</span>:null}</p><p className="shop-list-meta">{when(sale.soldAt)} · {sale.sellerName}</p>{sale.returnCount>0?<p className="shop-list-meta">{tr('returned',{n:sale.returnCount})}</p>:null}</div><div className="shop-list-right"><p className="num font-semibold">{formatINR(sale.total)}</p>{sale.status==='voided'?<Pill tone="danger">{t('sales.status_filter.voided','')}</Pill>:sale.paymentStatus==='credit'?<Pill tone="warn">{tr('unpaid')}</Pill>:sale.paymentStatus==='partial'?<Pill tone="warn">{tr('part_paid')}</Pill>:<Pill tone="ok">{t('bill.paid','Paid')}</Pill>}</div></Link>)}{sales.isSuccess&&!rows.length?<p className="shop-list-empty">{tr('no_bills')}</p>:null}</div></Card>
+ {sales.hasNextPage?<Button tone="ghost" disabled={sales.isFetchingNextPage} onClick={()=>void sales.fetchNextPage()}>{sales.isFetchingNextPage?t('common.loading',''):tr('more')}</Button>:null}</div>;
 }
