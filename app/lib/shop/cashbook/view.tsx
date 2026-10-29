@@ -255,34 +255,50 @@ export function CashbookView({
           )}
         </>
       ) : null}
+      {d?.account !== null && !form ? (
+        <Box row>
+          <Button
+            primary={tab === "cashbook"}
+            label={tr("cashbook")}
+            onPress={() => {
+              setTab("cashbook");
+              onNavigate?.();
+              setForm("");
+              setSelected(null);
+            }}
+            disabled={blocked}
+          />
+          <Button
+            primary={tab === "expenses"}
+            label={tr("expenses")}
+            onPress={() => {
+              setTab("expenses");
+              onNavigate?.();
+              setForm("");
+              setSelected(null);
+            }}
+            disabled={blocked}
+          />
+        </Box>
+      ) : null}
+      {d?.account !== null && !form && tab === "cashbook" ? (
+        <Box>
+          <Input
+            label={tr("date")}
+            type="date"
+            value={w.day}
+            onChange={(day) => {
+              if (blocked) return;
+              w.clearError();
+              setMessage("");
+              w.setDay(day);
+            }}
+            disabled={blocked}
+          />
+        </Box>
+      ) : null}
       {d?.account ? (
         <>
-          {!form ? (
-            <Box row>
-              <Button
-                primary={tab === "cashbook"}
-                label={tr("cashbook")}
-                onPress={() => {
-                  setTab("cashbook");
-                  onNavigate?.();
-                  setForm("");
-                  setSelected(null);
-                }}
-                disabled={blocked}
-              />
-              <Button
-                primary={tab === "expenses"}
-                label={tr("expenses")}
-                onPress={() => {
-                  setTab("expenses");
-                  onNavigate?.();
-                  setForm("");
-                  setSelected(null);
-                }}
-                disabled={blocked}
-              />
-            </Box>
-          ) : null}
           {form ? (
             <>
               <Button
@@ -654,15 +670,6 @@ export function CashbookView({
             </>
           ) : tab === "cashbook" && s ? (
             <>
-              <Box>
-                <Input
-                  label={tr("date")}
-                  type="date"
-                  value={w.day}
-                  onChange={w.setDay}
-                  disabled={blocked}
-                />
-              </Box>
               <Totals
                 highlightLast
                 items={[
