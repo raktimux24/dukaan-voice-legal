@@ -141,6 +141,7 @@ export function useCashbook(
     ready,
     pending,
     error,
+    clearError: () => setError(""),
     run,
     allowed,
     refresh,
