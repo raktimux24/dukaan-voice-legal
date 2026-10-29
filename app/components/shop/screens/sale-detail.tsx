@@ -1,8 +1,16 @@
 'use client';
+import {printDocument} from '../../../lib/shop/gst-print';
+import {textFontCss} from '../../../lib/shop/documents/fonts';
+import {counterReturn} from '../../../lib/shop/counter/query';
+import {recoverFinancialRequest} from '../../../lib/shop/gst-recovery';
+import {financialScope,assertScope,retainedRequests} from '../../../lib/shop/gst-storage';
+
+import Link from 'next/link';
+import {IssuedDocumentButton} from '../document-preview';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import {useRef,useEffect, useState } from 'react';
 import { GstDocuments } from '../gst-documents';
 import { GstSaleAdjustments } from '../gst-sale-adjustments';
 import { ApiError } from '../../../lib/shop/api';
@@ -16,7 +24,7 @@ import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass,
 const METHOD: Record<string, string> = { cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Udhaar' };
 
 export function SaleDetailScreen({ saleId }: { saleId: string }) {
-  const { api, shop, perms, hideCost, setNotice, t } = useShop();
+  const { api, shop,userId,offline, perms, hideCost, setNotice, t } = useShop();
   const params = useSearchParams();
   const queryClient = useQueryClient();
   const saleQuery = useQuery({
@@ -29,6 +37,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
     enabled: !!shop?.id,
     queryFn: () => api.getPosSettings(shop!.id),
   });
+  const savedReturn=useQuery({queryKey:['counterReturnPending',shop?.id,userId,saleId],enabled:!!shop&&perms.canVoidOrReturn,networkMode:'always',queryFn:async()=>{const scope=financialScope(shop!.id);const rows=await retainedRequests(scope);assertScope(scope);return rows.find(r=>r.state==='pending'&&r.path===`/api/shops/${shop!.id}/sales/${saleId}/returns`)??null}});
   const [voidReason, setVoidReason] = useState('');
   const [returnReason, setReturnReason] = useState('');
   const [returns, setReturns] = useState<Record<string, string>>({});
@@ -36,12 +45,14 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const receipt=useRef<HTMLElement>(null),alive=useRef(true);useEffect(()=>{alive.current=true;return()=>{alive.current=false}},[]);
+  const [printing,setPrinting]=useState(false);
   const sale = saleQuery.data;
 
   if (!shop) return <Spinner />;
   if (saleQuery.isLoading) return <Spinner label="Loading bill" />;
   if (isDenied(saleQuery.error)) return <NoAccess what="You cannot open this bill." />;
-  if (saleQuery.error) return <Notice error={saleQuery.error} />;
+  if(saleQuery.error)return <Card><Notice error={saleQuery.error}/><p>{t('counter.bill_connection','')}</p><div className="shop-actions"><Button tone="ghost" onClick={()=>void saleQuery.refetch()}>{t('common.retry','')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{t('counter.recovery','')}</Button></div></Card>;
   if (!sale) return <Card><p>That bill was not found.</p></Card>;
 
   const shortfalls = sale.items.filter((item) => (item.shortfall ?? 0) > 0);
@@ -51,12 +62,13 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
   const pos = settings.data;
   const showCost = !hideCost && sale.showCost !== false && sale.costTotal != null;
   const recorded = params.get('recorded');
-  const methods = [...new Set(sale.payments.map((payment) => METHOD[payment.method] ?? payment.method))];
+  const methods = [...new Set(sale.payments.map((payment) => t('pos.method.'+payment.method,payment.method)))];
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['sale', shop.id, saleId] });
     await queryClient.invalidateQueries({ queryKey: ['sales', shop.id] });
     await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
+    await Promise.all(['refunds','counterReturnPending','cashbook','customerCredit','followup','followups'].map(k=>queryClient.invalidateQueries({queryKey:[k,shop.id]})));
   };
 
   const share = async () => {
@@ -98,16 +110,19 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
     <div className="shop-page">
       <div className="no-print">
         <PageHeader
-          back={{ href: '/shop/sales', label: 'Sales' }}
-          kicker={recorded === 'new' ? 'Sale recorded' : recorded === 'again' ? 'Already recorded' : 'Bill'}
-          title={`Bill #${sale.saleNumber}`}
+          back={{ href: counterReturn(params.get('returnTo')), label: t('sales.title','Sales') }}
+          kicker={t('counter.'+(recorded==='new'?'sale_recorded':recorded==='again'?'already_recorded':'bill'),'')}
+          title={t('counter.bill_number','',{number:sale.saleNumber})}
           description={`${formatWhen(sale.soldAt)}${sale.customer ? ` · ${sale.customer.name}` : ''}`}
         />
       </div>
       <Notice error={error} />
+      {savedReturn.isError?<Card><p role='alert'>{t('counter.recovery_storage_error','')}</p></Card>:null}
+      {savedReturn.data?<Card><p>{t('counter.pending_outcomes','',{n:1})}</p><Button disabled={pending||offline} onClick={()=>{setPending(true);void recoverFinancialRequest(api,shop.id,savedReturn.data!).then(refresh).catch(setError).finally(()=>setPending(false))}}>{t('credit.retry','')}</Button></Card>:null}
+      {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.bill_source','View source estimate')}</Link>:null}
       {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{sale.gstSnapshot?<GstSaleAdjustments sale={sale}/>:null}</>:null}
       <div className="sale-stage">
-        <article className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={`Bill ${sale.saleNumber}`}>
+        <article ref={receipt} className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={t('counter.bill_number','',{number:sale.saleNumber})}>
           <header className="receipt-head">
             <p className="receipt-shop">{pos?.shopName || shop.name}</p>
             {pos?.shopAddress ? <p>{pos.shopAddress}</p> : null}
@@ -120,7 +135,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <span>{formatWhen(sale.soldAt)}</span>
           </div>
           <p className={sale.status === 'voided' ? 'receipt-status is-voided' : 'receipt-status'}>
-            {sale.status === 'voided' ? 'Void' : sale.paymentStatus}
+            {sale.status === 'voided'?t('sales.status_filter.voided',''):sale.paymentStatus==='credit'?t('counter.unpaid',''):sale.paymentStatus==='partial'?t('counter.part_paid',''):t('bill.paid','')}
           </p>
           {sale.customer ? <p className="receipt-customer">{sale.customer.name}{sale.customer.phone ? ` · ${sale.customer.phone}` : ''}</p> : null}
           <div className="receipt-rule" />
@@ -131,8 +146,8 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   <p>{item.name}</p>
                   <p className="receipt-qty">
                     {formatQty(item.quantity, item.unit)} × {formatINR(item.unitPrice)}
-                    {item.discountAmount > 0 ? ` · less ${formatINR(item.discountAmount)}` : ''}
-                    {item.returnedQuantity > 0 ? ` · returned ${formatQty(item.returnedQuantity, item.unit)}` : ''}
+                    {item.discountAmount > 0 ? ' · '+t('bill.discount','')+' '+formatINR(item.discountAmount) : ''}
+                    {item.returnedQuantity > 0 ? ' · '+t('counter.returned_quantity','')+' '+formatQty(item.returnedQuantity,item.unit) : ''}
                   </p>
                 </div>
                 <b>{formatINR(item.lineTotal)}</b>
@@ -149,11 +164,11 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             {sale.payments.map((payment) => (
               <li key={payment.id} className="receipt-pay">
                 <span>
-                  {METHOD[payment.method] ?? payment.method}
+                  {t('pos.method.'+payment.method,payment.method)}
                   {payment.tendered != null || payment.changeGiven ? (
                     <span className="receipt-qty">
-                      {payment.tendered != null ? `Received ${formatINR(payment.tendered)}` : ''}
-                      {payment.changeGiven ? `${payment.tendered != null ? ' · ' : ''}change ${formatINR(payment.changeGiven)}` : ''}
+                      {payment.tendered != null ? t('checkout.cash_received','')+' '+formatINR(payment.tendered) : ''}
+                      {payment.changeGiven ? `${payment.tendered != null ? ' · ' : ''}${t('checkout.change','')} ${formatINR(payment.changeGiven)}` : ''}
                     </span>
                   ) : null}
                 </span>
@@ -169,6 +184,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
               {entry.reason ? ` · ${entry.reason}` : ''}
             </p>
           ))}
+          {sale.returns.filter(r=>r.documentPresentation).map(r=><IssuedDocumentButton key={r.id} issued={r.documentPresentation!}/>)}
           {sale.note ? <p className="receipt-qty">{sale.note}</p> : null}
           {sale.voidReason ? <p className="receipt-qty">Voided: {sale.voidReason}</p> : null}
           {showCost ? <p className="receipt-cost">Cost {formatINR(sale.costTotal)}</p> : null}
@@ -180,8 +196,8 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <p className="sale-complete-total">{formatINR(sale.total)}</p>
             <p className="party-meta">{methods.join(' + ') || sale.paymentStatus}{sale.customer ? ` · ${sale.customer.name}` : ''}</p>
             <div className="shop-actions">
-              <Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
-              <Button tone="ghost" disabled={!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={() => window.print()}>Print</Button>
+              {sale.documentPresentationError?<p className="text-danger">{t("documents.error.integrity","")}</p>:sale.documentPresentation?<IssuedDocumentButton issued={sale.documentPresentation}/>:<><Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? 'Sharing…' : t('bill.share', 'Share bill')}</Button>
+              <Button tone="ghost" disabled={printing||!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={()=>{setPrinting(true);setError(null);const scope=financialScope(shop.id);const check=()=>{assertScope(scope);if(!alive.current||!receipt.current)throw Error('counter_print_failed')};void textFontCss(JSON.stringify(sale)).then(fonts=>printDocument(receipt.current!,'#'+sale.saleNumber,fonts,check)).catch(()=>setError(new Error(t('counter.print_failed','')))).finally(()=>{if(alive.current)setPrinting(false)})}}>Print</Button></>}
               {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>
@@ -246,7 +262,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                 <input className={inputClass} value={returnReason} onChange={(event) => setReturnReason(event.target.value)} placeholder="Optional" />
               </Field>
               <Button
-                disabled={pending || returnable.length === 0}
+                disabled={pending||offline||!savedReturn.isSuccess||!!savedReturn.data||returnable.length===0||!Object.values(returns).some(v=>Number(v)>0)||sale.items.some(i=>{const n=Number(returns[i.id]||0);return !Number.isFinite(n)||n<0||n>i.quantity-i.returnedQuantity||Math.abs(n*1000-Math.round(n*1000))>1e-6})}
                 onClick={() => {
                   const items = sale.items
                     .map((item) => ({ saleItemId: item.id, quantity: Number(returns[item.id] || 0), restock: true }))
@@ -254,11 +270,12 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   if (!items.length) return;
                   setPending(true);
                   setError(null);
-                  void api.returnSale(shop.id, sale.id, { items, refundMethod: refund, reason: returnReason || null }).then(async () => {
+                  const total=Math.round(items.reduce((sum,r)=>{const item=sale.items.find(i=>i.id===r.saleItemId)!;return sum+item.lineTotal/item.quantity*r.quantity},0)*100)/100;
+                  void api.gst.returnSale(shop.id,sale.id,{requestId:crypto.randomUUID(),items,refundMethod:refund,reason:returnReason},total).then(async () => {
                     setReturns({});
                     setReturnReason('');
                     await refresh();
-                  }).catch(setError).finally(() => setPending(false));
+                  }).catch(caught=>{setError(caught);void savedReturn.refetch()}).finally(() => setPending(false));
                 }}
               >
                 {t('sale_detail.return_items', 'Return items')}

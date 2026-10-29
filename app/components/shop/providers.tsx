@@ -7,6 +7,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactN
 import { setFinancialScope } from '../../lib/shop/gst-storage';
 import gstWebLocales from '../../lib/shop/gst-web-locales.json';
 import gstLocales from '../../lib/shop/gst-locales.json';
+import retailLocales from '../../lib/shop/retail-locales.json';
+import {SUPPORTED_LANGUAGES} from '../../lib/shop/languages';
 import { EN_FALLBACK } from '../../lib/shop/en-fallback';
 import { bindApi } from '../../lib/shop/api';
 import { permissionsFor, parseRole } from '../../lib/shop/permissions';
@@ -16,7 +18,7 @@ import { ShopChrome } from './chrome';
 import { ShopContext, type ShopContextValue } from './context';
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
-const APP_LANGUAGES = new Set(['en', 'hi', 'hinglish', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml']);
+const APP_LANGUAGES = new Set<string>(SUPPORTED_LANGUAGES.map(l=>l.code));
 
 function flattenStrings(value: unknown, prefix = '', out: Record<string, string> = {}) {
   if (typeof value === 'string') {
@@ -156,7 +158,8 @@ function ShopSession({ children }: { children: ReactNode }) {
   const t = useCallback((key: string, fallback: string, vars?: Record<string, string | number>) => {
     const bundled = (gstLocales as Record<string, Record<string,string>>)[prefs?.appLanguage ?? 'en'];
     const webBundled=(gstWebLocales as Record<string,Record<string,string>>)[prefs?.appLanguage??'en'];
-    const translated = webBundled?.[key] ?? bundled?.[key] ?? dict[key] ?? (EN_FALLBACK as Record<string,string>)[key];
+    const retail=(retailLocales as Record<string,Record<string,string>>)[prefs?.appLanguage??'en'];
+    const translated = retail?.[key] ?? webBundled?.[key] ?? bundled?.[key] ?? dict[key] ?? retailLocales.en[key as keyof typeof retailLocales.en] ?? (EN_FALLBACK as Record<string,string>)[key];
     let text = translated && translated !== key ? translated : fallback;
     if (vars) {
       for (const [name, value] of Object.entries(vars)) {

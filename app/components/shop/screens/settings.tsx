@@ -33,6 +33,7 @@ export function SettingsScreen() {
     <div className="shop-page">
       <PageHeader back={{ href: '/shop', label: t('nav.home', 'Home') }} kicker={shop.name} title={t('settings.title', 'Settings')} description={`You are signed in as ${role ? t(`role.${role.toLowerCase()}`, role.toLowerCase()) : 'a member'} of this shop.`} />
       <Notice error={error} />
+      {perms.canSeeReports ? <Card flush><div className="shop-list">{perms.canSeeReports?<Link href="/shop/cashbook" className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{t('cashbook.title','Expenses & cashbook')}</p><p className="shop-list-meta">{t('cashbook.intro','Track expenses and reconcile your cash till.')}</p></div><span aria-hidden="true">›</span></Link>:null}</div></Card> : null}
       {perms.canManageShop ? (
         <Card flush>
           <div className="shop-list">
@@ -92,6 +93,8 @@ export function SettingsScreen() {
         ) : null}
         </div>
       </Card>
+      {perms.canEditProducts?<section className="opening-stack"><Link href="/shop/online-store" className="opening-nav"><div><strong>{t('commerce.title','Online store & orders')}</strong><p>{t('commerce.intro','Manage your public catalogue, orders and product QR codes.')}</p></div><span aria-hidden="true">→</span></Link></section>:null}
+      {perms.canEditProducts?<section className="opening-stack" aria-label={t("settings.section_data","Data")}><h2 className="shop-section-title">{t("settings.section_data","Data")}</h2><Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.help","Bring existing stock and unpaid balances into your shop.")}</p></div><span aria-hidden="true">→</span></Link></section>:null}
       <Card className="grid gap-4">
         <div>
           <h2 className="shop-section-title">{t('settings.export_data', 'Exports')}</h2>

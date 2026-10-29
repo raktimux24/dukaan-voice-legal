@@ -1,4 +1,10 @@
 "use client";
+import {useState} from 'react';
+import {textFontCss} from '../../lib/shop/documents/fonts';
+import {printDocument} from '../../lib/shop/gst-print';
+import {financialScope,assertScope} from '../../lib/shop/gst-storage';
+
+import {IssuedDocumentButton} from "./document-preview";
 import { useShop } from "./context";
 import { Card, Button, Notice, NoAccess } from "./ui";
 import { useGstQuery, ReadState, useGstAction } from "./gst-workspace";
@@ -12,7 +18,8 @@ import type {
   LineTax,
 } from "../../lib/shop/gst-types";
 export function GstDocuments({ saleId }: { saleId: string }) {
-  const { api, shop, perms } = useShop(),
+  const [printing,setPrinting]=useState(false),[printError,setPrintError]=useState(false);
+  const { api, shop, perms,t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
@@ -45,6 +52,7 @@ export function GstDocuments({ saleId }: { saleId: string }) {
     <div className="grid gap-4">
       <ReadState query={q} empty={!q.data?.length}>
         {q.data?.map(({ doc, error }) => {
+          if(doc.documentPresentation&&!error)return <Section key={doc.id} title={doc.number} summary={date(doc.issuedAt)} open><IssuedDocumentButton issued={doc.documentPresentation}/></Section>;
           const context =
             doc.payload.context ??
             (
@@ -199,7 +207,7 @@ export function GstDocuments({ saleId }: { saleId: string }) {
                     >
                       {text("Download bill")}
                     </Button>
-                    <Button tone="ghost" onClick={() => window.print()}>
+                    {printError?<p role='alert'>{t('counter.print_failed','')}</p>:null}<Button tone='ghost' disabled={printing} onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(!el||!shop)return;const scope=financialScope(shop.id);setPrinting(true);setPrintError(false);void textFontCss(JSON.stringify(doc)).then(fonts=>printDocument(el,doc.number,fonts,()=>assertScope(scope))).catch(()=>setPrintError(true)).finally(()=>setPrinting(false))}}>
                       {text("Print / save PDF")}
                     </Button>
                     <Button

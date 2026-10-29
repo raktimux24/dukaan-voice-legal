@@ -27,6 +27,7 @@
 /* ------------------------------------------------------------------ */
 
 .shop-root {
+  --font-display: var(--font-dm-sans), Inter, sans-serif;
   --rail-w: 248px;
   --topbar-h: 60px;
   --gutter: 20px;
@@ -69,7 +70,7 @@
 }
 
 .shop-root :where(h1, h2, h3) {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: #eaeae6;
@@ -121,7 +122,7 @@
   align-items: center;
   gap: 10px;
   padding: 0 8px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: #eaeae6;
@@ -135,7 +136,7 @@
   border-radius: 10px;
   background: #ff6b00;
   color: #0a0a0f;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 16px;
   font-weight: 700;
 }
@@ -150,7 +151,7 @@
 
 .shop-rail-shop-name {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.2;
@@ -283,7 +284,7 @@
 }
 
 .shop-topbar-shop strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 15px;
   line-height: 1.2;
   white-space: nowrap;
@@ -386,7 +387,7 @@
 
 .shop-title {
   margin-top: 4px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 28px;
   font-weight: 650;
   letter-spacing: -0.03em;
@@ -416,7 +417,7 @@
 }
 
 .shop-section-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -580,7 +581,7 @@ a.shop-list-row:hover {
 .shop-seg button {
   border-radius: 9px;
   padding: 9px 14px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: #8a8a90;
@@ -608,7 +609,7 @@ a.shop-list-row:hover {
   border-radius: 10px;
   padding: 10px 16px;
   min-height: 40px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 1;
@@ -801,7 +802,7 @@ a.shop-list-row:hover {
 }
 
 .dash-revenue-n {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: clamp(38px, 4.6vw, 52px);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -837,7 +838,7 @@ a.shop-list-row:hover {
 
 .dash-fact-n {
   margin-top: 2px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -949,7 +950,7 @@ a.shop-list-row:hover {
 
 .shop-stat-n {
   display: block;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -1098,7 +1099,7 @@ a.shop-list-row:hover {
 }
 
 .pos-tile-price {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -1172,7 +1173,7 @@ a.shop-list-row:hover {
 }
 
 .bill-line-total {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 15px;
   font-weight: 600;
   text-align: right;
@@ -1304,7 +1305,7 @@ a.shop-list-row:hover {
 }
 
 .bill-total-row.is-grand strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 30px;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -1350,7 +1351,7 @@ a.shop-list-row:hover {
 }
 
 .tender-change strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -1387,7 +1388,7 @@ a.shop-list-row:hover {
 }
 
 .form-summary-name {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -1418,7 +1419,7 @@ a.shop-list-row:hover {
 }
 
 .form-margin strong {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   color: #32d583;
 }
@@ -1669,7 +1670,7 @@ a.party-card:hover {
 }
 
 .party-name {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   font-weight: 650;
 }
@@ -1681,7 +1682,7 @@ a.party-card:hover {
 }
 
 .party-spend {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
@@ -1734,7 +1735,7 @@ a.party-card:hover {
 }
 
 .kpi-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 24px;
   font-weight: 650;
 }
@@ -1748,7 +1749,7 @@ a.party-card:hover {
   border-radius: 999px;
   background: rgba(255, 107, 0, 0.16);
   color: #ff8a33;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-weight: 700;
 }
 
@@ -1958,7 +1959,7 @@ a.party-card:hover {
 .receipt-status { text-align: center; }
 
 .receipt-shop {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 22px;
   font-weight: 700;
 }
@@ -2041,7 +2042,7 @@ a.party-card:hover {
 
 .receipt-totals .is-total {
   margin-top: 4px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 700;
 }
@@ -2202,14 +2203,14 @@ a.party-card:hover {
 
 .pos-picker-step strong {
   min-width: 88px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 18px;
   text-align: center;
 }
 
 .pos-picker-step .num {
   margin-left: auto;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
 }
 
@@ -2221,7 +2222,7 @@ a.party-card:hover {
 }
 
 .product-qty {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 40px;
   font-weight: 650;
   line-height: 1.1;
@@ -2413,7 +2414,7 @@ a.party-card:hover {
 }
 
 .sale-complete-total {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 40px;
   font-weight: 700;
 }
@@ -2609,7 +2610,7 @@ a.party-card:hover {
 }
 
 .shop-root .auth-heading h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.8px;
@@ -2780,7 +2781,7 @@ a.party-card:hover {
 
 .shop-root .auth-g {
   color: #4285f4;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 20px;
   font-weight: 700;
 }
@@ -2813,7 +2814,7 @@ a.party-card:hover {
 }
 
 .shop-root .auth-done h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -2953,3 +2954,62 @@ a.party-card:hover {
 .supplier-profile-fields dd { margin: 0; line-height: 1.6; overflow-wrap: anywhere; }
 .supplier-profile-actions { padding-top: 20px; border-top: 1px solid #2a2a34; }
 @media (max-width: 600px) { .supplier-profile-fields { grid-template-columns: 1fr; } .shop-profile-card, .supplier-profile-card { padding: 20px; } }
+
+/* Inventory imports reuse the merchant surfaces and spacing tokens. */
+.import-steps{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px}.import-steps span{color:var(--muted,#a0a0a8);padding:8px 12px;border-bottom:2px solid transparent;font-size:13px}.import-steps [aria-current=step]{color:var(--accent,#ff6b00);border-color:currentColor}.import-upload-card{display:flex;align-items:center;flex-direction:column;gap:16px;text-align:center;padding:36px 24px}.import-upload-card h2{font-size:22px;font-weight:600}.import-upload-symbol{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;color:#ff6b00;background:#ff6b001a;font-size:30px}.import-template-actions,.import-bottom-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}.import-bottom-actions{justify-content:space-between}.import-form-grid,.import-mapping{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:24px}.import-mapping{padding-top:24px;border-top:1px solid #74747e55}.import-notice{padding:16px;margin-top:16px;border:1px solid #ffb54777;border-radius:12px;background:#ffb5470a}.import-notice p{margin-bottom:12px}.import-review-list{display:grid;gap:12px}.import-row-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.import-row-head h3{font-weight:600;overflow-wrap:anywhere}.import-row-status{font-size:12px;color:#ffb547}.import-row-error{color:#ffaaa1;font-size:14px;margin-top:10px}.import-values{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}.import-values dt{font-size:11px;color:#a0a0a8}.import-values dd{font-size:14px;overflow-wrap:anywhere}.import-skipped{opacity:.7}.import-sticky-actions{position:sticky;bottom:16px;z-index:5;box-shadow:0 8px 32px #0008}.import-confirm{display:flex;gap:12px;align-items:flex-start;font-size:14px}.import-confirm input{margin-top:4px;accent-color:#ff6b00;min-width:20px;min-height:20px}@media(max-width:640px){.import-form-grid,.import-mapping{grid-template-columns:1fr}.import-values{grid-template-columns:repeat(2,minmax(0,1fr))}.import-sticky-actions{position:static}.import-upload-card{padding:24px 16px}.import-bottom-actions .shop-btn{width:100%}}
+
+/* Import instructions and progress must remain readable on dark cards. */
+.import-page .shop-hint { color: #a0a0a8; }
+
+/* Bulk sessions contain long translated history labels and price operations. */
+.bulk-editor { min-width:0; grid-template-columns:minmax(0,1fr); }
+.bulk-editor > *, .bulk-editor .form-grid > label, .bulk-editor .stack-form > * { min-width:0; max-width:100%; }
+.bulk-editor .shop-btn { min-width:0; max-width:100%; white-space:normal; overflow-wrap:anywhere; text-align:center; }
+.bulk-editor .shop-field { min-width:0; max-width:100%; }
+.bulk-editor .shop-page-desc, .bulk-editor .import-confirm { overflow-wrap:anywhere; }
+
+/* Payments: destination navigation is distinct from inline accordion editing. */
+.shop-root .payment-branding-link { display:grid; grid-template-columns:48px minmax(0,1fr) auto; align-items:center; gap:20px; padding:24px; min-width:0; border:1px solid rgba(255,107,0,.5); border-radius:var(--radius-lg); background:linear-gradient(110deg,rgba(255,107,0,.08),rgba(255,107,0,.015)); text-decoration:none; cursor:pointer; transition:border-color .15s ease,background-color .15s ease; }
+.shop-root .payment-branding-link:hover { border-color:var(--color-saffron,#FF6B00); background-color:rgba(255,107,0,.045); }
+.shop-root .payment-branding-link:focus-visible { outline:2px solid var(--color-saffron,#FF6B00); outline-offset:4px; }
+.payment-branding-icon { display:grid; place-items:center; width:48px; height:56px; border-radius:12px; color:var(--color-saffron,#FF6B00); background:rgba(255,107,0,.12); }
+.payment-branding-icon svg { width:26px; height:34px; }
+.payment-branding-copy { min-width:0; }
+.payment-branding-copy h2 { color:var(--color-ink,#EAEAE6); font-size:19px; line-height:1.4; font-weight:600; }
+.payment-branding-copy p { margin-top:5px; max-width:60ch; color:var(--color-muted,#9999A3); font-size:13px; line-height:1.6; }
+.payment-format-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+.payment-format-list span { border:1px solid rgba(255,255,255,.13); border-radius:6px; padding:3px 7px; color:var(--color-muted,#9999A3); font-size:11px; line-height:1.5; }
+.payment-branding-action { display:flex; align-items:center; justify-content:center; gap:10px; min-height:44px; padding:11px 15px; border-radius:10px; background:var(--color-saffron,#FF6B00); color:#0D0D12; font-size:13px; line-height:1.45; font-weight:600; }
+.payment-branding-action svg { width:19px; height:19px; flex-shrink:0; }
+.payment-settings-panel { min-width:0; border:1px solid var(--color-line); border-radius:var(--radius-lg); background:var(--color-card,#15151c); overflow:hidden; }
+.payment-settings-heading { padding:20px 24px; border-bottom:1px solid var(--color-line); }
+.payment-settings-heading h2 { font-weight:600; font-size:15px; }
+.payment-settings-heading p { margin-top:5px; color:var(--color-muted,#9999A3); font-size:13px; line-height:1.6; }
+.payment-settings-form { display:block; }
+.payment-settings-panel .gst-section { border:0; border-bottom:1px solid var(--color-line); border-radius:0; background:transparent; }
+.payment-settings-panel .gst-section > summary { min-height:76px; padding:16px 24px; }
+.payment-settings-panel .gst-section > summary > span:last-child { display:grid; place-items:center; width:32px; height:32px; flex-shrink:0; border-radius:8px; color:var(--color-muted,#9999A3); background:rgba(255,255,255,.045); font-size:20px; }
+.payment-settings-panel .gst-section[open] > summary > span:last-child { color:var(--color-saffron,#FF6B00); background:rgba(255,107,0,.1); }
+.payment-settings-panel .gst-section[open] { background:rgba(255,255,255,.018); }
+.payment-settings-footer { display:flex; justify-content:flex-end; padding:18px 24px; }
+@media(max-width:760px) {
+ .shop-root .payment-branding-link { grid-template-columns:40px minmax(0,1fr); gap:14px; padding:18px; }
+ .payment-branding-icon { width:40px; height:48px; }
+ .payment-branding-action { grid-column:2; justify-self:start; max-width:100%; }
+ .payment-branding-copy h2 { font-size:17px; }
+ .payment-settings-heading,.payment-settings-panel .gst-section > summary,.payment-settings-footer { padding:18px; }
+ .payment-settings-footer .shop-btn { width:100%; }
+}
+
+/* Opening positions: visible destinations and sequential forms. */
+.opening-page{max-width:960px}.opening-stack{display:grid;gap:16px;min-width:0}.opening-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.opening-actions>.shop-btn{white-space:normal;text-align:left}.opening-text{line-height:1.6;overflow-wrap:anywhere}.opening-text.muted{color:var(--muted,#a0a0a8)}.opening-text.danger{color:#ff6b77}.opening-text.accent{color:#ff8c3a}.opening-check{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--border,#30303a);border-radius:12px;line-height:1.5}.opening-check input{margin-top:5px;accent-color:#ff6b00;min-width:18px;min-height:18px}.opening-page input:focus-visible,.opening-page button:focus-visible,.opening-check:focus-within{outline:2px solid #ff6b00;outline-offset:3px}.opening-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;border:1px solid #ff6b0066;border-radius:14px;background:#ff6b000d}.opening-nav strong{display:block}.opening-nav p{color:var(--muted,#a0a0a8);margin-top:5px}.opening-nav>span{font-size:24px;color:#ff8c3a}@media(max-width:600px){.opening-actions>.shop-btn{flex:1 1 145px}.opening-page .shop-card{padding:16px}}
+
+/* Shared retail workflows follow the mobile DM Sans/Inter system. */
+.retail-workspace{max-width:1040px}.retail-workspace .opening-text{max-width:78ch}.retail-workspace .opening-stack>label{max-width:640px}.retail-workspace .shop-btn{min-height:44px;white-space:normal}.retail-workspace .opening-actions{align-items:center}.shop-root .shop-hint{color:#a0a0a8}.retail-workspace .shop-surface{border:1px solid #34343e;border-radius:14px;background:rgba(30,30,38,.75)}.retail-workspace iframe{max-width:none}.retail-workspace input:focus-visible,.retail-workspace select:focus-visible,.retail-workspace textarea:focus-visible,.retail-workspace button:focus-visible{outline:2px solid #ff6b00;outline-offset:3px}@media(max-width:600px){.retail-workspace .shop-card{padding:16px}.retail-workspace .opening-actions>.shop-btn{flex:1 1 145px}}
+
+/* Import history uses two readable lines and a full-size action target. */
+.import-page .shop-list-title,.import-page .shop-list-meta{display:block;text-align:left}
+.import-page button.shop-list-row{min-height:64px;margin-top:12px;padding:12px 16px;text-align:left;border:1px solid #34343e;border-radius:12px}
+.import-page button.shop-list-row:hover{background:#22222b}
+
+.counter-filters{display:grid;gap:16px;min-width:0}.counter-filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px}.counter-date-range{display:flex;flex-wrap:wrap;align-items:end;gap:14px}.counter-date-range>p{flex-basis:100%}.counter-register-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.counter-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px}.counter-help-list{padding-left:20px;margin:12px 0;display:grid;gap:10px}.counter-filters .shop-field{max-width:100%}

@@ -26,6 +26,11 @@ try {
     "--ignoreDeprecations",
     "6.0",
     "--skipLibCheck",
+    "app/lib/shop/cart.ts",
+    "app/lib/shop/counter/draft.ts",
+    "app/lib/shop/counter/scanner.ts",
+    "app/lib/shop/counter/shell.ts",
+    "app/lib/shop/counter/query.ts",
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/gst-storage.ts",
     "app/lib/shop/gst-document.ts",
@@ -41,6 +46,8 @@ try {
     ...process.env,
     GST_TEST_BUILD: folder,
   });
+  run(resolve("tests/counter-parity.mjs"), [], {...process.env,GST_TEST_BUILD:folder,NODE_PATH:resolve("node_modules")});
+  run(resolve("tests/billing-shell.mjs"), []);
   run(resolve("scripts/check-gst-core.mjs"), []);
 } finally {
   rmSync(folder, { recursive: true, force: true });

@@ -1,4 +1,11 @@
 'use client';
+import {CounterStatus} from '../counter-status';
+import {canonicalJson} from '../../../lib/shop/gst-core/sale-request-canonical';
+import {withFinancialLock,financialScope,assertScope} from '../../../lib/shop/gst-storage';
+
+import {useCheckoutCredit,CheckoutCreditView} from '../../../lib/shop/credit/checkout';
+import {cashWebUi} from './cashbook';
+import {assertEstimateCart} from '../../../lib/shop/estimates/handoff';
 
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -9,7 +16,7 @@ import { issueSale } from '../../../lib/shop/gst-issuance';
 import { validateContext, type GstContext } from '../../../lib/shop/gst-core/gst';
 import { useGstText } from '../gst-ui';
 import { ApiError } from '../../../lib/shop/api';
-import { computeTotals, readPending, saleFingerprint, useCart, writePending } from '../../../lib/shop/cart';
+import { computeTotals, readCart, readPending, saleFingerprint, useCart, writePending } from '../../../lib/shop/cart';
 import { formatINR, roundPaise } from '../../../lib/shop/money';
 import { normalizeIndianMobile } from '../../../lib/shop/phone';
 import type { CreateSalePayload } from '../../../lib/shop/types';
@@ -45,19 +52,23 @@ export function CheckoutScreen() {
   const [offlineSaved, setOfflineSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmOld, setConfirmOld] = useState(false);
-  const charging = useRef(false);
+  const [collectionReviewed,setCollectionReviewed]=useState(false);
+  const commerceCheckout=!!cartApi.cart.estimateSource?.commerceOrderId;
+  useEffect(()=>setCollectionReviewed(false),[mode,cartApi.cart.estimateSource?.commerceOrderId,cartApi.cart.lines,cartApi.cart.billDiscount]);
+  const charging = useRef(false),counterLease=useRef(false);
   const wentToBill = useRef(false);
   const chargeRef = useRef<(fresh: boolean) => Promise<void>>(async () => {});
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    if(commerceCheckout){if(mode!=='cash'&&mode!=='upi')setMode('cash');return;}
     if (!shop || !userId || mode) return;
     const last = localStorage.getItem(`samaan-last-method:${userId}:${shop.id}`) as TenderMode | null;
     const fallback = settings.data?.defaultPaymentMethod ?? 'cash';
     const known = last === 'cash' || last === 'upi' || last === 'card' || last === 'credit' || last === 'split';
     const next = known ? last : fallback;
     setMode(next === 'card' && !settings.data?.cardEnabled ? 'cash' : next);
-  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId]);
+  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId,commerceCheckout]);
 
   useEffect(() => {
     if (!offlineSaved) return;
@@ -88,7 +99,9 @@ export function CheckoutScreen() {
   const hasCustomer = !!(cartApi.cart.customerId || cartApi.cart.customerName?.trim());
   const udhaarLocked = creditPortion > 0 && !premium;
   const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
-  const canCharge = !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
+  const creditReview=useCheckoutCredit(api.credit,shop?.id??'',userId??'',cartApi.cart.customerId??null,cartApi.cart.customerPhone??null,hasCustomer,creditPortion);
+  const [estimateReviewed,setEstimateReviewed]=useState(false);
+  const canCharge = (!commerceCheckout||collectionReviewed) && cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
 
   const upiText = useMemo(() => {
     const vpa = settings.data?.upiVpa;
@@ -111,7 +124,7 @@ export function CheckoutScreen() {
     localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, next);
   };
 
-  const buildBody = (soldAt: string, customerClientId: string | null): Omit<CreateSalePayload, 'clientId'> => {
+  const buildBody = (soldAt: string, customerClientId: string | null, retained?:CreateSalePayload): Omit<CreateSalePayload, 'clientId'> => {
     const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
     const payments = [
       cashPortion > 0 ? { method: 'cash' as const, amount: roundPaise(cashPortion), tendered: roundPaise(tendered) } : null,
@@ -125,7 +138,10 @@ export function CheckoutScreen() {
       ? { name: draftName, phone: phone && phone !== 'invalid' ? phone : null, clientId: customerClientId ?? crypto.randomUUID() }
       : null;
     return {
+      ...(cartApi.cart.estimateSource?{estimateSource:{...cartApi.cart.estimateSource,reviewed:estimateReviewed,...(commerceCheckout?{collectionConfirmed:collectionReviewed}:{})}}:{}),
+      ...((retained?retained.documentPresentation:settings.data?.documentBranding?.ref)?{documentPresentation:retained?retained.documentPresentation:settings.data?.documentBranding?.ref}:{}),
       gstContext,
+      ...(creditPortion>0&&creditReview.terms?{creditTerms:creditReview.terms}:{}),
       soldAt,
       inputMethod: 'manual',
       items: cartApi.cart.lines.map((line) => ({
@@ -146,8 +162,11 @@ export function CheckoutScreen() {
     };
   };
 
-  const handleCharge = async (fresh: boolean) => {
-    if (charging.current || !canCharge) return;
+  const chargeInsideLease = async (fresh: boolean) => {
+    if(charging.current)return;
+    const retained=readPending(userId,shop.id);
+    if(retained?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)){charging.current=true;setBusy(true);setError(null);try{const result=await issueSale(api,shop.id,retained.payload);wentToBill.current=true;router.replace(`/shop/sales/${result.sale.id}?recorded=again`);cartApi.clearCharged(retained.clientId,cartApi.cart)}catch(e){setError(new Error(t('credit.error.'+String((e as any)?.code??'credit_failed').replace(/^credit_/,''),t('credit.error.failed','The saved bill still needs confirmation.'))))}finally{charging.current=false;setBusy(false)}return;}
+    if(!canCharge)return;
     const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
     if (phone === 'invalid') {
       setError(new Error('Enter a valid Indian mobile number.'));
@@ -166,12 +185,13 @@ export function CheckoutScreen() {
       setError(new Error('Another bill is being charged. Wait a moment, then retry that bill.'));
       return;
     }
-    const clientId = existing?.fingerprint === fingerprint ? existing.clientId : crypto.randomUUID();
+    const clientId = existing?.fingerprint === fingerprint ? existing.clientId : (cartApi.cart.estimateSource?.saleClientId??crypto.randomUUID());
     const payload: CreateSalePayload = { ...body, clientId };
     charging.current = true;
     setBusy(true);
     setError(null);
     try {
+    if(payload.estimateSource&&!existing)assertEstimateCart(await api.estimates.get(shop.id,payload.estimateSource.estimateId),cartApi.cart);
     writePending(userId, shop.id, {
       clientId,
       payload,
@@ -184,13 +204,16 @@ export function CheckoutScreen() {
       wentToBill.current = true;
       const recorded = result.deduplicated ? 'again' : 'new';
       router.replace(`/shop/sales/${result.sale.id}?recorded=${recorded}`);
-      cartApi.clear();
+      cartApi.clearCharged(clientId,cartApi.cart);
     } catch (caught) {
       const offline = caught instanceof TypeError || (caught instanceof ApiError && caught.status === 0) || (caught instanceof DOMException && caught.name === 'TimeoutError');
       if (offline) {
         setOfflineSaved(true);
-        setError(new Error('No connection. This bill stays on this browser and sends again when you are back online.'));
+        setError(new Error(t('counter.outcome_unknown','')));
       } else if (caught instanceof ApiError && caught.code === 'sold_at_too_old') setConfirmOld(true);
+      else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('credit_'))setError(new Error(t('credit.error.'+((caught as any).code??(caught as any).message).slice(7),'')));
+      else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('commerce_'))setError(new Error(t('commerce.error.'+((caught as any).code??(caught as any).message).slice(9),'')));
+      else if(((caught as any)?.code??(caught as any)?.message)?.startsWith('estimates_'))setError(new Error(t('estimates.error.'+((caught as any).code??(caught as any).message).slice(10),'')));
       else {
         // Retain the original uncertain or rejected request for recovery.
         if (caught instanceof ApiError && (caught.code === 'product_archived' || caught.code === 'product_not_found')) {
@@ -204,13 +227,15 @@ export function CheckoutScreen() {
     }
   };
 
+  const handleCharge=async(fresh:boolean)=>{if(counterLease.current)return;counterLease.current=true;setBusy(true);setError(null);const expected=canonicalJson(cartApi.cart);try{const active=financialScope(shop.id);await withFinancialLock(active,async()=>{assertScope(active);if(canonicalJson(readCart(userId,shop.id))!==expected)throw Error(t('counter.draft_changed',''));await chargeInsideLease(fresh)},'counter-checkout')}catch(e){setError(e)}finally{counterLease.current=false;setBusy(false)}};
+
   const setTendered = (value: string) => {
     if (mode === 'split') setSplit((current) => ({ ...current, tendered: value }));
     else setCashTendered(value);
   };
   const currentTendered = mode === 'split' ? split.tendered : cashTendered;
   chargeRef.current = handleCharge;
-  const modes: TenderMode[] = ['cash', 'upi', ...(settings.data?.cardEnabled ? (['card'] as TenderMode[]) : []), 'credit', 'split'];
+  const modes: TenderMode[] = cartApi.cart.estimateSource?.commerceOrderId?['cash','upi']:['cash', 'upi', ...(settings.data?.cardEnabled ? (['card'] as TenderMode[]) : []), 'credit', 'split'];
 
   return (
     <div className="shop-page">
@@ -243,6 +268,9 @@ export function CheckoutScreen() {
             </div>
           </section>
 
+          {cartApi.cart.estimateSource?<Card><h2>{t('estimates.origin','',{number:cartApi.cart.estimateSource.number})}</h2><p>{t('estimates.checkout_help','')}</p><label className="opening-check"><input type="checkbox" checked={estimateReviewed} onChange={e=>setEstimateReviewed(e.target.checked)}/>{t('estimates.checkout_review','')}</label><Button tone="ghost" href={'/shop/estimates?id='+cartApi.cart.estimateSource.estimateId}>{t('estimates.bill_source','')}</Button></Card>:null}
+          {commerceCheckout?<Card><label className="opening-check"><input type="checkbox" checked={collectionReviewed} onChange={e=>setCollectionReviewed(e.target.checked)}/>{t('commerce.confirm_collection','',{amount:total.toFixed(2)})}</label><p className="text-sm text-muted">{t('commerce.payment_help','')}</p></Card>:null}
+          <CounterStatus cart={cartApi}/>
           {offlineSaved ? (
             <Card>
               <p>This bill is saved on this browser.</p>
@@ -252,6 +280,8 @@ export function CheckoutScreen() {
             </Card>
           ) : null}
 
+          <CheckoutCreditView w={creditReview} ui={cashWebUi} t={(k,v)=>t(k,k,v)}/>
+          {cartApi.pending?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)?<Button tone="ghost" disabled={busy} onClick={()=>void handleCharge(false)}>{t('credit.retry','Check / retry saved action')}</Button>:null}
           {mode === 'credit' ? (
             <Card className="grid gap-3">
               <h3 className="shop-section-title">{t('pos.method.credit', 'Udhaar')}</h3>

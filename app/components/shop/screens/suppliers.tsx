@@ -55,6 +55,7 @@ export function SuppliersScreen() {
         </>}
       />
       <FieldSearch q={q} onChange={setQ} label={t('suppliers.search', 'Search suppliers')} />
+      <Button href="/shop/suppliers/import" tone="ghost">{t('partiesImport.supplier_title','Import suppliers')}</Button>
       <ReadState
         query={directory}
         empty={!directory.data?.pages.some((page) => page.items.length)}

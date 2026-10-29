@@ -65,7 +65,8 @@ function stockTone(item: InventoryItem): 'danger' | 'warn' | 'neutral' {
 }
 
 export function HomeScreen() {
-  const { api, shop, perms, premium, t } = useShop();
+  const { api, shop, perms, premium, t, userId } = useShop();
+  const opening=useQuery({queryKey:["openingMeta",shop?.id,userId],queryFn:()=>api.openings.metadata(shop!.id),enabled:!!shop&&perms.canEditProducts,retry:false});
   const shopId = shop?.id ?? '';
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -150,6 +151,8 @@ export function HomeScreen() {
         }
       />
 
+      {perms.canSeeReports?<Link href="/shop/cashbook" className="opening-nav"><div><strong>{t('cashbook.title','Expenses & cashbook')}</strong><p>{t('cashbook.intro','Track expenses and reconcile your cash till.')}</p></div><span aria-hidden="true">→</span></Link>:null}
+      {opening.data&&["not_started","in_progress"].includes(opening.data.setup)?<Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.saved_setups","Saved setups")}</p></div><span aria-hidden="true">→</span></Link>:null}
       <input
         className="shop-field is-lg"
         placeholder={t('home.search_placeholder', 'Search products, bills, customers')}

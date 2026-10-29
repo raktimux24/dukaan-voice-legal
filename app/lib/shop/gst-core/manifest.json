@@ -92,8 +92,8 @@
   {
     "file": "purchase-gst.ts",
     "source": "server/src/lib/purchase-gst.ts",
-    "sourceSha256": "99d7aa0a342a482c900ffc5041007cdce069f6e70494f3f077b420c67b296839",
-    "vendoredSha256": "91c36d6bde1f0cb0dd067f2d436e3b9364f1769f4395a8fb93d0f7435f6c9bb6"
+    "sourceSha256": "a38da186a869507d08b5af6e8e2ec19b2c9036c9b096f0c1dfef1410acd32909",
+    "vendoredSha256": "cc22dba6617013bf6895a1128c8e9c923a282ed195c56dce359e07c19ec35722"
   },
   {
     "file": "purchase-outcome.ts",
@@ -128,8 +128,8 @@
   {
     "file": "sale-request-canonical.ts",
     "source": "server/src/lib/sale-request-canonical.ts",
-    "sourceSha256": "13a1bac709fadcca717741d08d251d86624b687f5fd4a30a8a1c1d2585a322a2",
-    "vendoredSha256": "13a1bac709fadcca717741d08d251d86624b687f5fd4a30a8a1c1d2585a322a2"
+    "sourceSha256": "6dbcad2f8ec9387120233843857590ff7c14f94ee3f5758ee9281958bd0c8278",
+    "vendoredSha256": "6dbcad2f8ec9387120233843857590ff7c14f94ee3f5758ee9281958bd0c8278"
   },
   {
     "file": "sale-return-outcome.ts",

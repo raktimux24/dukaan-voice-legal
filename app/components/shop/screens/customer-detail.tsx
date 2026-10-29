@@ -1,4 +1,5 @@
 'use client';
+import {PartyProfileCard} from '../party-profile';
 
 import Link from 'next/link';
 import { GstCollectionReview } from '../gst-collection-review';
@@ -54,10 +55,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
             {customer.phone && customer.balance > 0 ? (
               <Button
                 tone="ghost"
-                onClick={() => {
-                  const message = `Namaste ${customer.name}, your balance at ${shop.name} is ${formatINR(customer.balance)}.`;
-                  window.location.href = `sms:${customer.phone}?body=${encodeURIComponent(message)}`;
-                }}
+                href={'/shop/customers/followups?customerId='+customerId}
               >
                 {t('customers.remind', 'Text reminder')}
               </Button>
@@ -75,6 +73,8 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         <div className="shop-stat"><span className="shop-stat-n">{days} <span className="customer-stat-unit">{t('customers.days', 'days')}</span></span><span className="shop-stat-l">{t('customers.tenure', 'Customer since')}</span><small>{formatWhen(customer.createdAt)}</small></div>
         <div className="shop-stat"><span className="shop-stat-n customer-payment-value">{paymentMethods || (customer.preferredPaymentMethods ? t('customers.no_bills', 'No bills yet') : '—')}</span><span className="shop-stat-l">{t('customers.preferred_payment', 'Most-used payment')}</span><small>{t('customers.payment_hint', 'By bill count; includes udhaar')}</small></div>
       </div>
+      <Button href={'/shop/customers/followups?customerId='+customerId} tone="ghost">{t('followups.title','Payment follow-ups')} →</Button>
+      <Button href={'/shop/customers/'+customerId+'/statement'} tone="ghost">{t('credit.title','Statements & credit controls')} →</Button>
       <Notice error={error} />
       {paymentOpen ? <ShopDialog title={t('customers.record_payment', 'Record payment')} onClose={() => setPaymentOpen(false)} busy={savingPayment}>
         <p className="shop-hint">{customer.name} · {t('customers.outstanding', 'Udhaar outstanding')}: {formatINR(customer.balance)}</p>
@@ -127,6 +127,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         </form>
       </Card>
       <GstCollectionReview customerId={customerId}/>
+      <PartyProfileCard kind="customer" id={customerId}/>
       <Card>
         <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
         <div className="customer-ledger-wrap"><table className="gst-table customer-ledger">

@@ -1,0 +1,7 @@
+export type CounterFilters={period:string;from:string;to:string;q:string;status:string;desk:string;method:string};
+const periods=['today','yesterday','7d','30d','month','all','custom'];
+const pick=(v:string|null,values:string[],fallback:string)=>v&&values.includes(v)?v:fallback;
+export function counterFilters(p:URLSearchParams,kind:'sales'|'refunds'):CounterFilters{return {period:pick(p.get('period'),periods,kind==='sales'?'today':'7d'),from:p.get('from')??'',to:p.get('to')??'',q:(p.get('q')??'').slice(0,160),status:pick(p.get('status'),['all','completed','voided'],'all'),desk:pick(p.get('desk'),['all','udhaar'],'all'),method:pick(p.get('method'),['all','cash','upi','card','credit'],'all')}}
+export function counterQuery(f:CounterFilters){return {...(f.period==='custom'?{from:f.from,to:f.to}:{period:f.period}),...(f.q.trim()?{q:f.q.trim()}:{}),...(f.status!=='all'?{status:f.status}:{}),...(f.desk!=='all'?{desk:f.desk}:{}),...(f.method!=='all'?{method:f.method}:{})}}
+export function counterUrl(kind:'sales'|'refunds',f:CounterFilters){const p=new URLSearchParams({...counterQuery(f),period:f.period});return '/shop/sales'+(kind==='refunds'?'/refunds':'')+'?'+p.toString()}
+export function counterReturn(value:string|null){if(!value)return '/shop/sales';try{const u=new URL(value,'https://samaan.invalid');return u.origin==='https://samaan.invalid'&&['/shop/sales','/shop/sales/refunds'].includes(u.pathname)?u.pathname+u.search:'/shop/sales'}catch{return '/shop/sales'}}

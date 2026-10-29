@@ -2,8 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { labeledL1 } from '../../../lib/shop/catalog';
 import { inventoryCsv, downloadText } from '../../../lib/shop/csv';
 import { formatINR } from '../../../lib/shop/money';
@@ -12,6 +12,8 @@ import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { Button, Card, Chip, PageHeader, Pill, Spinner } from '../ui';
 
+import { useProductBulk } from "../../../lib/shop/product-bulk/workflow";
+import { bulkErrorKey } from "../../../lib/shop/product-bulk/client";
 function productFilterLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
   if (id === 'all') return t('home.filter_all', fallback);
   if (id === 'low_stock') return t('home.filter_low_stock', fallback);
@@ -44,10 +46,59 @@ function matches(item: InventoryItem, filter: string) {
 }
 
 export function ProductsScreen() {
-  const { api, shop, perms, hideCost, t } = useShop();
+  const { api, shop, userId, perms, hideCost, t } = useShop();
   const params = useSearchParams();
   const filter = params.get('filter') ?? 'all';
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(params.get("q") ?? "");
+  const router = useRouter(),
+    [selecting, setSelecting] = useState(false),
+    [selected, setSelected] = useState<string[]>([]),
+    anchor = useRef<string | null>(null),
+    routed = useRef("");
+  const bulk = useProductBulk(
+    api.productBulk,
+    { shopId: shop?.id ?? "", actorId: userId ?? "" },
+    perms.canEditProducts,
+    () => crypto.randomUUID(),
+  );
+  useEffect(() => {
+    try {const saved=JSON.parse(sessionStorage.getItem('bulk-selection:'+shop?.id+':'+userId)??'[]');setSelected(Array.isArray(saved)?saved.filter(id=>typeof id==='string'):[]);setSelecting(Array.isArray(saved)&&saved.length>0);}catch{setSelected([]);setSelecting(false);}
+    anchor.current = null;
+    routed.current = "";
+  }, [shop?.id, userId]);
+  const returnTo =
+    "/shop/products?" + new URLSearchParams({ filter, q }).toString();
+  useEffect(() => {
+    if (bulk.job && routed.current !== bulk.job.id) {
+      routed.current = bulk.job.id;
+      try{sessionStorage.setItem('bulk-selection:'+shop?.id+':'+userId,JSON.stringify(selected));}catch{}
+      router.push(
+        "/shop/products/bulk?" +
+          new URLSearchParams({ jobId: bulk.job.id, returnTo }).toString(),
+      );
+    }
+  }, [bulk.job?.id]);
+  const [offline,setOffline]=useState(false);
+  useEffect(()=>{const update=()=>setOffline(!navigator.onLine);update();window.addEventListener('online',update);window.addEventListener('offline',update);return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);};},[]);
+  const blocked = bulk.busy || !!bulk.pending || offline;
+  const selectRow = (id: string, shift = false) => {
+    if(blocked)return;
+    const a = rows.findIndex((i) => i.productId === anchor.current),
+      b = rows.findIndex((i) => i.productId === id),
+      range =
+        shift && a >= 0
+          ? rows
+              .slice(Math.min(a, b), Math.max(a, b) + 1)
+              .map((i) => i.productId)
+          : [id];
+    setSelected((old) =>
+      old.includes(id)
+        ? old.filter((x) => !range.includes(x))
+        : [...new Set([...old, ...range])],
+    );
+    anchor.current = id;
+  };
+
   const catalog = useQuery({
     queryKey: ['catalog', shop?.id, hideCost],
     enabled: !!shop?.id,
@@ -55,7 +106,7 @@ export function ProductsScreen() {
   });
   const rows = useMemo(() => {
     const text = q.trim().toLowerCase();
-    return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.includes(text)));
+    return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.toLowerCase().includes(text) || item.product.barcodeAliases?.some(code=>code.toLowerCase().includes(text))));
   }, [catalog.data, filter, q]);
 
   if (!shop) return <Spinner label="Loading products" />;
@@ -69,6 +120,16 @@ export function ProductsScreen() {
         actions={
           <>
             <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
+            {perms.canEditProducts ? (
+              <Button tone="ghost" onClick={() => setSelecting((v) => !v)}>
+                {t(
+                  selecting ? "bulk.finish_selection" : "bulk.select",
+                  "Select products",
+                )}
+              </Button>
+            ) : null}
+            {perms.canEditProducts ? <Button tone="ghost" href="/shop/products/barcodes">{t('barcodes.title','Product barcodes')}</Button> : null}
+            {perms.canEditProducts ? <Button tone="ghost" href="/shop/products/import">{t('imports.title','Import products')}</Button> : null}
             {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
           </>
         }
@@ -81,12 +142,86 @@ export function ProductsScreen() {
         </div>
         <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder={t('products.search', 'Filter by name or barcode')} value={q} onChange={(event) => setQ(event.target.value)} aria-label={t('products.search', 'Filter products')} />
       </div>
+      {selecting ? (
+        <Card className="stack-form">
+          <p>
+            {t("bulk.selected", "Selected: {{count}}", {
+              count: selected.length,
+            })}
+          </p>
+          <div className="flex flex-wrap gap-3"><Button tone="ghost" disabled={blocked} href="/shop/products/bulk">{t("bulk.history","Recent bulk selections")}</Button>
+            <Button tone="ghost" disabled={blocked} onClick={()=>{setSelected([]);try{sessionStorage.removeItem('bulk-selection:'+shop?.id+':'+userId);}catch{}}}>{t('bulk.clear','Clear selection')}</Button>
+            <Button
+              tone="ghost"
+              disabled={blocked}
+              onClick={() =>
+                setSelected((old) => [
+                  ...new Set([...old, ...rows.map((i) => i.productId)]),
+                ])
+              }
+            >
+              {t("bulk.select_page", "Select this view")}
+            </Button>
+            <Button
+              tone="ghost"
+              disabled={blocked || !rows.length}
+              onClick={() =>
+                void bulk.start({
+                  matching: { query: q, filter: filter as "all" },
+                })
+              }
+            >
+              {t("bulk.select_matching", "Select all matching")}
+            </Button>
+            <Button
+              disabled={blocked || !selected.length}
+              onClick={() => void bulk.start({ ids: selected })}
+            >
+              {t("bulk.edit_selected", "Edit {{count}} selected products", {
+                count: selected.length,
+              })}
+            </Button>
+          </div>
+          {bulk.error ? (
+            <p role="alert">
+              {t(bulkErrorKey(bulk.error), bulkErrorKey(bulk.error))}
+            </p>
+          ) : null}
+          {bulk.pending && !bulk.busy ? (
+            <Button onClick={() => void bulk.recover()}>
+              {t("bulk.recover", "Check result")}
+            </Button>
+          ) : null}
+        </Card>
+      ) : null}
       {catalog.isLoading ? <Spinner label="Loading products" /> : null}
       <Card flush>
         <div className="shop-list">
           {rows.map((item) => (
-            <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
-              <div className="shop-list-main">
+            <div key={item.id} className="flex items-center">
+              {selecting ? (
+                <input
+                  type="checkbox"
+                  className="ml-4 h-5 w-5 shrink-0 accent-orange-500"
+                  aria-label={item.product.name}
+                  checked={selected.includes(item.productId)}
+                  disabled={blocked}
+                  onChange={() => {}}
+                  onClick={(e) => selectRow(item.productId, e.shiftKey)}
+                />
+              ) : null}
+              <Link
+                onClick={(e) => {
+                  if (selecting) {
+                    e.preventDefault();
+                    selectRow(item.productId, e.shiftKey);
+                  }
+                }}
+                style={{ flex: 1, minWidth: 0 }}
+                href={`/shop/products/${item.productId}`}
+                className="shop-list-row"
+              >
+                <div className="shop-list-main">
                 <p className="shop-list-title">{item.product.name}</p>
                 <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {formatQty(item.quantity, item.unit)} {t('reports.stock.on_hand', 'on hand')}</p>
               </div>
@@ -96,7 +231,7 @@ export function ProductsScreen() {
                   {item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : item.stockStatus === 'LOW' ? t('home.stat_low_stock', 'Low') : t('reports.stock.on_hand', 'In stock')}
                 </Pill>
               </div>
-            </Link>
+            </Link></div>
           ))}
           {!catalog.isLoading && rows.length === 0 ? <p className="shop-list-empty">{t('products.empty_filtered', 'No products in this view.')}</p> : null}
         </div>

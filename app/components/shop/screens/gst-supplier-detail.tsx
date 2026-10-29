@@ -1,4 +1,5 @@
 "use client";
+import {PartyProfileCard} from '../party-profile';
 import { useState } from "react";
 import { useShop } from "../context";
 import { Card, Button, PageHeader, NoAccess } from "../ui";
@@ -6,7 +7,7 @@ import { SupplierEditor } from "../gst-supplier";
 import { useGstQuery, ReadState } from "../gst-workspace";
 import { useGstText } from "../gst-ui";
 export function GstSupplierDetailScreen({ id }: { id: string }) {
-  const { api, shop, perms } = useShop(),
+  const { api, shop, perms, t } = useShop(),
     text = useGstText();
   const [editing, setEditing] = useState(false);
   const q = useGstQuery(
@@ -38,6 +39,7 @@ export function GstSupplierDetailScreen({ id }: { id: string }) {
               <Button tone="ghost" onClick={() => setEditing((v) => !v)}>
                 {text("Edit supplier")}
               </Button>
+              <Button href={"/shop/purchase-orders?supplierId="+id}>{t("po.new","New purchase order")}</Button>
               <Button href={"/shop/purchases?supplierId=" + id} tone="ghost">
                 {text("Recorded invoices")}
               </Button>
@@ -54,6 +56,7 @@ export function GstSupplierDetailScreen({ id }: { id: string }) {
               ) : null}
               </div>
             </Card>
+            <PartyProfileCard kind="supplier" id={id}/>
             {editing ? (
               <SupplierEditor
                 key={supplier.id}

@@ -131,9 +131,10 @@ export async function retainedRequests(active: Scope) {
 export async function withFinancialLock<T>(
   active: Scope,
   operation: () => Promise<T>,
+  namespace = "financial",
 ): Promise<T> {
   assertScope(active);
-  const key = `${active.actorId}:${active.shopId}`;
+  const key = namespace === "financial" ? `${active.actorId}:${active.shopId}` : `${namespace}:${active.actorId}:${active.shopId}`;
   if (navigator.locks)
     return navigator.locks.request(key, async () => {
       assertScope(active);

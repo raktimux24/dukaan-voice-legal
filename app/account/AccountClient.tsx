@@ -653,7 +653,7 @@ export function AccountClient({ locale = defaultLocale, managementOnly = false }
           <h1>{t.account.signedOutHeading}</h1>
           <p className="subscription-lead">{managementOnly ? a.managementSignIn : t.account.signedOutLead}</p>
           <div className="subscription-panel sign-in-panel">
-            <SignIn routing="hash" withSignUp={!managementOnly} forceRedirectUrl={`${managementOnly ? '/account/mobile' : localizedPath(locale, "account")}?${new URLSearchParams([...searchParams.entries()].filter(([key]) => key !== "ticket"))}`} />
+            <SignIn routing="hash" withSignUp={!managementOnly} appearance={managementOnly ? { elements: { footerAction: { display: 'none' } } } : undefined} forceRedirectUrl={`${managementOnly ? '/account/mobile' : localizedPath(locale, "account")}?${new URLSearchParams([...searchParams.entries()].filter(([key]) => key !== "ticket"))}`} />
           </div>
         </section>
       ) : (

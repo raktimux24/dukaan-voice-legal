@@ -54,6 +54,7 @@ export function TextField({
   type = "text",
   hint,
   required = false,
+  disabled = false,
 }: {
   label: string;
   value: string;
@@ -61,6 +62,7 @@ export function TextField({
   type?: string;
   hint?: string;
   required?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <Field label={label} hint={hint}>
@@ -70,6 +72,7 @@ export function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
+        disabled={disabled}
       />
     </Field>
   );
@@ -79,7 +82,9 @@ export function SelectField({
   value,
   onChange,
   options,
+  disabled=false,
 }: {
+  disabled?:boolean;
   label: string;
   value: string;
   onChange: (v: string) => void;
@@ -90,6 +95,7 @@ export function SelectField({
       <select
         className={inputClass}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
       >
         {options.map(([v, l]) => (

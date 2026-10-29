@@ -1,4 +1,16 @@
+import {bindCommerce} from './commerce/client';
+import {bindFollowups} from './followups/client';
+import {bindCredit} from './credit/client';
+import {bindCashbook} from './cashbook/client';
+import {bindEstimates} from './estimates/client';
+import {bindPurchaseOrders} from './purchase-orders/client';
+import {bindOpenings} from './openings/client';
+import {bindDocuments} from './documents/client';
+import {bindProductBulk} from './product-bulk/client';
+import {bindBarcodes} from './barcodes/client';
+import {bindPartyImports} from './party-imports/client';
 import { bindGstApi } from './gst-api';
+import {bindInventoryImports} from './imports/client';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
 import { parseRole } from './permissions';
@@ -18,6 +30,7 @@ import type {
   Product,
   Sale,
   SaleListRow,
+  SaleReturnListRow,ReturnsListSummary,
   SalesReport,
   SalesSummary,
   ShopRecord,
@@ -170,6 +183,7 @@ export async function apiText(path: string, getToken: TokenGetter): Promise<stri
 }
 
 type ServerInventoryItem = {
+  reservedQuantity?:number;
   id: string;
   productId: string;
   shopId: string;
@@ -186,6 +200,7 @@ type ServerInventoryItem = {
     shopId: string;
     name: string;
     barcode: string | null;
+    barcodeAliases?:string[];barcodeConflict?:boolean;
     category: string;
     subcategory?: string | null;
     unit: string;
@@ -212,6 +227,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     productId: item.productId,
     shopId: item.shopId,
     quantity: Number(item.quantity),
+    reservedQuantity:item.reservedQuantity??0,
     unit: item.unit,
     stockStatus: item.stockStatus,
     nearestExpiryDate: item.nearestExpiryDate || undefined,
@@ -224,6 +240,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
       shopId: item.product.shopId,
       name: item.product.name,
       barcode: item.product.barcode || undefined,
+      barcodeAliases:item.product.barcodeAliases,barcodeConflict:item.product.barcodeConflict,
       category: item.product.category,
       subcategory: item.product.subcategory ?? null,
       unit: item.product.unit,
@@ -258,6 +275,18 @@ export function bindApi(getToken: TokenGetter) {
   const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init);
 
   return {
+    imports:bindInventoryImports(send),
+    documents:bindDocuments(send),
+    openings:bindOpenings(send),
+    purchaseOrders:bindPurchaseOrders(send),
+    commerce:bindCommerce(send),
+    estimates:bindEstimates(send),
+    cashbook:bindCashbook(send),
+    credit:bindCredit(send),
+    followups:bindFollowups(send),
+    productBulk:bindProductBulk(send),
+    barcodes:bindBarcodes(send),
+    customerImports:bindPartyImports(send,'customer'),supplierImports:bindPartyImports(send,'supplier'),
     gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};}),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
@@ -348,7 +377,8 @@ export function bindApi(getToken: TokenGetter) {
     createSale: (shopId: string, payload: CreateSalePayload) =>
       send<{ sale: Sale; deduplicated: boolean }>(`/api/shops/${shopId}/sales`, { method: 'POST', body: JSON.stringify(payload) }),
     getSales: (shopId: string, params: Record<string, string | number | undefined>) =>
-      send<{ sales: SaleListRow[]; total: number; hasMore: boolean; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
+      send<{ sales: SaleListRow[]; total: number; hasMore: boolean; nextCursor:string|null; queryVersion:number; capturedAt:string; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
+    getReturns: async(shopId:string,params:Record<string,string|number|undefined>)=>{const page=await send<{refunds:SaleReturnListRow[];total:number;hasMore:boolean;nextCursor:string|null;queryVersion:number;capturedAt:string;limitedToDays:number|null;summary:ReturnsListSummary}>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);return page},
     getSale: (shopId: string, saleId: string) => send<Sale>(`/api/shops/${shopId}/sales/${saleId}`),
     getProductSales: (shopId: string, productId: string, days = 30) =>
       send<{ days: number; units: number; revenue: number; bills: number; lastSoldAt: string | null; daysOfCover: number | null }>(

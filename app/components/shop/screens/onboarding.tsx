@@ -29,10 +29,10 @@ export function OnboardingScreen() {
 
   const subtypes = shopType(category).subtypes;
 
-  const finish = async (shopId: string) => {
+  const finish = async (shopId: string, opening=false) => {
     await refreshShops();
     selectShop(shopId);
-    router.replace('/shop');
+    router.replace(opening?'/shop/settings/opening-balances?onboarding=1':'/shop');
   };
 
   return (
@@ -64,7 +64,7 @@ export function OnboardingScreen() {
                   address: address.trim(),
                   city: city.trim(),
                 })
-                .then((result) => finish(result.shop.id))
+                .then((result) => finish(result.shop.id,true))
                 .catch(setError)
                 .finally(() => setPending(false));
             }}

@@ -1,4 +1,5 @@
 'use client';
+import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 import { TaxFields, Check, TextField, useGstText } from '../gst-ui';
 import type { ProductTax } from '../../../lib/shop/gst-types';
 import { discountedBuyingPrice, productPriceBreakdown } from '../../../lib/shop/gst-core/product-gross-price';
@@ -81,6 +82,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
   const l1 = enabledL1(shop?.category, shop?.subtype);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
+  const [generateBarcode,setGenerateBarcode]=useState(false);
   useEffect(() => { onBusyChange?.(pending); }, [pending, onBusyChange]);
   const [draft, setDraft] = useState<Draft | null>(null);
   const initial = useMemo(() => {
@@ -141,7 +143,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
     if(form.mrp&&priceBreakdown&&priceBreakdown.gross>Number(form.mrp)&&!autoMrp){setError(new Error(text('Selling price including GST must not exceed MRP.')));return;}
     const body: Record<string, unknown> = {
       name: form.name.trim(),
-      barcode: form.barcode.trim() || null,
+      barcode: item?.product.barcode ?? (form.barcode.trim() || null),
       category: form.category,
       subcategory: form.subcategory,
       unit: form.unit,
@@ -164,6 +166,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
         router.push(`/shop/products/${productId}`);
         return;
       }
+      body.generateBarcode=generateBarcode&&!form.barcode.trim();
       body.initialStock = onCreated ? 0 : Number(form.initialStock || 0);
       if (form.supplier) body.supplier = form.supplier;
       if (form.expiryDate) body.expiryDate = form.expiryDate;
@@ -175,6 +178,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
       if (onCreated) { onCreated(created.product); return; }
       if (addAnother) {
         setNotice(`${created.product.name} added.`);
+        setGenerateBarcode(false);
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
         window.scrollTo({ top: 0 });
         return;
@@ -211,7 +215,7 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
         actions={<Button href={productId ? `/shop/products/${productId}` : '/shop/products'} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
       : null}
-      <Notice error={error} />
+      {error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
 
       <div className="form-layout">
         <div className="form-stack">
@@ -236,9 +240,11 @@ export function ProductFormScreen({ productId, onCreated, onBusyChange }: { prod
                   </select>
                 </Field>
               </div>
+              {!productId&&!form.barcode.trim()?<label className="import-confirm"><input type="checkbox" checked={generateBarcode} onChange={e=>setGenerateBarcode(e.target.checked)}/><span>{t('barcodes.generate_on_save','No barcode? Generate one when saving')}</span></label>:null}
+              {item?.product.barcode?<Button tone="ghost" href={'/shop/products/barcodes?productId='+productId}>{t('barcodes.manage','Manage barcode')}</Button>:null}
               <div className="form-grid is-2">
                 <Field label={t('modal.add_product.barcode_label', 'Barcode')} hint={t('modal.add_product.barcode_placeholder', 'Scan or enter barcode')}>
-                  <input className={cx(inputClass, 'num')} value={form.barcode} onChange={(event) => set({ barcode: event.target.value })} inputMode="numeric" />
+                  <input className={cx(inputClass, 'num')} value={form.barcode} onChange={(event) => set({ barcode: event.target.value })} readOnly={!!item?.product.barcode} />
                 </Field>
                 <Field label={t('modal.add_product.unit_label', 'Unit')}>
                   <select className={inputClass} value={form.unit} onChange={(event) => set({ unit: event.target.value })}>

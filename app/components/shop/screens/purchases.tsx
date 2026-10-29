@@ -16,7 +16,7 @@ import {
 } from "../gst-workspace";
 import { formatINR } from "../../../lib/shop/money";
 export function PurchasesScreen() {
-  const { api, shop, perms } = useShop(),
+  const { api, shop, perms,t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     period = usePeriod();
@@ -60,6 +60,7 @@ export function PurchasesScreen() {
             </Button>
           }
         />
+        <Card><Button href="/shop/purchase-orders" tone="ghost">{t('po.title','Purchase orders')} →</Button></Card>
         <Card>
           {period.fields}
           <SelectField

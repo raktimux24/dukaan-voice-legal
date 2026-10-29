@@ -1,3 +1,4 @@
+import type {DocumentContextRef,DocumentContextView,IssuedDocument} from './documents/contract';
 import type { GstContext, GstSettings, ProductTax, TaxTotals, LineTax, Buyer } from './gst-types';
 import type { Role } from './permissions';
 
@@ -34,6 +35,7 @@ export type Product = {
   shopId: string;
   name: string;
   barcode?: string;
+  barcodeAliases?:string[];barcodeConflict?:boolean;
   category: string;
   subcategory?: string | null;
   unit: string;
@@ -54,6 +56,7 @@ export type Product = {
 };
 
 export type InventoryItem = {
+  reservedQuantity?:number;
   id: string;
   productId: string;
   shopId: string;
@@ -122,6 +125,9 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  creditTerms?:import("./credit/contract").CreditTerms;
+  estimateSource?:import("./estimates/contract").EstimateSource;
+  documentPresentation?:DocumentContextRef;
   gstContext?: GstContext | null;
   clientId: string;
   soldAt: string;
@@ -151,6 +157,9 @@ export type SaleItem = {
 };
 
 export type Sale = {
+  estimateId?:string|null;
+  documentPresentation?:IssuedDocument|null;
+  documentPresentationError?:string|null;
   requestHash?: string;
   gstIntegrity?: string;
   mixedGstSnapshot?:Record<string,unknown>|null;
@@ -180,6 +189,7 @@ export type Sale = {
   items: SaleItem[];
   payments: { id: string; method: PaymentMethod; kind: string; amount: number; tendered: number | null; changeGiven: number | null; reference: string | null }[];
   returns: {
+    documentPresentation?:IssuedDocument|null;
     id: string;
     items: { saleItemId: string; quantity: number; restock: boolean; reason: string | null }[];
     refundMethod: PaymentMethod | null;
@@ -190,6 +200,7 @@ export type Sale = {
 };
 
 export type SaleListRow = {
+  invoiceNumber?:string|null;
   id: string;
   saleNumber: number;
   status: 'completed' | 'voided';
@@ -252,6 +263,7 @@ export type LedgerEntry = {
 };
 
 export type BuyListItem = {
+  orderedQuantity?:number;purchaseOrderId?:string;
   id: string;
   shopId: string;
   productId?: string;
@@ -267,6 +279,8 @@ export type BuyListItem = {
 };
 
 export type PosSettings = {
+  documentBranding?:DocumentContextView|null;
+  documentBrandingAvailable?:boolean;
   gstSettings?: GstSettings | null;
   gstProtocol?: number;
   gstAvailable?: boolean;
@@ -460,3 +474,12 @@ export type UnifiedAlerts = {
   predictions: { id: string; title: string; description: string; severity: string; productId: string | null }[];
   counts: { total: number; stock: number; expiry: number; ai: number };
 };
+
+export type SaleReturnListRow = {
+  id: string; saleId: string; saleNumber: number; invoiceNumber?: string | null; createdAt: string;
+  moneyRefund?:number;creditReduction?:number;refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
+  itemCount: number; firstItem: string | null; customerName: string | null;
+  settlement?: {creditReduction: string; moneyRefund: string} | null;
+};
+export type ReturnsListSummary = { moneyRefund?:number;creditReduction?:number;count: number; amount: number; byMethod: Record<string, number> };
+

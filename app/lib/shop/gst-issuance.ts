@@ -1,3 +1,4 @@
+import {assertEstimateCart} from './estimates/handoff';
 import {
   financialYear,
   allocationNumber,
@@ -49,6 +50,7 @@ export async function issueSale(
       throw Error(
         "A previous bill needs recovery. Open GST recovery before starting another bill.",
       );
+    if(!saved&&body.estimateSource){const source=await api.estimates.get(shopId,body.estimateSource.estimateId);assertScope(active);assertEstimateCart(source,{lines:body.items.map(l=>({...l,productId:l.productId??null,price:l.price??NaN,discount:l.discount??0})),billDiscount:body.discountAmount??0,customerId:body.customerId??null,customerName:body.customer?.name??null,customerPhone:body.customer?.phone??null});await api.estimates.start(shopId,body.estimateSource);assertScope(active);}
     let payload = saved
       ? (structuredClone(saved.payload) as CreateSalePayload)
       : structuredClone(body);

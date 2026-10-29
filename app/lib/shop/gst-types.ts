@@ -1,3 +1,4 @@
+import type {IssuedDocument} from './documents/contract';
 import type { Buyer, LineTax } from "./gst-core/gst";
 import type {
   PurchaseInput,
@@ -177,6 +178,7 @@ export interface BillingParty {
   updatedAt: string;
 }
 export interface FiscalDocument {
+  documentPresentation?:IssuedDocument|null;
   integrity?: "verified" | "mismatch" | "legacy_unverifiable";
   id: string;
   shopId: string;

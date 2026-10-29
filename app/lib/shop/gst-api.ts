@@ -126,7 +126,7 @@ export function bindGstApi(
     financial,
     health: (s: string) => get<GstHealth>(`${base(s)}/pos-settings/gst-health`),
     readiness: (s: string) =>
-      get<Record<string, unknown>>(`${base(s)}/pos-settings/gst-readiness`),
+      get<{ generatedAt: string; configurationReady: boolean; profile: {status: "missing" | "invalid" | "unsupported" | "reviewed"; registration: string}; catalog: {reviewed: number; total: number; incompleteCount: number; incomplete: {productId: string; name: string; reason: "missing" | "invalid"}[]; taxProfilesRequired: boolean; truncated: boolean} }>(`${base(s)}/pos-settings/gst-readiness`),
     monitor: (s: string) =>
       get<GstMonitor>(`${base(s)}/gst-exports/monitor?limit=100`),
     runChecks: (s: string) =>
@@ -380,7 +380,8 @@ export function bindGstApi(
         requestId: string;
         items: { saleItemId: string; quantity: number; restock?: boolean }[];
         reason: string;
-        settlement: {
+        refundMethod?: "cash"|"upi"|"card"|"credit";
+        settlement?: {
           creditReduction: number;
           moneyRefund: number;
           method: string;

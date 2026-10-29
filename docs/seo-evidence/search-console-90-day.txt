@@ -1,0 +1,91 @@
+- main:
+  - button "Total clicks 8":
+    - generic "Total clicks":
+      - generic: 
+      - generic: Total clicks
+    - generic "8"
+  - button "null":
+    - generic: 
+  - button "Total impressions 90":
+    - generic "Total impressions":
+      - generic: 
+      - generic: Total impressions
+    - generic "90"
+  - button "null":
+    - generic: 
+  - button "Average CTR 8.9%":
+    - generic "Average CTR":
+      - generic: Average CTR
+    - generic "8.9%"
+  - button "null":
+    - generic: 
+  - button "Average position 3.8":
+    - generic "Average position":
+      - generic: Average position
+    - generic "3.8"
+  - button "null":
+    - generic: 
+  - 'button "Selected Time Granularity: Daily"':
+    - generic: Daily
+  - generic: Clicks
+  - generic: Impressions
+  - application "chart":
+    - generic: Chart, containing counts of Total clicks, Total impressions, Average CTR, and Average position from June 29, 2026 to September 28, 2026
+  - generic: info
+  - generic: Get more details on your site’s performance in generative AI features on Google Search
+  - generic: Open report
+  - generic: chevron_forward
+  - link "Open the Google Search generative AI features performance report.":
+    - /url: ./search-console/performance/search-analytics/ai?resource_id=sc-domain%3Asamaanbol.space
+  - tablist:
+    - tab "Queries" [selected]:
+      - generic: Queries
+    - tab "Pages":
+      - generic: Pages
+    - tab "Countries":
+      - generic: Countries
+    - tab "Devices":
+      - generic: Devices
+    - tab "Search appearance":
+      - generic: Search appearance
+    - tab "Days":
+      - generic: Days
+  - tabpanel:
+    - button "Filter table rows":
+      - generic: 
+    - table:
+      - rowgroup:
+        - row "Top queries Sort Top queries Sort Clicks Clicks Sort Impressions Impressions":
+          - columnheader "Top queries Sort Top queries":
+            - generic: Top queries
+            - button "Sort Top queries":
+          - columnheader "Sort Clicks Clicks":
+            - button "Sort Clicks":
+            - generic: Clicks
+          - columnheader "Sort Impressions Impressions":
+            - button "Sort Impressions":
+            - generic: Impressions
+      - rowgroup:
+        - row "yes 0 1":
+          - cell "yes":
+            - generic: "yes"
+          - cell "0":
+            - generic: "0"
+          - cell "1":
+            - generic: "1"
+    - generic: "Rows per page:"
+    - listbox "Number of rows per page":
+      - option "5"
+      - option "10" [selected]
+      - option "25"
+      - option "50"
+      - option "100"
+      - option "250"
+      - option "500"
+    - generic: 1-1 of 1
+    - button "Previous page" [disabled]:
+    - tooltip: Previous page
+    - button "Next page" [disabled]:
+    - tooltip: Next page
+- generic: Performance on Search results
+- generic: Performance
