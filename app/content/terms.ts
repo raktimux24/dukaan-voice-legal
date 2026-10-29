@@ -3,7 +3,7 @@ export const termsHtml = `<div class="reading-progress" id="readingProgress"></d
   <div class="container">
     <a href="/" class="back">&larr; Back to home</a>
     <h1>Terms of Service</h1>
-    <p class="effective">Effective Date: February 23, 2026</p>
+    <p class="effective">Updated: 30 October 2026</p>
 
     <nav class="toc">
       <h3>Contents</h3>
@@ -132,7 +132,10 @@ export const termsHtml = `<div class="reading-progress" id="readingProgress"></d
     <details id="s9">
       <summary><h2>9. Account Termination</h2></summary>
       <div class="section-content">
-        <p>You may delete your account at any time through <strong>Settings &gt; Delete Account</strong> in the App. Account deletion is permanent and irreversible — all your shops, inventory data, audit logs, and preferences will be permanently removed.</p>
+<p>Use Settings → Delete Account on mobile or web. We check record retention before deletion.</p>
+<p>If retention is required, self-service deletion is blocked and your account, shop records and sign-in identity remain. Contact support to request a closure review and removal of data that does not need to be retained.</p>
+<p>Where deletion is allowed, eligible account and owned-shop data and shared-shop memberships are removed, then your Clerk sign-in identity is deleted. Deleting only a shop leaves your account active.</p>
+<p>Allowed deletion is permanent; export needed data first. If a step fails or its result is uncertain, deletion is not confirmed—stay signed in and retry or contact support.</p>
         <p>We reserve the right to suspend or terminate accounts that violate these Terms or engage in abusive behavior.</p>
       </div>
     </details>

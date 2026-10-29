@@ -17,6 +17,8 @@ const clerkAppearance = {
     fontFamily: 'var(--font-inter), sans-serif',
   },
   elements: {
+    // Account removal must go through the application retention check.
+    profileSection__danger: { display: 'none' },
     socialButtonsBlockButton: { color: '#EAEAE6' },
     socialButtonsBlockButtonText: { color: '#EAEAE6' },
     formFieldLabel: { color: '#EAEAE6' },

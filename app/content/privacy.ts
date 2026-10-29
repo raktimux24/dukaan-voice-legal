@@ -3,7 +3,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
   <div class="container">
     <a href="/" class="back">&larr; Back to home</a>
     <h1>Privacy Policy</h1>
-    <p class="effective">Effective Date: February 23, 2026</p>
+    <p class="effective">Updated: 30 October 2026</p>
 
     <nav class="toc">
       <h3>Contents</h3>
@@ -168,6 +168,8 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
     <details id="s5">
       <summary><h2>5. Data Retention</h2></summary>
       <div class="section-content">
+<p>Business records may need to be kept for tax, accounting, disputes and legal obligations. These can include bills, reserved invoice numbers, purchases, payments, cashbook and expense records, orders, related audit history and identity links.</p>
+<p>Required records are not erased automatically by an account-deletion request. We retain them for the applicable obligations and review requests for data that can be removed.</p>
         <ul>
           <li><strong>Voice audio:</strong> Ephemeral — processed in memory and immediately discarded. Never stored on our servers.</li>
           <li><strong>Transcripts & audit logs:</strong> Retained as long as your account is active, for your reference.</li>
@@ -182,15 +184,11 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
     <details id="s6">
       <summary><h2>6. Account Deletion</h2></summary>
       <div class="section-content">
-        <p>You can delete your account at any time from <strong>Settings &gt; Delete Account</strong> within the App. When you delete your account:</p>
-        <ul>
-          <li>All shops you own are permanently deleted, including all products, inventory, batches, buy lists, and AI predictions</li>
-          <li>All your audit logs and preferences are permanently deleted</li>
-          <li>Your memberships in other users' shops are removed</li>
-          <li>Your authentication account with Clerk is permanently deleted</li>
-        </ul>
-        <p><strong>This action is irreversible.</strong> Once deleted, your data cannot be recovered.</p>
-      </div>
+<p>Use Settings → Delete Account on mobile or web. We check record retention before deletion.</p>
+<p>If retention is required, self-service deletion is blocked and your account, shop records and sign-in identity remain. Contact support to request a closure review and removal of data that does not need to be retained.</p>
+<p>Where deletion is allowed, eligible account and owned-shop data and shared-shop memberships are removed, then your Clerk sign-in identity is deleted. Deleting only a shop leaves your account active.</p>
+<p>Allowed deletion is permanent; export needed data first. If a step fails or its result is uncertain, deletion is not confirmed—stay signed in and retry or contact support.</p><p><a href="/delete-account">Account Deletion</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+</div>
     </details>
 
     <details id="s7">
@@ -219,7 +217,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
         <p>You have the right to:</p>
         <ul>
           <li><strong>Access your data:</strong> View your inventory, audit logs, and preferences within the App</li>
-          <li><strong>Delete your data:</strong> Use the account deletion feature in Settings</li>
+          <li>Request deletion or a retention review through Settings or by email. Required records may have to be kept.</li>
           <li><strong>Correct your data:</strong> Update inaccurate account, shop, or billing information where supported, or contact us for help</li>
           <li><strong>Request portability:</strong> Ask for a copy of your account and shop data in a reasonable portable format where required by applicable law</li>
           <li><strong>Control preferences:</strong> Modify your language, display, and voice settings at any time</li>

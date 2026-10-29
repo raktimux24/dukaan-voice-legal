@@ -1,5 +1,6 @@
 'use client';
 
+import retentionCopy from '../content/retention-locales.json';
 import { SignIn, UserButton, useAuth, useClerk, useSignIn, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -582,7 +583,7 @@ export function AccountDashboard({
           )}
 
           <div className="portal-actions">
-            {embedded ? null : <UserButton />}
+            {embedded ? null : <><UserButton /><a className="subscription-button secondary" href="/delete-account">{retentionCopy[locale].title}</a></>}
             <a className="subscription-button secondary" href="samaan-bol://subscription/return">
               {a.openInApp}
             </a>

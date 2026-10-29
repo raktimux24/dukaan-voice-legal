@@ -3,6 +3,8 @@
 import { useGstText as useUiText } from "../gst-ui";
 
 import Link from 'next/link';
+import {useUser,useClerk} from '@clerk/nextjs';
+import {DeletionControl} from '../deletion-control';
 import {BrowserNotifications} from '../browser-notifications';
 import { useState } from 'react';
 import { auditCsv, downloadText, inventoryCsv } from '../../../lib/shop/csv';
@@ -27,10 +29,10 @@ const SIZES = ['small', 'medium', 'large', 'extra_large'] as const;
 
 export function SettingsScreen() {
   const uiText = useUiText();
+  const {user} = useUser();
+  const clerk = useClerk();
   const { api, shop, perms, role, prefs, savePrefs, premium, hideCost, setNotice, t } = useShop();
   const [error, setError] = useState<unknown>(null);
-  const [confirm, setConfirm] = useState(0);
-  const [deleting, setDeleting] = useState(false);
   if (!shop) return <Spinner />;
 
   return (
@@ -147,29 +149,10 @@ export function SettingsScreen() {
       ) : null}
       <Card>
         <h2 className="shop-section-title">{t('settings.delete_account', 'Delete account')}</h2>
-        <p className="shop-section-sub mt-1">{t('settings.delete_account_message', 'This removes your Samaan Bol account. Confirm twice. It does not cancel a shop subscription by itself.')}</p>
-        <div className="mt-4">
-          <Button
-            tone="danger"
-            disabled={deleting}
-            onClick={() => {
-              if (confirm === 0) {
-                if (!window.confirm(uiText('Delete your account? This cannot be undone.'))) return;
-                setConfirm(1);
-                setNotice(uiText('Confirm delete account one more time.'));
-                return;
-              }
-              if (!window.confirm(uiText('Delete the account now?'))) return;
-              setDeleting(true);
-              void api.deleteAccount().then(() => window.location.assign('/')).catch((caught: unknown) => {
-                setError(caught);
-                setDeleting(false);
-              });
-            }}
-          >
-            {deleting ? t('settings.deleting', 'Deleting…') : confirm === 0 ? t('settings.delete_account', 'Delete account') : t('settings.delete_forever', 'Confirm delete account')}
-          </Button>
-        </div>
+        <DeletionControl key={user?.id} kind="account" isCurrent={() => !!user && clerk.user?.id === user.id} t={(key) => t(key,key)} removeRecords={async () => {if (!user) throw new Error('identity_unavailable'); return api.deleteAccount();}} removeIdentity={async () => {
+          if (!user) throw new Error('identity_unavailable');
+          await user.delete();
+        }} onDeleted={() => window.location.assign('/')} />
       </Card>
     </div>
   );
