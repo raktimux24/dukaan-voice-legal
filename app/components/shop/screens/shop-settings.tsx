@@ -3,6 +3,7 @@
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useState } from 'react';
+import {DeletionControl} from '../deletion-control';
 import { CATALOG, remapShopCategory, remapShopSubtype, shopType } from '../../../lib/shop/catalog';
 import { useShop } from '../context';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
@@ -77,6 +78,10 @@ function ShopSettingsForm() {
           <Button type="submit" disabled={pending || unchanged || !name.trim()}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save changes')}</Button>
         </div>
       </form>
+    </Card>
+    <Card className="max-w-2xl border-danger/20">
+      <h2 className="shop-section-title">{t('modal.shop_settings.delete_shop','Delete shop')}</h2>
+      <DeletionControl key={shop.id} kind="shop" t={(key) => t(key,key)} removeRecords={() => api.deleteShop(shop.id)} onDeleted={() => window.location.assign('/shop')} />
     </Card>
     </div>
   );

@@ -1819,7 +1819,7 @@ export const EN_FALLBACK: Record<string, string> = {
   "settings.title": "Settings",
   "settings.sign_out": "Sign Out",
   "settings.section_legal": "Legal",
-  "settings.privacy_policy": "Privacy Policy",
+  "settings.privacy_policy": "Privacy policy",
   "settings.terms_of_service": "Terms of Service",
 
   // ─── Home: Streak + Stock Moved ───
@@ -1848,11 +1848,10 @@ export const EN_FALLBACK: Record<string, string> = {
   "error.something_went_wrong": "Something went wrong",
 
   // ─── Settings ───
-  "settings.delete_account": "Delete Account",
-  "settings.delete_account_message":
-    "This will permanently delete your account, all your shops, inventory data, and remove you from any shared shops. This action cannot be undone.",
-  "settings.delete_forever": "Delete Forever",
-  "settings.deleting": "Deleting...",
+  "settings.delete_account": "Delete account",
+  "settings.delete_account_message": "We check for retained business records before deleting. If allowed, your account and owned shops are permanently removed and shared-shop access ends. Export what you need first.",
+  "settings.delete_forever": "Delete permanently",
+  "settings.deleting": "Deleting…",
   "settings.delete_failed": "Failed to delete account",
   "settings.export_choose": "Choose what to export",
   "settings.export_inventory": "Inventory",
@@ -2655,7 +2654,7 @@ export const EN_FALLBACK: Record<string, string> = {
   "activity.empty_title": "No activity yet",
   "activity.empty_subtitle": "Stock changes will appear here as they happen",
   "settings.section_language_voice": "Language & Voice",
-  "settings.app_language": "App Language",
+  "settings.app_language": "App language",
   "settings.voice_language": "Voice Language",
   "settings.voice_feedback": "Voice Feedback",
   "settings.section_shop": "Shop",
@@ -2898,10 +2897,10 @@ export const EN_FALLBACK: Record<string, string> = {
   "modal.shop_settings.low_stock_notifications": "Low Stock Notifications",
   "modal.shop_settings.auto_suggest": "Auto-Suggest Buy List",
   "modal.shop_settings.danger_zone": "Danger Zone",
-  "modal.shop_settings.danger_message": "Permanently delete this shop and all data.\nThis action cannot be undone.",
-  "modal.shop_settings.delete_shop": "Delete Shop",
+  "modal.shop_settings.danger_message": "We check for retained business records before deleting this shop. If allowed, its data is permanently removed for all members. Your account stays active. Export what you need first.",
+  "modal.shop_settings.delete_shop": "Delete shop",
   "modal.shop_settings.delete_title": "Delete Shop",
-  "modal.shop_settings.delete_message": "Are you sure you want to permanently delete this shop and all its data? This cannot be undone.",
+  "modal.shop_settings.delete_message": "We check for retained business records before deleting this shop. If allowed, its data is permanently removed for all members. Your account stays active. Export what you need first.",
   "modal.shop_settings.toast_updated": "Shop settings updated",
   "modal.shop_settings.toast_deleted": "Shop deleted",
   "modal.voice.listening": "Listening...",
@@ -2953,4 +2952,10 @@ export const EN_FALLBACK: Record<string, string> = {
   "gst.provider.state.succeeded": "Provider confirmed",
   "gst.provider.state.rejected": "Provider rejected",
 
+  "deletion.retained": "Nothing was deleted. This account or shop is linked to business records that must be kept. Contact support to review closure and which data can be removed.",
+  "deletion.check_failed": "We could not complete the record-retention check. Deletion is not confirmed. Stay signed in and try again, or contact support.",
+  "deletion.failed": "We could not confirm that every deletion step finished. Stay signed in and retry, or contact support. Do not assume your account was deleted.",
+  "deletion.support": "Contact support",
+  "deletion.confirm": "Continue with deletion? Required records cannot be erased here. Allowed deletion is permanent and cannot be undone. Active shop subscriptions are cancelled before deletion.",
+  "deletion.deleted": "Your account has been deleted.",
 };
