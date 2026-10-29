@@ -1699,7 +1699,8 @@
     "settings.privacy_policy": "Privacy policy",
     "modal.shop_settings.delete_shop": "Delete shop",
     "common.cancel": "Cancel",
-    "nav.home": "Home"
+    "nav.home": "Home",
+    "common.add": "Add"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3401,7 +3402,8 @@
     "settings.privacy_policy": "गोपनीयता नीति",
     "modal.shop_settings.delete_shop": "दुकान हटाएं",
     "common.cancel": "रद्द करें",
-    "nav.home": "होम"
+    "nav.home": "होम",
+    "common.add": "जोड़ें"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5103,7 +5105,8 @@
     "settings.privacy_policy": "Privacy policy",
     "modal.shop_settings.delete_shop": "Shop delete karein",
     "common.cancel": "Radd karein",
-    "nav.home": "Home"
+    "nav.home": "Home",
+    "common.add": "Add karein"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -6805,7 +6808,8 @@
     "settings.privacy_policy": "தனியுரிமைக் கொள்கை",
     "modal.shop_settings.delete_shop": "கடையை நீக்கு",
     "common.cancel": "ரத்து",
-    "nav.home": "முகப்பு"
+    "nav.home": "முகப்பு",
+    "common.add": "சேர்"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -8507,7 +8511,8 @@
     "settings.privacy_policy": "గోప్యతా విధానం",
     "modal.shop_settings.delete_shop": "దుకాణాన్ని తొలగించండి",
     "common.cancel": "రద్దు",
-    "nav.home": "హోమ్"
+    "nav.home": "హోమ్",
+    "common.add": "జోడించు"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -10209,7 +10214,8 @@
     "settings.privacy_policy": "গোপনীয়তা নীতি",
     "modal.shop_settings.delete_shop": "দোকান মুছুন",
     "common.cancel": "বাতিল",
-    "nav.home": "হোম"
+    "nav.home": "হোম",
+    "common.add": "যোগ করুন"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -11911,7 +11917,8 @@
     "settings.privacy_policy": "गोपनीयता धोरण",
     "modal.shop_settings.delete_shop": "दुकान हटवा",
     "common.cancel": "रद्द करा",
-    "nav.home": "होम"
+    "nav.home": "होम",
+    "common.add": "जोडा"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -13613,7 +13620,8 @@
     "settings.privacy_policy": "ಗೌಪ್ಯತಾ ನೀತಿ",
     "modal.shop_settings.delete_shop": "ಅಂಗಡಿ ಅಳಿಸಿ",
     "common.cancel": "ರದ್ದುಮಾಡಿ",
-    "nav.home": "ಮುಖಪುಟ"
+    "nav.home": "ಮುಖಪುಟ",
+    "common.add": "ಸೇರಿಸಿ"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -15315,7 +15323,8 @@
     "settings.privacy_policy": "ગોપનીયતા નીતિ",
     "modal.shop_settings.delete_shop": "દુકાન કાઢી નાખો",
     "common.cancel": "રદ કરો",
-    "nav.home": "હોમ"
+    "nav.home": "હોમ",
+    "common.add": "ઉમેરો"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -17017,6 +17026,7 @@
     "settings.privacy_policy": "സ്വകാര്യതാ നയം",
     "modal.shop_settings.delete_shop": "കട ഇല്ലാതാക്കുക",
     "common.cancel": "റദ്ദാക്കുക",
-    "nav.home": "ഹോം"
+    "nav.home": "ഹോം",
+    "common.add": "ചേർക്കുക"
   }
 }
