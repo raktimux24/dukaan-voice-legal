@@ -235,6 +235,12 @@ export function useOpenings(
       setMessage("opening.saved");
       await refresh();
     });
+  const saveAndLeave = (onSaved: () => void) =>
+    run(async () => {
+      await save();
+      await refresh();
+      onSaved();
+    });
   const review = () =>
     run(async () => {
       let s = await save({ ...draft, step: 4 });
@@ -484,6 +490,7 @@ export function useOpenings(
     start,
     open,
     saveDraft,
+    saveAndLeave,
     review,
     attach,
     confirm,

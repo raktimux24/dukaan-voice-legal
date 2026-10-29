@@ -17,6 +17,8 @@ const storage: OpeningStorage = {
   removeItem: async (key) => window.localStorage.removeItem(key),
 };
 export const openingWebUi: OpeningUi = {
+  SavedSetup: ({ status, details, onPress, disabled }) => <button type="button" className="opening-saved" onClick={onPress} disabled={disabled}><span><strong>{status}</strong><small>{details}</small></span><span aria-hidden="true">→</span></button>,
+  Steps: ({ labels, current, disabled, onSelect }) => <Card className="opening-stack"><h2 className="shop-section-title">{labels[current]}</h2><nav className="opening-steps" aria-label={labels[current]}>{labels.map((label, index) => <button type="button" key={label} aria-label={label} aria-current={index === current ? 'step' : undefined} disabled={disabled || index === 4} onClick={() => onSelect(index)}><span>{index + 1}</span><small>{label}</small></button>)}</nav></Card>,
   Box: ({ children, card, row }) =>
     card ? (
       <Card className="opening-stack">{children}</Card>
@@ -156,7 +158,12 @@ function Editor() {
     <div className="shop-page opening-page">
       <PageHeader
         title={t("opening.title")}
-        back={{ href: "/shop/settings", label: t("nav.settings") }}
+        back={{ href: "/shop/settings", label: t("nav.settings"), disabled: w.busy || !!w.pending, onClick: () => {
+          if (w.busy || w.pending) return;
+          const leave = () => router.push(onboarding ? '/shop' : '/shop/settings');
+          if (w.view === 'edit' && w.session) void w.saveAndLeave(leave);
+          else leave();
+        } }}
       />
       {allowed ? (
         <OpeningView

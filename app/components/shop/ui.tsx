@@ -70,12 +70,16 @@ export function PageHeader({
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
-  back?: { href: string; label: string };
+  back?: { href: string; label: string; onClick?: () => void; disabled?: boolean };
 }) {
   const display = useOptionalUiText();
   return (
     <header className="shop-page-head">
-      {back ? (
+      {back?.onClick ? (
+        <button type="button" className="shop-back" onClick={back.onClick} disabled={back.disabled}>
+          ← {display(back.label)}
+        </button>
+      ) : back ? (
         <Link href={back.href} className="shop-back">
           ← {display(back.label)}
         </Link>

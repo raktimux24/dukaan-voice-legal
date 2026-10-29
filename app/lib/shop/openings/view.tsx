@@ -32,6 +32,8 @@ export type OpeningUi = {
     disabled?: boolean;
     type?: "text" | "decimal" | "date" | "datetime";
     multiline?: boolean;
+    clearLabel?: string;
+    clearable?: boolean;
   }>;
   Check: ComponentType<{
     label: string;
@@ -40,6 +42,18 @@ export type OpeningUi = {
     disabled?: boolean;
   }>;
   Busy: ComponentType<{ label: string }>;
+  Steps?: ComponentType<{
+    labels: string[];
+    current: number;
+    disabled?: boolean;
+    onSelect: (step: number) => void;
+  }>;
+  SavedSetup?: ComponentType<{
+    status: string;
+    details: string;
+    onPress: () => void;
+    disabled?: boolean;
+  }>;
 };
 type Props = {
   w: ReturnType<typeof useOpenings>;
@@ -63,7 +77,7 @@ export function OpeningView({
   finish,
   importRows,
 }: Props) {
-  const { Box, Text, Button, Input, Check, Busy } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Steps, SavedSetup } = ui,
     s = w.session,
     d = w.draft;
   const blocked = w.busy || !!w.pending,
@@ -167,6 +181,41 @@ export function OpeningView({
       false,
       !!s?.outcomes.length,
     );
+  const savedSetups = (
+    <Box card>
+      <Text heading>{t("opening.saved_setups")}</Text>
+      {w.metadata.data?.sessions.map((session) =>
+        SavedSetup ? (
+          <SavedSetup
+            key={session.id}
+            status={t("opening.state." + session.state)}
+            details={
+              session.updatedAt.slice(0, 10) + " · " + session.id.slice(0, 8)
+            }
+            disabled={blocked}
+            onPress={() => void w.open(session.id)}
+          />
+        ) : (
+          <Button
+            key={session.id}
+            label={
+              t("opening.state." + session.state) +
+              " · " +
+              session.updatedAt.slice(0, 10) +
+              " · " +
+              session.id.slice(0, 8) +
+              " →"
+            }
+            disabled={blocked}
+            onPress={() => void w.open(session.id)}
+          />
+        ),
+      )}
+      {!w.metadata.data?.sessions.length ? (
+        <Text tone="muted">{t("opening.no_saved")}</Text>
+      ) : null}
+    </Box>
+  );
   const selectedRows = (section: OpeningSection) =>
     d[section].slice(0, limit).map((row) => (
       <Box card key={row.id}>
@@ -215,6 +264,7 @@ export function OpeningView({
               label={t("imports.field.expiryDate")}
               value={row.expiry}
               type="date"
+              clearLabel={t("common.remove")}
               disabled={blocked || done(row.id)}
               onChange={(expiry) => update(section, row.id, { expiry })}
             />
@@ -247,6 +297,7 @@ export function OpeningView({
                   label={t("opening.due")}
                   value={row.dueDate}
                   type="date"
+                  clearLabel={t("common.remove")}
                   disabled={blocked || done(row.id)}
                   onChange={(dueDate) => update(section, row.id, { dueDate })}
                 />
@@ -328,7 +379,7 @@ export function OpeningView({
   );
   return (
     <Box>
-      <Text tone="muted">{t("opening.help")}</Text>
+      {w.view === "hub" ? <Text tone="muted">{t("opening.help")}</Text> : null}
       {err ? (
         <Box card>
           <Text live tone="danger">
@@ -362,20 +413,23 @@ export function OpeningView({
       ) : null}
       {!w.metadata.data ? null : (
         <>
-          <Box row>
-            {w.view !== "hub" ? btn("opening.hub", () => nav("hub")) : null}
-            {w.view !== "history"
-              ? btn("opening.history", () => nav("history"))
-              : null}
-            {w.view !== "suppliers"
-              ? btn("opening.supplier_dues", () => {
-                  w.setSection("supplier");
-                  nav("suppliers");
-                })
-              : null}
-          </Box>
+          {w.view !== "edit" && w.view !== "hub" ? (
+            <Box row>
+              {btn("opening.hub", () => nav("hub"))}
+              {w.view !== "review" && w.view !== "history"
+                ? btn("opening.history", () => nav("history"))
+                : null}
+              {w.view !== "review" && w.view !== "suppliers"
+                ? btn("opening.supplier_dues", () => {
+                    w.setSection("supplier");
+                    nav("suppliers");
+                  })
+                : null}
+            </Box>
+          ) : null}
           {w.view === "hub" ? (
             <>
+              {w.metadata.data.sessions.length ? savedSetups : null}
               <Box card>
                 <Text heading>
                   {t(onboarding ? "opening.onboarding" : "opening.start")}
@@ -400,26 +454,13 @@ export function OpeningView({
                     ),
                 )}
               </Box>
-              <Box card>
-                <Text heading>{t("opening.saved_setups")}</Text>
-                {w.metadata.data.sessions.map((session) => (
-                  <Button
-                    key={session.id}
-                    label={
-                      t("opening.state." + session.state) +
-                      " · " +
-                      session.updatedAt.slice(0, 10) +
-                      " · " +
-                      session.id.slice(0, 8) +
-                      " →"
-                    }
-                    disabled={blocked}
-                    onPress={() => void w.open(session.id)}
-                  />
-                ))}
-                {!w.metadata.data.sessions.length ? (
-                  <Text tone="muted">{t("opening.no_saved")}</Text>
-                ) : null}
+              {!w.metadata.data.sessions.length ? savedSetups : null}
+              <Box row>
+                {btn("opening.history", () => nav("history"))}
+                {btn("opening.supplier_dues", () => {
+                  w.setSection("supplier");
+                  nav("suppliers");
+                })}
               </Box>
               {onboarding ? (
                 <Box card>
@@ -432,30 +473,54 @@ export function OpeningView({
           ) : null}
           {s && w.view === "edit" ? (
             <>
-              <Box row>
-                {[0, 1, 2, 3, 4].map((step) => (
-                  <Button
-                    key={step}
-                    label={
-                      (d.step === step ? "● " : "") + t("opening.step." + step)
-                    }
-                    disabled={blocked || step === 4}
-                    primary={d.step === step}
-                    onPress={() => {
-                      patch({ step });
-                      w.setSection(
-                        step === 1 ? "stock" : step === 2 ? "customer" : "cash",
-                      );
-                      w.setSearch("");
-                      w.setOffset(0);
-                      setLimit(20);
-                    }}
-                  />
-                ))}
-              </Box>
+              {Steps ? (
+                <Steps
+                  labels={[0, 1, 2, 3, 4].map((step) =>
+                    t("opening.step." + step),
+                  )}
+                  current={d.step}
+                  disabled={blocked}
+                  onSelect={(step) => {
+                    patch({ step });
+                    w.setSection(
+                      step === 1 ? "stock" : step === 2 ? "customer" : "cash",
+                    );
+                    w.setSearch("");
+                    w.setOffset(0);
+                    setLimit(20);
+                  }}
+                />
+              ) : (
+                <Box row>
+                  {[0, 1, 2, 3, 4].map((step) => (
+                    <Button
+                      key={step}
+                      label={
+                        (d.step === step ? "● " : "") +
+                        t("opening.step." + step)
+                      }
+                      disabled={blocked || step === 4}
+                      primary={d.step === step}
+                      onPress={() => {
+                        patch({ step });
+                        w.setSection(
+                          step === 1
+                            ? "stock"
+                            : step === 2
+                              ? "customer"
+                              : "cash",
+                        );
+                        w.setSearch("");
+                        w.setOffset(0);
+                        setLimit(20);
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
               {d.step === 0 ? (
                 <Box card>
-                  <Text heading>{t("opening.step.0")}</Text>
+                  {!Steps ? <Text heading>{t("opening.step.0")}</Text> : null}
                   <Box row>
                     {(["cutover", "current"] as const).map((mode) => (
                       <Button
@@ -464,6 +529,7 @@ export function OpeningView({
                           (mode === d.mode ? "✓ " : "") + t("opening." + mode)
                         }
                         disabled={blocked || !!s.outcomes.length}
+                        primary={mode === d.mode}
                         onPress={() => patch({ mode })}
                       />
                     ))}
@@ -496,9 +562,9 @@ export function OpeningView({
               {d.step === 1 ? (
                 <>
                   <Text>{t("opening.stock_help")}</Text>
-                  {targetPicker("stock")}
                   {selectedRows("stock")}
                   {moreRows("stock")}
+                  {targetPicker("stock")}
                 </>
               ) : null}
               {d.step === 2 ? (
@@ -524,9 +590,9 @@ export function OpeningView({
                     <Text>{t("opening.error.premium")}</Text>
                   ) : w.section === "customer" || w.section === "supplier" ? (
                     <>
-                      {targetPicker(w.section)}
                       {selectedRows(w.section)}
                       {moreRows(w.section)}
+                      {targetPicker(w.section)}
                     </>
                   ) : null}
                 </>
@@ -574,6 +640,10 @@ export function OpeningView({
                       )
                     : btn("opening.review", () => void w.review(), true)}
                 </Box>
+                {btn(
+                  "opening.hub",
+                  () => void w.saveAndLeave(() => nav("hub")),
+                )}
               </Box>
             </>
           ) : null}
@@ -603,6 +673,11 @@ export function OpeningView({
               </Box>
               {s.review ? (
                 <>
+                  {s.review.issues.map((issue) => (
+                    <Text key={issue} tone="danger">
+                      {t("opening.issue." + issue)}
+                    </Text>
+                  ))}
                   <Box card>
                     <Text tone="muted">{t("opening.total_help")}</Text>
                     {Object.entries(s.review.totals).map(([key, value]) => (
@@ -611,11 +686,6 @@ export function OpeningView({
                       </Text>
                     ))}
                   </Box>
-                  {s.review.issues.map((issue) => (
-                    <Text key={issue} tone="danger">
-                      {t("opening.issue." + issue)}
-                    </Text>
-                  ))}
                   {s.review.rows.slice(0, limit).map((row) => (
                     <Box card key={row.id}>
                       <Text heading>
