@@ -11,10 +11,11 @@
     "test:gst": "node scripts/test-gst.mjs",
     "check:gst-core": "node scripts/check-gst-core.mjs",
     "test:translations": "node scripts/test-translations.mjs",
-    "check:release": "npm run test:gst && npm run test:translations && npm run test:billing && tsc --noEmit",
+    "check:release": "npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && tsc --noEmit",
     "build:verified": "npm run check:release && npm run build",
     "test:seo": "node scripts/test-public-seo.mjs",
-    "test:billing": "node scripts/test-mobile-account.cjs"
+    "test:billing": "node scripts/test-mobile-account.cjs",
+    "test:cashbook": "node --test tests/cashbook-navigation.test.cjs"
   },
   "repository": {
     "type": "git",
