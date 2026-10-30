@@ -127,7 +127,7 @@ export function HomeScreen() {
   if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
   const revenueDelta = delta(today.data?.revenue, yesterday.data?.revenue);
-  const avgBill = today.data && today.data.bills > 0 ? today.data.revenue / today.data.bills : 0;
+  const avgBill = today.data?.avgBill ?? 0;
 
   const attention = [
     { key: 'low_stock', label: t('home.stat_low_stock', 'Low stock'), n: stats.data?.lowStock, tone: 'shop-stat--warn' },
@@ -239,7 +239,7 @@ export function HomeScreen() {
                     <p className="dash-fact-n num">{today.isLoading ? '…' : today.data?.bills ?? 0}</p>
                   </div>
                   <div>
-                    <p className="dash-fact-l">{t('sales.summary.avg_bill', 'Average bill')}</p>
+                    <p className="dash-fact-l" title={t('reports.sales.average_help','')}>{t('reports.sales.avg_before_returns', '')}</p>
                     <p className="dash-fact-n num">{today.isLoading ? '…' : formatINR(avgBill)}</p>
                   </div>
                   <div>
