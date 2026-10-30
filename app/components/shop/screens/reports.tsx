@@ -220,7 +220,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
   );
 }
 
-function StockView({ report, showCost }: { report: StockReport; showCost: boolean }) {
+function StockView({ report, showCost, period, onPeriod }: { report: StockReport; showCost: boolean; period: typeof STOCK_PERIODS[number]; onPeriod: (period: typeof STOCK_PERIODS[number]) => void }) {
   const uiText = useUiText();
   const { t, prefs } = useShop();
   const onHand = report.onHand;
@@ -235,6 +235,7 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
   return (
     <>
       {report.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: report.limitedToDays })}</p> : null}
+      <p className="shop-section-sub">{t('mobile.observations.stock_now','')}</p>
       <div className="kpi-grid">
         <div className="kpi"><p className="kpi-label">{t('reports.stock.products', 'Products')}</p><p className="kpi-value">{onHand?.products ?? 0}</p></div>
         <div className="kpi"><p className="kpi-label">{t('reports.stock.units', 'Units on hand')}</p><p className="kpi-value">{Math.round(onHand?.units ?? 0)}</p></div>
@@ -262,6 +263,8 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
       </div>
       <Card>
         <h2 className="shop-section-title">{t('reports.stock.movement', 'Movement')}</h2>
+        <p className="shop-section-sub">{t('mobile.observations.movement_range','')}</p>
+        <div className="pos-chips report-period-choices">{STOCK_PERIODS.map(id=><Chip key={id} active={period===id} onClick={()=>onPeriod(id)}>{periodChip(id,t)}</Chip>)}</div>
         <p className="chart-legend"><i /> {t('reports.stock.units_in', 'In')} <i className="is-ok" /> {t('reports.stock.units_sold', 'Sold')} <i className="is-danger" /> {t('reports.stock.units_adjusted', 'Adjusted')}</p>
         {movement.length === 0 ? <p className="party-meta">{uiText("No stock movement in this period.")}</p> : (
           <ColumnChart
@@ -363,7 +366,7 @@ export function ReportsScreen() {
           <button type="button" role="tab" aria-selected={tab === 'stock'} className={tab === 'stock' ? 'is-active' : undefined} onClick={() => setTab('stock')}>{t('reports.tab.stock', 'Stock')}</button>
         </div>
         <div className="pos-chips">
-          {tab === 'sales' ? SALES_PERIODS.map(id => <Chip key={id} active={salesPeriod === id} onClick={() => setSalesPeriod(id)}>{periodChip(id, t)}</Chip>) : STOCK_PERIODS.map(id => <Chip key={id} active={stockPeriod === id} onClick={() => setStockPeriod(id)}>{periodChip(id, t)}</Chip>)}
+          {tab === 'sales' ? SALES_PERIODS.map(id => <Chip key={id} active={salesPeriod === id} onClick={() => setSalesPeriod(id)}>{periodChip(id, t)}</Chip>) : null}
         </div>
       </div>
       <Notice error={error} />
@@ -372,7 +375,7 @@ export function ReportsScreen() {
       {tab === 'sales' && sales.isLoading ? <Spinner label={uiText("Loading sales")} /> : null}
       {tab === 'stock' && stock.isLoading ? <Spinner label={uiText("Loading stock")} /> : null}
       {tab === 'sales' && sales.data && !isPremiumError(sales.error) ? <SalesView report={sales.data} showCost={showCost} /> : null}
-      {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} /> : null}
+      {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} period={stockPeriod} onPeriod={setStockPeriod} /> : null}
       {tab === 'sales' ? (
         <Card>
           <div className="shop-toolbar">

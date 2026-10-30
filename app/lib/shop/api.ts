@@ -131,9 +131,10 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
   assertCurrent();
   const token = await getToken(attempt > 0 ? { skipCache: true } : undefined);
   assertCurrent();
+  init?.signal?.throwIfAborted();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
-    signal: AbortSignal.timeout(60_000),
+    signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000),
     headers: {
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
