@@ -235,6 +235,7 @@ export type SaleListRow = {
 };
 
 export type SalesSummary = {
+  avgBill: number;
   bills: number;
   revenue: number;
   grossProfit: number;
