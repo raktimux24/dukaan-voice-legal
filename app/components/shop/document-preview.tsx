@@ -88,7 +88,7 @@ export function DocumentPreview({
     const resize = () => setViewportWidth(window.innerWidth);
     resize();window.addEventListener("resize", resize);
     panel.current?.querySelector<HTMLButtonElement>("button")?.focus();
-    return () => { document.body.style.overflow = overflow; window.removeEventListener("resize", resize); if(previous?.isConnected)previous.focus(); };
+    return () => { document.body.style.overflow = overflow; window.removeEventListener("resize", resize); const trigger=previous?.isConnected?previous:container.current?.querySelector<HTMLElement>(".document-open-full");trigger?.focus(); };
   }, [expanded]);
   const paper = documentPaper(context.payload.config.layout);
   useEffect(() => {
@@ -221,7 +221,8 @@ export function DocumentPreview({
         const file = new File([blob], "samaan-" + model.number.replace(/[^a-zA-Z0-9-]/g, "-") + ".pdf", {type:"application/pdf"});
         check();
         if (share && navigator.canShare?.({files:[file]})) {
-          await navigator.share({files:[file]});check();setNotice(tr("documents.shared"));
+          try { await navigator.share({files:[file]});check();setNotice(tr("documents.shared")); }
+          catch(error) { if((error as Error)?.name==="AbortError")throw error; check();download(blob,".pdf"); }
         } else download(blob, ".pdf");
       }
     } catch (e) {
@@ -274,7 +275,7 @@ export function DocumentPreview({
           <iframe ref={frame} title={tr("documents.preview_title")} tabIndex={-1} srcDoc={html} sandbox="allow-scripts allow-same-origin allow-modals" onLoad={()=>void ready()} style={{width:paper.width,height:paper.height,border:0,transform:`scale(${paperScale})`,transformOrigin:"top left",background:"white"}}/>
         </div></div>
         {pageControls}
-        {compact&&!expanded?<Button tone="ghost" disabled={busy||!pages} onClick={()=>setExpanded(true)}>{tr("mobile.observations.full_preview")}</Button>:null}
+        {compact&&!expanded?<Button className="document-open-full" tone="ghost" disabled={busy||!pages} onClick={()=>setExpanded(true)}>{tr("mobile.observations.full_preview")}</Button>:null}
       </div>:null}
     </div>
   );
