@@ -88,7 +88,7 @@ export function DocumentPreview({
     const resize = () => setViewportWidth(window.innerWidth);
     resize();window.addEventListener("resize", resize);
     panel.current?.querySelector<HTMLButtonElement>("button")?.focus();
-    return () => { document.body.style.overflow = overflow; window.removeEventListener("resize", resize); const trigger=previous?.isConnected?previous:container.current?.querySelector<HTMLElement>(".document-open-full");trigger?.focus(); };
+    return () => { document.body.style.overflow = overflow; window.removeEventListener("resize", resize); const trigger=container.current?.querySelector<HTMLElement>(".document-open-full") ?? (previous?.isConnected?previous:null);trigger?.focus(); };
   }, [expanded]);
   const paper = documentPaper(context.payload.config.layout);
   useEffect(() => {
