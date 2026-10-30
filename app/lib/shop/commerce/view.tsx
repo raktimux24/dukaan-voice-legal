@@ -10,6 +10,7 @@ export function CommerceView({
   owner,
   qr,
   openUrl,
+  copyLink,
   bill,
   openSale,
   initialProductId,
@@ -20,11 +21,12 @@ export function CommerceView({
   owner: boolean;
   qr: (id: string) => Promise<void>;
   openUrl: (url: string) => Promise<void> | void;
+  copyLink?: (url:string) => Promise<void>;
   bill: (estimateId: string) => void;
   openSale?: (saleId: string) => void;
   initialProductId?: string;
 }) {
-  const { Box, Text, Input, Check, Button, Busy } = ui,
+  const { Box, Text, Input, Check, Button, Busy,Tabs,Disclosure } = ui,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("commerce." + k, v),
     unitLabel = (unit: string) =>
@@ -34,19 +36,20 @@ export function CommerceView({
     [tab, setTab] = useState<"setup" | "products" | "orders">(
       initialProductId ? "products" : "setup",
     ),
-    [config, setConfig] = useState<StoreConfig | null>(null),
+    [config, setConfig] = useState<StoreConfig | null>(()=>s?.config??null),
     [listing, setListing] = useState<OnlineListing | null>(null),
     [reviewed, setReviewed] = useState(false),
     [preview, setPreview] = useState(false),
     [reason, setReason] = useState(""),
-    [localBusy, setLocalBusy] = useState(false);
+    [localBusy, setLocalBusy] = useState(false),[linkCopied,setLinkCopied]=useState(false);
   useEffect(() => {
     if (s) {
       setConfig(s.config);
+      setLinkCopied(false);
       setReviewed(false);
       setPreview(false);
     }
-  }, [s?.version]);
+  }, [s?.id,s?.version]);
   useEffect(() => {
     setReason("");
   }, [p?.id, p?.version]);
@@ -71,7 +74,7 @@ export function CommerceView({
       }
     },
     error =
-      w.error || (w.store.error as any)?.code || (w.orders.error as any)?.code;
+      w.error || (w.store.error as any)?.code || (w.store.isError ? "commerce_failed" : "") || (w.orders.error as any)?.code || (w.orders.isError ? "commerce_failed" : "") || (w.store.isSuccess && !s ? "commerce_failed" : "");
   if (!w.allowed) return <Text tone="danger">{tr("online_role")}</Text>;
   return (
     <Box>
@@ -79,7 +82,7 @@ export function CommerceView({
       {w.store.data?.orderingAvailable === false ? (
         <Text tone="danger">{tr("error.email_unavailable")}</Text>
       ) : null}
-      <Box row>
+      {Tabs ? <Tabs items={["setup","products","orders"].map(key=>({key,label:tr("nav_"+key)}))} value={tab} disabled={blocked} onChange={value=>{if(value!=="setup"&&value!=="products"&&value!=="orders")return;setTab(value);w.setOrder(null);setListing(null);}}/> : <Box row>
         {(["setup", "products", "orders"] as const).map((k) => (
           <Button
             key={k}
@@ -92,7 +95,7 @@ export function CommerceView({
             primary={tab === k}
           />
         ))}
-      </Box>
+      </Box>}
       {w.busy || localBusy || w.store.isPending ? (
         <Busy label={t("common.loading")} />
       ) : null}
@@ -104,6 +107,7 @@ export function CommerceView({
               ? tr("error.failed")
               : tr("error." + String(error).replace(/^commerce_/, ""))}
           </Text>
+          <Button label={t("common.retry")} onPress={()=>void w.refresh()}/>
         </Box>
       ) : null}
       {w.pending ? (
@@ -149,7 +153,11 @@ export function CommerceView({
         <Box>
           <Box card>
             <Text heading>{s.published ? tr("published") : tr("draft")}</Text>
-            <Text>{s.url}</Text>
+            <Text heading>{s.config.name}</Text>
+            <Text tone="muted">{tr("catalogue_link")} · {new URL(s.url).host}</Text>
+            {copyLink?<Button label={tr("copy_store_link")} onPress={()=>void task(async()=>{await copyLink(s.url);setLinkCopied(true)})} disabled={localBusy}/>:null}
+            {linkCopied?<Text live>{tr("link_copied")}</Text>:null}
+            {Disclosure?<Disclosure label={tr("link_details")}><Text>{s.url}</Text></Disclosure>:null}
             <Text tone="muted">{tr("draft_help")}</Text>
           </Box>
           <Box card>

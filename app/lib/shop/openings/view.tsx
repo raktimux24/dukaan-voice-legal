@@ -42,15 +42,18 @@ export type OpeningUi = {
     disabled?: boolean;
   }>;
   Busy: ComponentType<{ label: string }>;
+  Tabs?: ComponentType<{items:{key:string;label:string}[];value:string;onChange:(value:string)=>void;disabled?:boolean}>;
   Steps?: ComponentType<{
     labels: string[];
     current: number;
     disabled?: boolean;
     onSelect: (step: number) => void;
   }>;
+  Disclosure?: ComponentType<Children & {label: string}>;
   SavedSetup?: ComponentType<{
     status: string;
     details: string;
+    recordedAt?: string;
     onPress: () => void;
     disabled?: boolean;
   }>;
@@ -77,7 +80,7 @@ export function OpeningView({
   finish,
   importRows,
 }: Props) {
-  const { Box, Text, Button, Input, Check, Busy, Steps, SavedSetup } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Steps, SavedSetup, Disclosure } = ui,
     s = w.session,
     d = w.draft;
   const blocked = w.busy || !!w.pending,
@@ -189,9 +192,8 @@ export function OpeningView({
           <SavedSetup
             key={session.id}
             status={t("opening.state." + session.state)}
-            details={
-              session.updatedAt.slice(0, 10) + " · " + session.id.slice(0, 8)
-            }
+            details={session.updatedAt.slice(0, 10)}
+            recordedAt={session.updatedAt}
             disabled={blocked}
             onPress={() => void w.open(session.id)}
           />
@@ -202,8 +204,6 @@ export function OpeningView({
               t("opening.state." + session.state) +
               " · " +
               session.updatedAt.slice(0, 10) +
-              " · " +
-              session.id.slice(0, 8) +
               " →"
             }
             disabled={blocked}
@@ -252,6 +252,7 @@ export function OpeningView({
               onChange={(unitCost) => update(section, row.id, { unitCost })}
             />
             <Text tone="muted">{t("opening.cost_help")}</Text>
+            <Details label={t("mobile.opening.details")}>
             <Input
               label={t("imports.field.batchNumber")}
               value={row.batchNumber}
@@ -268,6 +269,7 @@ export function OpeningView({
               disabled={blocked || done(row.id)}
               onChange={(expiry) => update(section, row.id, { expiry })}
             />
+            </Details>
           </>
         ) : (
           <>
@@ -377,6 +379,7 @@ export function OpeningView({
       {importButton(section)}
     </Box>
   );
+  const Details = Disclosure ?? (({children}: Children & {label: string}) => <Box>{children}</Box>);
   return (
     <Box>
       {w.view === "hub" ? <Text tone="muted">{t("opening.help")}</Text> : null}
@@ -430,30 +433,13 @@ export function OpeningView({
           {w.view === "hub" ? (
             <>
               {w.metadata.data.sessions.length ? savedSetups : null}
-              <Box card>
-                <Text heading>
-                  {t(onboarding ? "opening.onboarding" : "opening.start")}
-                </Text>
-                <Text tone="muted">{t("opening.cutover_help")}</Text>
-                {btn(
-                  "opening.cutover",
-                  () =>
-                    void w.start(
-                      "cutover",
-                      onboarding ? "onboarding" : "settings",
-                    ),
-                  true,
-                )}
-                <Text tone="muted">{t("opening.current_help")}</Text>
-                {btn(
-                  "opening.current",
-                  () =>
-                    void w.start(
-                      "current",
-                      onboarding ? "onboarding" : "settings",
-                    ),
-                )}
-              </Box>
+              {(w.metadata.data.setup === "complete" ? ["current","cutover"] as const : ["cutover","current"] as const).map((mode,index) => (
+                <Box card key={mode}>
+                  <Text heading>{t(mode === "cutover" ? onboarding ? "opening.onboarding" : "opening.start" : "mobile.audit.balance_review")}</Text>
+                  <Text tone="muted">{t("opening."+mode+"_help")}</Text>
+                  {btn("opening."+mode,() => void w.start(mode,onboarding?"onboarding":"settings"),index===0)}
+                </Box>
+              ))}
               {!w.metadata.data.sessions.length ? savedSetups : null}
               <Box row>
                 {btn("opening.history", () => nav("history"))}
@@ -810,10 +796,9 @@ export function OpeningView({
                     {entry.after}
                     {entry.unit ? " " + unitName(entry.unit) : ""}
                   </Text>
-                  <Text>
-                    {t("opening.as_of")} · {entry.asOf} ·{" "}
-                    {t("opening.recorded")} · {entry.recordedAt.slice(0, 10)}
-                  </Text>
+                  <Text tone="muted">{t("opening.as_of")} · {entry.asOf}</Text>
+                  <Details label={t("mobile.opening.details")}>
+                  <Text tone="muted">{t("opening.recorded")} · {entry.recordedAt.slice(0, 10)}</Text>
                   <Text>
                     {t("opening.source")} · {entry.reference} ·{" "}
                     {entry.id.slice(0, 8)}
@@ -839,6 +824,7 @@ export function OpeningView({
                       {t("opening.cost")} · {entry.unitCost}
                     </Text>
                   ) : null}
+                  </Details>
                   {entry.type === "opening" || entry.type === "correction"
                     ? btn(
                         "opening.correct",

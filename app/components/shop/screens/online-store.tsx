@@ -42,6 +42,7 @@ function Editor() {
         initialProductId={params.get("productId") ?? undefined}
         openSale={(id)=>router.push("/shop/sales/"+id)}
         bill={(id) => router.push("/shop/estimates?id=" + id)}
+        copyLink={async url=>{api.assertSession();await navigator.clipboard.writeText(url);api.assertSession()}}
         openUrl={(url) => {
           window.open(url, "_blank", "noopener,noreferrer");
         }}

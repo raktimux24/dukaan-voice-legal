@@ -71,7 +71,7 @@ export function CashbookView({
   share: (file: NonNullable<CashResult["export"]>) => Promise<void>;
   onNavigate?: () => void;
 }) {
-  const { Box, Text, Button, Input, Check, Busy, Select, Totals } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Select, Totals,Tabs } = ui,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("cashbook." + k, v),
     [tab, setTab] = useState<"cashbook" | "expenses">("cashbook"),
@@ -255,7 +255,7 @@ export function CashbookView({
           )}
         </>
       ) : null}
-      {d?.account !== null && !form ? (
+      {d?.account !== null && !form ? Tabs ? <Tabs items={[{key:"cashbook",label:tr("cashbook")},{key:"expenses",label:tr("expenses")}]} value={tab} disabled={blocked} onChange={value=>{if(value!=="cashbook"&&value!=="expenses")return;setTab(value);onNavigate?.();setForm("");setSelected(null);}}/> : (
         <Box row>
           <Button
             primary={tab === "cashbook"}
@@ -743,7 +743,8 @@ export function CashbookView({
               ) : null}
               <Box card>
                 <Text heading>{tr("noncash")}</Text>
-                {CASH_METHODS.filter((m) => m !== "cash").map((m) => (
+                {!CASH_METHODS.some(m=>m!=="cash"&&(Number(s.methods[m].in)!==0||Number(s.methods[m].out)!==0))?<Text tone="muted">{t("mobile.audit.no_noncash")}</Text>:null}
+                {CASH_METHODS.filter((m) => m !== "cash" && (Number(s.methods[m].in)!==0||Number(s.methods[m].out)!==0)).map((m) => (
                   <Text key={m}>
                     {tr("method." + m) +
                       " · " +
