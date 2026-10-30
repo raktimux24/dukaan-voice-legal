@@ -120,8 +120,8 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
           ) : null}
         </div>
         <div className="kpi">
-          <p className="kpi-label">{t('sales.summary.avg_bill', 'Avg bill')}</p>
-          <p className="kpi-value">{formatINR(summary?.avgBill)}</p>
+          <p className="kpi-label">{t('reports.sales.avg_before_returns', '')}</p>
+          <p className="kpi-value">{formatINR(summary?.avgBill)}</p><p className="shop-hint">{t('reports.sales.average_help','')}</p>
         </div>
         <div className="kpi">
           <p className="kpi-label">{showCost ? t('reports.sales.margin', 'Margin') : t('reports.sales.items_sold', 'Items sold')}</p>
@@ -189,7 +189,7 @@ function SalesView({ report, showCost }: { report: SalesReport; showCost: boolea
         <div className="kpi-grid">
           <div className="kpi"><p className="kpi-label">{t('reports.sales.gross_profit', 'Gross profit')}</p><p className="kpi-value">{formatINR(summary?.grossProfit)}</p></div>
           <div className="kpi"><p className="kpi-label">{uiText("Cost of goods")}</p><p className="kpi-value">{formatINR(summary?.cogs)}</p></div>
-          <div className="kpi"><p className="kpi-label">{t('reports.sales.cash_in_drawer', 'Cash in drawer')}</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p></div>
+          <div className="kpi"><p className="kpi-label">{t('reports.sales.net_cash_flow', '')}</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p><p className="shop-hint">{t('reports.sales.net_cash_flow_help','')}</p><Button href="/shop/cashbook" tone="ghost">{t('cashbook.title','')}</Button></div>
           <div className="kpi"><p className="kpi-label">{t('bill.discount', 'Discounts')}</p><p className="kpi-value">{formatINR(summary?.discounts)}</p></div>
         </div>
       ) : null}

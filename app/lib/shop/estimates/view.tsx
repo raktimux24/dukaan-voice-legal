@@ -101,9 +101,11 @@ export function EstimatesView({
     [review, setReview] = useState(false),
     [replace, setReplace] = useState(false),
     [note, setNote] = useState(""),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [actionError, setActionError] = useState("");
   const blocked = w.busy || !!w.pending || !w.ready,
     expired = p ? estimateExpired(p) : false;
+  useEffect(() => setActionError(""), [p?.id]);
   useEffect(() => {
     if (!p) setMessage("");
     setReview(false);
@@ -121,6 +123,7 @@ export function EstimatesView({
     line = (id: string, v: Partial<EstimateDraft["lines"][number]>) =>
       patch({ lines: d.lines.map((l) => (l.id === id ? { ...l, ...v } : l)) });
   const create = () => {
+    setActionError("");
     setMessage("");
     w.clearError();
     setDraft(emptyEstimate());
@@ -133,6 +136,7 @@ export function EstimatesView({
         create,
         edit: () => {
           if (p?.status === "draft") {
+            setActionError("");
             w.clearError();
             setMessage("");
             setDraft(p.draft);
@@ -143,6 +147,7 @@ export function EstimatesView({
       };
   });
   const run = (a: Parameters<typeof w.run>[0]) => {
+    setActionError("");
     setMessage("");
     return w.run(a).then((r) => {
       if (r) setMessage("estimates.saved");
@@ -195,14 +200,15 @@ export function EstimatesView({
       {w.busy || w.list.isPending || w.options.isPending ? (
         <Busy label={t("common.loading")} />
       ) : null}
-      {w.error || w.list.error || w.options.error
+      {actionError || w.error || w.list.error || w.options.error
         ? (() => {
             const code =
-              w.error ||
+              actionError || w.error ||
               ((w.list.error ?? w.options.error) as any)?.code ||
               "estimates_failed";
             const message = err({ code });
             const retry = () => {
+              setActionError("");
               w.clearError();
               if (!w.ready) w.reloadStorage();
               void w.list.refetch();
@@ -598,8 +604,8 @@ export function EstimatesView({
                           deviceId,
                         });
                       if (r) await prepare(r);
-                    } catch (e) {
-                      setMessage(err(e));
+                    } catch (e: any) {
+                      setActionError(e?.code ?? e?.message ?? "estimates_failed");
                     }
                   })()
                 }
