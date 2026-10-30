@@ -135,7 +135,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
       </div>
       <Notice error={error} />
       <Card className="no-print bill-current-summary"><p className="sale-complete-total num">{formatINR(sale.total)}</p><p className="party-meta">{t('collection.at_checkout','')}{': '}{methods.join(' + ')}</p><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="shop-section-title">{t('collection.current','')}</h2><Pill tone={sale.status==='voided'?'danger':['paid','settled'].includes(saleCollectionStatus(sale))?'ok':'warn'}>{t(saleCollectionLabel(saleCollectionStatus(sale)),'')}</Pill></div>
-        {sale.status!=='voided'&&sale.collection?.remainingCredit!=null?<p className="mt-2">{t('collection.balance_due','',{amount:formatINR(Number(sale.collection.remainingCredit))})}</p>:null}
+        {sale.status!=='voided'&&Number(sale.collection?.remainingCredit)>0?<p className="mt-2">{t('collection.balance_due','',{amount:formatINR(Number(sale.collection?.remainingCredit))})}</p>:null}
         <Button tone="ghost" disabled={saleQuery.isFetching||offline} onClick={()=>void saleQuery.refetch()}>{t('sale_detail.refresh_balance','')}</Button>
       </Card>
       {savedReturn.isError?<Card><p role="alert">{t('counter.recovery_storage_error','')}</p></Card>:null}
