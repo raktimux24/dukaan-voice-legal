@@ -19,3 +19,7 @@ Run the repository release checks (GST, auth/session, reports, retention, transl
 The QA shop had five existing bills before this pass, including the newer ₹66 UPI bill. Do not compare against the previous four-bill baseline or remove concurrent user data. Preview/download/copy and read-only navigation must not create a bill or payment.
 
 Clerk's production-origin restriction blocks authenticated localhost in this environment. Local verification is the compiled/tested source; authenticated visible verification is performed on the published origin. Revert and redeploy the change if a production regression cannot be corrected promptly. No store submission or mobile OTA is part of this web deployment.
+
+## Published verification
+
+PRs 155–157 are merged and production deploy `6ae50d5acde00af93ffabaa9` is ready at commit `0a52a726c863104c3e3b5719918ecd36cdd7ec36`. Live bill, exports, preview/focus return, stock, estimates, catalogue, empty Sales recovery and follow-ups passed within the documented boundaries. See `docs/evidence/web-observation-refinements-20261031/release.json`. The fresh five-bill financial baseline is unchanged.
