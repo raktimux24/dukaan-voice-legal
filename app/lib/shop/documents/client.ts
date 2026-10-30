@@ -45,6 +45,7 @@ export function documentErrorKey(error: unknown) {
       (error as Error)?.message ||
       "",
   ).replace(/^document_/, "");
+  if (code === "unsupported") return "documents.error.update";
   return (
     "documents.error." +
     ([

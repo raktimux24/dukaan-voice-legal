@@ -17,6 +17,8 @@ const storage: OpeningStorage = {
   removeItem: async (key) => window.localStorage.removeItem(key),
 };
 export const openingWebUi: OpeningUi = {
+  Tabs: ({items,value,onChange,disabled}) => <div className="shop-seg retail-section-tabs" role="group">{items.map(item=><button key={item.key} type="button" className={value===item.key?'is-active':undefined} aria-pressed={value===item.key} disabled={disabled} onClick={()=>onChange(item.key)}>{item.label}</button>)}</div>,
+  Disclosure: ({label,children}) => <details className="retail-details"><summary>{label}</summary><div>{children}</div></details>,
   SavedSetup: ({ status, details, onPress, disabled }) => <button type="button" className="opening-saved" onClick={onPress} disabled={disabled}><span><strong>{status}</strong><small>{details}</small></span><span aria-hidden="true">→</span></button>,
   Steps: ({ labels, current, disabled, onSelect }) => <Card className="opening-stack"><h2 className="shop-section-title">{labels[current]}</h2><nav className="opening-steps" aria-label={labels[current]}>{labels.map((label, index) => <button type="button" key={label} aria-label={label} aria-current={index === current ? 'step' : undefined} disabled={disabled || index === 4} onClick={() => onSelect(index)}><span>{index + 1}</span><small>{label}</small></button>)}</nav></Card>,
   Box: ({ children, card, row }) =>

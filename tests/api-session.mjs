@@ -48,5 +48,16 @@ try {
  const register=apiSend('/api/register',token,undefined,0,metadata,()=>{if(!current){const error=new Error('changed');error.code='auth_session_changed';throw error;}});
  while(!finishText)await Promise.resolve();
  current=false;finishText('retained CSV');await assert.rejects(register,changed);assert.deepEqual(metadata,{},'stale report bodies cannot publish receipt metadata');
+ current=true;
+ const readAbort=new AbortController();let observedSignal;
+ globalThis.fetch=(_url,init)=>{observedSignal=init.signal;return new Promise((_resolve,reject)=>init.signal.addEventListener('abort',()=>reject(init.signal.reason),{once:true}))};
+ const reading=apiSend('/api/followups',token,{signal:readAbort.signal});
+ while(!observedSignal)await Promise.resolve();readAbort.abort();await assert.rejects(reading,error=>error.name==='AbortError');
+ assert.equal(observedSignal.aborted,true,'caller read deadline reaches the actual browser transport');
+ let lateToken,lateFetch=0;const expired=new AbortController();
+ globalThis.fetch=async()=>{lateFetch++;return Response.json({})};
+ const tokenWait=apiSend('/api/followups',()=>new Promise(resolve=>{lateToken=resolve}),{signal:expired.signal});
+ expired.abort();lateToken('session-token');await assert.rejects(tokenWait,error=>error.name==='AbortError');
+ assert.equal(lateFetch,0,'a read that timed out waiting for auth cannot start a late request');
  console.log('Web API sessions: stale sends/retries, JSON/CSV and export metadata rejected; current-session refresh passed.');
 }finally{globalThis.fetch=original;}

@@ -20,5 +20,5 @@ export type FollowupAction=
  |{kind:'contacted';note:string};
 export interface FollowupRequest {clientId:string;action:FollowupAction}
 export interface FollowupResult {status:'recorded';preview?:FollowupPreview}
-export const followupErrorKey=(e:unknown)=>{const code=(e as any)?.code??(e as any)?.message??String(e??'');return 'followups.error.'+(/^followups_(invalid|not_allowed|owner|not_found|stale|settled|allocation|unknown|disabled|snoozed|quiet|cooldown|phone|reason|date|conflict|storage|unavailable)$/.test(code)?code.slice(10):'failed')};
+export const followupErrorKey=(e:unknown)=>{if((e as any)?.code==='followups_load_unavailable'||(e as any)?.status===408||(e as any)?.status>=500)return 'followups.error.load_unavailable';const code=(e as any)?.code??(e as any)?.message??String(e??'');return 'followups.error.'+(/^followups_(invalid|not_allowed|owner|not_found|stale|settled|allocation|unknown|disabled|snoozed|quiet|cooldown|phone|reason|date|conflict|storage|unavailable)$/.test(code)?code.slice(10):'failed')};
 export function followupUri(p:FollowupPreview,channel:FollowupChannel){const phone=p.phone.replace(/^\+91/,'');if(!/^[6-9]\d{9}$/.test(phone))throw Error('followups_phone');return channel==='whatsapp'?`whatsapp://send?phone=91${phone}&text=${encodeURIComponent(p.message)}`:`sms:+91${phone}?body=${encodeURIComponent(p.message)}`}

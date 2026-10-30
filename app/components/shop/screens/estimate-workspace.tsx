@@ -47,6 +47,8 @@ function useText() {
       new Intl.NumberFormat(locale, {
         style: "currency",
         currency: "INR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
       }).format(Number(v)),
     date: (v: string) =>
       new Date(v.length === 10 ? v + "T12:00:00+05:30" : v).toLocaleDateString(

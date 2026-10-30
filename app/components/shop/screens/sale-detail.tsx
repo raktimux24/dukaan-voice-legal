@@ -67,7 +67,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
   const pos = settings.data;
   const showCost = !hideCost && sale.showCost !== false && sale.costTotal != null;
   const recorded = params.get('recorded');
-  const methods = [...new Set(sale.payments.map((payment) => t('pos.method.'+payment.method,payment.method)))];
+  const methods = [...new Set(sale.payments.filter(payment=>payment.kind!=='refund').map((payment) => t('pos.method.'+payment.method,payment.method)))];
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['sale', shop.id, saleId] });
@@ -134,16 +134,16 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         />
       </div>
       <Notice error={error} />
-      <Card className="no-print"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="shop-section-title">{t('collection.current','')}</h2><Pill tone={sale.status==='voided'?'danger':['paid','settled'].includes(saleCollectionStatus(sale))?'ok':'warn'}>{t(saleCollectionLabel(saleCollectionStatus(sale)),'')}</Pill></div>
+      <Card className="no-print bill-current-summary"><p className="sale-complete-total num">{formatINR(sale.total)}</p><p className="party-meta">{t('collection.at_checkout','')}{': '}{methods.join(' + ')}</p><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="shop-section-title">{t('collection.current','')}</h2><Pill tone={sale.status==='voided'?'danger':['paid','settled'].includes(saleCollectionStatus(sale))?'ok':'warn'}>{t(saleCollectionLabel(saleCollectionStatus(sale)),'')}</Pill></div>
         {sale.status!=='voided'&&sale.collection?.remainingCredit!=null?<p className="mt-2">{t('collection.balance_due','',{amount:formatINR(Number(sale.collection.remainingCredit))})}</p>:null}
         <Button tone="ghost" disabled={saleQuery.isFetching||offline} onClick={()=>void saleQuery.refetch()}>{t('sale_detail.refresh_balance','')}</Button>
       </Card>
       {savedReturn.isError?<Card><p role="alert">{t('counter.recovery_storage_error','')}</p></Card>:null}
       {savedReturn.data?<Card><p>{t('counter.pending_outcomes','',{n:1})}</p><Button disabled={pending||offline} onClick={()=>{setPending(true);setError(null);void recoverFinancialRequest(api,shop.id,savedReturn.data!).then(refresh).catch(setError).finally(()=>setPending(false))}}>{t('credit.retry','')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{t('counter.recovery','')}</Button></Card>:null}
       {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.bill_source','View source estimate')}</Link>:null}
-      {sale.gstSnapshot||sale.mixedGstSnapshot?<><GstDocuments saleId={sale.id}/>{<GstSaleAdjustments sale={sale}/>}</>:null}
-      <div className="sale-stage">
-        <article ref={receipt} className={(sale.gstSnapshot||sale.mixedGstSnapshot)?"receipt no-print":"receipt"} aria-label={t('counter.bill_number','',{number:sale.saleNumber})}>
+      {sale.gstSnapshot||sale.mixedGstSnapshot?<><details className="retail-details"><summary>{t('web.gst.verified_documents','')}</summary><div><GstDocuments saleId={sale.id}/></div></details>{<GstSaleAdjustments sale={sale}/>}</>:null}
+      <div className={sale.documentPresentation||sale.gstSnapshot||sale.mixedGstSnapshot?"sale-stage has-issued-document":"sale-stage"}>
+        <article ref={receipt} className={sale.documentPresentation||sale.gstSnapshot||sale.mixedGstSnapshot?"receipt legacy-receipt-hidden":"receipt"} aria-label={t('counter.bill_number','',{number:sale.saleNumber})}>
           <header className="receipt-head">
             <p className="receipt-shop">{pos?.shopName || shop.name}</p>
             {pos?.shopAddress ? <p>{pos.shopAddress}</p> : null}
@@ -213,14 +213,14 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         <div className="sale-side no-print">
           <Card className="sale-summary">
             {recorded ? <p className="sale-complete-mark" aria-hidden="true">✓</p> : null}
-            <p className="sale-complete-total">{formatINR(sale.total)}</p>
-            <p className="party-meta">{methods.join(' + ') || sale.paymentStatus}{sale.customer ? ` · ${sale.customer.name}` : ''}</p>
+
             <div className="shop-actions">
               {sale.documentPresentationError?<p role="alert" className="text-danger">{t("documents.error.integrity","")}</p>:sale.documentPresentation?<IssuedDocumentButton issued={sale.documentPresentation}/>:<><Button onClick={() => void share()} disabled={sharing||!!sale.gstSnapshot||!!sale.mixedGstSnapshot}>{sharing ? t('common.loading','') : t('bill.share', 'Share bill')}</Button>
               <p className="text-sm text-muted">{t('counter.legacy_print','')}</p><Button tone="ghost" disabled={printing||!!(sale.gstSnapshot||sale.mixedGstSnapshot)} onClick={()=>{setPrinting(true);setError(null);const check=()=>{api.assertSession();if(!alive.current||!receipt.current)throw Error('counter_print_failed')};void textFontCss(JSON.stringify(sale)).then(fonts=>{check();return printDocument(receipt.current!,'#'+sale.saleNumber,fonts,check)}).catch(()=>setError(new Error(t('counter.print_failed','')))).finally(()=>{if(alive.current)setPrinting(false)})}}>{t('counter.print','')}</Button></>}
               {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>
+          {sale.documentPresentation||sale.gstSnapshot||sale.mixedGstSnapshot?<Card><h2 className="shop-section-title">{t('estimates.mobile.items','')}</h2><div className="shop-list">{sale.items.map(item=><div key={item.id} className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{item.name}</p><p className="shop-list-meta">{formatQty(item.quantity,item.unit)} × {formatINR(item.unitPrice)}{item.returnedQuantity>0?' · '+t('counter.returned_quantity','')+' '+formatQty(item.returnedQuantity,item.unit):''}</p></div><b className="num">{formatINR(item.lineTotal)}</b></div>)}</div></Card>:null}
           {shortfalls.length ? (
             <Card>
               <p className="font-semibold text-warn">{uiText("Sold more than was on hand")}</p>

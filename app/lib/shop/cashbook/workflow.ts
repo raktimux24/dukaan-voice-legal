@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { bindCashbook } from "./client";
 import {
   cashDay,
+  isCashDay,
   type CashAction,
   type CashRequest,
   type CashResult,
@@ -130,6 +131,7 @@ export function useCashbook(
     data,
     day,
     setDay: (d: string) => {
+      if (!isCashDay(d)) return;
       setOffset(0);
       setDay(d);
     },
