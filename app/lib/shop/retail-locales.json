@@ -1700,7 +1700,16 @@
     "modal.shop_settings.delete_shop": "Delete shop",
     "common.cancel": "Cancel",
     "nav.home": "Home",
-    "common.add": "Add"
+    "common.add": "Add",
+    "collection.settled": "Settled",
+    "collection.review": "Check balance",
+    "collection.current": "Current payment status",
+    "collection.balance_due": "Still owed: {{amount}}",
+    "collection.at_checkout": "At checkout",
+    "reports.sales.net_cash_flow": "Net cash from sales & collections",
+    "reports.sales.net_cash_flow_help": "Cash sales and customer collections, less cash refunds, for the selected period and staff filters. Excludes opening cash, expenses and supplier payments. Open Cashbook for the full cash balance.",
+    "reports.sales.avg_before_returns": "Avg bill before returns",
+    "reports.sales.average_help": "Average bill value before returns; excludes GST on tax bills."
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3403,7 +3412,16 @@
     "modal.shop_settings.delete_shop": "दुकान हटाएं",
     "common.cancel": "रद्द करें",
     "nav.home": "होम",
-    "common.add": "जोड़ें"
+    "common.add": "जोड़ें",
+    "collection.settled": "हिसाब पूरा",
+    "collection.review": "बकाया जाँचें",
+    "collection.current": "अभी की भुगतान स्थिति",
+    "collection.balance_due": "अभी बकाया: {{amount}}",
+    "collection.at_checkout": "बिल बनाते समय",
+    "reports.sales.net_cash_flow": "बिक्री व वसूली से शुद्ध नकद",
+    "reports.sales.net_cash_flow_help": "चुनी अवधि और कर्मचारी फ़िल्टर के अनुसार नकद बिक्री और ग्राहक वसूली, नकद रिफंड घटाकर। शुरुआती नकद, खर्च और सप्लायर भुगतान शामिल नहीं हैं। पूरा नकद बैलेंस कैशबुक में देखें।",
+    "reports.sales.avg_before_returns": "रिटर्न से पहले औसत बिल",
+    "reports.sales.average_help": "रिटर्न से पहले औसत बिल मूल्य; टैक्स बिलों में GST शामिल नहीं है।"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5106,7 +5124,16 @@
     "modal.shop_settings.delete_shop": "Shop delete karein",
     "common.cancel": "Radd karein",
     "nav.home": "Home",
-    "common.add": "Add karein"
+    "common.add": "Add karein",
+    "collection.settled": "Hisaab poora",
+    "collection.review": "Balance check karein",
+    "collection.current": "Abhi ka payment status",
+    "collection.balance_due": "Abhi baaki: {{amount}}",
+    "collection.at_checkout": "Checkout ke samay",
+    "reports.sales.net_cash_flow": "Sales aur collections ka net cash",
+    "reports.sales.net_cash_flow_help": "Chuni hui period aur staff filters ke hisaab se cash sales aur customer collections, cash refunds ghatakar. Opening cash, expenses aur supplier payments shaamil nahi hain. Poora cash balance Cashbook mein dekhein.",
+    "reports.sales.avg_before_returns": "Returns se pehle avg bill",
+    "reports.sales.average_help": "Returns se pehle average bill value; tax bills mein GST shaamil nahi hai."
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -6809,7 +6836,16 @@
     "modal.shop_settings.delete_shop": "கடையை நீக்கு",
     "common.cancel": "ரத்து",
     "nav.home": "முகப்பு",
-    "common.add": "சேர்"
+    "common.add": "சேர்",
+    "collection.settled": "கணக்கு முடிந்தது",
+    "collection.review": "நிலுவையைச் சரிபார்க்கவும்",
+    "collection.current": "தற்போதைய கட்டண நிலை",
+    "collection.balance_due": "இன்னும் நிலுவை: {{amount}}",
+    "collection.at_checkout": "பில் உருவாக்கியபோது",
+    "reports.sales.net_cash_flow": "விற்பனை மற்றும் வசூலின் நிகர ரொக்கம்",
+    "reports.sales.net_cash_flow_help": "தேர்ந்தெடுத்த காலம் மற்றும் ஊழியர் வடிகட்டிகளுக்கான ரொக்க விற்பனை மற்றும் வாடிக்கையாளர் வசூலில் ரொக்கத் திருப்பித்தொகை கழிக்கப்பட்டது. தொடக்க ரொக்கம், செலவுகள், சப்ளையர் கொடுப்பனவுகள் சேர்க்கப்படவில்லை. முழு ரொக்க இருப்புக்குப் பணப்புத்தகத்தைத் திறக்கவும்.",
+    "reports.sales.avg_before_returns": "திரும்பப் பெறுவதற்கு முன் சராசரி பில்",
+    "reports.sales.average_help": "திரும்பப் பெறுவதற்கு முன் சராசரி பில் மதிப்பு; வரி பில்களில் GST சேர்க்கப்படவில்லை."
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -8512,7 +8548,16 @@
     "modal.shop_settings.delete_shop": "దుకాణాన్ని తొలగించండి",
     "common.cancel": "రద్దు",
     "nav.home": "హోమ్",
-    "common.add": "జోడించు"
+    "common.add": "జోడించు",
+    "collection.settled": "లెక్క తేలింది",
+    "collection.review": "బకాయి తనిఖీ చేయండి",
+    "collection.current": "ప్రస్తుత చెల్లింపు స్థితి",
+    "collection.balance_due": "ఇంకా బకాయి: {{amount}}",
+    "collection.at_checkout": "బిల్లు చేసినప్పుడు",
+    "reports.sales.net_cash_flow": "అమ్మకాలు, వసూళ్ల నికర నగదు",
+    "reports.sales.net_cash_flow_help": "ఎంచుకున్న కాలం, సిబ్బంది ఫిల్టర్లకు నగదు అమ్మకాలు, కస్టమర్ వసూళ్ల నుంచి నగదు రిఫండ్‌లు తీసివేసిన మొత్తం. ప్రారంభ నగదు, ఖర్చులు, సరఫరాదారు చెల్లింపులు ఇందులో లేవు. పూర్తి నగదు నిల్వ కోసం నగదు పుస్తకం తెరవండి.",
+    "reports.sales.avg_before_returns": "రిటర్న్‌లకు ముందు సగటు బిల్లు",
+    "reports.sales.average_help": "రిటర్న్‌లకు ముందు సగటు బిల్లు విలువ; పన్ను బిల్లుల్లో GST మినహాయించబడింది."
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -10215,7 +10260,16 @@
     "modal.shop_settings.delete_shop": "দোকান মুছুন",
     "common.cancel": "বাতিল",
     "nav.home": "হোম",
-    "common.add": "যোগ করুন"
+    "common.add": "যোগ করুন",
+    "collection.settled": "হিসাব মিটেছে",
+    "collection.review": "বকেয়া যাচাই করুন",
+    "collection.current": "বর্তমান পেমেন্টের অবস্থা",
+    "collection.balance_due": "এখনও বকেয়া: {{amount}}",
+    "collection.at_checkout": "বিল করার সময়",
+    "reports.sales.net_cash_flow": "বিক্রি ও আদায়ের নিট নগদ",
+    "reports.sales.net_cash_flow_help": "নির্বাচিত সময় ও কর্মী ফিল্টার অনুযায়ী নগদ বিক্রি এবং গ্রাহকের আদায় থেকে নগদ ফেরত বাদ দিয়ে। শুরুর নগদ, খরচ ও সরবরাহকারীকে দেওয়া টাকা অন্তর্ভুক্ত নয়। সম্পূর্ণ নগদ ব্যালেন্স ক্যাশবুকে দেখুন।",
+    "reports.sales.avg_before_returns": "রিটার্নের আগে গড় বিল",
+    "reports.sales.average_help": "রিটার্নের আগে গড় বিলের মূল্য; করের বিলে GST বাদ দেওয়া হয়েছে।"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -11918,7 +11972,16 @@
     "modal.shop_settings.delete_shop": "दुकान हटवा",
     "common.cancel": "रद्द करा",
     "nav.home": "होम",
-    "common.add": "जोडा"
+    "common.add": "जोडा",
+    "collection.settled": "हिशेब पूर्ण",
+    "collection.review": "बाकी तपासा",
+    "collection.current": "सध्याची देयक स्थिती",
+    "collection.balance_due": "अजून बाकी: {{amount}}",
+    "collection.at_checkout": "बिल करताना",
+    "reports.sales.net_cash_flow": "विक्री व वसुलीतील निव्वळ रोख",
+    "reports.sales.net_cash_flow_help": "निवडलेला कालावधी व कर्मचारी फिल्टरनुसार रोख विक्री आणि ग्राहक वसुलीतून रोख परतावा वजा केलेला आहे. सुरुवातीची रोख, खर्च व पुरवठादार देयके यात नाहीत. पूर्ण रोख शिल्लक रोखवहीत पहा.",
+    "reports.sales.avg_before_returns": "परताव्यापूर्वी सरासरी बिल",
+    "reports.sales.average_help": "परताव्यापूर्वीचे सरासरी बिल मूल्य; कर बिलांमधील GST वगळलेला आहे."
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -13621,7 +13684,16 @@
     "modal.shop_settings.delete_shop": "ಅಂಗಡಿ ಅಳಿಸಿ",
     "common.cancel": "ರದ್ದುಮಾಡಿ",
     "nav.home": "ಮುಖಪುಟ",
-    "common.add": "ಸೇರಿಸಿ"
+    "common.add": "ಸೇರಿಸಿ",
+    "collection.settled": "ಲೆಕ್ಕ ಚುಕ್ತಾ",
+    "collection.review": "ಬಾಕಿ ಪರಿಶೀಲಿಸಿ",
+    "collection.current": "ಪ್ರಸ್ತುತ ಪಾವತಿ ಸ್ಥಿತಿ",
+    "collection.balance_due": "ಇನ್ನೂ ಬಾಕಿ: {{amount}}",
+    "collection.at_checkout": "ಬಿಲ್ ಮಾಡಿದಾಗ",
+    "reports.sales.net_cash_flow": "ಮಾರಾಟ ಮತ್ತು ವಸೂಲಿಯ ನಿವ್ವಳ ನಗದು",
+    "reports.sales.net_cash_flow_help": "ಆಯ್ದ ಅವಧಿ ಮತ್ತು ಸಿಬ್ಬಂದಿ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ನಗದು ಮಾರಾಟ ಮತ್ತು ಗ್ರಾಹಕರ ವಸೂಲಿಯಿಂದ ನಗದು ಮರುಪಾವತಿ ಕಳೆದ ಮೊತ್ತ. ಆರಂಭಿಕ ನಗದು, ವೆಚ್ಚಗಳು ಮತ್ತು ಪೂರೈಕೆದಾರರ ಪಾವತಿಗಳು ಸೇರಿಲ್ಲ. ಪೂರ್ಣ ನಗದು ಬಾಕಿಗಾಗಿ ನಗದು ಪುಸ್ತಕ ತೆರೆಯಿರಿ.",
+    "reports.sales.avg_before_returns": "ಹಿಂತಿರುಗಿಸುವ ಮೊದಲು ಸರಾಸರಿ ಬಿಲ್",
+    "reports.sales.average_help": "ಹಿಂತಿರುಗಿಸುವ ಮೊದಲು ಸರಾಸರಿ ಬಿಲ್ ಮೌಲ್ಯ; ತೆರಿಗೆ ಬಿಲ್‌ಗಳಲ್ಲಿ GST ಹೊರತುಪಡಿಸಲಾಗಿದೆ."
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -15324,7 +15396,16 @@
     "modal.shop_settings.delete_shop": "દુકાન કાઢી નાખો",
     "common.cancel": "રદ કરો",
     "nav.home": "હોમ",
-    "common.add": "ઉમેરો"
+    "common.add": "ઉમેરો",
+    "collection.settled": "હિસાબ પૂર્ણ",
+    "collection.review": "બાકી તપાસો",
+    "collection.current": "હાલની ચુકવણી સ્થિતિ",
+    "collection.balance_due": "હજુ બાકી: {{amount}}",
+    "collection.at_checkout": "બિલ બનાવતી વખતે",
+    "reports.sales.net_cash_flow": "વેચાણ અને વસૂલાતની ચોખ્ખી રોકડ",
+    "reports.sales.net_cash_flow_help": "પસંદ કરેલા સમયગાળા અને કર્મચારી ફિલ્ટર મુજબ રોકડ વેચાણ અને ગ્રાહક વસૂલાતમાંથી રોકડ રિફંડ બાદ કરેલ છે. શરૂઆતની રોકડ, ખર્ચ અને સપ્લાયર ચુકવણી સામેલ નથી. સંપૂર્ણ રોકડ બેલેન્સ માટે રોકડવહી ખોલો.",
+    "reports.sales.avg_before_returns": "રિટર્ન પહેલાં સરેરાશ બિલ",
+    "reports.sales.average_help": "રિટર્ન પહેલાં સરેરાશ બિલ મૂલ્ય; ટેક્સ બિલોમાં GST સામેલ નથી."
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -17027,6 +17108,15 @@
     "modal.shop_settings.delete_shop": "കട ഇല്ലാതാക്കുക",
     "common.cancel": "റദ്ദാക്കുക",
     "nav.home": "ഹോം",
-    "common.add": "ചേർക്കുക"
+    "common.add": "ചേർക്കുക",
+    "collection.settled": "കണക്ക് തീർത്തു",
+    "collection.review": "ബാക്കി പരിശോധിക്കുക",
+    "collection.current": "നിലവിലെ പേയ്‌മെന്റ് നില",
+    "collection.balance_due": "ഇനിയും ബാക്കി: {{amount}}",
+    "collection.at_checkout": "ബിൽ തയ്യാറാക്കിയപ്പോൾ",
+    "reports.sales.net_cash_flow": "വിൽപ്പനയും പിരിവും വഴിയുള്ള അറ്റ പണം",
+    "reports.sales.net_cash_flow_help": "തിരഞ്ഞെടുത്ത കാലയളവിനും ജീവനക്കാരുടെ ഫിൽട്ടറുകൾക്കും അനുസരിച്ചുള്ള പണ വിൽപ്പനയും ഉപഭോക്തൃ പിരിവും, പണ റീഫണ്ടുകൾ കുറച്ച്. ആരംഭ പണം, ചെലവുകൾ, വിതരണക്കാരുടെ പേയ്‌മെന്റുകൾ എന്നിവ ഉൾപ്പെടുന്നില്ല. മുഴുവൻ പണ ബാലൻസിന് ക്യാഷ്ബുക്ക് തുറക്കുക.",
+    "reports.sales.avg_before_returns": "റിട്ടേണുകൾക്ക് മുമ്പുള്ള ശരാശരി ബിൽ",
+    "reports.sales.average_help": "റിട്ടേണുകൾക്ക് മുമ്പുള്ള ശരാശരി ബിൽ മൂല്യം; നികുതി ബില്ലുകളിൽ GST ഒഴിവാക്കിയിരിക്കുന്നു."
   }
 }

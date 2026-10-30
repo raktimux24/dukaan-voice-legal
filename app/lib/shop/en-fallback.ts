@@ -4,6 +4,15 @@
  * The full server-fetched catalog merges over this on load; keep in sync with server/src/scripts/translations-source.ts.
  */
 export const EN_FALLBACK: Record<string, string> = {
+  "collection.settled": "Settled",
+  "collection.review": "Check balance",
+  "collection.current": "Current payment status",
+  "collection.balance_due": "Still owed: {{amount}}",
+  "collection.at_checkout": "At checkout",
+  "reports.sales.net_cash_flow": "Net cash from sales & collections",
+  "reports.sales.net_cash_flow_help": "Cash sales and customer collections, less cash refunds, for the selected period and staff filters. Excludes opening cash, expenses and supplier payments. Open Cashbook for the full cash balance.",
+  "reports.sales.avg_before_returns": "Avg bill before returns",
+
   "gst.error.turnover_sequence_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
   "gst.error.period_sequence_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",
   "gst.error.period_sources_changed_conflict": "Another review changed these records. Refresh and review the latest details before saving again. Your rejected request is kept for reference.",

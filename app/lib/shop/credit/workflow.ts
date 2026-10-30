@@ -54,7 +54,7 @@ export function useCredit(
   }, [key, epoch]);
   const refresh = () =>
     Promise.all(
-      ["customerCredit", "customers", "customer", "auditLog", "followup", "followups"].map((k) =>
+      ["customerCredit", "customers", "customer", "auditLog", "followup", "followups", "sales", "sale", "saleReturnCapacity", "salesSummary"].map((k) =>
         qc.invalidateQueries({ queryKey: [k] }),
       ),
     );

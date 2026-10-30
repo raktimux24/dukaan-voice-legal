@@ -192,6 +192,7 @@ export type Sale = {
   showCost?: boolean;
   paidTotal: number;
   creditTotal: number;
+  collection?: import("./sale-collection").SaleCollection | null;
   paymentStatus: 'paid' | 'partial' | 'credit';
   inputMethod: string;
   note: string | null;
@@ -220,6 +221,7 @@ export type SaleListRow = {
   total: number;
   paidTotal: number;
   creditTotal: number;
+  collection?: import("./sale-collection").SaleCollection | null;
   paymentStatus: string;
   soldAt: string;
   soldBy: string;

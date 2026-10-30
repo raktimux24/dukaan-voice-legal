@@ -1,4 +1,5 @@
 'use client';
+import {saleCollectionStatus,saleCollectionLabel} from '../../../lib/shop/sale-collection';
 import Link from 'next/link';
 import {printDocument} from '../../../lib/shop/gst-print';
 import {textFontCss} from '../../../lib/shop/documents/fonts';
@@ -21,7 +22,7 @@ import { shareBill, type ShareBillInput } from '../../../lib/shop/share-bill';
 import {recoverFinancialRequest} from '../../../lib/shop/gst-recovery';
 import { financialScope, assertScope,retainedRequests } from '../../../lib/shop/gst-storage';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass, isDenied } from '../ui';
+import { Button, Card, Field, NoAccess, Notice, PageHeader, Pill, Spinner, inputClass, isDenied } from '../ui';
 
 const METHOD: Record<string, string> = { cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Udhaar' };
 
@@ -133,6 +134,10 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         />
       </div>
       <Notice error={error} />
+      <Card className="no-print"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="shop-section-title">{t('collection.current','')}</h2><Pill tone={sale.status==='voided'?'danger':['paid','settled'].includes(saleCollectionStatus(sale))?'ok':'warn'}>{t(saleCollectionLabel(saleCollectionStatus(sale)),'')}</Pill></div>
+        {sale.status!=='voided'&&sale.collection?.remainingCredit!=null?<p className="mt-2">{t('collection.balance_due','',{amount:formatINR(Number(sale.collection.remainingCredit))})}</p>:null}
+        <Button tone="ghost" disabled={saleQuery.isFetching||offline} onClick={()=>void saleQuery.refetch()}>{t('sale_detail.refresh_balance','')}</Button>
+      </Card>
       {savedReturn.isError?<Card><p role="alert">{t('counter.recovery_storage_error','')}</p></Card>:null}
       {savedReturn.data?<Card><p>{t('counter.pending_outcomes','',{n:1})}</p><Button disabled={pending||offline} onClick={()=>{setPending(true);setError(null);void recoverFinancialRequest(api,shop.id,savedReturn.data!).then(refresh).catch(setError).finally(()=>setPending(false))}}>{t('credit.retry','')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{t('counter.recovery','')}</Button></Card>:null}
       {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.bill_source','View source estimate')}</Link>:null}
@@ -151,7 +156,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             <span>{formatWhen(sale.soldAt)}</span>
           </div>
           <p className={sale.status === 'voided' ? 'receipt-status is-voided' : 'receipt-status'}>
-            {sale.status === 'voided'?t('sales.status_filter.voided',''):sale.paymentStatus==='credit'?t('counter.unpaid',''):sale.paymentStatus==='partial'?t('counter.part_paid',''):t('bill.paid','')}
+            {t('collection.at_checkout','')}{': '}{sale.status === 'voided'?t('sales.status_filter.voided',''):sale.paymentStatus==='credit'?t('counter.unpaid',''):sale.paymentStatus==='partial'?t('counter.part_paid',''):t('bill.paid','')}
           </p>
           {sale.customer ? <p className="receipt-customer">{sale.customer.name}{sale.customer.phone ? ` · ${sale.customer.phone}` : ''}</p> : null}
           <div className="receipt-rule" />
