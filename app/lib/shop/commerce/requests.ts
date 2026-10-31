@@ -5,7 +5,7 @@ import type { CommerceRequest, CommerceResult } from "./contract";
 export function rejectedSetup(request: CommerceRequest, code: unknown) {
   return ["configure", "listing", "publish"].includes(request.action.kind) &&
     ["commerce_invalid", "commerce_phone", "commerce_not_allowed", "commerce_not_found",
-     "commerce_setup", "commerce_review", "commerce_stale", "commerce_product"].includes(String(code));
+     "commerce_setup", "commerce_fulfilment", "commerce_payment", "commerce_upi", "commerce_delivery_tax", "commerce_listings", "commerce_review", "commerce_stale", "commerce_product"].includes(String(code));
 }
 export async function sendCommerceRequest({storage, key, request, send, pending}: {
   storage: {getItem(k:string):Promise<string|null>;setItem(k:string,v:string):Promise<void>;removeItem(k:string):Promise<void>};
