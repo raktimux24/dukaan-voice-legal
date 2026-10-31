@@ -1802,7 +1802,8 @@
     "commerce.publish_checklist": "Before you publish",
     "commerce.unsaved_setup": "Save your changes first. The preview and checklist use saved details.",
     "commerce.preview_next": "Preview the saved details, then confirm your review to publish.",
-    "commerce.choose_products": "Choose products to list"
+    "commerce.choose_products": "Choose products to list",
+    "brand.launch_tagline": "Bol ke bill"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3607,7 +3608,8 @@
     "commerce.publish_checklist": "प्रकाशित करने से पहले",
     "commerce.unsaved_setup": "पहले बदलाव सेव करें। प्रीव्यू और जाँच सूची सेव की गई जानकारी दिखाते हैं।",
     "commerce.preview_next": "सेव की गई जानकारी का प्रीव्यू देखें, फिर प्रकाशित करने के लिए जाँच की पुष्टि करें।",
-    "commerce.choose_products": "ऑनलाइन दिखाने के लिए प्रोडक्ट चुनें"
+    "commerce.choose_products": "ऑनलाइन दिखाने के लिए प्रोडक्ट चुनें",
+    "brand.launch_tagline": "बोल के बिल"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5412,7 +5414,8 @@
     "commerce.publish_checklist": "Publish karne se pehle",
     "commerce.unsaved_setup": "Pehle changes save karein. Preview aur checklist saved details dikhate hain.",
     "commerce.preview_next": "Saved details ka preview dekhein, phir review confirm karke publish karein.",
-    "commerce.choose_products": "Online dikhane ke liye products chunein"
+    "commerce.choose_products": "Online dikhane ke liye products chunein",
+    "brand.launch_tagline": "Bol ke bill"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -7217,7 +7220,8 @@
     "commerce.publish_checklist": "வெளியிடும் முன்",
     "commerce.unsaved_setup": "முதலில் மாற்றங்களைச் சேமிக்கவும். முன்னோட்டமும் பட்டியலும் சேமித்த விவரங்களைக் காட்டும்.",
     "commerce.preview_next": "சேமித்த விவரங்களை முன்னோட்டத்தில் பார்த்து, சரிபார்த்ததை உறுதிசெய்து வெளியிடவும்.",
-    "commerce.choose_products": "பட்டியலிட வேண்டிய பொருட்களைத் தேர்ந்தெடுக்கவும்"
+    "commerce.choose_products": "பட்டியலிட வேண்டிய பொருட்களைத் தேர்ந்தெடுக்கவும்",
+    "brand.launch_tagline": "பேசி பில் போடுங்கள்"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -9022,7 +9026,8 @@
     "commerce.publish_checklist": "ప్రచురించే ముందు",
     "commerce.unsaved_setup": "ముందుగా మార్పులు సేవ్ చేయండి. ప్రివ్యూ, తనిఖీ జాబితా సేవ్ చేసిన వివరాలనే చూపుతాయి.",
     "commerce.preview_next": "సేవ్ చేసిన వివరాల ప్రివ్యూ చూసి, సమీక్షను నిర్ధారించి ప్రచురించండి.",
-    "commerce.choose_products": "జాబితాలో చేర్చే ఉత్పత్తులను ఎంచుకోండి"
+    "commerce.choose_products": "జాబితాలో చేర్చే ఉత్పత్తులను ఎంచుకోండి",
+    "brand.launch_tagline": "మాట్లాడి బిల్లు చేయండి"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -10827,7 +10832,8 @@
     "commerce.publish_checklist": "প্রকাশের আগে",
     "commerce.unsaved_setup": "আগে পরিবর্তন সেভ করুন। প্রিভিউ ও যাচাই তালিকা সেভ করা তথ্য দেখায়।",
     "commerce.preview_next": "সেভ করা তথ্যের প্রিভিউ দেখে যাচাই নিশ্চিত করে প্রকাশ করুন।",
-    "commerce.choose_products": "অনলাইনে দেখানোর পণ্য বাছুন"
+    "commerce.choose_products": "অনলাইনে দেখানোর পণ্য বাছুন",
+    "brand.launch_tagline": "বলে বিল করুন"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -12632,7 +12638,8 @@
     "commerce.publish_checklist": "प्रकाशित करण्यापूर्वी",
     "commerce.unsaved_setup": "आधी बदल जतन करा. पूर्वावलोकन आणि तपासणी यादी जतन केलेली माहिती दाखवतात.",
     "commerce.preview_next": "जतन केलेल्या माहितीचे पूर्वावलोकन पाहा, नंतर तपासणीची पुष्टी करून प्रकाशित करा.",
-    "commerce.choose_products": "ऑनलाइन दाखवण्यासाठी उत्पादने निवडा"
+    "commerce.choose_products": "ऑनलाइन दाखवण्यासाठी उत्पादने निवडा",
+    "brand.launch_tagline": "बोलून बिल करा"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -14437,7 +14444,8 @@
     "commerce.publish_checklist": "ಪ್ರಕಟಿಸುವ ಮೊದಲು",
     "commerce.unsaved_setup": "ಮೊದಲು ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ. ಮುನ್ನೋಟ ಮತ್ತು ಪರಿಶೀಲನಾ ಪಟ್ಟಿ ಉಳಿಸಿದ ವಿವರಗಳನ್ನು ತೋರಿಸುತ್ತವೆ.",
     "commerce.preview_next": "ಉಳಿಸಿದ ವಿವರಗಳ ಮುನ್ನೋಟ ನೋಡಿ, ನಂತರ ಪರಿಶೀಲನೆಯನ್ನು ದೃಢಪಡಿಸಿ ಪ್ರಕಟಿಸಿ.",
-    "commerce.choose_products": "ಪಟ್ಟಿಗೆ ಸೇರಿಸಬೇಕಾದ ಉತ್ಪನ್ನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ"
+    "commerce.choose_products": "ಪಟ್ಟಿಗೆ ಸೇರಿಸಬೇಕಾದ ಉತ್ಪನ್ನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "brand.launch_tagline": "ಮಾತನಾಡಿ ಬಿಲ್ ಮಾಡಿ"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -16242,7 +16250,8 @@
     "commerce.publish_checklist": "પ્રકાશિત કરતાં પહેલાં",
     "commerce.unsaved_setup": "પહેલાં ફેરફારો સાચવો. પૂર્વાવલોકન અને ચકાસણી યાદી સાચવેલી વિગતો બતાવે છે.",
     "commerce.preview_next": "સાચવેલી વિગતોનું પૂર્વાવલોકન જુઓ, પછી સમીક્ષાની પુષ્ટિ કરીને પ્રકાશિત કરો.",
-    "commerce.choose_products": "ઑનલાઇન બતાવવા ઉત્પાદનો પસંદ કરો"
+    "commerce.choose_products": "ઑનલાઇન બતાવવા ઉત્પાદનો પસંદ કરો",
+    "brand.launch_tagline": "બોલીને બિલ બનાવો"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -18047,6 +18056,7 @@
     "commerce.publish_checklist": "പ്രസിദ്ധീകരിക്കുന്നതിന് മുമ്പ്",
     "commerce.unsaved_setup": "ആദ്യം മാറ്റങ്ങൾ സംരക്ഷിക്കുക. പ്രിവ്യൂവും പരിശോധനാ പട്ടികയും സംരക്ഷിച്ച വിവരങ്ങളാണ് കാണിക്കുന്നത്.",
     "commerce.preview_next": "സംരക്ഷിച്ച വിവരങ്ങളുടെ പ്രിവ്യൂ കണ്ട് പരിശോധന സ്ഥിരീകരിച്ച് പ്രസിദ്ധീകരിക്കുക.",
-    "commerce.choose_products": "പട്ടികയിൽ ചേർക്കേണ്ട ഉൽപ്പന്നങ്ങൾ തിരഞ്ഞെടുക്കുക"
+    "commerce.choose_products": "പട്ടികയിൽ ചേർക്കേണ്ട ഉൽപ്പന്നങ്ങൾ തിരഞ്ഞെടുക്കുക",
+    "brand.launch_tagline": "പറഞ്ഞ് ബിൽ തയ്യാറാക്കൂ"
   }
 }
