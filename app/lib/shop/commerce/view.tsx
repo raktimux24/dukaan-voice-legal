@@ -40,16 +40,18 @@ export function CommerceView({
     [listing, setListing] = useState<OnlineListing | null>(null),
     [reviewed, setReviewed] = useState(false),
     [preview, setPreview] = useState(false),
+    [dirty, setDirty] = useState(false),
+    [notice, setNotice] = useState(""),
     [reason, setReason] = useState(""),
     [localBusy, setLocalBusy] = useState(false),[linkCopied,setLinkCopied]=useState(false);
   useEffect(() => {
     if (s) {
-      setConfig(s.config);
+      if (!dirty) setConfig(s.config);
       setLinkCopied(false);
       setReviewed(false);
       setPreview(false);
     }
-  }, [s?.id,s?.version]);
+  }, [s?.id,s?.version,dirty]);
   useEffect(() => {
     setReason("");
   }, [p?.id, p?.version]);
@@ -62,6 +64,10 @@ export function CommerceView({
       else if (w.search !== initialProductId) w.setSearch(initialProductId);
     }
   }, [initialProductId, w.store.data]);
+  const editConfig = (value: StoreConfig) => {
+    setConfig(value); setDirty(true); setNotice(""); setReviewed(false); setPreview(false); w.setError("");
+  };
+  const phoneInvalid = !!config?.phone && !/^\+?[0-9 ()-]{10,24}$/.test(config.phone.trim());
   const blocked = w.busy || localBusy || !w.ready || !!w.pending,
     task = async (fn: () => Promise<void>) => {
       setLocalBusy(true);
@@ -107,10 +113,11 @@ export function CommerceView({
               ? tr("error.failed")
               : tr("error." + String(error).replace(/^commerce_/, ""))}
           </Text>
-          <Button label={t("common.retry")} onPress={()=>void w.refresh()}/>
+          {!w.pending ? <Button label={t("common.retry")} onPress={()=>{w.setError("");void w.refresh()}}/> : null}
         </Box>
       ) : null}
-      {w.pending ? (
+      {notice ? <Text live>{tr(notice)}</Text> : null}
+      {w.pending && !w.busy ? (
         <Box card>
           <Text live>{tr("pending")}</Text>
           <Button
@@ -169,7 +176,7 @@ export function CommerceView({
                   value={config[k]}
                   disabled={!owner || blocked}
                   multiline={["address", "hours", "policy"].includes(k)}
-                  onChange={(v) => setConfig({ ...config, [k]: v })}
+                  onChange={(v) => editConfig({ ...config, [k]: v })}
                 />
               ),
             )}
@@ -179,31 +186,37 @@ export function CommerceView({
                 label={tr("config_" + k)}
                 value={config[k]}
                 disabled={!owner || blocked}
-                onChange={(v) => setConfig({ ...config, [k]: v })}
+                onChange={(v) => editConfig({ ...config, [k]: v })}
               />
             ))}
+            {phoneInvalid ? <Text tone="danger" live>{tr("error.phone")}</Text> : null}
             <Text tone="muted">{tr("payment_help")}</Text>
             <Text tone="muted">{tr("delivery_help")}</Text>
             {owner ? (
               <Button
                 primary
                 label={tr("save_setup")}
-                disabled={blocked}
-                onPress={() =>
-                  void w.run({ kind: "configure", version: s.version, config })
-                }
+                disabled={blocked || phoneInvalid}
+                onPress={() => {
+                  void w.run({ kind: "configure", version: s.version, config }).then(result=>{
+                    if (result?.store) {setConfig(result.store.config);setDirty(false);setNotice("setup_saved");}
+                  });
+                }}
               />
             ) : null}
           </Box>
+          <Text heading>{tr("publish_checklist")}</Text>
+          {dirty ? <Text live>{tr("unsaved_setup")}</Text> : null}
           {s.issues.map((k) => (
             <Text key={k} tone="danger">
               {tr("issue_" + k)}
             </Text>
           ))}
+          {s.issues.includes("listings") ? <Button label={tr("choose_products")} disabled={blocked} onPress={()=>setTab("products")}/> : null}
           <Button
             label={tr("preview")}
             onPress={() => setPreview((v) => !v)}
-            disabled={blocked}
+            disabled={blocked || dirty}
           />
           {preview ? (
             <Box card>
@@ -234,13 +247,14 @@ export function CommerceView({
               <Check
                 label={tr("publish_review")}
                 value={reviewed}
-                disabled={blocked || !preview}
+                disabled={blocked || dirty || !preview}
                 onChange={setReviewed}
               />
+              {!s.published && !dirty && s.ready && !preview ? <Text tone="muted">{tr("preview_next")}</Text> : null}
               <Button
                 primary
                 label={s.published ? tr("unpublish") : tr("publish")}
-                disabled={blocked || (!s.published && (!s.ready || !reviewed))}
+                disabled={blocked || (!s.published && (dirty || !s.ready || !reviewed))}
                 onPress={() =>
                   void w.run({
                     kind: "publish",

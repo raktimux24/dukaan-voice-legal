@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { bindCommerce } from "./client";
 import type { CommerceAction, CommerceRequest, OnlineOrder } from "./contract";
+import { sendCommerceRequest } from "./requests";
 type Storage = {
   getItem: (k: string) => Promise<string | null>;
   setItem: (k: string, v: string) => Promise<void>;
@@ -90,20 +91,20 @@ export function useCommerce(
     try {
       const r = pending ?? { clientId: uuid(), action: action! };
       if (!r.action) throw Error("commerce_invalid");
-      const raw = JSON.stringify(r);
-      await storage.setItem(key, raw);
-      if ((await storage.getItem(key)) !== raw) throw Error("commerce_storage");
+      const result = await sendCommerceRequest({
+        storage, key, request: r,
+        send: request => api.action(shop, request),
+        pending: request => { if (active.current) setPending(request); },
+      });
       if (!active.current) return;
-      setPending(r);
-      const result = await api.action(shop, r);
-      if (!active.current) return;
-      await storage.removeItem(key);
-      setPending(null);
       if (result.order) setOrder(result.order);
       await refresh();
       return result;
     } catch (e: any) {
-      if (active.current) setError(e.code ?? e.message ?? "commerce_failed");
+      if (active.current) {
+        setError(e.code ?? e.message ?? "commerce_failed");
+        if (e.code === "commerce_stale") await refresh();
+      }
     } finally {
       mutex.current = false;
       if (active.current) setBusy(false);
