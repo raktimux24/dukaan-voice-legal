@@ -41,6 +41,13 @@ export type OpeningUi = {
     onChange: (value: boolean) => void;
     disabled?: boolean;
   }>;
+  Select?: ComponentType<{
+    label: string;
+    value: string;
+    options: { value: string; label: string }[];
+    onChange: (value: string) => void;
+    disabled?: boolean;
+  }>;
   Busy: ComponentType<{ label: string }>;
   Tabs?: ComponentType<{items:{key:string;label:string}[];value:string;onChange:(value:string)=>void;disabled?:boolean}>;
   Steps?: ComponentType<{

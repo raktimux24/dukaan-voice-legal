@@ -28,6 +28,8 @@ export function PurchaseOrdersView({
   initialBuyListId,
   initialSupplierId,
   openForm = true,
+  onCreate,
+  onShowList,
 }: {
   w: ReturnType<typeof usePurchaseOrders>;
   ui: OpeningUi;
@@ -40,8 +42,10 @@ export function PurchaseOrdersView({
   initialBuyListId?: string;
   initialSupplierId?: string;
   openForm?: boolean;
+  onCreate?: () => void;
+  onShowList?: () => void;
 }) {
-  const { Box, Text, Button, Input, Check, Busy } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Select } = ui,
     p = w.order,
     options = w.options.data;
   const [editing, setEditing] = useState(openForm || !!initialSupplierId),
@@ -170,15 +174,33 @@ export function PurchaseOrdersView({
       ) : null}
       {editing ? (
         <>
-          <Button label={t("po.all_orders")} onPress={() => setEditing(false)} disabled={blocked} />
           <Text heading>{t(p ? "po.edit" : "po.new")}</Text>
-          <Input
-            label={t("po.search")}
-            value={w.search}
-            onChange={w.setSearch}
-            disabled={blocked}
-          />
           <Text heading>{t("po.supplier")}</Text>
+          {Select ? (
+            <Select
+              label={t("po.choose_supplier")}
+              value={d.supplierId}
+              disabled={blocked || !options}
+              onChange={(supplierId) => patch({ supplierId })}
+              options={[
+                { value: "", label: t("po.choose_supplier") },
+                ...(options?.suppliers ?? []).map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+          ) : (
+            options?.suppliers.map((s) => (
+              <Check
+                key={s.id}
+                label={s.name}
+                value={d.supplierId === s.id}
+                onChange={() => patch({ supplierId: s.id })}
+                disabled={blocked}
+              />
+            ))
+          )}
+          {options && options.suppliers.length === 0 ? (
+            <Text tone="muted">{t("po.no_suppliers")}</Text>
+          ) : null}
           {d.supplierId ? (
             <Text tone="accent">
               {t("po.supplier_selected", {
@@ -189,15 +211,12 @@ export function PurchaseOrdersView({
               })}
             </Text>
           ) : null}
-          {options?.suppliers.slice(0, 8).map((s) => (
-            <Check
-              key={s.id}
-              label={s.name}
-              value={d.supplierId === s.id}
-              onChange={() => patch({ supplierId: s.id })}
-              disabled={blocked}
-            />
-          ))}
+          <Input
+            label={t("po.search")}
+            value={w.search}
+            onChange={w.setSearch}
+            disabled={blocked}
+          />
           <Button
             label={t("po.manage_suppliers")}
             onPress={newSupplier}
@@ -325,13 +344,19 @@ export function PurchaseOrdersView({
                     : { kind: "create", draft: d },
                 )
                 .then((ok) => {
-                  if (ok) setEditing(false);
+                  if (ok) {
+                    setEditing(false);
+                    onShowList?.();
+                  }
                 })
             }
           />
           <Button
             label={t("common.cancel")}
-            onPress={() => setEditing(false)}
+            onPress={() => {
+              setEditing(false);
+              onShowList?.();
+            }}
             disabled={blocked}
           />
         </>
@@ -342,6 +367,7 @@ export function PurchaseOrdersView({
             onPress={() => {
               w.setOrder(null);
               setEditing(false);
+              onShowList?.();
             }}
             disabled={blocked}
           />
@@ -670,12 +696,14 @@ export function PurchaseOrdersView({
         </>
       ) : (
         <>
+          {onCreate ? null : (
           <Button
             primary
             label={t("po.new")}
             onPress={() => start()}
             disabled={blocked}
           />
+          )}
           {w.list.data?.items.map((p) => (
             <Box card key={p.id}>
               <Text heading>
@@ -690,7 +718,7 @@ export function PurchaseOrdersView({
             </Box>
           ))}
           {w.list.data?.items.length === 0 ? (
-            ui.Empty ? <ui.Empty title={t("po.empty")} actionLabel={t("po.new")} onAction={() => start()} /> : <Text tone="muted">{t("po.empty")}</Text>
+            ui.Empty ? <ui.Empty title={t("po.empty")} actionLabel={t("po.new")} onAction={() => (onCreate ? onCreate() : start())} /> : <Text tone="muted">{t("po.empty")}</Text>
           ) : null}
           <Box row>
             {w.offset > 0 ? (

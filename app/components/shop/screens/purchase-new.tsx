@@ -208,10 +208,11 @@ export function PurchaseNewScreen() {
       <div className="shop-page">
         <PageHeader
           title={text("Record supplier invoice")}
-          back={step > 1 ? { href: "/shop/purchases", label: text("Back"), onClick: () => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); } } : { href: "/shop/purchases", label: text("Purchases") }}
+          back={step > 1 ? { href: "/shop/settings", label: text("Back"), onClick: () => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); } } : { href: "/shop/settings", label: text("Settings") }}
           description={text(
             "Choose a supplier, enter the original invoice and confirm how each product affects stock.",
           )}
+          actions={<Button href="/shop/purchases?list=1" tone="ghost">{poText("shopux.recorded_invoices", "Recorded invoices")}</Button>}
         />
         <StepRail current={step - 1} labels={[poText("shopux.step_supplier", "Supplier"), poText("shopux.step_invoice", "Invoice"), poText("shopux.step_products", "Products")]} />
         {stepNote ? <Notice error={new Error(stepNote)} /> : null}

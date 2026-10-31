@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SelectField } from "../gst-ui";
 import { useShop } from "../context";
-import { Button, Card, GroupLabel, IllustratedEmpty, PageHeader, TaskLink } from "../ui";
+import { Button, Card, GroupLabel, IllustratedEmpty, PageHeader } from "../ui";
 import { Stats, Section, useGstText, useFiscalDate } from "../gst-ui";
 import {
   useGstPages,
@@ -52,11 +52,10 @@ export function PurchasesScreen() {
             href: "/shop/settings",
             label: text("Settings"),
           }}
-          description={t('shopux.purchase_help', 'A purchase order asks a supplier for goods. It does not add stock. Record the supplier invoice when the bill arrives — that is what updates stock and tax.')}
+          description={text("Record supplier invoices and review purchase tax. Recording an invoice does not claim or file ITC.")}
+          actions={<Button href="/shop/purchases/new">{text("Record supplier invoice")}</Button>}
         />
-        <TaskLink href={`/shop/purchases/new${supplierId ? `?supplierId=${encodeURIComponent(supplierId)}` : ""}`} icon="receipt" title={text("Record supplier invoice")} hint={t('shopux.record_hint', 'Enter the supplier’s bill and choose how each product affects stock.')} />
-        <TaskLink href="/shop/purchase-orders" icon="clipboard" title={t('po.title','Purchase orders')} hint={t('shopux.orders_hint', 'Ask a supplier for goods. Stock changes only when you record the invoice.')} />
-        <TaskLink href="/shop/settings/gst/recovery" icon="shield" title={text("Resume / check saved requests")} hint={t('shopux.recovery_hint', 'If a save was interrupted, check it here before starting again.')} />
+        <Button tone="ghost" href="/shop/settings/gst/recovery">{text("Resume / check saved requests")}</Button>
         <Card>
           <h2 className="shop-section-title">{text("Report period")}</h2>
           <div className="shop-actions">
