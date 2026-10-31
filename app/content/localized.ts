@@ -2,6 +2,7 @@ import { defaultLocale, type Locale, type PageKind, localizedPath, locales } fro
 import { homeHtml, proofSectionHtml } from './home';
 import { productAnswers, productAnswersHtml } from './productAnswers';
 import { privacyHtml } from './privacy';
+import { applyPrivacyDisclosures } from './privacy-disclosure-html';
 import { termsHtml } from './terms';
 import { translatedHtml } from './translated';
 import { getSubscriptionStrings } from './subscriptionStrings';
@@ -212,5 +213,5 @@ export function getLocalizedHtml(page: ContentPageKind, locale: Locale) {
   if (page === 'home') return adaptHome(getLocaleHomeHtml(locale), locale);
 
   const source = locale === defaultLocale ? englishHtml[page] : translatedHtml[locale]?.[page] ?? englishHtml[page];
-  return adaptLegal(source, locale, page);
+  return adaptLegal(page === 'privacy' ? applyPrivacyDisclosures(source, locale) : source, locale, page);
 }
