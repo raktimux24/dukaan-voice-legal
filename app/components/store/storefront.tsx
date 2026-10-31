@@ -40,6 +40,18 @@ const hexToken = () =>
   Array.from(crypto.getRandomValues(new Uint8Array(32)), (v) =>
     v.toString(16).padStart(2, "0"),
   ).join("");
+function BrandMark() {
+  return (
+    <span
+      className="store-mark"
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{
+        __html:
+          '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="samaan-store-mark"><rect width="100" height="100" fill="white"/><rect x="24" y="18" width="52" height="8" rx="4" fill="black"/><rect x="38" y="18" width="24" height="36" rx="12" fill="black"/><path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/><rect x="46" y="72" width="8" height="10" rx="4" fill="black"/><rect x="36" y="32" width="28" height="4" fill="white"/><rect x="36" y="44" width="28" height="4" fill="white"/></mask></defs><circle cx="50" cy="50" r="50" fill="#FF6B00" mask="url(#samaan-store-mark)"/></svg>',
+      }}
+    />
+  );
+}
 export function Storefront() {
   const params = useParams<{
       storeId: string;
@@ -230,7 +242,7 @@ export function Storefront() {
           )
         : [...old, { id: p.id, quantity: "1", name: p.name, unit: p.unit }];
     });
-    setNotice(tr("add_cart"));
+    setNotice("");
   };
   const place = async () => {
     const request = pending ?? {
@@ -310,9 +322,27 @@ export function Storefront() {
     <main className="public-store">
       <header className="store-top">
         <Link href={"/store/" + id} className="store-brand">
-          Samaan<span>Bol</span>
+          <BrandMark />
+          <span className="store-word">
+            Samaan<span>Bol</span>
+          </span>
         </Link>
-        <label>
+        <div className="store-top-actions">
+          {!params.orderId && cart.length > 0 ? (
+            <button
+              type="button"
+              className="store-cart-chip"
+              onClick={() => {
+                setNotice("");
+                setView(view === "products" ? "cart" : "products");
+              }}
+            >
+              {view === "products"
+                ? tr("view_cart") + " · " + cart.length
+                : tr("back_products")}
+            </button>
+          ) : null}
+          <label>
           <span>{tr("language")}</span>
           <select
             aria-label={tr("language")}
@@ -336,7 +366,8 @@ export function Storefront() {
               </option>
             ))}
           </select>
-        </label>
+          </label>
+        </div>
       </header>
       {error ? (
         <div className="store-message danger" role="alert">
@@ -344,22 +375,28 @@ export function Storefront() {
         </div>
       ) : null}
       {notice ? (
-        <p role="status" className="store-message">
+        <p role="status" className="store-toast">
           {notice}
         </p>
       ) : null}
-      {busy ? <p role="status">{tr("loading")}</p> : null}
+      {busy ? (
+        <p role="status" className="store-busy">
+          {tr("loading")}
+        </p>
+      ) : null}
       {params.orderId ? (
-        <section className="store-content">
+        <section className="store-content store-confirm">
           {tracking ? (
             <>
+              <p className="store-kicker">{tr("fulfilment_status")}</p>
               <h1>{tr("order_number", { number: tracking.number })}</h1>
+              <p className="store-status store-status-lg">
+                {tr("state_" + tracking.state)}
+              </p>
               <div className="store-card">
-                <h2>{tr("fulfilment_status")}</h2>
-                <p className="store-status">{tr("state_" + tracking.state)}</p>
                 <h2>{tr("payment")}</h2>
                 <p>{tr("payment_" + tracking.payment)}</p>
-                <p>{tr("staff_payment_help")}</p>
+                <p className="store-muted">{tr("staff_payment_help")}</p>
                 <p className="store-total">
                   {tr("total_amount", { amount: tracking.total })}
                 </p>
@@ -460,26 +497,30 @@ export function Storefront() {
         </section>
       ) : store ? (
         <>
+          {view === "products" ? (
           <section className="store-hero">
+            <p className="store-kicker">{tr("catalogue")}</p>
             <h1>{store.config.name}</h1>
-            <p>{store.config.address}</p>
-            <p>{store.config.hours}</p>
-            <a href={"tel:" + store.config.phone}>{store.config.phone}</a>
+            <ul className="store-meta">
+              {store.config.address ? <li>{store.config.address}</li> : null}
+              {store.config.hours ? <li>{store.config.hours}</li> : null}
+              {store.config.phone ? (
+                <li>
+                  <a href={"tel:" + store.config.phone}>{store.config.phone}</a>
+                </li>
+              ) : null}
+            </ul>
+            {store.config.policy ? (
+              <p className="store-policy">{store.config.policy}</p>
+            ) : null}
             <p className="store-muted">
               {tr("stock_help")}
               {store.orderingAvailable === false
                 ? " · " + tr("error.email_unavailable")
                 : ""}
             </p>
-            <button
-              className="store-button primary"
-              onClick={() => setView(view === "products" ? "cart" : "products")}
-            >
-              {view === "products"
-                ? tr("view_cart") + " · " + cart.length
-                : tr("back_products")}
-            </button>
           </section>
+          ) : null}
           {pending ? (
             <div className="store-card">
               <p>{tr("saved_request")}</p>
@@ -505,18 +546,22 @@ export function Storefront() {
           {view === "products" ? (
             <section className="store-grid">
               {(params.itemId ? (item ? [item] : []) : store.items).map((p) => (
-                <article key={p.id} className="store-card">
+                <article key={p.id} className="store-card store-product">
                   <div className="store-product-mark" aria-hidden="true">
                     {p.name.slice(0, 1)}
                   </div>
                   <h2>
                     <Link href={"/store/" + id + "/p/" + p.id}>{p.name}</Link>
                   </h2>
-                  <p>{p.description}</p>
+                  {p.description ? <p>{p.description}</p> : null}
                   <p className="store-price">
                     {tr("price_unit", { price: p.price, unit: unit(p.unit) })}
                   </p>
-                  <p className="store-muted">
+                  <p
+                    className={
+                      "store-pill" + (p.available ? "" : " store-pill-off")
+                    }
+                  >
                     {tr(p.available ? "available" : "unavailable")}
                   </p>
                   <button
@@ -608,6 +653,7 @@ export function Storefront() {
                 <>
                   <div className="store-card">
                     <h3>{tr("fulfilment")}</h3>
+                    <div className="store-pills">
                     {(["pickup", "delivery"] as const)
                       .filter((k) => store.config[k])
                       .map((k) => (
@@ -621,7 +667,9 @@ export function Storefront() {
                           {tr(k)}
                         </label>
                       ))}
+                    </div>
                     <h3>{tr("payment")}</h3>
+                    <div className="store-pills">
                     {(["cash", "upi"] as const)
                       .filter((k) => store.config[k])
                       .map((k) => (
@@ -635,6 +683,7 @@ export function Storefront() {
                           {tr("pay_" + k)}
                         </label>
                       ))}
+                    </div>
                     <p className="store-muted">{tr("payment_help")}</p>
                     {(["name", "phone", "email"] as const).map((k) => (
                       <label key={k}>
