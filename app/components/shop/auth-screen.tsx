@@ -3,8 +3,10 @@
 import { useSignIn, useSignUp } from '@clerk/nextjs';
 import { cloneElement, isValidElement, useEffect, useId, useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { isLocale } from '../../i18n';
+import AUTH_VERIFICATION_LOCALES from '../../lib/shop/auth-verification-locales.json';
+import { signInVerificationMethods, sendSignInCode, verifySignInCode, validSignInCode, type SignInMethod } from '../../lib/shop/sign-in-verification';
 
-type View = 'sign-in' | 'sign-up' | 'verify' | 'forgot' | 'reset' | 'reset-done';
+type View = 'sign-in' | 'sign-up' | 'verify' | 'forgot' | 'reset' | 'reset-done' | 'verify-sign-in';
 type Copy = (key: string, fallback: string, vars?: Record<string, string | number>) => string;
 
 const SHOP_LANGS = ['hi', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml'] as const;
@@ -12,6 +14,7 @@ const SHOP_LANGS = ['hi', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml'] as const;
 function browserShopLanguage() {
   if (typeof navigator === 'undefined') return 'en';
   const code = navigator.language.toLowerCase();
+  if (code.startsWith('hi-latn')) return 'hinglish';
   return SHOP_LANGS.find((lang) => code.startsWith(lang)) ?? 'en';
 }
 
@@ -43,7 +46,8 @@ function useAuthCopy(): Copy {
   }, []);
 
   return (key, fallback, vars) => {
-    let text = dict[key] && dict[key] !== key ? dict[key] : fallback;
+    const bundled = AUTH_VERIFICATION_LOCALES[browserShopLanguage() as keyof typeof AUTH_VERIFICATION_LOCALES] as Record<string, string>;
+    let text = dict[key] && dict[key] !== key ? dict[key] : bundled?.[key] || fallback;
     if (vars) {
       for (const [name, value] of Object.entries(vars)) {
         const next = String(value);
@@ -249,6 +253,14 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
+  const [verificationMethod, setVerificationMethod] = useState<SignInMethod>('email_code');
+  const [resendAt, setResendAt] = useState(0);
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    if (view !== 'verify-sign-in') return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [view]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const clear = (field: string) => {
@@ -269,6 +281,40 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
     }
   };
 
+  const finishSignIn = async () => {
+    if (signIn.status !== 'complete') {
+      setFormError(t('auth.verify.unsupported', 'Another step is required. Use another sign-in method or reset your password.'));
+      return;
+    }
+    const result = await signIn.finalize({ navigate: ({ session, decorateUrl }) => {
+      if (session?.currentTask) {
+        setFormError(t('auth.verify.unsupported', 'Another step is required. Use another sign-in method or reset your password.'));
+        return;
+      }
+      window.location.assign(decorateUrl(destination));
+    } });
+    if (result.error) setFormError(clerkMessage(result.error, t('auth.verify.failed', 'Could not verify. Check your connection and try again.')));
+  };
+
+  const prepareVerification = async (method: SignInMethod) => {
+    setBusy(true);
+    setFormError('');
+    setCode('');
+    setErrors({});
+    setVerificationMethod(method);
+    setView('verify-sign-in');
+    try {
+      const result = await sendSignInCode(signIn, method);
+      if (result.error) setFormError(clerkMessage(result.error, t('auth.verify.failed', 'Could not verify. Check your connection and try again.')));
+      else if (method === 'email_code' || method === 'phone_code') {
+        setNow(Date.now());
+        setResendAt(Date.now() + 30000);
+      }
+    } catch {
+      setFormError(t('auth.verify.failed', 'Could not verify. Check your connection and try again.'));
+    } finally { setBusy(false); }
+  };
+
   const handleSignIn = async (event: FormEvent) => {
     event.preventDefault();
     const next = {
@@ -279,19 +325,35 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
     if (next.email || next.password) return;
     setBusy(true);
     setFormError('');
-    const result = await signIn.password({ emailAddress: email.trim(), password });
-    if (result.error) {
-      setFormError(clerkMessage(result.error, t('auth.error_sign_in', 'Sign in failed')));
-      setBusy(false);
+    try {
+      const result = await signIn.password({ emailAddress: email.trim(), password });
+      if (result.error) {
+        setFormError(clerkMessage(result.error, t('auth.error_sign_in', 'Sign in failed')));
+        return;
+      }
+      const methods = signInVerificationMethods(signIn);
+      if (methods.length) await prepareVerification(methods[0]);
+      else await finishSignIn();
+    } catch {
+      setFormError(t('auth.verify.failed', 'Could not verify. Check your connection and try again.'));
+    } finally { setBusy(false); }
+  };
+
+  const handleSignInVerify = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!validSignInCode(verificationMethod, code)) {
+      setErrors({ code: t('auth.verify.invalid', 'Check your verification code and try again.') });
       return;
     }
-    if (signIn.status === 'complete') {
-      const finalized = await signIn.finalize();
-      if (finalized.error) setFormError(clerkMessage(finalized.error, t('auth.error_sign_in', 'Sign in failed')));
-    } else {
-      setFormError(t('auth.error_sign_in', 'Sign in failed'));
-    }
-    setBusy(false);
+    setBusy(true);
+    setFormError('');
+    try {
+      const result = await verifySignInCode(signIn, verificationMethod, code);
+      if (result.error) setFormError(clerkMessage(result.error, t('auth.verify.invalid', 'Check your verification code and try again.')));
+      else await finishSignIn();
+    } catch {
+      setFormError(t('auth.verify.failed', 'Could not verify. Check your connection and try again.'));
+    } finally { setBusy(false); }
   };
 
   const handleSignUp = async (event: FormEvent) => {
@@ -413,6 +475,9 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
     setBusy(false);
   };
 
+  const verificationFactor = signIn.supportedSecondFactors?.find(factor => factor.strategy === verificationMethod);
+  const verificationDestination = verificationMethod === 'email_code' ? email : verificationFactor && 'safeIdentifier' in verificationFactor ? verificationFactor.safeIdentifier : '';
+
   return (
     <div className="auth-screen">
       <div className="auth-glow" aria-hidden="true" />
@@ -467,6 +532,23 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
             <SocialButtons t={t} busy={busy} mode="sign-in" onGoogle={() => void oauth('oauth_google', 'sign-in')} onApple={() => void oauth('oauth_apple', 'sign-in')} />
             <FooterSwitch prompt={t('auth.sign_in.no_account', "Don't have an account?")} action={t('auth.sign_in.sign_up_link', 'Sign Up')} onClick={() => { setFormError(''); setErrors({}); setView('sign-up'); }} />
             <div id="clerk-captcha" className="auth-captcha" />
+          </form>
+        ) : null}
+
+        {view === 'verify-sign-in' ? (
+          <form onSubmit={(event) => void handleSignInVerify(event)}>
+            <AuthMark />
+            <AuthHeading title={t('auth.verify.title', 'Verify your sign-in')} subtitle={t(`auth.verify.help.${verificationMethod}`, 'Enter the code sent to {{destination}}.', { destination: verificationDestination })} />
+            {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
+            <div className="auth-fields">
+              <Field label={t('auth.verify.code', 'Verification code')} icon={<IconLock />} error={errors.code}>
+                <input inputMode={verificationMethod === 'backup_code' ? 'text' : 'numeric'} autoComplete="one-time-code" maxLength={verificationMethod === 'backup_code' ? 64 : 6} value={code} onChange={(event) => { setCode(event.target.value); clear('code'); }} />
+              </Field>
+            </div>
+            <SaffronButton loading={busy} disabled={!validSignInCode(verificationMethod, code)}>{t('auth.verify.button', 'Verify and sign in')}</SaffronButton>
+            {verificationMethod === 'email_code' || verificationMethod === 'phone_code' ? <button className="auth-social" type="button" disabled={busy || now < resendAt} onClick={() => void prepareVerification(verificationMethod)}>{now < resendAt ? t('auth.verify.resend_wait', 'Resend in {{seconds}}s', { seconds: Math.ceil((resendAt - now) / 1000) }) : t('auth.verify.resend', 'Resend code')}</button> : null}
+            {signInVerificationMethods(signIn).filter(method => method !== verificationMethod).map(method => <button className="auth-social" type="button" key={method} disabled={busy} onClick={() => void prepareVerification(method)}>{t(`auth.verify.method.${method}`, method)}</button>)}
+            <FooterSwitch prompt="" action={t('auth.verify.back', 'Back to sign in')} onClick={() => { void signIn.reset(); setView('sign-in'); setCode(''); setPassword(''); setFormError(''); setErrors({}); }} />
           </form>
         ) : null}
 
