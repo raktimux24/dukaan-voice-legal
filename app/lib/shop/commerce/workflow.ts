@@ -39,6 +39,18 @@ export function useCommerce(
       queryFn: () => api.orders(shop, orderOffset),
       refetchInterval: 30000,
     });
+  const orderQuery = useQuery({
+    queryKey: ["commerceOrder", shop, scope, order?.id],
+    enabled: allowed && !!order?.id,
+    queryFn: () => api.order(shop, order!.id),
+    refetchInterval: 30000,
+  });
+  useEffect(() => {
+    const incoming = orderQuery.data;
+    if (incoming) setOrder(current =>
+      current?.id === incoming.id && incoming.version >= current.version ? incoming : current,
+    );
+  }, [orderQuery.data]);
   useEffect(() => {
     active.current = true;
     void storage
@@ -64,6 +76,7 @@ export function useCommerce(
       [
         "commerceStore",
         "commerceOrders",
+        "commerceOrder",
         "catalog",
         "inventory",
         "estimates",
@@ -125,6 +138,7 @@ export function useCommerce(
   return {
     store,
     orders,
+    orderQuery,
     order,
     setOrder,
     search,
