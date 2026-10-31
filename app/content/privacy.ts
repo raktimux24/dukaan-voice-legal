@@ -1,9 +1,9 @@
 export const privacyHtml = `<div class="reading-progress" id="readingProgress"></div>
 
-  <div class="container">
+  <div class="container" data-privacy-disclosures="2026-10-31">
     <a href="/" class="back">&larr; Back to home</a>
     <h1>Privacy Policy</h1>
-    <p class="effective">Updated: 30 October 2026</p>
+    <p class="effective">Updated: 31 October 2026</p>
 
     <nav class="toc">
       <h3>Contents</h3>
@@ -38,29 +38,9 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
         </ul>
         <p>If you sign in with Google or Apple, we receive your name and email from the OAuth provider. We do not access your Google or Apple account password.</p>
 
-        <h3>1.2 Voice Recordings</h3>
-        <div class="highlight">
-          <p><strong>Important:</strong> Voice recordings are processed in real-time and are <strong>not stored permanently</strong>. Audio is transmitted to our server, processed by Sarvam AI for speech recognition and natural language understanding, and immediately discarded after processing. Only the resulting text transcript is stored in your audit log for your reference.</p>
-        </div>
-        <ul>
-          <li>Audio is recorded on your device (WAV format on iOS, M4A on Android)</li>
-          <li>Recordings are limited to a maximum of 30 seconds</li>
-          <li>Audio is sent to our server as encoded data via a secure connection</li>
-          <li>After processing, the audio data is discarded from server memory</li>
-          <li>Text transcripts are stored in your shop's audit log so you can review past actions</li>
-        </ul>
-
-        <h3>1.3 Inventory & Business Data</h3>
-        <p>When you use the App, we store the business data you create:</p>
-        <ul>
-          <li>Shop information (name, category, preferred language)</li>
-          <li>Product catalog (names, barcodes, categories, units, prices)</li>
-          <li>Stock quantities, batch numbers, purchase dates, expiry dates, supplier names</li>
-          <li>Buy list items and notes</li>
-          <li>Audit logs recording inventory changes (action type, user, timestamp, transcript, confidence score)</li>
-        </ul>
-
-        <h3>1.4 User Preferences</h3>
+        <h3>1.2 Voice Recordings</h3><p>Voice recording is optional. Our API processes raw audio in memory and does not save it in our database. Sarvam AI also receives audio and text for speech recognition, language processing and speech output. Sarvam may retain API inputs and responses under its workspace settings and terms; immediate deletion at that provider is not promised. Model training is disabled for our organisation. Text transcripts and related actions remain in shop audit history and may appear in operational logs.</p>
+<h3>1.3 Inventory & Business Data</h3><p>We store business data you create or upload: shop contact details, address and GST identity; customer and supplier contacts; products and stock; imported files and branding images; bills, purchases, orders, balances, expenses, cashbook, payments and audit history. Payment records can include shop UPI IDs and limited payment metadata. Complete card details are handled by the payment provider.</p>
+<h3>1.4 User Preferences</h3>
         <ul>
           <li>App language and voice language selection</li>
           <li>Voice feedback preference (on/off)</li>
@@ -76,35 +56,17 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
           <li>Last active timestamps within shops</li>
         </ul>
 
-        <h3>1.6 Device & Diagnostic Data</h3>
-        <p>In production builds, we use Sentry for crash reporting. This collects:</p>
-        <ul>
-          <li>Device type, operating system, and app version</li>
-          <li>Crash reports and error stack traces</li>
-          <li>Performance data (sampled at 20% of sessions)</li>
-        </ul>
-        <p>Crash reporting is disabled in development builds and can be minimized by the sampling rate we apply.</p>
-      </div>
+        <h3>1.6 Device & Diagnostic Data</h3><p>Production diagnostics include device and app identifiers, errors, navigation events and sampled performance data. These records can be linked to your account or device. Authentication providers also process IP addresses and approximate session location for security. We do not request precise GPS location or access to the device address book.</p></div>
     </details>
 
     <details id="s2">
       <summary><h2>2. How We Use Your Information</h2></summary>
-      <div class="section-content">
-        <ul>
-          <li><strong>Provide the service:</strong> Process voice commands, manage inventory, and sync data across your team</li>
-          <li><strong>Authentication:</strong> Verify your identity and manage secure sessions</li>
-          <li><strong>Audit trail:</strong> Maintain a log of inventory changes for accountability and review</li>
-          <li><strong>Improve the service:</strong> Diagnose bugs and crashes through anonymized error reports</li>
-          <li><strong>Communication:</strong> Send essential account-related notifications (e.g., password resets)</li>
-          <li><strong>Subscription billing:</strong> Create and manage Razorpay subscription checkout, UPI Autopay mandates, invoices, refunds, cancellations, and payment-failure notices</li>
-        </ul>
-        <p>We do <strong>not</strong> use your data for advertising, and we do <strong>not</strong> sell your personal information to third parties.</p>
-      </div>
+      <div class="section-content"><p>We use data to operate inventory, billing, purchases, orders, payments and account features; verify identity and protect sessions; retain necessary business records; send essential verification and account messages; and diagnose reliability and performance problems. We do not sell personal data or use it for advertising.</p></div>
     </details>
 
     <details id="s3">
       <summary><h2>3. Third-Party Services</h2></summary>
-      <div class="section-content">
+      <div class="section-content"><p>Hosting and delivery providers, including Render, Expo and Brevo, process application data, connection metadata, app-update requests or verification-email details as needed for their functions. The services listed below process data under their applicable terms, privacy policies and retention settings.</p>
         <p>We use the following third-party services to operate the App:</p>
         <table>
           <thead>
@@ -167,18 +129,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
 
     <details id="s5">
       <summary><h2>5. Data Retention</h2></summary>
-      <div class="section-content">
-<p>Business records may need to be kept for tax, accounting, disputes and legal obligations. These can include bills, reserved invoice numbers, purchases, payments, cashbook and expense records, orders, related audit history and identity links.</p>
-<p>Required records are not erased automatically by an account-deletion request. We retain them for the applicable obligations and review requests for data that can be removed.</p>
-        <ul>
-          <li><strong>Voice audio:</strong> Ephemeral — processed in memory and immediately discarded. Never stored on our servers.</li>
-          <li><strong>Transcripts & audit logs:</strong> Retained as long as your account is active, for your reference.</li>
-          <li><strong>Inventory data:</strong> Retained as long as your account is active.</li>
-          <li><strong>Account data:</strong> Retained until you delete your account.</li>
-          <li><strong>Crash reports:</strong> Retained according to Sentry's data retention policy (typically 90 days).</li>
-          <li><strong>Subscription and billing records:</strong> Retained as long as needed for account management, tax, invoice, dispute, refund, and legal compliance obligations.</li>
-        </ul>
-      </div>
+      <div class="section-content"><p>Business records may need to be kept for tax, accounting, disputes and legal obligations. These can include bills, reserved invoice numbers, purchases, payments, cashbook and expense records, orders, related audit history and identity links. Required records are not erased automatically by an account-deletion request. We retain them for the applicable obligations and review requests for data that can be removed.</p></div>
     </details>
 
     <details id="s6">
@@ -193,15 +144,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
 
     <details id="s7">
       <summary><h2>7. Data Sharing Within Shops</h2></summary>
-      <div class="section-content">
-        <p>Samaan-Bol is a collaborative tool. When you are a member of a shop:</p>
-        <ul>
-          <li>All shop members (Owners, Managers, Helpers) can see the shop's inventory data, product catalog, and audit logs</li>
-          <li>Your name, role, and activity timestamps are visible to other shop members</li>
-          <li>Owners can manage membership and access for their shop</li>
-        </ul>
-        <p>We do not share your data with shops you are not a member of, nor with any unrelated third parties.</p>
-      </div>
+      <div class="section-content"><p>Shop data is available to authorised staff according to their roles. Public catalogue details and listed products become visible when the owner publishes the store. Customer order contact details are shared with the shop and holders of the private order tracking link. Sharing a document or link can disclose its contents to the recipient. Unpublishing hides the catalogue but does not delete retained orders or fiscal records.</p></div>
     </details>
 
     <details id="s8">
@@ -223,7 +166,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
           <li><strong>Control preferences:</strong> Modify your language, display, and voice settings at any time</li>
           <li><strong>Withdraw from shops:</strong> Leave any shop you are a member of</li>
         </ul>
-      </div>
+      <p>You can email support to request removal of data that is not required, without deleting the whole account. We review the request against fiscal, accounting, dispute and legal retention obligations. Required records and their necessary identity links may remain; this is not an automatic deletion promise.</p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p></div>
     </details>
 
     <details id="s10">
