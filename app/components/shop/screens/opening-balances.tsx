@@ -100,6 +100,13 @@ export const openingWebUi: OpeningUi = {
       )}
     </Field>
   ),
+  Select: ({ label, value, options, onChange, disabled }) => (
+    <Field label={label}>
+      <select aria-label={label} className="shop-field" value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)}>
+        {options.map((option) => <option key={option.value || "none"} value={option.value}>{option.label}</option>)}
+      </select>
+    </Field>
+  ),
   Check: ({ label, value, onChange, disabled }) => (
     <label className="opening-check">
       <input
