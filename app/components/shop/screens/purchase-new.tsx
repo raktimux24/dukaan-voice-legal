@@ -12,7 +12,7 @@ import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
-import { Button, Card, PageHeader, Notice } from "../ui";
+import { Button, Card, Notice, PageHeader, StepRail } from "../ui";
 import { SupplierPicker } from "../gst-supplier";
 import {
   BuyerFields,
@@ -75,7 +75,9 @@ export function PurchaseNewScreen() {
     [reviewSignature, setReviewSignature] = useState<string | null>(null),
     [ordinarySupply, setOrdinarySupply] = useState(false),
     [addingProduct, setAddingProduct] = useState(false),
-    [movementSignature, setMovementSignature] = useState<string | null>(null);
+    [movementSignature, setMovementSignature] = useState<string | null>(null),
+    [step, setStep] = useState<1 | 2 | 3>(poReceiptId ? 2 : 1),
+    [stepNote, setStepNote] = useState("");
   const poLoaded=useRef(false);
   useEffect(()=>{if(poSource.data&&!poLoaded.current){poLoaded.current=true;setMode("inclusive");setLines(poSource.data.lines.map(l=>({key:crypto.randomUUID(),name:l.name,trackStock:true,productId:l.productId,quantity:Number(l.quantity),price:Number(l.price),priceText:l.price,discount:0,tax:{...((l.gstConfig as any)??emptyTax()),reviewed:false},receiveStock:false,existingBatchId:l.batchId,stockMode:'link' as const}))) }},[poSource.data]);
   const retained = useRef<PurchaseInput | null>(null);
@@ -206,11 +208,13 @@ export function PurchaseNewScreen() {
       <div className="shop-page">
         <PageHeader
           title={text("Record supplier invoice")}
-          back={{ href: "/shop/purchases", label: text("Purchases") }}
+          back={step > 1 ? { href: "/shop/purchases", label: text("Back"), onClick: () => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); } } : { href: "/shop/purchases", label: text("Purchases") }}
           description={text(
             "Choose a supplier, enter the original invoice and confirm how each product affects stock.",
           )}
         />
+        <StepRail current={step - 1} labels={[poText("shopux.step_supplier", "Supplier"), poText("shopux.step_invoice", "Invoice"), poText("shopux.step_products", "Products")]} />
+        {stepNote ? <Notice error={new Error(stepNote)} /> : null}
         {poReceiptId?<Card><p>{poText('po.invoice_help','These goods are already in stock. Review the supplier invoice prices and tax details.')}</p></Card>:null}
         {action.notice}
         <ReadState query={pos}>
@@ -244,7 +248,7 @@ export function PurchaseNewScreen() {
           </Card>
         ) : null}
         <fieldset disabled={action.busy || !!retained.current || addingProduct}>
-          <Section
+          {step === 1 ? <Section
             title={"1 · " + text("Choose supplier")}
             summary={supplier?.identity.name}
             open
@@ -289,8 +293,8 @@ export function PurchaseNewScreen() {
                 ]}
               />
             </div>
-          </Section>
-          <Section title={"2 · " + text("Invoice details")} open>
+          </Section> : null}
+          {step === 2 ? <Section title={"2 · " + text("Invoice details")} open>
             <div className="form-grid is-2">
               <TextField
                 label={text("Supplier invoice number")}
@@ -353,8 +357,8 @@ export function PurchaseNewScreen() {
               checked={ordinarySupply}
               onChange={(value) => change(() => setOrdinarySupply(value))}
             />
-          </Section>
-          <Section
+          </Section> : null}
+          {step === 3 ? <><Section
             title={"3 · " + text("Products and stock")}
             summary={`${lines.length} ${text("products")}`}
             open
@@ -544,9 +548,15 @@ export function PurchaseNewScreen() {
               checked={reviewed}
               onChange={setReviewed}
             />
-          </Card>
+          </Card></> : null}
         </fieldset>
-        <Button
+        <div className="shop-actions">
+        {step < 3 ? <Button onClick={() => {
+          if (step === 1 && !supplier) { setStepNote(poText("shopux.supplier_need", "Choose a supplier before continuing.")); return; }
+          if (step === 2 && (!invoiceNumber.trim() || !invoiceDate || !declared.trim())) { setStepNote(poText("shopux.invoice_need", "Enter the invoice number, date and total before continuing.")); return; }
+          setStepNote("");
+          setStep((current) => (current === 1 ? 2 : 3));
+        }}>{poText("shopux.continue", "Continue")}</Button> : <Button
           disabled={
             action.busy ||
             addingProduct ||
@@ -583,7 +593,9 @@ export function PurchaseNewScreen() {
           }
         >
           {text(action.busy ? "Recording invoice" : "Record supplier invoice")}
-        </Button>
+        </Button>}
+        {step > 1 ? <Button tone="ghost" onClick={() => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); }}>{text("Back")}</Button> : null}
+        </div>
       </div>
     </GstAccess>
   );

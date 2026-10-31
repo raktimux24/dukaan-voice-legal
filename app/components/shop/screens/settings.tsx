@@ -9,7 +9,7 @@ import {BrowserNotifications} from '../browser-notifications';
 import { useState } from 'react';
 import { auditCsv, downloadText, inventoryCsv } from '../../../lib/shop/csv';
 import { useShop } from '../context';
-import { Button, Card, Field, Notice, PageHeader, Spinner, inputClass } from '../ui';
+import { Button, Card, Field, Glyph, Notice, PageHeader, Spinner, TaskLink, inputClass, type GlyphName } from '../ui';
 
 /** Values accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
 const LANGUAGES = [
@@ -27,6 +27,16 @@ const LANGUAGES = [
 
 const SIZES = ['small', 'medium', 'large', 'extra_large'] as const;
 
+function SettingsRow({ href, icon, title, meta }: { href: string; icon: GlyphName; title: string; meta: string }) {
+  return (
+    <Link href={href} className="shop-list-row">
+      <span className="shop-row-icon" aria-hidden="true"><Glyph name={icon} /></span>
+      <div className="shop-list-main"><p className="shop-list-title">{title}</p><p className="shop-list-meta">{meta}</p></div>
+      <span className="shop-row-chevron" aria-hidden="true">›</span>
+    </Link>
+  );
+}
+
 export function SettingsScreen() {
   const uiText = useUiText();
   const {user} = useUser();
@@ -42,31 +52,19 @@ export function SettingsScreen() {
       {perms.canManageShop ? (
         <Card flush>
           <div className="shop-list">
-            <Link href="/shop/settings/shop" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.shop_settings', 'Shop profile')}</p><p className="shop-list-meta">{t('modal.shop_settings.name_label', 'Name')}, {t('modal.shop_settings.subtype_label', 'type')}, {t('modal.shop_settings.phone_label', 'contact')}</p></div>
-              <span className="text-muted">›</span>
-            </Link>
-            <Link href="/shop/settings/payments" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.payments_bills', 'Payments & bills')}</p><p className="shop-list-meta">{t('pos_settings.upi_id', 'UPI ID')}, {t('pos_settings.bill_section', 'bills')}</p></div>
-              <span className="text-muted">›</span>
-            </Link>
-            <Link href="/shop/settings/staff" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('settings.manage_staff', 'Staff and invites')}</p><p className="shop-list-meta">{t('onboarding.invite.subtitle', 'Members, roles, invite codes')}</p></div>
-              <span className="text-muted">›</span>
-            </Link>
-            <Link href="/shop/settings/subscription" className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{t('subscription.section_title', 'Subscription')}</p><p className="shop-list-meta">{premium ? t('subscription.status.active', 'Premium') : t('subscription.status.legacy_free', 'Free plan')}</p></div>
-              <span className="text-muted">›</span>
-            </Link>
+            <SettingsRow href="/shop/settings/shop" icon="store" title={t('settings.shop_settings', 'Shop profile')} meta={`${t('modal.shop_settings.name_label', 'Name')}, ${t('modal.shop_settings.subtype_label', 'type')}, ${t('modal.shop_settings.phone_label', 'contact')}`} />
+            <SettingsRow href="/shop/settings/payments" icon="qr" title={t('settings.payments_bills', 'Payments & bills')} meta={`${t('pos_settings.upi_id', 'UPI ID')}, ${t('pos_settings.bill_section', 'bills')}`} />
+            <SettingsRow href="/shop/settings/staff" icon="staff" title={t('settings.manage_staff', 'Staff and invites')} meta={t('onboarding.invite.subtitle', 'Members, roles, invite codes')} />
+            <SettingsRow href="/shop/settings/subscription" icon="card" title={t('subscription.section_title', 'Subscription')} meta={premium ? t('subscription.status.active', 'Premium') : t('subscription.status.legacy_free', 'Free plan')} />
           </div>
         </Card>
       ) : null}
       {perms.canSeeReports || perms.canSeeCost ? (
         <Card flush>
           <div className="shop-list">
-            {perms.canSeeReports?<Link href="/shop/cashbook" className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{t('cashbook.title','Expenses & cashbook')}</p><p className="shop-list-meta">{t('cashbook.intro','Track expenses and reconcile your cash till.')}</p></div><span aria-hidden="true">›</span></Link>:null}
-            {perms.canSeeReports ? <Link href="/shop/settings/gst" className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{t('gst.health_title', 'GST records & invoice numbers')}</p><p className="shop-list-meta">{t('gst.health_intro', 'Check retained bills, invoice numbers and billing installations for this shop.')}</p></div><span aria-hidden="true">›</span></Link> : null}
-            {perms.canSeeCost ? <Link href="/shop/purchases" className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{t('purchase.title', 'Supplier invoices & purchase tax')}</p><p className="shop-list-meta">{t('purchase.new', 'Record supplier invoice')}</p></div><span aria-hidden="true">›</span></Link> : null}
+            {perms.canSeeReports ? <SettingsRow href="/shop/cashbook" icon="wallet" title={t('cashbook.title','Expenses & cashbook')} meta={t('cashbook.intro','Track expenses and reconcile your cash till.')} /> : null}
+            {perms.canSeeReports ? <SettingsRow href="/shop/settings/gst" icon="shield" title={t('gst.health_title', 'GST records & invoice numbers')} meta={t('gst.health_intro', 'Check retained bills, invoice numbers and billing installations for this shop.')} /> : null}
+            {perms.canSeeCost ? <SettingsRow href="/shop/purchases" icon="receipt" title={t('purchase.title', 'Supplier invoices & purchase tax')} meta={t('purchase.new', 'Record supplier invoice')} /> : null}
           </div>
         </Card>
       ) : null}
@@ -108,8 +106,8 @@ export function SettingsScreen() {
         ) : null}
         </div>
       </Card>
-      {perms.canEditProducts?<section className="opening-stack"><Link href="/shop/online-store" className="opening-nav"><div><strong>{t('commerce.title','Online store & orders')}</strong><p>{t('commerce.intro','Manage your public catalogue, orders and product QR codes.')}</p></div><span aria-hidden="true">→</span></Link></section>:null}
-      {perms.canEditProducts?<section className="opening-stack" aria-label={t("settings.section_data","Data")}><h2 className="shop-section-title">{t("settings.section_data","Data")}</h2><Link href="/shop/settings/opening-balances" className="opening-nav"><div><strong>{t("opening.title","Opening balances & migration")}</strong><p>{t("opening.help","Bring existing stock and unpaid balances into your shop.")}</p></div><span aria-hidden="true">→</span></Link></section>:null}
+      {perms.canEditProducts ? <TaskLink href="/shop/online-store" icon="bag" title={t('commerce.title','Online store & orders')} hint={t('commerce.intro','Manage your public catalogue, orders and product QR codes.')} /> : null}
+      {perms.canEditProducts ? <TaskLink href="/shop/settings/opening-balances" icon="landmark" title={t('opening.title','Opening balances & migration')} hint={t('opening.help','Bring existing stock and unpaid balances into your shop.')} /> : null}
       <Card className="grid gap-4">
         <div>
           <h2 className="shop-section-title">{t('settings.export_data', 'Exports')}</h2>

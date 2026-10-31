@@ -26,7 +26,7 @@ export function CommerceView({
   openSale?: (saleId: string) => void;
   initialProductId?: string;
 }) {
-  const { Box, Text, Input, Check, Button, Busy,Tabs,Disclosure } = ui,
+  const { Box, Text, Input, Check, Button, Busy,Tabs,Disclosure,Empty } = ui,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("commerce." + k, v),
     unitLabel = (unit: string) =>
@@ -88,20 +88,10 @@ export function CommerceView({
       {w.store.data?.orderingAvailable === false ? (
         <Text tone="danger">{tr("error.email_unavailable")}</Text>
       ) : null}
-      {Tabs ? <Tabs items={["setup","products","orders"].map(key=>({key,label:tr("nav_"+key)}))} value={tab} disabled={blocked} onChange={value=>{if(value!=="setup"&&value!=="products"&&value!=="orders")return;setTab(value);w.setOrder(null);setListing(null);}}/> : <Box row>
-        {(["setup", "products", "orders"] as const).map((k) => (
-          <Button
-            key={k}
-            label={tr(k)}
-            onPress={() => {
-              setTab(k);
-              w.setOrder(null);
-              setListing(null);
-            }}
-            primary={tab === k}
-          />
-        ))}
-      </Box>}
+      {tab === "setup" ? <Box row>
+        <Button label={tr("nav_products")} onPress={() => { setTab("products"); w.setOrder(null); setListing(null); }} />
+        <Button label={tr("nav_orders")} onPress={() => { setTab("orders"); w.setOrder(null); setListing(null); }} />
+      </Box> : <Button label={tr("nav_setup")} onPress={() => { setTab("setup"); w.setOrder(null); setListing(null); }} />}
       {w.busy || localBusy || w.store.isPending ? (
         <Busy label={t("common.loading")} />
       ) : null}
@@ -168,6 +158,7 @@ export function CommerceView({
             <Text tone="muted">{tr("draft_help")}</Text>
           </Box>
           <Box card>
+            <Text heading>{tr("group_customers")}</Text>
             {(["name", "phone", "address", "hours", "policy"] as const).map(
               (k) => (
                 <Input
@@ -180,7 +171,18 @@ export function CommerceView({
                 />
               ),
             )}
-            {(["pickup", "delivery", "cash", "upi"] as const).map((k) => (
+            <Text heading>{tr("group_collect")}</Text>
+            {(["pickup", "delivery"] as const).map((k) => (
+              <Check
+                key={k}
+                label={tr("config_" + k)}
+                value={config[k]}
+                disabled={!owner || blocked}
+                onChange={(v) => editConfig({ ...config, [k]: v })}
+              />
+            ))}
+            <Text heading>{tr("group_pay")}</Text>
+            {(["cash", "upi"] as const).map((k) => (
               <Check
                 key={k}
                 label={tr("config_" + k)}
@@ -376,7 +378,7 @@ export function CommerceView({
             </Box>
           ))}
           {w.store.data?.items.length === 0 ? (
-            <Text>{tr("no_products")}</Text>
+            Empty ? <Empty title={tr("no_products")} /> : <Text>{tr("no_products")}</Text>
           ) : null}
           <Box row>
             {w.offset > 0 ? (
@@ -517,24 +519,29 @@ export function CommerceView({
               />
             </Box>
           ) : null}
-          {w.orders.data?.items.map((o) => (
-            <Box key={o.id} card>
-              <Text heading>
-                {o.number} · {o.customer.name}
-              </Text>
-              <Text>
-                {tr("state_" + o.state)} · {tr("payment_" + o.payment)}
-              </Text>
-              <Text>{tr("total_amount", { amount: o.total })}</Text>
-              <Button
-                label={tr("open_order")}
-                disabled={blocked}
-                onPress={() => void w.open(o.id)}
-              />
-            </Box>
-          ))}
+          {(["requested"] as const).length && w.orders.data ? (
+            [
+              ["group_decision", ["requested"]],
+              ["group_progress", ["accepted", "preparing", "ready", "out_for_delivery"]],
+              ["group_done", ["fulfilled", "rejected", "cancelled", "expired"]],
+            ] as const
+          ).map(([label, states]) => {
+            const items = w.orders.data?.items.filter((o) => (states as readonly string[]).includes(o.state)) ?? [];
+            if (!items.length) return null;
+            return <Box key={label}>
+              <Text heading>{tr(label)}</Text>
+              {items.map((o) => (
+                <Box key={o.id} card>
+                  <Text heading>{o.number} · {o.customer.name}</Text>
+                  <Text>{tr("state_" + o.state)} · {tr("payment_" + o.payment)}</Text>
+                  <Text>{tr("total_amount", { amount: o.total })}</Text>
+                  <Button label={tr("open_order")} disabled={blocked} onPress={() => void w.open(o.id)} />
+                </Box>
+              ))}
+            </Box>;
+          }) : null}
           {w.orders.data?.items.length === 0 ? (
-            <Text>{tr("no_orders")}</Text>
+            Empty ? <Empty title={tr("no_orders")} /> : <Text>{tr("no_orders")}</Text>
           ) : null}
           <Box row>
             {w.orderOffset > 0 ? (
