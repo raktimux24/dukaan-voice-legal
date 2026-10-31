@@ -27,6 +27,7 @@ export function PurchaseOrdersView({
   newProduct,
   initialBuyListId,
   initialSupplierId,
+  openForm = true,
 }: {
   w: ReturnType<typeof usePurchaseOrders>;
   ui: OpeningUi;
@@ -38,11 +39,12 @@ export function PurchaseOrdersView({
   newProduct: () => void;
   initialBuyListId?: string;
   initialSupplierId?: string;
+  openForm?: boolean;
 }) {
   const { Box, Text, Button, Input, Check, Busy } = ui,
     p = w.order,
     options = w.options.data;
-  const [editing, setEditing] = useState(!!initialSupplierId),
+  const [editing, setEditing] = useState(openForm || !!initialSupplierId),
     [d, setDraft] = useState<PoDraft>(() => ({
       ...empty(),
       supplierId: initialSupplierId ?? "",
@@ -168,6 +170,7 @@ export function PurchaseOrdersView({
       ) : null}
       {editing ? (
         <>
+          <Button label={t("po.all_orders")} onPress={() => setEditing(false)} disabled={blocked} />
           <Text heading>{t(p ? "po.edit" : "po.new")}</Text>
           <Input
             label={t("po.search")}
@@ -687,7 +690,7 @@ export function PurchaseOrdersView({
             </Box>
           ))}
           {w.list.data?.items.length === 0 ? (
-            <Text tone="muted">{t("po.empty")}</Text>
+            ui.Empty ? <ui.Empty title={t("po.empty")} actionLabel={t("po.new")} onAction={() => start()} /> : <Text tone="muted">{t("po.empty")}</Text>
           ) : null}
           <Box row>
             {w.offset > 0 ? (

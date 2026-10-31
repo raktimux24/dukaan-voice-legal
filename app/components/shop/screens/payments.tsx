@@ -11,7 +11,7 @@ import { validateSettings } from '../../../lib/shop/gst-core/gst';
 import { useState } from 'react';
 import { ReadState, useGstQuery } from '../gst-workspace';
 import { useShop } from '../context';
-import { Button, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
+import { Button, Field, GroupLabel, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 const VPA = /^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/;
 const MAX_QR = 1_500_000;
@@ -58,19 +58,10 @@ export function PaymentsScreen() {
 
   return (
     <div className="shop-page">
-      <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments & bills')} description={t('pos_settings.upi_explainer', 'The UPI ID and QR shown at checkout.')} />
+      <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments & bills')} description={t('shopux.payments_hint', 'The UPI customers pay, and the method a new bill starts with.')} />
       <Notice error={error ?? settings.error} />
-      <Link href="/shop/settings/payments/branding" className="payment-branding-link" aria-describedby="branding-destination-description">
-        <span className="payment-branding-icon" aria-hidden="true"><svg viewBox="0 0 32 40" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 2H22L28 8V38H5Z"/><path d="M10 14H23M10 20H23M10 26H20"/></svg></span>
-        <div className="payment-branding-copy">
-          <h2>{t('documents.title', 'Branding & formats')}</h2>
-          <p id="branding-destination-description">{t('documents.help', '')}</p>
-          <div className="payment-format-list">{(['receipt','a4','a5'] as const).map(layout=><span key={layout}>{t('documents.'+layout, layout)}</span>)}</div>
-        </div>
-        <span className="payment-branding-action">{t('documents.navigation_action', 'Customize bills')}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 12H20M14 6L20 12L14 18"/></svg></span>
-      </Link>
-      <section className="payment-settings-panel" aria-labelledby="payment-settings-title">
-        <div className="payment-settings-heading"><h2 id="payment-settings-title">{t('pos_settings.preferences_heading', 'Payment & billing settings')}</h2><p>{t('pos_settings.preferences_help', 'Expand a section to edit. Save your changes below.')}</p></div>
+      <GroupLabel title={t('shopux.payments', 'Payments')} hint={t('shopux.payments_hint', 'The UPI customers pay, and the method a new bill starts with.')} />
+      <section className="payment-settings-panel" aria-label={t('shopux.payments', 'Payments')}>
         <form id="payment-preferences"
           className="payment-settings-form"
           onSubmit={(event) => {
@@ -91,7 +82,7 @@ export function PaymentsScreen() {
             }).then(() => queryClient.invalidateQueries({ queryKey: ['pos', shop.id] })).catch(setError).finally(() => setPending(false));
           }}
         >
-          <Section title={t('pos_settings.upi_section', 'UPI payments')} summary={form.upiVpa || t('pos_settings.not_set', 'Not set')}>
+          <Section title={t('pos_settings.upi_section', 'UPI payments')} summary={form.upiVpa || t('pos_settings.not_set', 'Not set')} open>
           <Field label={t('pos_settings.upi_id', 'UPI ID')}><input className={inputClass} value={form.upiVpa} onChange={(event) => setVpa(event.target.value)} placeholder={uiText("name@bank")} /></Field>
           {vpaInvalid ? <p className="text-sm text-danger">{t('pos_settings.upi_id', 'Enter a UPI ID like name@bank.')}</p> : null}
           <Field label={t('pos_settings.payee_name', 'Payee name')}><input className={inputClass} value={form.upiPayeeName} onChange={(event) => setPayee(event.target.value)} /></Field>
@@ -119,13 +110,7 @@ export function PaymentsScreen() {
           }}
         />
           </Section>
-          <Section title={t('pos_settings.bill_section', 'Bill details')} summary={form.billHeader || shop.name}>
-          <Field label={t('pos_settings.shop_phone', 'Bill phone')}><input className={inputClass} value={form.shopPhone} onChange={(event) => setPhone(event.target.value)} /></Field>
-          <Field label={t('pos_settings.shop_address', 'Bill address')}><input className={inputClass} value={form.shopAddress} onChange={(event) => setAddress(event.target.value)} /></Field>
-          <Field label={t('pos_settings.bill_header', 'Bill header')}><input className={inputClass} value={form.billHeader} onChange={(event) => setHeader(event.target.value)} /></Field>
-          <Field label={t('pos_settings.bill_footer', 'Bill footer')}><input className={inputClass} value={form.billFooter} onChange={(event) => setFooter(event.target.value)} /></Field>
-          </Section>
-          <Section title={t('pos_settings.defaults_section', 'Defaults')} summary={t(`pos.method.${form.defaultPaymentMethod}`, form.defaultPaymentMethod)}>
+          <Section title={t('pos_settings.defaults_section', 'Defaults')} summary={t(`pos.method.${form.defaultPaymentMethod}`, form.defaultPaymentMethod)} open>
           <Field label={t('pos_settings.defaults_section', 'Default payment')}>
             <select className={inputClass} value={form.defaultPaymentMethod} onChange={(event) => setMethod(event.target.value as 'cash' | 'upi')}>
               <option value="cash">{t('pos.method.cash', 'Cash')}</option>
@@ -136,9 +121,29 @@ export function PaymentsScreen() {
           {hoursInvalid ? <p className="text-sm text-danger">{uiText("The void window must be between 1 and 720 hours.")}</p> : null}
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.cardEnabled} onChange={(event) => setCard(event.target.checked)} /> {uiText("Accept card")}</label>
           </Section>
-
         </form>
-
+      </section>
+      <GroupLabel title={t('shopux.bills', 'Bills')} hint={t('shopux.bills_hint', 'What is printed on the bill, and how it looks.')} />
+      <Link href="/shop/settings/payments/branding" className="payment-branding-link" aria-describedby="branding-destination-description">
+        <span className="payment-branding-icon" aria-hidden="true"><svg viewBox="0 0 32 40" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 2H22L28 8V38H5Z"/><path d="M10 14H23M10 20H23M10 26H20"/></svg></span>
+        <div className="payment-branding-copy">
+          <h2>{t('documents.title', 'Branding & formats')}</h2>
+          <p id="branding-destination-description">{t('documents.help', '')}</p>
+          <div className="payment-format-list">{(['receipt','a4','a5'] as const).map(layout=><span key={layout}>{t('documents.'+layout, layout)}</span>)}</div>
+        </div>
+        <span className="payment-branding-action">{t('documents.navigation_action', 'Customize bills')}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 12H20M14 6L20 12L14 18"/></svg></span>
+      </Link>
+      <section className="payment-settings-panel">
+          <Section title={t('pos_settings.bill_section', 'Bill details')} summary={form.billHeader || shop.name} open>
+          <Field label={t('pos_settings.shop_phone', 'Bill phone')}><input className={inputClass} value={form.shopPhone} onChange={(event) => setPhone(event.target.value)} /></Field>
+          <Field label={t('pos_settings.shop_address', 'Bill address')}><input className={inputClass} value={form.shopAddress} onChange={(event) => setAddress(event.target.value)} /></Field>
+          <Field label={t('pos_settings.bill_header', 'Bill header')}><input className={inputClass} value={form.billHeader} onChange={(event) => setHeader(event.target.value)} /></Field>
+          <Field label={t('pos_settings.bill_footer', 'Bill footer')}><input className={inputClass} value={form.billFooter} onChange={(event) => setFooter(event.target.value)} /></Field>
+          </Section>
+      <div className="payment-settings-footer"><button form="payment-preferences" type="submit" className="shop-btn shop-btn-primary" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</button></div>
+      </section>
+      <GroupLabel title={t('shopux.gst', 'GST')} hint={t('shopux.gst_hint', 'Setup, checks, and invoice numbers. Filing stays outside the app.')} />
+      <section className="payment-settings-panel">
       <Section title={t('pos_settings.gst_checks_section', 'GST checks')} summary={t('pos_settings.gst_checks_summary', 'Review billing readiness and product tax details')}>
         <ReadState query={readiness}>
           {readiness.data ? <><p className="shop-hint">{t('gst.core_readiness_notice', 'Checks cover saved setup, not filing or tax-policy approval.')}</p><p>{t(readiness.data.configurationReady ? 'gst.readiness_configured' : 'gst.readiness_incomplete', readiness.data.configurationReady ? 'GST setup reviewed' : 'GST setup needs attention')}</p><p>{t('gst.readiness_profile', 'Shop profile')}: {t(`gst.readiness_status.${readiness.data.profile.status}`, readiness.data.profile.status)}</p><p>{t('gst.readiness_catalog', '{n} of {total} products reviewed', {n: readiness.data.catalog.reviewed, total: readiness.data.catalog.total})}</p><p className="shop-hint">{t(readiness.data.catalog.taxProfilesRequired ? 'gst.readiness_required' : 'gst.readiness_optional', 'Confirm product tax details before GST billing.')}</p>{readiness.data.catalog.incomplete.slice(0,10).map(product => <p key={product.productId} className="text-warn">{product.name} · {t(`gst.readiness_product.${product.reason}`, product.reason)}</p>)}</> : null}
@@ -151,7 +156,6 @@ export function PaymentsScreen() {
         <Button disabled={pending||current.gstSetupAvailable!==true} onClick={()=>{const config=gstDraft??current.gstSettings??emptySettings();try{if(config.registration==='unknown')throw Error(text('Choose your actual GST registration before saving.'));validateSettings({...config,version:config.version||crypto.randomUUID()});}catch(e){setError(e);return;}setPending(true);void api.updatePosSettings(shop.id,{gstSettings:config}).then(()=>{setGstDraft(null);void readiness.refetch(); return settings.refetch();}).catch(setError).finally(()=>setPending(false));}}>{text('Save GST settings')}</Button>
         {current.gstSetupAvailable!==true?<p className="shop-hint">{text('GST setup is unavailable on this server.')}</p>:null}
       </Section>
-      <div className="payment-settings-footer"><button form="payment-preferences" type="submit" className="shop-btn shop-btn-primary" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</button></div>
       </section>
     </div>
   );

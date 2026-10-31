@@ -6,7 +6,7 @@ import { useState } from 'react';
 import {DeletionControl} from '../deletion-control';
 import { CATALOG, remapShopCategory, remapShopSubtype, shopType } from '../../../lib/shop/catalog';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
+import { Button, Card, Field, Glyph, GroupLabel, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
 
 export function ShopSettingsScreen() {
   const uiText = useUiText();
@@ -18,7 +18,7 @@ export function ShopSettingsScreen() {
 
 function ShopSettingsForm() {
   const uiText = useUiText();
-  const { api, shop, refreshShops, t } = useShop();
+  const { api, shop, refreshShops, role, prefs, t } = useShop();
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   const [name, setName] = useState(shop?.name ?? '');
@@ -29,11 +29,31 @@ function ShopSettingsForm() {
   const [city, setCity] = useState(shop?.city ?? '');
   if (!shop) return <Spinner />;
   const subtypes = shopType(category).subtypes;
+  const savedType = shopType(shop.category);
+  const savedSubtype = savedType.subtypes.find((item) => item.code === remapShopSubtype(shop.category, shop.subtype))?.label;
+  const languages: Record<string, string> = { en: 'English', hi: 'हिन्दी', hinglish: 'Hinglish', bn: 'বাংলা', ta: 'தமிழ்', te: 'తెలుగు', mr: 'मराठी', kn: 'ಕನ್ನಡ', gu: 'ગુજરાતી', ml: 'മലയാളം' };
+  const blank = t('shopux.not_added', 'Not added');
   const unchanged = name === shop.name && category === remapShopCategory(shop.category) && subtype === remapShopSubtype(shop.category, shop.subtype) && phone === (shop.phone ?? '') && address === (shop.address ?? '') && city === (shop.city ?? '');
 
   return (
     <div className="shop-page">
-    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={uiText('The name and contact details printed on bills and shown to staff.')} />
+    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={t('shopux.profile_hint', 'These details are printed on bills and shown to staff.')} />
+    <Card>
+      <div className="shop-profile-hero">
+        <span className="shop-avatar" aria-hidden="true">{shop.name.trim().charAt(0).toUpperCase() || 'S'}</span>
+        <div>
+          <h2>{shop.name}</h2>
+          <p>{savedType.label}{savedSubtype ? ` · ${savedSubtype}` : ''}</p>
+        </div>
+      </div>
+      <div className="shop-facts">
+        <div className="shop-fact"><small><Glyph name="phone" />{t('modal.shop_settings.phone_label', 'Phone')}</small><b>{shop.phone || blank}</b></div>
+        <div className="shop-fact"><small><Glyph name="pin" />{t('modal.shop_settings.city_label', 'City')}</small><b>{[shop.address, shop.city].filter(Boolean).join(', ') || blank}</b></div>
+        <div className="shop-fact"><small><Glyph name="user" />{t('shopux.role', 'Role')}</small><b>{role ? t(`role.${role.toLowerCase()}`, role) : blank}</b></div>
+        <div className="shop-fact"><small><Glyph name="languages" />{t('settings.app_language', 'App language')}</small><b>{languages[prefs?.appLanguage ?? 'en'] ?? prefs?.appLanguage ?? 'English'}</b></div>
+      </div>
+    </Card>
+    <GroupLabel title={t('shopux.edit_shop', 'Edit shop details')} />
     <Card className="max-w-2xl">
       <form
         className="grid gap-4"

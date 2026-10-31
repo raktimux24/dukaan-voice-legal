@@ -1,6 +1,7 @@
 "use client";
 import { useShop } from "../context";
 import { useRouter, useSearchParams } from "next/navigation";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
 import { PageHeader } from "../ui";
 import { openingWebUi } from "./opening-balances";
 import { useCommerce } from "../../../lib/shop/commerce/workflow";
@@ -19,7 +20,7 @@ function Editor() {
     router = useRouter(),
     params = useSearchParams(),
     t = (key: string, vars?: Record<string, string | number>) =>
-      translate(key, key, vars);
+      translate(key, EN_FALLBACK[key] ?? key, vars);
   const w = useCommerce(
     api.commerce,
     shop?.id + ":" + userId,

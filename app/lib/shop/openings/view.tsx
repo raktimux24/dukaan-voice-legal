@@ -57,6 +57,7 @@ export type OpeningUi = {
     onPress: () => void;
     disabled?: boolean;
   }>;
+  Empty?: ComponentType<{ title: string; body?: string; actionLabel?: string; onAction?: () => void }>;
 };
 type Props = {
   w: ReturnType<typeof useOpenings>;

@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
-import { PageHeader, Card, Button, Field, Spinner } from "../ui";
+import { PageHeader, Card, Button, Field, IllustratedEmpty, Spinner } from "../ui";
 import { useOpenings } from "../../../lib/shop/openings/workflow";
 import { OpeningView, type OpeningUi } from "../../../lib/shop/openings/view";
 import {
@@ -112,6 +112,9 @@ export const openingWebUi: OpeningUi = {
     </label>
   ),
   Busy: ({ label }) => <Spinner label={label} />,
+  Empty: ({ title, body, actionLabel, onAction }) => (
+    <IllustratedEmpty title={title} body={body} action={actionLabel && onAction ? <Button onClick={onAction}>{actionLabel}</Button> : undefined} />
+  ),
 };
 export function OpeningBalancesScreen() {
   const c = useShop();

@@ -3015,3 +3015,46 @@ a.party-card:hover {
  .retail-section-tabs { width:100%; }
 }
 @media print { .legacy-receipt-hidden { display:none; } }
+
+/* Shop task pages: one next step, grouped the way the counter already thinks. */
+.shop-group { margin: 22px 0 10px; }
+.shop-group p { margin: 0; color: #ff8a33; font-family: var(--font-dm-sans), Inter, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.shop-group span { display: block; margin-top: 4px; max-width: 62ch; color: #9a9aa3; font-size: 13px; font-weight: 400; letter-spacing: 0; text-transform: none; line-height: 1.5; }
+.shop-task { display: grid; grid-template-columns: 44px minmax(0,1fr) auto; gap: 14px; align-items: center; width: 100%; padding: 16px 18px; border: 1px solid #2e2e38; border-radius: 16px; background: rgba(30,30,38,.75); text-align: left; color: inherit; }
+.shop-task + .shop-task { margin-top: 10px; }
+a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); background: rgba(255,107,0,.06); }
+.shop-task-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(255,107,0,.12); color: #ff6b00; }
+.shop-task-icon svg { width: 22px; height: 22px; }
+.shop-task-copy { min-width: 0; }
+.shop-task-copy strong { display: block; font-size: 15px; font-weight: 650; }
+.shop-task-copy small { display: block; margin-top: 3px; color: #9a9aa3; font-size: 13px; line-height: 1.45; }
+.shop-task-go { color: #ff8a33; font-size: 18px; }
+.shop-steps { display: flex; gap: 8px; margin: 4px 0 16px; padding: 0; list-style: none; }
+.shop-steps li { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid #2a2a34; color: #8a8a90; font-size: 13px; font-weight: 600; }
+.shop-steps li span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; background: #22222b; font-size: 12px; }
+.shop-steps li.is-current { border-color: rgba(255,107,0,.7); color: #f4f1ea; background: rgba(255,107,0,.08); }
+.shop-steps li.is-current span, .shop-steps li.is-done span { background: #ff6b00; color: #0d0d12; }
+.shop-steps li.is-done { color: #d7d4cc; }
+.shop-empty-art { display: grid; justify-items: start; gap: 8px; padding: 28px 22px; border: 1px dashed rgba(255,107,0,.35); border-radius: 18px; background: radial-gradient(120px 80px at 18% 0%, rgba(255,107,0,.16), transparent 70%), rgba(22,22,28,.9); }
+.shop-empty-mark { position: relative; width: 72px; height: 72px; margin-bottom: 6px; color: #ff6b00; }
+.shop-empty-mark i { position: absolute; inset: 8px; border: 1px solid rgba(255,107,0,.35); border-radius: 18px; }
+.shop-empty-mark i:first-child { inset: 0; transform: rotate(-8deg); border-radius: 20px; }
+.shop-empty-mark svg { position: absolute; left: 24px; top: 24px; width: 26px; height: 26px; }
+.shop-empty-art h2 { font-family: var(--font-dm-sans), Inter, sans-serif; font-size: 18px; font-weight: 650; }
+.shop-empty-art p { max-width: 46ch; color: #9a9aa3; font-size: 14px; line-height: 1.5; }
+.shop-row-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 10px; background: rgba(255,107,0,.12); color: #ff6b00; }
+.shop-row-icon svg { width: 18px; height: 18px; }
+.shop-list-row .shop-row-chevron { color: #8a8a90; font-size: 18px; }
+.shop-profile-hero { display: flex; gap: 16px; align-items: center; }
+.shop-avatar { display: grid; place-items: center; width: 56px; height: 56px; flex: none; border-radius: 16px; background: #ff6b00; color: #0d0d12; font-family: var(--font-dm-sans), Inter, sans-serif; font-size: 22px; font-weight: 700; }
+.shop-profile-hero h2 { font-size: 20px; font-weight: 650; }
+.shop-profile-hero p { margin-top: 2px; color: #9a9aa3; }
+.shop-facts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 16px; }
+.shop-fact { min-width: 0; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.035); }
+.shop-fact small { display: flex; align-items: center; gap: 6px; color: #9a9aa3; font-size: 12px; }
+.shop-fact small svg { width: 14px; height: 14px; }
+.shop-fact b { display: block; margin-top: 4px; font-weight: 600; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .shop-facts, .shop-steps { grid-template-columns: 1fr; display: grid; }
+  .shop-steps { display: grid; }
+}
