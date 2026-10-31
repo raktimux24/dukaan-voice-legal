@@ -11,12 +11,13 @@
     "test:gst": "node scripts/test-gst.mjs",
     "check:gst-core": "node scripts/check-gst-core.mjs",
     "test:translations": "node scripts/test-translations.mjs",
-    "check:release": "npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && npm run test:deletion && npm run test:followups && tsc --noEmit",
+    "check:release": "npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && npm run test:deletion && npm run test:followups && npm run test:auth && tsc --noEmit",
     "build:verified": "npm run check:release && npm run build",
     "test:seo": "node scripts/test-public-seo.mjs",
     "test:billing": "node scripts/test-mobile-account.cjs",
     "test:cashbook": "node --test tests/cashbook-navigation.test.cjs",
     "test:deletion": "node --test tests/deletion.test.cjs",
+    "test:auth": "node --test tests/sign-in-verification.test.cjs",
     "test:followups": "node --test tests/followup-read-timeout.test.cjs"
   },
   "repository": {
