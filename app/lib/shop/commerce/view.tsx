@@ -80,7 +80,7 @@ export function CommerceView({
       }
     },
     error =
-      w.error || (w.store.error as any)?.code || (w.store.isError ? "commerce_failed" : "") || (w.orders.error as any)?.code || (w.orders.isError ? "commerce_failed" : "") || (w.store.isSuccess && !s ? "commerce_failed" : "");
+      w.error || (w.orderQuery?.isError ? ((w.orderQuery.error as any)?.code ?? "commerce_failed") : "") || (w.store.error as any)?.code || (w.store.isError ? "commerce_failed" : "") || (w.orders.error as any)?.code || (w.orders.isError ? "commerce_failed" : "") || (w.store.isSuccess && !s ? "commerce_failed" : "");
   if (!w.allowed) return <Text tone="danger">{tr("online_role")}</Text>;
   return (
     <Box>
