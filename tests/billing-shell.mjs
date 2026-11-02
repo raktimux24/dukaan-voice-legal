@@ -22,7 +22,8 @@ entries.delete(origin+'/_next/static/font.woff2');await message('WARM_BILLING_SH
 transport=async()=>{throw new TypeError('Failed to fetch');};
 assert.match(await (await request('/shop/sell')).text(),/script/);
 assert.equal(await (await request('/_next/static/app.js',{mode:'cors'})).text(),'bundle');
-for(const path of ['/api/shops/private/sales','/shop/settings','/shop/sell?secret=1','https://clerk.example/client','/shop/settings/gst/recovery/secret'])assert.equal(await request(path),null,path);
+for(const path of ['/api/shops/private/sales','/shop/settings','/shop/sell?secret=1','https://clerk.example/client','/shop/settings/gst/recovery/secret','/media/private/synthetic/thumb?lease=synthetic-read-lease','/media/public/store/listing/image/thumb'])assert.equal(await request(path),null,path);
+assert.equal(await request('/media/private/synthetic/thumb',{mode:'cors',headers:{Authorization:'Bearer synthetic-read-lease'}}),null);
 assert.equal(await request('/shop/sell',{headers:{RSC:'1'}}),null);
 assert.equal(await request('/shop/sell',{method:'POST'}),null);
 for(const status of [401,403,404,500]){transport=async()=>new Response('denied',{status});assert.equal((await request('/shop/sell')).status,status);}

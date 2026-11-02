@@ -18,18 +18,20 @@ const cache=createThumbnailCache<Blob>({
  touch:entry=>transaction<void>(['metadata'],'readwrite',tx=>{tx.objectStore('metadata').put(entry);}),
  remove:keys=>transaction<void>(['metadata','photos'],'readwrite',tx=>{for(const key of keys){tx.objectStore('metadata').delete(key);tx.objectStore('photos').delete(key);}}),
 });
-export const retainProductThumbnails=(scope:ProductSaveScope|null)=>cache.retainScope(scope);
-export const readOfflineThumbnail=(scope:ProductSaveScope,image:ImageReference,current:()=>boolean)=>cache.get(scope,image,current);
-export const evictThumbnail=(scope:ProductSaveScope,image:ImageReference)=>cache.remove(scope,image);
+// The quota decision and write span transactions, so serialize across tabs too.
+const locked=<T,>(work:()=>Promise<T>)=>navigator.locks?.request('samaan-product-thumbnails-v1',work)??Promise.reject(Error('product_image_cache_unavailable'));
+export const retainProductThumbnails=(scope:ProductSaveScope|null)=>locked(()=>cache.retainScope(scope));
+export const readOfflineThumbnail=(scope:ProductSaveScope,image:ImageReference,current:()=>boolean)=>locked(()=>cache.get(scope,image,current));
+export const evictThumbnail=(scope:ProductSaveScope,image:ImageReference)=>locked(()=>cache.remove(scope,image));
 /** Authorize every online byte read; only the small response Blob may enter IndexedDB. */
 export async function loadOnlineThumbnail(scope:ProductSaveScope,image:ImageReference,url:string,lease:string,current:()=>boolean,signal:AbortSignal){
  const response=await fetch(url,{headers:{Authorization:`Bearer ${lease}`},credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer',signal});
- if([401,403,404,410].includes(response.status))await cache.remove(scope,image).catch(()=>{});
+ if([401,403,404,410].includes(response.status))await evictThumbnail(scope,image).catch(()=>{});
  if([408,502,503,504].includes(response.status))throw Object.assign(Error('product_image_temporarily_unavailable'),{status:response.status});
  if(!response.ok||!current()||!response.headers.get('content-type')?.startsWith('image/webp'))return null;
  const reader=response.body?.getReader();if(!reader)return null;const chunks:Uint8Array<ArrayBuffer>[]=[];let bytes=0;
  try{for(;;){const part=await reader.read();if(part.done)break;bytes+=part.value.byteLength;if(bytes>IMAGE_VARIANTS.thumb.maxBytes||!current()){await reader.cancel();return null;}chunks.push(new Uint8Array(part.value));}}finally{reader.releaseLock();}
  if(!bytes||!current())return null;const blob=new Blob(chunks,{type:'image/webp'});
- try{await cache.put(scope,image,blob,bytes,current);}catch{/* Optional cache failure must not hide an authorized online photo. */}
+ try{await locked(()=>cache.put(scope,image,blob,bytes,current));}catch{/* Optional cache failure must not hide an authorized online photo. */}
  return current()?blob:null;
 }
