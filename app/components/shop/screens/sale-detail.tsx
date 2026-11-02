@@ -1,4 +1,6 @@
 'use client';
+import {ProductPhotos} from '../product-photos';
+import {ProductImageById} from '../product-image';
 import {saleCollectionStatus,saleCollectionLabel} from '../../../lib/shop/sale-collection';
 import Link from 'next/link';
 import {printDocument} from '../../../lib/shop/gst-print';
@@ -139,6 +141,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
         <Button tone="ghost" disabled={saleQuery.isFetching||offline} onClick={()=>void saleQuery.refetch()}>{t('sale_detail.refresh_balance','')}</Button>
       </Card>
       {savedReturn.isError?<Card><p role="alert">{t('counter.recovery_storage_error','')}</p></Card>:null}
+      <ProductPhotos rows={sale.items}/>
       {savedReturn.data?<Card><p>{t('counter.pending_outcomes','',{n:1})}</p><Button disabled={pending||offline} onClick={()=>{setPending(true);setError(null);void recoverFinancialRequest(api,shop.id,savedReturn.data!).then(refresh).catch(setError).finally(()=>setPending(false))}}>{t('credit.retry','')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{t('counter.recovery','')}</Button></Card>:null}
       {sale.estimateId?<Link className="button button-muted" href={'/shop/estimates?id='+sale.estimateId}>{t('estimates.bill_source','View source estimate')}</Link>:null}
       {sale.gstSnapshot||sale.mixedGstSnapshot?<><details className="retail-details"><summary>{t('web.gst.verified_documents','')}</summary><div><GstDocuments saleId={sale.id}/></div></details>{<GstSaleAdjustments sale={sale}/>}</>:null}
@@ -220,7 +223,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
               {recorded ? <Button href="/shop/sell">{t('sale_complete.new_sale', 'New sale')}</Button> : null}
             </div>
           </Card>
-          {sale.documentPresentation||sale.gstSnapshot||sale.mixedGstSnapshot?<Card><h2 className="shop-section-title">{t('estimates.mobile.items','')}</h2><div className="shop-list">{sale.items.map(item=><div key={item.id} className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{item.name}</p><p className="shop-list-meta">{formatQty(item.quantity,item.unit)} × {formatINR(item.unitPrice)}{item.returnedQuantity>0?' · '+t('counter.returned_quantity','')+' '+formatQty(item.returnedQuantity,item.unit):''}</p></div><b className="num">{formatINR(item.lineTotal)}</b></div>)}</div></Card>:null}
+          {sale.documentPresentation||sale.gstSnapshot||sale.mixedGstSnapshot?<Card><h2 className="shop-section-title">{t('estimates.mobile.items','')}</h2><div className="shop-list">{sale.items.map(item=><div key={item.id} className="shop-list-row"><ProductImageById productId={item.productId} name={item.name} size={40}/><div className="shop-list-main"><p className="shop-list-title">{item.name}</p><p className="shop-list-meta">{formatQty(item.quantity,item.unit)} × {formatINR(item.unitPrice)}{item.returnedQuantity>0?' · '+t('counter.returned_quantity','')+' '+formatQty(item.returnedQuantity,item.unit):''}</p></div><b className="num">{formatINR(item.lineTotal)}</b></div>)}</div></Card>:null}
           {shortfalls.length ? (
             <Card>
               <p className="font-semibold text-warn">{uiText("Sold more than was on hand")}</p>
