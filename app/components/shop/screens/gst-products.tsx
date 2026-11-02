@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useShop } from "../context";
@@ -165,7 +166,7 @@ export function GstProductsScreen() {
                     }
                   />
                   <span>
-                    <b>{row.product.name}</b>
+                    <b className="flex items-center gap-3"><ProductImageById productId={row.productId} name={row.product.name} size={40}/>{row.product.name}</b>
                     <small>
                       {row.product.gstConfig
                         ? `${row.product.gstConfig.codeType.toUpperCase()} ${row.product.gstConfig.code} · ${row.product.gstConfig.rate}%`
