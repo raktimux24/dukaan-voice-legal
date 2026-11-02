@@ -1,4 +1,5 @@
 'use client';
+import {ProductImage} from '../product-image';
 import {serialScanner} from '../../../lib/shop/counter/scanner';
 import {UsbCounterScanner,CounterCamera} from '../counter-scanner';
 import {CounterStatus} from '../counter-status';
@@ -316,7 +317,9 @@ export function SellScreen() {
             if (unpriced && perms.canEditProducts) {
               return (
                 <div key={item.id} className={cx('pos-tile', index === highlight && query && 'is-highlight')}>
-                  <p className="pos-tile-name">{item.product.name}</p>
+                  <ProductImage image={item.product.media?.cover} name={item.product.name}/>
+                  <ProductImage image={item.product.media?.cover} name={item.product.name}/>
+                <p className="pos-tile-name">{item.product.name}</p>
                   <div className="grid gap-2">
                     <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} {uiText("· no price")}</p>
                     <form

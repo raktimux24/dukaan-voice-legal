@@ -1,4 +1,5 @@
 "use client";
+import {PublicProductImage,PublicProductGallery} from "./product-media";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -66,6 +67,7 @@ export function Storefront() {
     [lang, setLang] = useState("en"),
     [store, setStore] = useState<Store | null>(null),
     [item, setItem] = useState<Item | null>(null),
+    [cartProducts,setCartProducts]=useState<Record<string,Item>>({}),
     [page, setPage] = useState(0),
     [cart, setCart] = useState<
       { id: string; quantity: string; name?: string; unit?: string }[]
@@ -145,6 +147,12 @@ export function Storefront() {
       setError("commerce_storage");
     }
   }, [id, restored, JSON.stringify(cart), params.orderId]);
+  useEffect(()=>{
+    let current=true;
+    if(!restored||!cart.length||params.orderId)return;
+    void send<{items:Item[]}>("/"+id+"/products/query",{ids:cart.map(line=>line.id)}).then(result=>{if(current)setCartProducts(Object.fromEntries(result.items.map(item=>[item.id,item])));}).catch(()=>{if(current)setCartProducts({});});
+    return()=>{current=false;};
+  },[id,restored,cart.map(line=>line.id).sort().join(','),params.orderId]);
   const task = async (fn: () => Promise<void>) => {
     if (taskRunning.current) return;
     taskRunning.current = true;
@@ -420,9 +428,10 @@ export function Storefront() {
                 </p>
                 <p>{tracking.store?.phone}</p>
                 {tracking.lines.map((l: any) => (
-                  <p key={l.listingId}>
-                    {l.name} · {l.quantity} {unit(l.unit)} · ₹{l.price}
-                  </p>
+                  <div key={l.listingId} className="store-product-line">
+                    <PublicProductImage store={id} listing={l.listingId} name={l.name} image={tracking.media?.[l.listingId]?.cover} compact/>
+                    <p>{l.name} · {l.quantity} {unit(l.unit)} · ₹{l.price}</p>
+                  </div>
                 ))}
               </div>
               {tracking.payment === "unpaid" &&
@@ -544,12 +553,10 @@ export function Storefront() {
             </div>
           ) : null}
           {view === "products" ? (
-            <section className="store-grid">
+            <section className={"store-grid"+(params.itemId?" is-detail":"")}>
               {(params.itemId ? (item ? [item] : []) : store.items).map((p) => (
                 <article key={p.id} className="store-card store-product">
-                  <div className="store-product-mark" aria-hidden="true">
-                    {p.name.slice(0, 1)}
-                  </div>
+                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")}/>:<Link href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
                   <h2>
                     <Link href={"/store/" + id + "/p/" + p.id}>{p.name}</Link>
                   </h2>
@@ -606,10 +613,11 @@ export function Storefront() {
               {cart.length ? (
                 cart.map((l) => {
                   const p =
-                    store.items.find((x) => x.id === l.id) ??
+                    cartProducts[l.id] ?? store.items.find((x) => x.id === l.id) ??
                     (item?.id === l.id ? item : null);
                   return (
                     <div key={l.id} className="store-card">
+                      <PublicProductImage store={id} listing={l.id} name={p?.name??l.name??''} image={p?.media?.cover} compact/>
                       <h3>{p?.name ?? l.name ?? tr("unavailable")}</h3>
                       <label>
                         {tr("quantity")}{" "}

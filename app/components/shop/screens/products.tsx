@@ -1,4 +1,5 @@
 "use client";
+import {ProductImage} from "../product-image";
 
 import { useGstText as useUiText } from "../gst-ui";
 
@@ -293,6 +294,7 @@ export function ProductsScreen() {
                 href={`/shop/products/${item.productId}`}
                 className="shop-list-row"
               >
+                <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.product.name}</p>
                   <p className="shop-list-meta">
