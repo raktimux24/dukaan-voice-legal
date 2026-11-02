@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
@@ -17,6 +18,7 @@ const storage: OpeningStorage = {
   removeItem: async (key) => window.localStorage.removeItem(key),
 };
 export const openingWebUi: OpeningUi = {
+  ProductPhoto:props=><ProductImageById {...props} size={36}/>,
   Tabs: ({items,value,onChange,disabled}) => <div className="shop-seg retail-section-tabs" role="group">{items.map(item=><button key={item.key} type="button" className={value===item.key?'is-active':undefined} aria-pressed={value===item.key} disabled={disabled} onClick={()=>onChange(item.key)}>{item.label}</button>)}</div>,
   Disclosure: ({label,children}) => <details className="retail-details"><summary>{label}</summary><div>{children}</div></details>,
   SavedSetup: ({ status, details, onPress, disabled }) => <button type="button" className="opening-saved" onClick={onPress} disabled={disabled}><span><strong>{status}</strong><small>{details}</small></span><span aria-hidden="true">→</span></button>,

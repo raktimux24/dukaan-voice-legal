@@ -11,6 +11,7 @@ import {
 import { useOpenings } from "./workflow";
 type Children = { children?: ReactNode };
 export type OpeningUi = {
+  ProductPhoto?: ComponentType<{productId?:string|null;name:string}>;
   Box: ComponentType<Children & { card?: boolean; row?: boolean }>;
   Text: ComponentType<
     Children & {
@@ -82,7 +83,7 @@ export function OpeningView({
   finish,
   importRows,
 }: Props) {
-  const { Box, Text, Button, Input, Check, Busy, Steps, SavedSetup, Disclosure } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Steps, SavedSetup, Disclosure, ProductPhoto } = ui,
     s = w.session,
     d = w.draft;
   const blocked = w.busy || !!w.pending,
@@ -221,6 +222,7 @@ export function OpeningView({
   const selectedRows = (section: OpeningSection) =>
     d[section].slice(0, limit).map((row) => (
       <Box card key={row.id}>
+        {section==="stock"&&ProductPhoto?<ProductPhoto productId={row.targetId} name={row.name}/>:null}
         <Text heading>
           {row.name || sectionName(section)}
           {row.unit ? " · " + unitName(row.unit) : ""}
@@ -355,8 +357,7 @@ export function OpeningView({
       />
       {w.targets.isPending ? <Busy label={t("opening.loading")} /> : null}
       {w.targets.data?.items.map((target) => (
-        <Button
-          key={target.id}
+        <Box row key={target.id}>{section==="stock"&&ProductPhoto?<ProductPhoto productId={target.id} name={target.name}/>:null}<Button
           label={
             target.name +
             " · " +
@@ -372,7 +373,7 @@ export function OpeningView({
             d[section].length >= 500
           }
           onPress={() => w.selectTarget(target, section)}
-        />
+        /></Box>
       ))}
       {!w.targets.isPending && !w.targets.data?.items.length ? (
         <Text tone="muted">{t("opening.no_results")}</Text>
@@ -676,6 +677,7 @@ export function OpeningView({
                   </Box>
                   {s.review.rows.slice(0, limit).map((row) => (
                     <Box card key={row.id}>
+                      {row.section==="stock"&&ProductPhoto?<ProductPhoto productId={row.targetId} name={row.name}/>:null}
                       <Text heading>
                         {row.name || sectionName(row.section)}
                       </Text>
