@@ -1,3 +1,4 @@
+import {bindProductImages} from './product-images/client';
 import {bindCommerce} from './commerce/client';
 import {bindFollowups} from './followups/client';
 import {bindCredit} from './credit/client';
@@ -218,6 +219,7 @@ type ServerInventoryItem = {
   updatedBy: string | null;
   updatedByName: string;
   product: {
+    media?:import("./product-images/contract").ProductMedia|null;
     gstConfig?: ProductTax | null;
     id: string;
     shopId: string;
@@ -258,6 +260,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     updatedBy: item.updatedBy || '',
     updatedByName: item.updatedByName,
     product: {
+      media:item.product.media,
       gstConfig: item.product.gstConfig,
       id: item.product.id,
       shopId: item.product.shopId,
@@ -327,6 +330,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     openings:bindOpenings(send),
     purchaseOrders:bindPurchaseOrders(send),
     commerce:bindCommerce(send),
+    productImages:bindProductImages(send),
     estimates:bindEstimates(send),
     cashbook:bindCashbook(send),
     credit:bindCredit(send),
