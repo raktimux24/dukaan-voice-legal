@@ -583,7 +583,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send(`/api/shops/${shopId}/nudges/demand`, { method: 'POST', body: JSON.stringify({ term, source: 'search' }) }),
 
     getAlerts: (shopId: string) => send<UnifiedAlerts>(`/api/shops/${shopId}/predictions/alerts`),
-    getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string }[] }>(`/api/shops/${shopId}/predictions`),
+    getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string; productId?: string | null; productName?: string | null }[] }>(`/api/shops/${shopId}/predictions`),
     dismissPrediction: (shopId: string, id: string) => send(`/api/shops/${shopId}/predictions/${id}/dismiss`, { method: 'PATCH' }),
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
     getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),

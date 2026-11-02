@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "./product-image";
 import Link from 'next/link';
 import {useState, type ReactNode} from 'react';
 import type {StockReport} from '../../lib/shop/types';
@@ -15,7 +16,7 @@ export function StockInsights({report, showCost}: {report:StockReport; showCost:
   const label=(key:string,vars?:Record<string,string|number>)=>t(key,EN_FALLBACK[key],vars);
   const section=(key:string,children:ReactNode,vars?:Record<string,string|number>)=><Card className="space-y-4"><h2 className="shop-section-title">{label(key,vars)}</h2>{children}</Card>;
   const metric=(key:string,value:ReactNode)=><div className="kpi"><p className="kpi-label">{label(key)}</p><p className="kpi-value">{value}</p></div>;
-  const productLink=(id:string,name:string)=><Link className="shop-section-link whitespace-normal" href={`/shop/products/${id}`}>{name}</Link>;
+  const productLink=(id:string,name:string)=><Link className="shop-section-link flex items-center gap-3 whitespace-normal" href={`/shop/products/${id}`}><ProductImageById productId={id} name={name} size={32}/>{name}</Link>;
   if(!report.premium)return null;
   return <>
     {report.byProduct?.length?section('reports.stock.by_product',<>

@@ -1,4 +1,5 @@
 'use client';
+import {ProductImageById} from "./product-image";
 import Link from 'next/link';
 import type {ReactNode} from 'react';
 import type {SalesReport} from '../../lib/shop/types';
@@ -27,7 +28,7 @@ export function SalesInsights({report,showCost}:{report:SalesReport;showCost:boo
       <Link className="shop-back" href="/shop/customers">{label('reports.sales.customers')} ›</Link>
     </>):null}
     {report.premium&&showCost&&report.marginByProduct?.products.length?section('reports.sales.margin_by_product',<>
-      <div className="grid gap-3">{report.marginByProduct.products.slice(0,6).map((row,index)=><div key={row.productId??`${row.name}-${index}`} className="flex flex-wrap justify-between gap-3"><div><strong>{row.name}</strong><p className="shop-hint">{formatINR(row.revenue)} · {row.marginPct==null?'—':`${row.marginPct}%`}</p>{correction(row.fiscalCorrectionNet)}</div><strong>{formatINR(row.grossProfit)}</strong></div>)}</div>
+      <div className="grid gap-3">{report.marginByProduct.products.slice(0,6).map((row,index)=><div key={row.productId??`${row.name}-${index}`} className="flex flex-wrap justify-between gap-3"><div><span className="flex items-center gap-3"><ProductImageById productId={row.productId} name={row.name} size={32}/><strong>{row.name}</strong></span><p className="shop-hint">{formatINR(row.revenue)} · {row.marginPct==null?'—':`${row.marginPct}%`}</p>{correction(row.fiscalCorrectionNet)}</div><strong>{formatINR(row.grossProfit)}</strong></div>)}</div>
       {report.marginByProduct.lowMarginBestSellers.length?<p className="shop-hint">{label('reports.sales.low_margin_sellers')}: {report.marginByProduct.lowMarginBestSellers.map(row=>`${row.name} (${row.marginPct??'—'}%)`).join(', ')} · {label('reports.sales.shop_margin',{pct:report.marginByProduct.overallMarginPct??0})}</p>:null}
     </>):null}
     {report.premium&&report.staff?.length?section('reports.sales.by_staff',<div className="grid gap-3">{report.staff.map(row=><div key={row.userId} className="shop-surface shop-card"><strong>{row.name}</strong><p className="shop-hint">{formatINR(row.revenue)} · {row.itemsPerBill} {label('reports.sales.items_short')}{row.voids?` · ${label('reports.sales.voids_n',{n:row.voids})}`:''}</p>{correction(row.fiscalCorrectionNet)}<dl className="grid gap-3 sm:grid-cols-3"><div><dt>{label('sales.summary.bills')}</dt><dd>{row.bills}</dd></div><div><dt>{label('reports.sales.avg_before_returns')}</dt><dd>{formatINR(row.avgBill)}</dd></div><div><dt>{label('reports.sales.disc_short')}</dt><dd>{formatINR(row.discounts)}</dd></div></dl></div>)}</div>):null}

@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
@@ -297,7 +298,7 @@ function StockView({ report, showCost, period, onPeriod }: { report: StockReport
           </div>
           <div className="shop-list">
             {report.expiry?.items.map((item) => (
-              <div key={`${item.productId}-${item.expiryDate}`} className="shop-list-row">
+              <div key={`${item.productId}-${item.expiryDate}`} className="shop-list-row"><ProductImageById productId={item.productId} name={item.name} size={36}/>
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.name}</p>
                   <p className="shop-list-meta">{item.units} {item.unit} · {formatShortDay(item.expiryDate, prefs?.appLanguage)}</p>
@@ -387,7 +388,7 @@ export function ReportsScreen() {
           {top.isLoading ? <Spinner /> : top.error ? <Notice error={top.error} /> : (
             <div className="grid gap-4">
               {(top.data?.products ?? []).map((product, index) => <div key={`${product.productId}-${product.name}`} className="flex flex-wrap justify-between gap-3">
-                <div><strong>{index + 1}. {product.name}</strong><p className="shop-hint">{product.quantity} {product.unit} · {t('reports.sales.in_bills', 'in {{n}} bills', { n: product.bills })}{showCost && product.marginPct != null ? ` · ${product.marginPct}% ${t('reports.sales.margin', 'Margin')}` : ''}</p>
+                <div><span className="flex items-center gap-3"><ProductImageById productId={product.productId} name={product.name} size={36}/><strong>{index + 1}. {product.name}</strong></span><p className="shop-hint">{product.quantity} {product.unit} · {t('reports.sales.in_bills', 'in {{n}} bills', { n: product.bills })}{showCost && product.marginPct != null ? ` · ${product.marginPct}% ${t('reports.sales.margin', 'Margin')}` : ''}</p>
                 {product.fiscalCorrectionNet ? <p className="shop-hint">{t('reports.sales.value_corrections', EN_FALLBACK['reports.sales.value_corrections'])}: {formatINR(product.fiscalCorrectionNet)}</p> : null}</div>
                 <strong>{formatINR(product.revenue)}</strong>
               </div>)}
