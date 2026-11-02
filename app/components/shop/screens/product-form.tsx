@@ -163,6 +163,8 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     }
     if(!hideCost && form.purchasePrice!=='' && cost===null){setError(Error(text('Enter a valid buying price and a discount between 0 and 100%.')));return;}
     if(autoMrp&&!priceBreakdown){setError(Error(text('Confirm selling price and GST before calculating MRP.')));return;}
+    const threshold=Number(form.minStockLevel||0);
+    if(!Number.isInteger(threshold)||threshold<0||threshold>1000000000){setError(Error(t('imports.issue.number_invalid','Enter a non-negative whole number for the reorder level.')));return;}
     if(gstConfig){try{validateProductTaxDraft(gstConfig);}catch(e){setError(e);return;}}
     if(form.mrp&&priceBreakdown&&priceBreakdown.gross>Number(form.mrp)&&!autoMrp){setError(new Error(text('Selling price including GST must not exceed MRP.')));return;}
     }
@@ -333,7 +335,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 <input type="checkbox" className="shop-field" checked={form.trackStock} onChange={(event) => set({ trackStock: event.target.checked })} />
               </label>
               {form.trackStock ? <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
-                <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
+                <input className={cx(inputClass, 'num')} inputMode="numeric" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
               </Field> : null}
             </div>
             {!productId && form.trackStock ? (
