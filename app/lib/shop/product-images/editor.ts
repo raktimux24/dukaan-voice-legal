@@ -44,7 +44,7 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
   try{
    await preceding;if(!current()||controller.signal.aborted)return;
    await persistence;if(!current()||controller.signal.aborted)return;
-   if(!draft){draftId??=adapter.uuid();await persist();draft=adapter.draft(draftId).then(value=>value.id).catch(error=>{draft=undefined;throw error;});}
+   if(!draft){if(!draftId){draftId=adapter.uuid();checkpointAt=Date.now();}await persist();draft=adapter.draft(draftId).then(value=>value.id).catch(error=>{draft=undefined;throw error;});}
    const id=await draft;if(!current()||controller.signal.aborted)return;
    const result=await adapter.upload(id,client,item.local.payload,controller.signal,n=>edit(client,{progress:Math.max(0,Math.min(n,1))}));
    if(!controller.signal.aborted){manifest=undefined;edit(client,{image:result.image,status:'ready',progress:1});await persistence;}
@@ -67,7 +67,7 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
       const attached=gallery?.images.find(i=>i.id===item.image?.id&&i.version===item.image?.version);
       let image=expired&&!attached?undefined:item.image;
       if(!image&&!expired&&adapter.outcome)try{const result=await adapter.outcome(item.clientId);if(['staged','attached'].includes(result.state))image=result.image;}catch{/* Reselection remains available without retaining original bytes. */}
-      return {clientId:item.clientId,...(image?{image}:{}),status:image?'ready' as const:'reselect' as const,progress:image?1:0,recovered:!!image&&!attached};
+      return {clientId:expired&&!image?adapter.uuid():item.clientId,...(image?{image}:{}),status:image?'ready' as const:'reselect' as const,progress:image?1:0,recovered:!!image&&!attached};
      }));
      update({version:saved.version,fields:saved.fields,items:restored});
     }
