@@ -1,9 +1,11 @@
+import {productPhotoDimensions} from "./input-dimensions";
 import {IMAGE_LIMITS} from './contract';
 import type {PreparedImage} from './editor';
 
 export async function prepareProductPhoto(file:File):Promise<PreparedImage<Blob>>{
  if(!file.size||file.size>IMAGE_LIMITS.inputBytes)throw Error('product_image_size');
  if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('product_image_format');
+ productPhotoDimensions(new Uint8Array(await file.arrayBuffer()));
  const bitmap=await createImageBitmap(file,{imageOrientation:'from-image'});
  try{
   if(bitmap.width*bitmap.height>IMAGE_LIMITS.inputPixels)throw Error('product_image_pixels');
