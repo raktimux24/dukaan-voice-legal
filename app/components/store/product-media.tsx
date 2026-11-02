@@ -1,4 +1,5 @@
 'use client';
+import {productPhotoDialogFocus} from '../../lib/product-photo-dialog-focus';
 import {useRef,useState} from 'react';
 import type {ImageReference,ProductMedia} from '../../lib/shop/product-images/contract';
 import {publicImagePath} from '../../lib/shop/product-images/client';
@@ -16,6 +17,6 @@ export function PublicProductGallery({store,listing,name,media,images,closeLabel
  return <div className="store-gallery">
   <button type="button" aria-label={photo?.alt||name} disabled={!photo} onClick={()=>dialog.current?.showModal()}><PublicProductImage store={store} listing={listing} image={photo} name={name}/></button>
   {photos.length>1?choices:null}
-  <dialog ref={dialog} className="store-photo-dialog" aria-label={photo?.alt||name} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close();}}><button type="button" className="store-button" onClick={()=>dialog.current?.close()}>{closeLabel}</button><h2>{name}</h2><PublicProductImage store={store} listing={listing} name={name} image={photo} detail/>{choices}</dialog>
+  <dialog ref={dialog} className="store-photo-dialog" aria-label={photo?.alt||name} onKeyDown={productPhotoDialogFocus} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close();}}><button type="button" className="store-button" onClick={()=>dialog.current?.close()}>{closeLabel}</button><h2>{name}</h2><PublicProductImage store={store} listing={listing} name={name} image={photo} detail/>{choices}</dialog>
  </div>;
 }
