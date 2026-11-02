@@ -81,6 +81,7 @@ export interface PoOptions {
     quantity: string | null;
     committed: string;
   }[];
+  prices?: { supplierId: string; productId: string; price: string }[];
   more: boolean;
 }
 export type PoAction =

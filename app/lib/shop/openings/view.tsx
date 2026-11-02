@@ -41,14 +41,9 @@ export type OpeningUi = {
     onChange: (value: boolean) => void;
     disabled?: boolean;
   }>;
-  Select?: ComponentType<{
-    label: string;
-    value: string;
-    options: { value: string; label: string }[];
-    onChange: (value: string) => void;
-    disabled?: boolean;
-  }>;
   Busy: ComponentType<{ label: string }>;
+  Select?: ComponentType<{label:string;value:string;options:{value:string;label:string}[];onChange:(value:string)=>void;disabled?:boolean}>;
+  Empty?: ComponentType<{title:string;body?:string;actionLabel?:string;onAction?:()=>void}>;
   Tabs?: ComponentType<{items:{key:string;label:string}[];value:string;onChange:(value:string)=>void;disabled?:boolean}>;
   Steps?: ComponentType<{
     labels: string[];
@@ -64,7 +59,6 @@ export type OpeningUi = {
     onPress: () => void;
     disabled?: boolean;
   }>;
-  Empty?: ComponentType<{ title: string; body?: string; actionLabel?: string; onAction?: () => void }>;
 };
 type Props = {
   w: ReturnType<typeof useOpenings>;
