@@ -3,13 +3,14 @@ export type ProductSaveScope={actor:string;session:string;shop:string};
 type RecordRow={scope:ProductSaveScope;slot:string;body:Record<string,unknown>};
 const same=(a:ProductSaveScope,b:ProductSaveScope)=>a.actor===b.actor&&a.session===b.session&&a.shop===b.shop;
 const clone=<T>(value:T):T=>JSON.parse(JSON.stringify(value));
+const byteLength=(value:string)=>{let count=0;for(const char of value){const code=char.codePointAt(0)!;count+=code<128?1:code<2048?2:code<65_536?3:4;}return count;};
 /** A separate, bounded journal of exact media saves. It never submits requests automatically. */
 export function createProductSaveRecovery(storage:Storage){
  let queue:Promise<unknown>=Promise.resolve();
  const run=<T>(work:()=>Promise<T>)=>{const result=queue.then(work);queue=result.catch(()=>{});return result;};
  const read=async():Promise<RecordRow[]>=>{
   const raw=await storage.get();if(!raw)return [];
-  if(raw.length>65_536)throw Error('product_image_recovery_unavailable');
+  if(raw.length>65_536||byteLength(raw)>65_536)throw Error('product_image_recovery_unavailable');
   const value=JSON.parse(raw);
   if(value.version!==1||!Array.isArray(value.rows)||value.rows.length>20||raw.length>65_536||
    value.rows.some((row:RecordRow)=>!row?.scope?.actor||!row.scope.session||!row.scope.shop||typeof row.slot!=='string'||
@@ -19,7 +20,7 @@ export function createProductSaveRecovery(storage:Storage){
  const write=async(rows:RecordRow[])=>{
   if(!rows.length){await storage.clear();if(await storage.get()!==null)throw Error('product_image_recovery_unavailable');return;}
   const value=JSON.stringify({version:1,rows});
-  if(rows.length>20||value.length>65_536)throw Error('product_image_recovery_unavailable');
+  if(rows.length>20||byteLength(value)>65_536)throw Error('product_image_recovery_unavailable');
   await storage.set(value);
   if(await storage.get()!==value)throw Error('product_image_recovery_unavailable');
  };
