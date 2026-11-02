@@ -1,4 +1,6 @@
 'use client';
+import {ProductImageEditor,useProductImageEditor} from '../product-image-editor';
+import {createProductSaveIntent} from '../../../lib/shop/product-images/save-intent';
 
 import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 import { useGstText as useUiText } from "../gst-ui";
@@ -11,7 +13,7 @@ import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, l2ItemType, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty } from '../../../lib/shop/units';
@@ -84,6 +86,12 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const l1 = enabledL1(shop?.category, shop?.subtype);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
+  const [photoReset,setPhotoReset]=useState(0);
+  const media=useProductImageEditor(productId,photoReset);
+  const [preparingPhoto,setPreparingPhoto]=useState(false);
+  const [uncertainSave,setUncertainSave]=useState(false);
+  const saveIntent=useRef(createProductSaveIntent(()=>crypto.randomUUID()));
+  const createdResult=useRef<Awaited<ReturnType<typeof api.addProduct>>|null>(null);
   const [generateBarcode,setGenerateBarcode]=useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const initial = useMemo(() => {
@@ -122,7 +130,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
 
   const subs = l2ForL1(form.category);
   const set = (partial: Partial<Draft>) => setDraft({ ...form, ...partial });
-  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp;
+  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp||media.dirty;
   const selling = form.sellingPrice === '' ? null : Number(form.sellingPrice);
   const gstConfig=gstDraft===undefined?item?.product.gstConfig??null:gstDraft;
   const priceBreakdown=productPriceBreakdown(form.sellingPrice,gstConfig,pos.data?.gstSettings);
@@ -130,7 +138,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const netSelling=priceBreakdown?.net??selling;
   const marginPct = netSelling != null && cost != null && netSelling > 0 ? ((netSelling - cost) / netSelling) * 100 : null;
   const opening = Number(form.initialStock || 0);
-  const canSave = !pending && !!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error;
+  const canSave = !pending && !media.busy && !preparingPhoto && !!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error;
 
   const handleSubmit = async (addAnother = false) => {
     if (!isAllowedL2(shop.category, shop.subtype, form.category, form.subcategory)) {
@@ -161,8 +169,12 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     setPending(true);
     setError(null);
     try {
+      if(media.busy||preparingPhoto)throw Error(t('product_images.pending','Finish or remove failed uploads before saving.'));
+      const imageManifest=uncertainSave?undefined:await media.manifest();
+      const intent=saveIntent.current.retry()??(imageManifest?saveIntent.current.prepare({...body,...(!productId?{initialStock:form.trackStock?Number(form.initialStock||0):0,generateBarcode:generateBarcode&&!form.barcode.trim(),supplier:form.supplier||undefined,expiryDate:form.expiryDate||undefined,purchaseDate:form.purchaseDate||undefined,batchNumber:form.batchNumber||undefined}:{}),imageManifest}):null);
       if (productId) {
-        await api.updateProduct(shop.id, productId, body);
+        await api.updateProduct(shop.id, productId, intent??body);
+        saveIntent.current.succeeded();
         await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
         router.push(`/shop/products/${productId}`);
         return;
@@ -173,7 +185,8 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (form.expiryDate) body.expiryDate = form.expiryDate;
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
       if (form.batchNumber) body.batchNumber = form.batchNumber;
-      const created = await api.addProduct(shop.id, body);
+      const created=createdResult.current??await api.addProduct(shop.id,intent??body);
+      createdResult.current=created;
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
       if (onCreated) {
@@ -182,6 +195,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       }
       if (addAnother) {
         setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
+        saveIntent.current.succeeded();createdResult.current=null;setUncertainSave(false);setPhotoReset(n=>n+1);
         setGenerateBarcode(false);
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
         window.scrollTo({ top: 0 });
@@ -189,6 +203,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       }
       router.push(`/shop/products/${created.product.id}`);
     } catch (caught) {
+      saveIntent.current.failed(caught);setUncertainSave(saveIntent.current.unresolved()||!!createdResult.current);
       setError(caught);
     } finally {
       setPending(false);
@@ -220,8 +235,10 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       />
       {error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
 
+      {uncertainSave?<p role="alert">{t("product_images.save_pending","The previous save is still unconfirmed. Retry it to finish before editing further.")}</p>:null}
       <div className="form-layout">
-        <div className="form-stack">
+        <div className="form-stack" inert={uncertainSave}>
+          <Card><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto}/></Card>
           <Card className="grid gap-5">
             <div>
               <h2 className="shop-section-title">{t('products.title', 'Product')}</h2>
@@ -349,7 +366,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               </div>
             ) : null}
             <div className="grid gap-2">
-              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
+              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : uncertainSave?t('product_images.retry','Retry'):productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
               {!productId && !onCreated ? (
                 <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>{uiText("Save and add another")}</Button>
               ) : null}

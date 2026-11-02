@@ -1,0 +1,49 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {useShop} from './context';
+import {createProductImageEditor,type ImageEditorState} from '../../lib/shop/product-images/editor';
+import {prepareProductPhoto} from '../../lib/shop/product-images/prepare';
+import {ProductImage} from './product-image';
+import {Button} from './ui';
+
+export function useProductImageEditor(product?:string,reset=0){
+ const {api,shop,userId}=useShop(),key=`${userId}/${shop?.id}/${product??'new'}/${reset}`;
+ const ref=useRef<{api:typeof api;key:string;editor:ReturnType<typeof createProductImageEditor<Blob>>}|null>(null);
+ const [value,setValue]=useState<{api:typeof api;key:string;state:ImageEditorState<Blob>}|null>(null);
+ useEffect(()=>{if(!shop)return;let live=true;const editor=createProductImageEditor<Blob>({uuid:()=>crypto.randomUUID(),current:()=>{try{api.assertSession();return live;}catch{return false;}},capabilities:()=>api.productImages.capabilities(shop.id),...(product?{gallery:()=>api.productImages.gallery(shop.id,product)}:{}),draft:id=>api.productImages.draft(shop.id,id),upload:(draft,client,blob,signal)=>api.productImages.upload(shop.id,draft,client,blob,signal)});
+  ref.current={api,key,editor};const unsubscribe=editor.subscribe(()=>setValue({api,key,state:editor.getSnapshot()}));setValue({api,key,state:editor.getSnapshot()});void editor.load();
+  return()=>{live=false;unsubscribe();editor.dispose();if(ref.current?.editor===editor)ref.current=null;};
+ },[api,key]);
+ const editor=ref.current?.key===key&&ref.current.api===api?ref.current.editor:null,state=value?.key===key&&value.api===api?value.state:null;
+ return {editor,state,dirty:editor?.dirty()??false,busy:state?.items.some(i=>i.status!=='ready')??false,manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
+}
+export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{media:ReturnType<typeof useProductImageEditor>;name:string;disabled?:boolean;onBusyChange?:(busy:boolean)=>void}){
+ const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
+ useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
+ const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
+ const choose=(id?:string)=>{replace.current=id??null;if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}};
+ const add=async(files:File[])=>{if(!editor||disabled||preparing)return;setPreparing(true);setError(false);
+  try{const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
+  catch{setError(true);}finally{setPreparing(false);}
+ };
+ return <section aria-label={text('title')} className="grid gap-3" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();replace.current=null;void add([...e.dataTransfer.files]);}}>
+  <h2 className="shop-section-title">{text('title')}</h2><p className="shop-hint">{text('hint')}</p>
+  {!state?.loaded?<p role="status">{text('loading')}</p>:null}
+  {state?.loaded&&(!state.available||state.error)?<p role="status">{text('unavailable')}</p>:null}
+  <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
+   {item.local?<img src={item.local.uri} alt={item.image?.alt||name} width={194} height={150} style={{objectFit:'contain',borderRadius:8}}/>:<ProductImage image={item.image} name={name} size={150} variant="card" decorative={false}/>}
+   {index===0?<span className="shop-hint">{text('cover')}</span>:null}
+   {item.status==='uploading'?<span role="status">{text('loading')}</span>:null}
+   {item.status==='failed'?<><span role="alert">{text('failed')}</span><Button tone="ghost" disabled={disabled} onClick={()=>void editor?.retry(item.clientId)}>{text('retry')}</Button></>:null}
+   {state.available&&state.canEdit?<>
+    <input className="shop-field" aria-label={text('alt')} placeholder={text('alt')} value={item.image?.alt??''} maxLength={240} disabled={disabled||preparing||item.status!=='ready'} onChange={e=>editor?.alt(item.clientId,e.target.value)}/>
+    {index>0?<Button tone="ghost" disabled={disabled||preparing} onClick={()=>editor?.move(item.clientId,0)}>{text('set_cover')}</Button>:null}
+    <div className="flex flex-wrap gap-2"><Button tone="ghost" disabled={disabled||preparing||index===0} onClick={()=>editor?.move(item.clientId,index-1)}>{text('previous')}</Button><Button tone="ghost" disabled={disabled||preparing||index===state.items.length-1} onClick={()=>editor?.move(item.clientId,index+1)}>{text('next')}</Button></div>
+    <Button tone="ghost" disabled={disabled||preparing} onClick={()=>choose(item.clientId)}>{text('replace')}</Button><Button tone="ghost" disabled={disabled||preparing} onClick={()=>editor?.remove(item.clientId)}>{text('remove')}</Button>
+   </>:null}
+  </div>)}</div>
+  <input ref={input} hidden type="file" multiple={!replace.current} accept="image/jpeg,image/png,image/webp" onChange={e=>void add([...(e.target.files??[])])}/>
+  {state?.available&&state.canEdit?<Button tone="ghost" disabled={disabled||preparing||state.items.length>=5} onClick={()=>choose()}>{text('library')}</Button>:null}
+  {error?<p role="alert">{text('error')}</p>:null}
+ </section>;
+}

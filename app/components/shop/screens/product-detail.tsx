@@ -1,4 +1,5 @@
 'use client';
+import {ProductGallery} from '../product-gallery';
 
 import {ProductBarcodeCard} from '../product-barcode';
 import { useGstText as useUiText } from "../gst-ui";
@@ -145,6 +146,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
       />
       <Notice error={error ?? (batches.error && !isDenied(batches.error) ? batches.error : null)} />
 
+      <ProductGallery productId={productId} name={product.name} media={product.media}/>
       <div className="product-hero">
         <p className="product-qty">{tracksStock ? formatQty(item.quantity, item.unit, { packSize: product.packSize, packLabel: product.packLabel }) : t('pos.no_stock_tracking', 'No stock tracking')}</p>
         <p className="party-meta">{product.sellingPrice != null ? `${formatINR(product.sellingPrice)} / ${item.unit}` : t('home.unpriced', 'No selling price')}</p>
