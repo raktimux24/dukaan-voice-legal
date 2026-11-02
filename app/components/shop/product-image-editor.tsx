@@ -2,20 +2,28 @@
 import {useEffect,useRef,useState} from 'react';
 import {useShop} from './context';
 import {createProductImageEditor,type ImageEditorState} from '../../lib/shop/product-images/editor';
+import {createEditorRecovery} from '../../lib/shop/product-images/editor-recovery';
+import type {ProductSaveScope} from '../../lib/shop/product-images/save-recovery';
 import {prepareProductPhoto} from '../../lib/shop/product-images/prepare';
 import {ProductImage} from './product-image';
 import {Button} from './ui';
+const storageKey='samaan-product-photo-editors-v1';
+const journal=createEditorRecovery({get:async()=>localStorage.getItem(storageKey),set:async value=>localStorage.setItem(storageKey,value),clear:async()=>localStorage.removeItem(storageKey)});
+const locked=<T,>(work:()=>Promise<T>)=>navigator.locks?.request(storageKey,work)??Promise.reject(Error('product_image_recovery_unavailable'));
+export const retainProductPhotoEditors=(scope:ProductSaveScope|null)=>locked(()=>journal.retainScope(scope));
 
-export function useProductImageEditor(product?:string,reset=0){
- const {api,shop,userId}=useShop(),key=`${userId}/${shop?.id}/${product??'new'}/${reset}`;
+export function useProductImageEditor(product?:string,reset=0,slot=product??'new'){
+ const {api,shop,userId,photoSessionId}=useShop(),key=`${userId}/${photoSessionId}/${shop?.id}/${slot}/${reset}`;
  const ref=useRef<{api:typeof api;key:string;editor:ReturnType<typeof createProductImageEditor<Blob>>}|null>(null);
  const [value,setValue]=useState<{api:typeof api;key:string;state:ImageEditorState<Blob>}|null>(null);
- useEffect(()=>{if(!shop)return;let live=true;const editor=createProductImageEditor<Blob>({uuid:()=>crypto.randomUUID(),current:()=>{try{api.assertSession();return live;}catch{return false;}},capabilities:()=>api.productImages.capabilities(shop.id),...(product?{gallery:()=>api.productImages.gallery(shop.id,product)}:{}),draft:id=>api.productImages.draft(shop.id,id),upload:(draft,client,blob,signal)=>api.productImages.upload(shop.id,draft,client,blob,signal)});
+ useEffect(()=>{if(!shop||!userId||!photoSessionId)return;let live=true;
+  const owner={actor:userId,session:photoSessionId,shop:shop.id},current=()=>{try{api.assertSession();return live;}catch{return false;}};
+  const editor=createProductImageEditor<Blob>({uuid:()=>crypto.randomUUID(),current,capabilities:()=>api.productImages.capabilities(shop.id),...(product?{gallery:()=>api.productImages.gallery(shop.id,product)}:{}),draft:id=>api.productImages.draft(shop.id,id),upload:(draft,client,blob,signal)=>api.productImages.upload(shop.id,draft,client,blob,signal),recovery:{load:()=>locked(async()=>{await journal.retainScope(owner);return journal.load(owner,slot,current);}),save:checkpoint=>locked(()=>journal.save(owner,slot,checkpoint,current)),clear:()=>locked(()=>journal.remove(owner,slot,current))}});
   ref.current={api,key,editor};const unsubscribe=editor.subscribe(()=>setValue({api,key,state:editor.getSnapshot()}));setValue({api,key,state:editor.getSnapshot()});void editor.load();
   return()=>{live=false;unsubscribe();editor.dispose();if(ref.current?.editor===editor)ref.current=null;};
  },[api,key]);
  const editor=ref.current?.key===key&&ref.current.api===api?ref.current.editor:null,state=value?.key===key&&value.api===api?value.state:null;
- return {editor,state,dirty:editor?.dirty()??false,busy:state?.items.some(i=>i.status!=='ready')??false,manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
+ return {editor,state,dirty:editor?.dirty()??false,busy:state?.items.some(i=>i.status!=='ready')??false,clearRecovery:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');await active.editor.clearRecovery();},manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
 }
 export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{media:ReturnType<typeof useProductImageEditor>;name:string;disabled?:boolean;onBusyChange?:(busy:boolean)=>void}){
  const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
@@ -31,7 +39,8 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
   {!state?.loaded?<p role="status">{text('loading')}</p>:null}
   {state?.loaded&&(!state.available||state.error)?<p role="status">{text('unavailable')}</p>:null}
   <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
-   {item.local?<img src={item.local.uri} alt={item.image?.alt||name} width={194} height={150} style={{objectFit:'contain',borderRadius:8}}/>:<ProductImage image={item.image} name={name} size={150} variant="card" decorative={false}/>}
+   {item.local?<img src={item.local.uri} alt={item.image?.alt||name} width={194} height={150} style={{objectFit:'contain',borderRadius:8}}/>:item.recovered?<p className="shop-hint">{text('restored')}</p>:<ProductImage image={item.image} name={name} size={150} variant="card" decorative={false}/>}
+   {item.status==='reselect'?<p role="alert">{text('reselect')}</p>:null}
    {index===0?<span className="shop-hint">{text('cover')}</span>:null}
    {item.status==='uploading'?<span role="status">{text('loading')}</span>:null}
    {item.status==='failed'?<><span role="alert">{text('failed')}</span><Button tone="ghost" disabled={disabled} onClick={()=>void editor?.retry(item.clientId)}>{text('retry')}</Button></>:null}

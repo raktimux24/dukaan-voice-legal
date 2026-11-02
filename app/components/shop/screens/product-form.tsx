@@ -87,10 +87,11 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   const [photoReset,setPhotoReset]=useState(0);
-  const media=useProductImageEditor(productId,photoReset);
+  const formSlot=JSON.stringify([productId??'new',params.get('buyListItemId'),onCreated?'embedded':'route']);
+  const media=useProductImageEditor(productId,photoReset,formSlot);
   const [preparingPhoto,setPreparingPhoto]=useState(false);
   const [uncertainOutcome,setUncertainSave]=useState(false);
-  const saveIntent=useProductSaveRecovery(JSON.stringify([productId??'new',params.get('buyListItemId'),onCreated?'embedded':'route']));
+  const saveIntent=useProductSaveRecovery(formSlot);
   const uncertainSave=uncertainOutcome||!!saveIntent.pending;
   const createdResult=useRef<Awaited<ReturnType<typeof api.addProduct>>|null>(null);
   useEffect(()=>{createdResult.current=null;setUncertainSave(false);},[saveIntent.identity]);
@@ -180,6 +181,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (productId) {
         await api.updateProduct(shop.id, productId, intent??body);
         if(!saveIntent.current())return;
+        await media.clearRecovery();
         await saveIntent.succeeded();
         await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
         if(!saveIntent.current())return;
@@ -198,6 +200,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
       if(!saveIntent.current())return;
+      await media.clearRecovery();
       if (onCreated) {
         if(!saveIntent.current())return;
         await onCreated(created.product.id);

@@ -1829,7 +1829,9 @@
     "product_images.current_title": "Current product photos",
     "product_images.current_help": "These are current photos; packaging may differ from the time of sale.",
     "product_images.activity": "Updated photos for {{name}} · {{before}} → {{after}}",
-    "product_images.activity_cover": "Cover changed"
+    "product_images.activity_cover": "Cover changed",
+    "product_images.reselect": "Choose this photo again. Its temporary file was not kept.",
+    "product_images.restored": "Uploaded photo restored. Preview is available after saving."
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3661,7 +3663,9 @@
     "product_images.current_title": "उत्पाद की वर्तमान फ़ोटो",
     "product_images.current_help": "ये मौजूदा फ़ोटो हैं; बिक्री के समय की पैकिंग अलग हो सकती है।",
     "product_images.activity": "{{name}} की फ़ोटो बदलीं · {{before}} → {{after}}",
-    "product_images.activity_cover": "मुख्य फ़ोटो बदली"
+    "product_images.activity_cover": "मुख्य फ़ोटो बदली",
+    "product_images.reselect": "यह फ़ोटो फिर चुनें। इसकी अस्थायी फ़ाइल नहीं रखी गई थी।",
+    "product_images.restored": "अपलोड की गई फ़ोटो वापस मिल गई है। सेव करने के बाद प्रीव्यू दिखेगा।"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5493,7 +5497,9 @@
     "product_images.current_title": "Abhi ki product photos",
     "product_images.current_help": "Yeh abhi ki photos hain; sale ke waqt ki packing alag ho sakti hai.",
     "product_images.activity": "{{name}} ki photos update hui · {{before}} → {{after}}",
-    "product_images.activity_cover": "Cover photo badli"
+    "product_images.activity_cover": "Cover photo badli",
+    "product_images.reselect": "Yeh photo phir chunein. Iski temporary file nahi rakhi gayi thi.",
+    "product_images.restored": "Upload ki gayi photo wapas mil gayi. Save karne ke baad preview dikhega."
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -7325,7 +7331,9 @@
     "product_images.current_title": "தற்போதைய பொருள் படங்கள்",
     "product_images.current_help": "இவை தற்போதைய படங்கள்; விற்பனையின்போது இருந்த பொதி வேறுபடலாம்.",
     "product_images.activity": "{{name}} படங்கள் புதுப்பிக்கப்பட்டன · {{before}} → {{after}}",
-    "product_images.activity_cover": "முதன்மைப் படம் மாற்றப்பட்டது"
+    "product_images.activity_cover": "முதன்மைப் படம் மாற்றப்பட்டது",
+    "product_images.reselect": "இந்தப் படத்தை மீண்டும் தேர்ந்தெடுக்கவும். தற்காலிகக் கோப்பு சேமிக்கப்படவில்லை.",
+    "product_images.restored": "பதிவேற்றிய படம் மீட்கப்பட்டது. சேமித்த பின் முன்னோட்டம் கிடைக்கும்."
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -9157,7 +9165,9 @@
     "product_images.current_title": "ప్రస్తుత ఉత్పత్తి ఫోటోలు",
     "product_images.current_help": "ఇవి ప్రస్తుత ఫోటోలు; అమ్మకం సమయంలో ప్యాకింగ్ భిన్నంగా ఉండవచ్చు.",
     "product_images.activity": "{{name}} ఫోటోలు నవీకరించబడ్డాయి · {{before}} → {{after}}",
-    "product_images.activity_cover": "ముఖ్య ఫోటో మార్చబడింది"
+    "product_images.activity_cover": "ముఖ్య ఫోటో మార్చబడింది",
+    "product_images.reselect": "ఈ ఫోటోను మళ్లీ ఎంచుకోండి. తాత్కాలిక ఫైల్ ఉంచబడలేదు.",
+    "product_images.restored": "అప్‌లోడ్ చేసిన ఫోటో తిరిగి పొందబడింది. సేవ్ చేసిన తర్వాత ప్రివ్యూ కనిపిస్తుంది."
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -10989,7 +10999,9 @@
     "product_images.current_title": "পণ্যের বর্তমান ছবি",
     "product_images.current_help": "এগুলি বর্তমান ছবি; বিক্রির সময়ের প্যাকেট আলাদা হতে পারে।",
     "product_images.activity": "{{name}}-এর ছবি বদলানো হয়েছে · {{before}} → {{after}}",
-    "product_images.activity_cover": "প্রধান ছবি বদলানো হয়েছে"
+    "product_images.activity_cover": "প্রধান ছবি বদলানো হয়েছে",
+    "product_images.reselect": "এই ছবিটি আবার বেছে নিন। অস্থায়ী ফাইলটি রাখা হয়নি।",
+    "product_images.restored": "আপলোড করা ছবি ফিরে পাওয়া গেছে। সংরক্ষণের পর প্রিভিউ দেখা যাবে।"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -12821,7 +12833,9 @@
     "product_images.current_title": "उत्पादनाचे सध्याचे फोटो",
     "product_images.current_help": "हे सध्याचे फोटो आहेत; विक्रीच्या वेळचे पॅकिंग वेगळे असू शकते.",
     "product_images.activity": "{{name}} चे फोटो बदलले · {{before}} → {{after}}",
-    "product_images.activity_cover": "मुख्य फोटो बदलला"
+    "product_images.activity_cover": "मुख्य फोटो बदलला",
+    "product_images.reselect": "हा फोटो पुन्हा निवडा. त्याची तात्पुरती फाइल ठेवलेली नाही.",
+    "product_images.restored": "अपलोड केलेला फोटो परत मिळाला. सेव्ह केल्यानंतर पूर्वदृश्य दिसेल."
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -14653,7 +14667,9 @@
     "product_images.current_title": "ಉತ್ಪನ್ನದ ಪ್ರಸ್ತುತ ಫೋಟೋಗಳು",
     "product_images.current_help": "ಇವು ಪ್ರಸ್ತುತ ಫೋಟೋಗಳು; ಮಾರಾಟದ ಸಮಯದ ಪ್ಯಾಕಿಂಗ್ ಬೇರೆ ಇರಬಹುದು.",
     "product_images.activity": "{{name}} ಫೋಟೋಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ · {{before}} → {{after}}",
-    "product_images.activity_cover": "ಮುಖ್ಯ ಫೋಟೋ ಬದಲಿಸಲಾಗಿದೆ"
+    "product_images.activity_cover": "ಮುಖ್ಯ ಫೋಟೋ ಬದಲಿಸಲಾಗಿದೆ",
+    "product_images.reselect": "ಈ ಫೋಟೋವನ್ನು ಮತ್ತೆ ಆಯ್ಕೆಮಾಡಿ. ತಾತ್ಕಾಲಿಕ ಫೈಲ್ ಉಳಿಸಿಲ್ಲ.",
+    "product_images.restored": "ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ಫೋಟೋ ಮರಳಿ ಸಿಕ್ಕಿದೆ. ಉಳಿಸಿದ ನಂತರ ಪೂರ್ವವೀಕ್ಷಣೆ ಸಿಗುತ್ತದೆ."
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -16485,7 +16501,9 @@
     "product_images.current_title": "ઉત્પાદનના હાલના ફોટા",
     "product_images.current_help": "આ હાલના ફોટા છે; વેચાણ સમયે પેકિંગ અલગ હોઈ શકે છે.",
     "product_images.activity": "{{name}}ના ફોટા બદલ્યા · {{before}} → {{after}}",
-    "product_images.activity_cover": "મુખ્ય ફોટો બદલ્યો"
+    "product_images.activity_cover": "મુખ્ય ફોટો બદલ્યો",
+    "product_images.reselect": "આ ફોટો ફરી પસંદ કરો. તેની કામચલાઉ ફાઇલ રાખવામાં આવી નહોતી.",
+    "product_images.restored": "અપલોડ કરેલો ફોટો પાછો મળ્યો. સાચવ્યા પછી પ્રિવ્યૂ દેખાશે."
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -18317,6 +18335,8 @@
     "product_images.current_title": "നിലവിലെ ഉൽപ്പന്ന ഫോട്ടോകൾ",
     "product_images.current_help": "ഇവ നിലവിലെ ഫോട്ടോകളാണ്; വിൽപ്പനസമയത്തെ പാക്കിങ് വ്യത്യസ്തമായിരിക്കാം.",
     "product_images.activity": "{{name}} ഫോട്ടോകൾ പുതുക്കി · {{before}} → {{after}}",
-    "product_images.activity_cover": "പ്രധാന ഫോട്ടോ മാറ്റി"
+    "product_images.activity_cover": "പ്രധാന ഫോട്ടോ മാറ്റി",
+    "product_images.reselect": "ഈ ഫോട്ടോ വീണ്ടും തിരഞ്ഞെടുക്കുക. താൽക്കാലിക ഫയൽ സൂക്ഷിച്ചിട്ടില്ല.",
+    "product_images.restored": "അപ്‌ലോഡ് ചെയ്ത ഫോട്ടോ വീണ്ടെടുത്തു. സംരക്ഷിച്ച ശേഷം പ്രിവ്യൂ ലഭിക്കും."
   }
 }
