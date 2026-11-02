@@ -42,14 +42,14 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
   {state?.restored&&state.selectionPending?<div><p role="alert">{text('reselect')}</p><Button tone="ghost" disabled={disabled||preparing} onClick={()=>void editor?.endSelection().catch(()=>setError(true))}>{text('remove')}</Button></div>:null}
   {!state?.loaded?<p role="status">{text('loading')}</p>:null}
   {state?.loaded&&(!state.available||state.error)?<p role="status">{state.error==='product_image_recovery_unavailable'?t('opening.error.storage','opening.error.storage'):text('unavailable')}</p>:null}
-  <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
+  <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} role="group" aria-label={`${text('title')} ${index+1}/${state.items.length}`} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
    {item.local?<img src={item.local.uri} alt={item.image?.alt||name} width={194} height={150} style={{objectFit:'contain',borderRadius:8}}/>:item.recovered?<p className="shop-hint">{text('restored')}</p>:<ProductImage image={item.image} name={name} size={150} variant="card" decorative={false}/>}
    {item.status==='reselect'?<p role="alert">{text('reselect')}</p>:null}
    {index===0?<span className="shop-hint">{text('cover')}</span>:null}
    {item.status==='uploading'?<span role="status">{text('loading')}</span>:null}
    {item.status==='failed'?<><span role="alert">{text('failed')}</span><Button tone="ghost" disabled={disabled} onClick={()=>void editor?.retry(item.clientId)}>{text('retry')}</Button></>:null}
    {state.available&&state.canEdit?<>
-    <input className="shop-field" aria-label={text('alt')} placeholder={text('alt')} value={item.image?.alt??''} maxLength={240} disabled={disabled||preparing||item.status!=='ready'} onChange={e=>editor?.alt(item.clientId,e.target.value)}/>
+    <input className="shop-field" aria-label={`${text('alt')}, ${index+1}/${state.items.length}`} placeholder={text('alt')} value={item.image?.alt??''} maxLength={240} disabled={disabled||preparing||item.status!=='ready'} onChange={e=>editor?.alt(item.clientId,e.target.value)}/>
     {index>0?<Button tone="ghost" disabled={disabled||preparing} onClick={()=>editor?.move(item.clientId,0)}>{text('set_cover')}</Button>:null}
     <div className="flex flex-wrap gap-2"><Button tone="ghost" disabled={disabled||preparing||index===0} onClick={()=>editor?.move(item.clientId,index-1)}>{text('previous')}</Button><Button tone="ghost" disabled={disabled||preparing||index===state.items.length-1} onClick={()=>editor?.move(item.clientId,index+1)}>{text('next')}</Button></div>
     <Button tone="ghost" disabled={disabled||preparing} onClick={()=>choose(item.clientId)}>{text('replace')}</Button><Button tone="ghost" disabled={disabled||preparing} onClick={()=>editor?.remove(item.clientId)}>{text('remove')}</Button>
