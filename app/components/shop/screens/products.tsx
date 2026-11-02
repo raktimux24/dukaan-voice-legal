@@ -134,7 +134,7 @@ export function ProductsScreen() {
   if (!shop) return <Spinner label={uiText("Loading products")} />;
 
   return (
-    <div className="shop-page">
+    <div className="shop-page product-catalogue">
       <PageHeader
         kicker={t("reports.stock.on_hand", "Stock")}
         title={t("products.title", "Products")}
