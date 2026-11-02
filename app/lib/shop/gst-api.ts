@@ -262,6 +262,7 @@ export function bindGstApi(
     costPreview: (s: string, id: string, decision: string) =>
       get<{
         changes: {
+          purchaseItemId: string;
           name: string;
           previousUnitCost: string;
           newUnitCost: string;

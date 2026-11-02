@@ -1,4 +1,6 @@
 "use client";
+import {ProductSelect} from "../product-select";
+import {ProductImageById} from "../product-image";
 import { eligiblePurchaseReceipts } from "../../../lib/shop/gst-core/purchase-batch-link";
 import { ProductFormScreen } from "./product-form";
 import { purchaseReviewSignature } from "../../../lib/shop/gst-core/purchase-review-draft";
@@ -372,7 +374,7 @@ export function PurchaseNewScreen() {
                   ],
                 )}
               </Button>
-              <SelectField
+              <ProductSelect
                 label={text("Add product")}
                 disabled={!!poReceiptId||lines.length >= 100}
                 value=""
@@ -418,6 +420,7 @@ export function PurchaseNewScreen() {
                 summary={`${line.quantity} × ${formatINR(line.price)}`}
                 open
               >
+                <div className="mb-3 flex items-center gap-3"><ProductImageById productId={line.productId} name={line.name} size={48}/><strong>{line.name}</strong></div>
                 <div className="form-grid is-2">
                   <TextField
                     label={text("Quantity")}

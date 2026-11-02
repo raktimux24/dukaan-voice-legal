@@ -1,3 +1,4 @@
+import {ProductImageById} from "../../../components/shop/product-image";
 import { useEffect, useState } from "react";
 import type { OpeningUi } from "../openings/view";
 import {
@@ -244,8 +245,7 @@ export function PurchaseOrdersView({
                 Number(b.quantity ?? 1) - Number(b.committed),
               );
             return (
-              <Check
-                key={b.id}
+              <Box row key={b.id}><ProductImageById productId={b.productId} name={b.name} size={36}/><Check
                 label={`${b.name} · ${t("po.available", { qty: poUnits(remaining) })} ${unit(b.unit ?? "")}`}
                 value={selected}
                 disabled={blocked || (remaining <= 0 && !selected)}
@@ -267,13 +267,12 @@ export function PurchaseOrdersView({
                       : d.lines.filter((l) => l.buyListItemId !== b.id),
                   )
                 }
-              />
+              /></Box>
             );
           })}
           <Text heading>{t("po.add_product")}</Text>
           {options?.products.slice(0, 8).map((product) => (
-            <Button
-              key={product.id}
+            <Box row key={product.id}><ProductImageById productId={product.id} name={product.name} size={36}/><Button
               label={"+ " + product.name}
               disabled={blocked || d.lines.length >= 100}
               onPress={() =>
@@ -289,7 +288,7 @@ export function PurchaseOrdersView({
                   },
                 ])
               }
-            />
+            /></Box>
           ))}
           {options &&
           (options.more ||
@@ -300,7 +299,7 @@ export function PurchaseOrdersView({
           ) : null}
           {d.lines.map((l) => (
             <Box card key={l.id}>
-              <Text heading>{l.name}</Text>
+              <Box row><ProductImageById productId={l.productId} name={l.name} size={40}/><Text heading>{l.name}</Text></Box>
               <Text tone="muted">{unit(l.unit)}</Text>
               <Input
                 label={t("po.quantity")}
@@ -382,7 +381,7 @@ export function PurchaseOrdersView({
           </Box>
           {p.lines.map((l) => (
             <Box card key={l.id}>
-              <Text heading>{l.name}</Text>
+              <Box row><ProductImageById productId={l.productId} name={l.name} size={40}/><Text heading>{l.name}</Text></Box>
               <Text>
                 {t("po.line_summary", {
                   ordered: l.quantity,
@@ -504,7 +503,7 @@ export function PurchaseOrdersView({
                   };
                 return (
                   <Box card key={r.lineId}>
-                    <Text heading>{l.name}</Text>
+                    <Box row><ProductImageById productId={l.productId||r.productId} name={l.name} size={40}/><Text heading>{l.name}</Text></Box>
                     <Text>
                       {t("po.remaining", {
                         qty: poRemaining(l),
@@ -522,13 +521,12 @@ export function PurchaseOrdersView({
                         {options?.products
                           .filter((x) => x.unit === l.unit)
                           .map((x) => (
-                            <Check
-                              key={x.id}
+                            <Box row key={x.id}><ProductImageById productId={x.id} name={x.name} size={36}/><Check
                               label={x.name}
                               value={r.productId === x.id}
                               onChange={() => update({ productId: x.id })}
                               disabled={blocked}
-                            />
+                            /></Box>
                           ))}
                         <Button
                           label={t("po.create_product")}
