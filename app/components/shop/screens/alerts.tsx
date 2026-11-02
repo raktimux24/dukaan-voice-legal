@@ -139,7 +139,7 @@ export function AlertsScreen() {
               {ai.map((row) => (
                 <article key={row.id} className="alert-card">
                   <div>
-                    <p className="shop-list-title flex items-center gap-3">{row.productId?<ProductImageById productId={row.productId} name={row.productName||row.title} size={40}/>:null}{row.title}</p>
+                    <p className="shop-list-title flex items-center gap-3">{row.productId?<ProductImageById productId={row.productId} name={row.title} size={40}/>:null}{row.title}</p>
                     <p className="shop-list-meta">{row.description}</p>
                   </div>
                   <Button size="sm" tone="ghost" onClick={() => void api.dismissPrediction(shop.id, row.id).then(() => {
