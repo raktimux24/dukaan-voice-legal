@@ -38,3 +38,19 @@ test('all eleven legal locales disclose actual collection and provider retention
  const en=getLocalizedHtml('privacy','en');
  assert.ok(!en.includes('anonymized error reports'));assert.ok(!en.includes('typically 90 days'));assert.ok(!en.includes('Only the resulting text transcript'));
 });
+test('every published privacy page describes optional photos, public visibility, separate storage and delayed cleanup',()=>{
+ const photoNotices=require('../app/content/product-photo-privacy.json');
+ const {applyProductPhotoPrivacy}=require('../app/content/product-photo-privacy-html.ts');
+ assert.deepEqual(Object.keys(photoNotices).sort(),Object.keys(privacyNotices).sort());
+ const decode=html=>html.replace(/<[^>]*>/g,' ').replaceAll('&#39;',"'").replaceAll('&quot;','"').replaceAll('&amp;','&').replace(/\s+/g,' ');
+ for(const [locale,copy] of Object.entries(photoNotices)){
+  const html=getLocalizedHtml('privacy',locale),section=html.match(/<section data-product-photo-privacy="2026-11-03">[\s\S]*?<\/section>/)?.[0];
+  assert(section,locale+': photo disclosure is actually rendered');
+  for(const key of ['heading','photos','retention','cache'])assert(decode(section).includes(copy[key]),locale+'/'+key);
+  assert.equal((html.match(/data-product-photo-provider="r2"/g)||[]).length,1,locale+': one provider row');
+  assert(html.includes('https://www.cloudflare.com/privacypolicy/'));
+  assert(decode(html).includes(copy.database));assert(decode(html).includes(copy.providerPurpose));assert(decode(html).includes(copy.providerData));
+  assert.equal(applyProductPhotoPrivacy(html,locale),html,locale+': repeated rendering is idempotent');
+ }
+ const english=getLocalizedHtml('privacy','en');assert(!english.includes('All persisted application data'));assert(english.includes('after 24 hours'));assert(english.includes('after seven days'));
+});

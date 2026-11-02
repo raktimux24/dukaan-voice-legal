@@ -1,5 +1,6 @@
 import notices from './privacy-disclosures.json';
 import retained from './retention-locales.json';
+import {applyProductPhotoPrivacy} from './product-photo-privacy-html';
 
 const escape = (text: string) => text.replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]!));
 const paragraph = (text: string) => `<p>${escape(text)}</p>`;
@@ -7,7 +8,7 @@ const marker = 'data-privacy-disclosures="2026-10-31"';
 
 /** Replace obsolete translated claims structurally so every public locale agrees. */
 export function applyPrivacyDisclosures(html: string, locale: string) {
-  if (html.includes(marker)) return html;
+  if (html.includes(marker)) return applyProductPhotoPrivacy(html,locale);
   const copy = notices[locale as keyof typeof notices] ?? notices.en;
   const retention = retained[locale as keyof typeof retained] ?? retained.en;
   const subsection = (number: string, next: string, text: string) => {
@@ -29,5 +30,5 @@ export function applyPrivacyDisclosures(html: string, locale: string) {
   html = html.replace(/(<details id="s3">[\s\S]*?<div class="section-content">)/, start => start + paragraph(copy.providers));
   html = html.replace(/(<details id="s9">[\s\S]*?)(<\/div>\s*<\/details>)/, (_match, start, end) => start + paragraph(copy.partial) + '<p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>' + end);
   html = html.replace(/<p class="effective">[\s\S]*?<\/p>/, `<p class="effective">${escape(copy.updated)}</p>`);
-  return html.replace('<div class="container">', `<div class="container" ${marker}>`);
+  return applyProductPhotoPrivacy(html.replace('<div class="container">', `<div class="container" ${marker}>`),locale);
 }
