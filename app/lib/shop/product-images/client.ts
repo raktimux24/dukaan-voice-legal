@@ -14,5 +14,5 @@ export function bindProductImages(send:Send){
   upload:(shop:string,draft:string,client:string,bytes:BodyInit,signal?:AbortSignal)=>send<{state:string;image:ImageReference}>(base(shop)+`/drafts/${encodeURIComponent(draft)}/images/${encodeURIComponent(client)}`,{method:'PUT',body:bytes,headers:{'Content-Type':'application/octet-stream'},signal}),
  };
 }
-export const privateImagePath=(image:string,variant:string,lease:string)=>`/media/private/${encodeURIComponent(image)}/${encodeURIComponent(variant)}?lease=${encodeURIComponent(lease)}`;
+export const privateImagePath=(image:string,variant:string,lease?:string)=>`/media/private/${encodeURIComponent(image)}/${encodeURIComponent(variant)}`+(lease?`?lease=${encodeURIComponent(lease)}`:'');
 export const publicImagePath=(store:string,listing:string,image:string,variant:string)=>`/media/public/${encodeURIComponent(store)}/${encodeURIComponent(listing)}/${encodeURIComponent(image)}/${encodeURIComponent(variant)}`;

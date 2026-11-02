@@ -175,7 +175,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (productId) {
         await api.updateProduct(shop.id, productId, intent??body);
         saveIntent.current.succeeded();
-        await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
+        await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
         router.push(`/shop/products/${productId}`);
         return;
       }
@@ -188,7 +188,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       const created=createdResult.current??await api.addProduct(shop.id,intent??body);
       createdResult.current=created;
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
-      await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
+      await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
       if (onCreated) {
         await onCreated(created.product.id);
         return;

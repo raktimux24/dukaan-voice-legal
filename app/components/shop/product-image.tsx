@@ -1,12 +1,19 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
 import {useShop} from './context';
 import type {ShopApi} from '../../lib/shop/api';
-import type {ImageReference,ImageVariant} from '../../lib/shop/product-images/contract';
+import {imageUuid,type ImageReference,type ImageVariant} from '../../lib/shop/product-images/contract';
+import {createProductMediaBatcher} from '../../lib/shop/product-images/media-batcher';
 import {createImageLeaseBatcher} from '../../lib/shop/product-images/lease-batcher';
 import {privateImagePath} from '../../lib/shop/product-images/client';
 const base=process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/,'')??'';
 const batches=new WeakMap<ShopApi,Map<string,ReturnType<typeof createImageLeaseBatcher>>>();
+const mediaBatches=new WeakMap<ShopApi,Map<string,ReturnType<typeof createProductMediaBatcher>>>();
+function mediaById(api:ShopApi,shop:string,id:string){
+ let shops=mediaBatches.get(api);if(!shops){shops=new Map();mediaBatches.set(api,shops);}
+ let batch=shops.get(shop);if(!batch){batch=createProductMediaBatcher(ids=>api.productImages.query(shop,ids),()=>{try{api.assertSession();return true;}catch{return false;}});shops.set(shop,batch);}return batch.load(id);
+}
 function lease(api:ShopApi,shop:string,id:string){
  let shops=batches.get(api);if(!shops){shops=new Map();batches.set(api,shops);}
  let batch=shops.get(shop);if(!batch){batch=createImageLeaseBatcher(ids=>api.productImages.leases(shop,ids),()=>{try{api.assertSession();return true;}catch{return false;}});shops.set(shop,batch);}return batch.load(id);
@@ -23,4 +30,9 @@ export function ProductImage({image,name,size=48,variant='thumb',decorative=true
   {name.trim().charAt(0).toLocaleUpperCase()||'·'}
   {uri&&failed!==uri?<img src={uri} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setFailed(uri)} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain'}}/>:null}
  </span>;
+}
+
+export function ProductImageById({productId,...props}:{productId?:string|null;name:string;size?:number;decorative?:boolean}){
+ const {api,shop,userId,offline}=useShop(),query=useQuery({queryKey:['productMedia',userId,shop?.id,productId],enabled:!!shop&&!offline&&imageUuid(productId),queryFn:()=>mediaById(api,shop!.id,productId!),staleTime:30_000,gcTime:300_000,retry:false});
+ return <ProductImage {...props} image={query.data?.cover}/>;
 }
