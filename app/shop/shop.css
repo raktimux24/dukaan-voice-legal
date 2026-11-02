@@ -520,9 +520,11 @@ a.shop-list-row:hover {
 .product-catalogue .shop-list > div { min-width: 0; }
 .product-catalogue .shop-list { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 640px) {
-  .product-catalogue .shop-list-row { gap: 12px; padding: 12px; }
+  .product-catalogue .shop-list-row { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 8px 12px; padding: 12px; }
+  .product-catalogue .shop-list-row > span:first-child { grid-row: 1 / span 2; }
+  .product-catalogue .shop-list-main { grid-column: 2; }
   .product-catalogue .shop-list-title { white-space: normal; overflow-wrap: anywhere; }
-  .product-catalogue .shop-list-right { flex-direction: column; align-items: flex-end; gap: 4px; }
+  .product-catalogue .shop-list-right { grid-column: 2; min-width: 0; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; }
 }
 
 .shop-list-empty {
