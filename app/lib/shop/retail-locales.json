@@ -1825,7 +1825,11 @@
     "product_images.pending": "Finish or remove failed uploads before saving.",
     "product_images.conflict": "Photos changed on another device. Reload and review before saving.",
     "product_images.replace": "Replace",
-    "product_images.save_pending": "The previous save is still unconfirmed. Retry it to finish before editing further."
+    "product_images.save_pending": "The previous save is still unconfirmed. Retry it to finish before editing further.",
+    "product_images.current_title": "Current product photos",
+    "product_images.current_help": "These are current photos; packaging may differ from the time of sale.",
+    "product_images.activity": "Updated photos for {{name}} · {{before}} → {{after}}",
+    "product_images.activity_cover": "Cover changed"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3653,7 +3657,11 @@
     "product_images.pending": "सेव करने से पहले अपलोड पूरा करें या विफल फ़ोटो हटाएँ।",
     "product_images.conflict": "दूसरे डिवाइस पर फ़ोटो बदली हैं। दोबारा लोड करके जाँचें।",
     "product_images.replace": "बदलें",
-    "product_images.save_pending": "पिछला सेव अभी अपुष्ट है। आगे बदलने से पहले फिर कोशिश करके उसे पूरा करें।"
+    "product_images.save_pending": "पिछला सेव अभी अपुष्ट है। आगे बदलने से पहले फिर कोशिश करके उसे पूरा करें।",
+    "product_images.current_title": "उत्पाद की वर्तमान फ़ोटो",
+    "product_images.current_help": "ये मौजूदा फ़ोटो हैं; बिक्री के समय की पैकिंग अलग हो सकती है।",
+    "product_images.activity": "{{name}} की फ़ोटो बदलीं · {{before}} → {{after}}",
+    "product_images.activity_cover": "मुख्य फ़ोटो बदली"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5481,7 +5489,11 @@
     "product_images.pending": "Save se pehle upload poora karein ya failed photos hatayein.",
     "product_images.conflict": "Doosre device par photos badli hain. Reload karke review karein.",
     "product_images.replace": "Badlein",
-    "product_images.save_pending": "Pichhla save abhi confirm nahi hua. Aage edit karne se pehle retry karke poora karein."
+    "product_images.save_pending": "Pichhla save abhi confirm nahi hua. Aage edit karne se pehle retry karke poora karein.",
+    "product_images.current_title": "Abhi ki product photos",
+    "product_images.current_help": "Yeh abhi ki photos hain; sale ke waqt ki packing alag ho sakti hai.",
+    "product_images.activity": "{{name}} ki photos update hui · {{before}} → {{after}}",
+    "product_images.activity_cover": "Cover photo badli"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -7309,7 +7321,11 @@
     "product_images.pending": "சேமிக்கும் முன் பதிவேற்றத்தை முடிக்கவும் அல்லது தோல்வியுற்ற படங்களை அகற்றவும்.",
     "product_images.conflict": "மற்றொரு சாதனத்தில் படங்கள் மாற்றப்பட்டுள்ளன. மீண்டும் ஏற்றி சரிபார்க்கவும்.",
     "product_images.replace": "மாற்றவும்",
-    "product_images.save_pending": "முந்தைய சேமிப்பு உறுதியாகவில்லை. மேலும் மாற்றும் முன் மீண்டும் முயன்று முடிக்கவும்."
+    "product_images.save_pending": "முந்தைய சேமிப்பு உறுதியாகவில்லை. மேலும் மாற்றும் முன் மீண்டும் முயன்று முடிக்கவும்.",
+    "product_images.current_title": "தற்போதைய பொருள் படங்கள்",
+    "product_images.current_help": "இவை தற்போதைய படங்கள்; விற்பனையின்போது இருந்த பொதி வேறுபடலாம்.",
+    "product_images.activity": "{{name}} படங்கள் புதுப்பிக்கப்பட்டன · {{before}} → {{after}}",
+    "product_images.activity_cover": "முதன்மைப் படம் மாற்றப்பட்டது"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -9137,7 +9153,11 @@
     "product_images.pending": "సేవ్ చేసే ముందు అప్‌లోడ్ పూర్తి చేయండి లేదా విఫలమైన ఫోటోలను తొలగించండి.",
     "product_images.conflict": "మరో పరికరంలో ఫోటోలు మారాయి. మళ్లీ లోడ్ చేసి సమీక్షించండి.",
     "product_images.replace": "మార్చండి",
-    "product_images.save_pending": "మునుపటి సేవ్ నిర్ధారణ కాలేదు. మరింత మార్చే ముందు మళ్లీ ప్రయత్నించి పూర్తి చేయండి."
+    "product_images.save_pending": "మునుపటి సేవ్ నిర్ధారణ కాలేదు. మరింత మార్చే ముందు మళ్లీ ప్రయత్నించి పూర్తి చేయండి.",
+    "product_images.current_title": "ప్రస్తుత ఉత్పత్తి ఫోటోలు",
+    "product_images.current_help": "ఇవి ప్రస్తుత ఫోటోలు; అమ్మకం సమయంలో ప్యాకింగ్ భిన్నంగా ఉండవచ్చు.",
+    "product_images.activity": "{{name}} ఫోటోలు నవీకరించబడ్డాయి · {{before}} → {{after}}",
+    "product_images.activity_cover": "ముఖ్య ఫోటో మార్చబడింది"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -10965,7 +10985,11 @@
     "product_images.pending": "সংরক্ষণের আগে আপলোড শেষ করুন বা ব্যর্থ ছবিগুলি সরান।",
     "product_images.conflict": "অন্য ডিভাইসে ছবি বদলেছে। আবার লোড করে যাচাই করুন।",
     "product_images.replace": "বদলান",
-    "product_images.save_pending": "আগের সংরক্ষণ এখনও নিশ্চিত নয়। আরও বদলানোর আগে আবার চেষ্টা করে শেষ করুন।"
+    "product_images.save_pending": "আগের সংরক্ষণ এখনও নিশ্চিত নয়। আরও বদলানোর আগে আবার চেষ্টা করে শেষ করুন।",
+    "product_images.current_title": "পণ্যের বর্তমান ছবি",
+    "product_images.current_help": "এগুলি বর্তমান ছবি; বিক্রির সময়ের প্যাকেট আলাদা হতে পারে।",
+    "product_images.activity": "{{name}}-এর ছবি বদলানো হয়েছে · {{before}} → {{after}}",
+    "product_images.activity_cover": "প্রধান ছবি বদলানো হয়েছে"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -12793,7 +12817,11 @@
     "product_images.pending": "सेव्ह करण्यापूर्वी अपलोड पूर्ण करा किंवा अयशस्वी फोटो काढा.",
     "product_images.conflict": "दुसऱ्या उपकरणावर फोटो बदलले आहेत. पुन्हा लोड करून तपासा.",
     "product_images.replace": "बदला",
-    "product_images.save_pending": "मागील सेव्ह अजून निश्चित नाही. पुढे बदलण्यापूर्वी पुन्हा प्रयत्न करून पूर्ण करा."
+    "product_images.save_pending": "मागील सेव्ह अजून निश्चित नाही. पुढे बदलण्यापूर्वी पुन्हा प्रयत्न करून पूर्ण करा.",
+    "product_images.current_title": "उत्पादनाचे सध्याचे फोटो",
+    "product_images.current_help": "हे सध्याचे फोटो आहेत; विक्रीच्या वेळचे पॅकिंग वेगळे असू शकते.",
+    "product_images.activity": "{{name}} चे फोटो बदलले · {{before}} → {{after}}",
+    "product_images.activity_cover": "मुख्य फोटो बदलला"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -14621,7 +14649,11 @@
     "product_images.pending": "ಉಳಿಸುವ ಮೊದಲು ಅಪ್‌ಲೋಡ್ ಮುಗಿಸಿ ಅಥವಾ ವಿಫಲವಾದ ಫೋಟೋ ತೆಗೆದುಹಾಕಿ.",
     "product_images.conflict": "ಬೇರೆ ಸಾಧನದಲ್ಲಿ ಫೋಟೋಗಳು ಬದಲಾಗಿವೆ. ಮತ್ತೆ ಲೋಡ್ ಮಾಡಿ ಪರಿಶೀಲಿಸಿ.",
     "product_images.replace": "ಬದಲಿಸಿ",
-    "product_images.save_pending": "ಹಿಂದಿನ ಉಳಿಸುವಿಕೆ ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ಮತ್ತಷ್ಟು ಬದಲಿಸುವ ಮೊದಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಪೂರ್ಣಗೊಳಿಸಿ."
+    "product_images.save_pending": "ಹಿಂದಿನ ಉಳಿಸುವಿಕೆ ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ಮತ್ತಷ್ಟು ಬದಲಿಸುವ ಮೊದಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಪೂರ್ಣಗೊಳಿಸಿ.",
+    "product_images.current_title": "ಉತ್ಪನ್ನದ ಪ್ರಸ್ತುತ ಫೋಟೋಗಳು",
+    "product_images.current_help": "ಇವು ಪ್ರಸ್ತುತ ಫೋಟೋಗಳು; ಮಾರಾಟದ ಸಮಯದ ಪ್ಯಾಕಿಂಗ್ ಬೇರೆ ಇರಬಹುದು.",
+    "product_images.activity": "{{name}} ಫೋಟೋಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ · {{before}} → {{after}}",
+    "product_images.activity_cover": "ಮುಖ್ಯ ಫೋಟೋ ಬದಲಿಸಲಾಗಿದೆ"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -16449,7 +16481,11 @@
     "product_images.pending": "સાચવતા પહેલાં અપલોડ પૂર્ણ કરો અથવા નિષ્ફળ ફોટા દૂર કરો.",
     "product_images.conflict": "બીજા ઉપકરણ પર ફોટા બદલાયા છે. ફરી લોડ કરીને તપાસો.",
     "product_images.replace": "બદલો",
-    "product_images.save_pending": "અગાઉનું સાચવવું હજી નિશ્ચિત નથી. વધુ ફેરફાર પહેલાં ફરી પ્રયત્ન કરીને પૂર્ણ કરો."
+    "product_images.save_pending": "અગાઉનું સાચવવું હજી નિશ્ચિત નથી. વધુ ફેરફાર પહેલાં ફરી પ્રયત્ન કરીને પૂર્ણ કરો.",
+    "product_images.current_title": "ઉત્પાદનના હાલના ફોટા",
+    "product_images.current_help": "આ હાલના ફોટા છે; વેચાણ સમયે પેકિંગ અલગ હોઈ શકે છે.",
+    "product_images.activity": "{{name}}ના ફોટા બદલ્યા · {{before}} → {{after}}",
+    "product_images.activity_cover": "મુખ્ય ફોટો બદલ્યો"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -18277,6 +18313,10 @@
     "product_images.pending": "സംരക്ഷിക്കുന്നതിനുമുമ്പ് അപ്‌ലോഡ് പൂർത്തിയാക്കുക അല്ലെങ്കിൽ പരാജയപ്പെട്ട ഫോട്ടോകൾ നീക്കുക.",
     "product_images.conflict": "മറ്റൊരു ഉപകരണത്തിൽ ഫോട്ടോകൾ മാറി. വീണ്ടും ലോഡ് ചെയ്ത് പരിശോധിക്കുക.",
     "product_images.replace": "മാറ്റുക",
-    "product_images.save_pending": "മുമ്പത്തെ സംരക്ഷിക്കൽ സ്ഥിരീകരിച്ചിട്ടില്ല. കൂടുതൽ മാറ്റുന്നതിനുമുമ്പ് വീണ്ടും ശ്രമിച്ച് പൂർത്തിയാക്കുക."
+    "product_images.save_pending": "മുമ്പത്തെ സംരക്ഷിക്കൽ സ്ഥിരീകരിച്ചിട്ടില്ല. കൂടുതൽ മാറ്റുന്നതിനുമുമ്പ് വീണ്ടും ശ്രമിച്ച് പൂർത്തിയാക്കുക.",
+    "product_images.current_title": "നിലവിലെ ഉൽപ്പന്ന ഫോട്ടോകൾ",
+    "product_images.current_help": "ഇവ നിലവിലെ ഫോട്ടോകളാണ്; വിൽപ്പനസമയത്തെ പാക്കിങ് വ്യത്യസ്തമായിരിക്കാം.",
+    "product_images.activity": "{{name}} ഫോട്ടോകൾ പുതുക്കി · {{before}} → {{after}}",
+    "product_images.activity_cover": "പ്രധാന ഫോട്ടോ മാറ്റി"
   }
 }
