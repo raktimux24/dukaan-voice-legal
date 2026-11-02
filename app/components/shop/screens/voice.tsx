@@ -1,4 +1,6 @@
 'use client';
+import {ProductImageById} from "../product-image";
+import {ProductSelect} from "../product-select";
 import {useEffect,useRef,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
@@ -90,11 +92,12 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
         </Card>
         {!entities.length&&!response.analyticsResult?<Card><p>{t('modal.voice.err.not_understood',"Couldn't understand the command. Please try again.")}</p></Card>:null}
         {entities.map((entity,index)=><Card key={index} className="stack-form">
+          {entity.matchedProduct?<ProductImageById productId={entity.matchedProduct.id} name={entity.matchedProduct.name} size={40}/>:null}
           <div className="form-grid is-2"><Field label={t('modal.voice.entity_product','Product')}>
-            <select className={inputClass} disabled={busy||attempted.current||entity.action==='query'} value={entity.matchedProduct?.id??''} onChange={event=>{
-              const item=catalog.data?.find(row=>row.productId===event.target.value);if(!item)return;
+            <ProductSelect label={t('modal.voice.entity_product','Product')} disabled={busy||attempted.current||entity.action==='query'} value={entity.matchedProduct?.id??''} onChange={id=>{
+              const item=catalog.data?.find(row=>row.productId===id);if(!item)return;
               setEntities(rows=>rows.map((row,i)=>i===index?editVoiceEntity(row,{product:item.product.name,unit:item.unit,unitMismatch:false,matchedProduct:item.product,inventoryItem:{id:item.id,quantity:item.quantity,stockStatus:item.stockStatus}}):row));
-            }}><option value="">{t('modal.voice.not_found_short','Not found')}</option>{(catalog.data??[]).map(item=><option key={item.id} value={item.productId}>{item.product.name}</option>)}</select>
+            }} options={(catalog.data??[]).map(item=>[item.productId,item.product.name] as const)}/>
           </Field><Field label={t('modal.voice.entity_quantity','Quantity')}><input className={inputClass} type="number" step="0.001" min={entity.action==='update'?0:0.001} disabled={busy||attempted.current||entity.action==='query'} value={Number.isFinite(entity.quantity)?entity.quantity:''} onChange={event=>setEntities(rows=>rows.map((row,i)=>i===index?editVoiceEntity(row,{quantity:event.target.value===''?NaN:Number(event.target.value)}):row))}/></Field></div>
           <p>{actionLabel(entity.action)} · {entity.matchedProduct?.unit??entity.unit}</p>
           {entity.unitMismatch?<p className="text-danger">{t('modal.voice.unit_mismatch','Heard {{spoken}}; this product uses {{unit}}',{spoken:entity.spokenUnit??entity.unit,unit:entity.matchedProduct?.unit??entity.unit})}</p>:null}
