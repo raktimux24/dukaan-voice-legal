@@ -23,21 +23,23 @@ export function useProductImageEditor(product?:string,reset=0,slot=product??'new
   return()=>{live=false;unsubscribe();editor.dispose();if(ref.current?.editor===editor)ref.current=null;};
  },[api,key]);
  const editor=ref.current?.key===key&&ref.current.api===api?ref.current.editor:null,state=value?.key===key&&value.api===api?value.state:null;
- return {editor,state,dirty:editor?.dirty()??false,busy:state?.items.some(i=>i.status!=='ready')??false,clearRecovery:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');await active.editor.clearRecovery();},manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
+ return {editor,state,dirty:editor?.dirty()??false,busy:!!state?.selectionPending||(state?.items.some(i=>i.status!=='ready')??false),clearRecovery:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');await active.editor.clearRecovery();},manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
 }
 export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{media:ReturnType<typeof useProductImageEditor>;name:string;disabled?:boolean;onBusyChange?:(busy:boolean)=>void}){
  const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
  useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
+ useEffect(()=>{const element=input.current;if(!element||!editor)return;const cancel=()=>void editor.endSelection().catch(()=>setError(true));element.addEventListener('cancel',cancel);return()=>element.removeEventListener('cancel',cancel);},[editor]);
  const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
  const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();}catch{setError(true);}finally{setPreparing(false);}};
- const choose=(id?:string)=>{replace.current=id??null;if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}};
+ const choose=async(id?:string)=>{if(!editor)return;replace.current=id??null;setError(false);try{await editor.beginSelection();if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}}catch{setError(true);}};
  const add=async(files:File[])=>{if(!editor||disabled||preparing)return;setPreparing(true);setError(false);
-  try{const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
-  catch{setError(true);}finally{setPreparing(false);}
+  try{await editor.beginSelection();const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
+  catch{setError(true);}finally{await editor.endSelection().catch(()=>setError(true));setPreparing(false);}
  };
  return <section aria-label={text('title')} className="grid gap-3" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();replace.current=null;void add([...e.dataTransfer.files]);}}>
   <h2 className="shop-section-title">{text('title')}</h2><p className="shop-hint">{text('hint')}</p>
   {state?.restored?<p role="status">{text('draft_restored')}</p>:null}
+  {state?.restored&&state.selectionPending?<div><p role="alert">{text('reselect')}</p><Button tone="ghost" disabled={disabled||preparing} onClick={()=>void editor?.endSelection().catch(()=>setError(true))}>{text('remove')}</Button></div>:null}
   {!state?.loaded?<p role="status">{text('loading')}</p>:null}
   {state?.loaded&&(!state.available||state.error)?<p role="status">{state.error==='product_image_recovery_unavailable'?t('opening.error.storage','opening.error.storage'):text('unavailable')}</p>:null}
   <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
