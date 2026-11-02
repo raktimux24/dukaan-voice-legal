@@ -392,7 +392,7 @@
 .store-photo-choices { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; }
 .store-photo-choices button { border: 2px solid transparent; padding: 3px; border-radius: 10px; background: transparent; }
 .store-photo-choices button[aria-pressed=true] { border-color: #FF6B00; }
-.store-photo-dialog { background: #101014; color: #FAFAF9; border: 1px solid #555560; border-radius: 16px; padding: 20px; width: min(680px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); }
+.store-photo-dialog { background: #101014; color: #FAFAF9; border: 1px solid #555560; border-radius: 16px; padding: 20px; margin: auto; width: min(680px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); }
 .store-photo-dialog .store-photo { max-height: 65dvh; }
 .store-photo-dialog::backdrop { background: #000b; }
 .store-product-line { display: flex; align-items: center; gap: 12px; margin: 12px 0; }

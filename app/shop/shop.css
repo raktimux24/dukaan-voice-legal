@@ -61,6 +61,7 @@
 }
 
 /* home.css pads every <section> for marketing pages. Undo it here. */
+.product-photo-dialog::backdrop { background: #000b; }
 .shop-root :where(section) {
   padding: 0;
 }

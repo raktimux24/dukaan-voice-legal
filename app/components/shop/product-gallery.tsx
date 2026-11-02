@@ -15,7 +15,7 @@ export function ProductGallery({productId,name,media}:{productId:string;name:str
  return <section aria-label={t('product_images.title','Product photos')} style={{display:'grid',justifyItems:'center',gap:8,marginBottom:20}}>
   <button type="button" aria-label={photo.alt||name} onClick={()=>dialog.current?.showModal()}><ProductImage image={photo} name={name} size={240} variant="card" decorative={false}/></button>
   {photos.length>1?choices:null}
-  <dialog ref={dialog} aria-label={name} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close();}} style={{background:'#101014',color:'#FAFAF9',border:'1px solid #555560',borderRadius:16,padding:20,maxWidth:'calc(100vw - 24px)',maxHeight:'calc(100dvh - 24px)'}}>
+  <dialog ref={dialog} className="product-photo-dialog" aria-label={name} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close();}} style={{background:'#101014',color:'#FAFAF9',border:'1px solid #555560',borderRadius:16,padding:20,margin:'auto',maxWidth:'calc(100vw - 24px)',maxHeight:'calc(100dvh - 24px)'}}>
    <div style={{display:'grid',justifyItems:'center',gap:12}}><Button tone="ghost" onClick={()=>dialog.current?.close()}>{t('common.close','Close')}</Button><h2>{name}</h2><ProductImage image={photo} name={name} size={Math.min(560,typeof window==='undefined'?300:Math.min(window.innerWidth-96,window.innerHeight-230))} variant="detail" decorative={false}/>{choices}</div>
   </dialog>
  </section>;
