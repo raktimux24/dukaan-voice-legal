@@ -205,12 +205,10 @@ export function Storefront() {
     customer.address,
   ]);
   useEffect(() => {
-    document.title =
-      (tracking
-        ? tr("order_number", { number: tracking.number })
-        : (store?.config.name ?? tr("catalogue"))) + " · Samaan Bol";
+    // Catalogue/product titles come from visibility-checked server metadata.
+    if(tracking)document.title=tr("order_number",{number:tracking.number})+" · Samaan Bol";
     document.documentElement.lang = lang === "hinglish" ? "hi-Latn" : lang;
-  }, [lang, store?.config.name, tracking?.number]);
+  }, [lang, store?.config.name, tracking?.number,params.itemId,item?.name]);
   const loadTrack = async (tokenValue: string) => {
     const p = await send<any>(
       "/" + id + "/orders/" + params.orderId + "/track",
