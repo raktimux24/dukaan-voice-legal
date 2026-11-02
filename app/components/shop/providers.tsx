@@ -20,6 +20,7 @@ import { AuthScreen } from './auth-screen';
 import { ShopChrome } from './chrome';
 import {BillingShell,clearBillingShell} from './billing-shell';
 import { ShopContext, type ShopContextValue } from './context';
+import {retainProductPhotoSaves} from './use-product-save-recovery';
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
 const APP_LANGUAGES = new Set<string>(SUPPORTED_LANGUAGES.map(l=>l.code));
@@ -149,6 +150,10 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   const shop = shops?.find((item) => item.id === shopId) ?? null;
   useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
+  useLayoutEffect(()=>{
+    if(!isLoaded||(isSignedIn&&userId&&sessionId&&!shop))return;
+    void retainProductPhotoSaves(userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
+  },[isLoaded,isSignedIn,userId,sessionId,shop?.id]);
   useEffect(()=>{
     if(!shop||!userId||offline||navigator.onLine===false)return;
     let canceled=false,running=false;
@@ -250,6 +255,7 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   const value: ShopContextValue = {
     userId: userId ?? null,
+    photoSessionId: sessionId ?? null,
     shops: shops ?? [],
     shop,
     role,

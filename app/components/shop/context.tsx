@@ -8,6 +8,7 @@ import type { SubscriptionEntitlement } from '../../lib/subscriptions';
 
 export type ShopContextValue = {
   userId: string | null;
+  photoSessionId?: string | null;
   shops: ShopRecord[];
   shop: ShopRecord | null;
   role: Role | null;
