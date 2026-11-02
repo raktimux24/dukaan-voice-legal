@@ -1,6 +1,7 @@
 'use client';
 import {ProductImageEditor,useProductImageEditor} from '../product-image-editor';
 import {useProductSaveRecovery} from '../use-product-save-recovery';
+import {useProductEditorFields} from '../../../lib/shop/product-images/use-editor-fields';
 
 import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 import { useGstText as useUiText } from "../gst-ui";
@@ -124,6 +125,16 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     });
   }, [item, l1, params, productId, shop]);
   const form = draft ?? initial;
+  const editorFields=useProductEditorFields(form?media:{editor:null,state:null},form?{
+    ...Object.fromEntries(Object.entries(form).map(([key,value])=>[key,String(value)])),purchaseDiscount:buyingDiscount,autoMrp:String(autoMrp),generateBarcode:String(generateBarcode),gstConfig:JSON.stringify(gstDraft===undefined?item?.product.gstConfig??null:gstDraft),
+  }:{},fields=>{
+    const bool=(key:string)=>{if(!['true','false'].includes(fields[key]))throw Error('product_image_recovery_unavailable');return fields[key]==='true';};
+    const tax=JSON.parse(fields.gstConfig??'null');
+    if(!(UNITS as readonly string[]).includes(fields.unit))throw Error('product_image_recovery_unavailable');
+    const restored=blank(fields.category??'',fields.subcategory??'');
+    for(const key of Object.keys(restored) as (keyof Draft)[])if(key!=='trackStock'&&typeof fields[key]==='string')(restored as unknown as Record<string,string>)[key]=fields[key];
+    restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(tax);
+  });
 
   if (!shop) return <Spinner />;
   if (!perms.canEditProducts) return <NoAccess what={uiText("Only an owner or manager can add or edit products.")} />;
@@ -141,10 +152,10 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const netSelling=priceBreakdown?.net??selling;
   const marginPct = netSelling != null && cost != null && netSelling > 0 ? ((netSelling - cost) / netSelling) * 100 : null;
   const opening = Number(form.initialStock || 0);
-  const canSave = !pending && !media.busy && !preparingPhoto && saveIntent.ready && !saveIntent.error && (uncertainSave||!!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error);
+  const canSave = !pending && !media.busy && !preparingPhoto && saveIntent.ready && !saveIntent.error && (uncertainSave||editorFields.ready&&!!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error);
 
   const handleSubmit = async (addAnother = false) => {
-    if(pending||!saveIntent.ready||saveIntent.error)return;
+    if(pending||!saveIntent.ready||saveIntent.error||(!uncertainSave&&!editorFields.ready))return;
     if(!uncertainSave){
     if (!isAllowedL2(shop.category, shop.subtype, form.category, form.subcategory)) {
       setError(new Error('That category is not available for this shop.'));
@@ -252,7 +263,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
 
       {uncertainSave?<p role="alert">{t("product_images.save_pending","The previous save is still unconfirmed. Retry it to finish before editing further.")}</p>:null}
       {saveIntent.pending?<p>{String(saveIntent.pending.name??'')}</p>:null}
-      {saveIntent.error?<p role="alert">{t('opening.error.storage',"The saved request could not be verified. Keep this device's data and check recovery before continuing.")}</p>:null}
+      {saveIntent.error||editorFields.error?<p role="alert">{t('opening.error.storage',"The saved request could not be verified. Keep this device's data and check recovery before continuing.")}</p>:null}
       <div className="form-layout">
         <fieldset className="form-stack" style={{border:0,padding:0,margin:0,minWidth:0}} disabled={uncertainSave||!saveIntent.ready} inert={uncertainSave||!saveIntent.ready}>
           <Card><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto}/></Card>

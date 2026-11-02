@@ -1,15 +1,16 @@
 import {IMAGE_LIMITS,type GalleryInput,type ImageReference,type ProductGallery} from './contract';
-import type {EditorCheckpoint} from './editor-recovery';
+import type {EditorCheckpoint,EditorFields} from './editor-recovery';
 
 export type PreparedImage<T>={uri:string;payload:T;release:()=>void|Promise<void>};
 export type EditorItem<T>={clientId:string;image?:ImageReference;local?:PreparedImage<T>;status:'ready'|'uploading'|'failed'|'reselect';progress:number;error?:string;recovered?:boolean};
-export type ImageEditorState<T>={loaded:boolean;available:boolean;canEdit:boolean;version:number;items:EditorItem<T>[];error:string|null};
+export type ImageEditorState<T>={loaded:boolean;available:boolean;canEdit:boolean;version:number;items:EditorItem<T>[];error:string|null;fields?:EditorFields};
 type Adapter<T>={
  uuid:()=>string;current:()=>boolean;
  capabilities:()=>Promise<{available:boolean;canEdit:boolean}>;
  gallery?:()=>Promise<ProductGallery>;
  draft:(id:string)=>Promise<{id:string}>;
  upload:(draft:string,client:string,payload:T,signal:AbortSignal,progress:(n:number)=>void)=>Promise<{image:ImageReference}>;
+ outcome?:(client:string)=>Promise<{state:string;image?:ImageReference}>;
  recovery?:{load:()=>Promise<EditorCheckpoint|null>;save:(checkpoint:EditorCheckpoint)=>Promise<void>;clear:()=>Promise<void>};
 };
 /** Shared transient form state. Stable IDs and prepared bytes survive every retry. */
@@ -21,7 +22,7 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
  const current=()=>live&&adapter.current();
  const persist=()=>{
   if(!adapter.recovery||!initialized||cleared)return Promise.resolve();
-  const checkpoint:EditorCheckpoint={version:state.version,initial,draftId,updatedAt:checkpointAt,items:state.items.map(i=>({clientId:i.clientId,...(i.image?{image:{...i.image}}:{})}))};
+  const checkpoint:EditorCheckpoint={version:state.version,initial,draftId,updatedAt:checkpointAt,fields:state.fields,items:state.items.map(i=>({clientId:i.clientId,...(i.image?{image:{...i.image}}:{})}))};
   const changed=JSON.stringify(checkpoint.items.map(i=>({id:i.image?.id??i.clientId,alt:i.image?.alt??''})))!==initial;
   const result=persistence.catch(()=>{}).then(async()=>{if(!current())return;if(changed){await adapter.recovery!.save(checkpoint);hadCheckpoint=true;}else if(hadCheckpoint){await adapter.recovery!.clear();hadCheckpoint=false;}});
   persistence=result;
@@ -33,7 +34,11 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
  const signature=()=>JSON.stringify(state.items.map(item=>({id:item.image?.id??item.clientId,alt:item.image?.alt??''})));
  const release=(local?:PreparedImage<T>)=>{if(local)void Promise.resolve(local.release()).catch(()=>{});};
  const upload=async(client:string)=>{
-  const item=state.items.find(i=>i.clientId===client);if(!current()||!item?.local||flights.has(client))return;
+  const item=state.items.find(i=>i.clientId===client);if(!current()||!item||flights.has(client))return;
+  if(!item.local){
+   if(item.status==='reselect'&&adapter.outcome)try{const result=await adapter.outcome(client);if(current()&&result.image&&['staged','attached'].includes(result.state)){edit(client,{image:result.image,status:'ready',progress:1,recovered:true});await persistence;}}catch{/* No durable local file: keep the explicit reselection state. */}
+   return;
+  }
   const controller=new AbortController();flights.set(client,controller);edit(client,{status:'uploading',error:undefined,progress:0});
   const preceding=queue;let unlock!:()=>void;queue=new Promise<void>(resolve=>{unlock=resolve;});
   try{
@@ -58,11 +63,13 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
      const expired=Date.now()-saved.updatedAt>=IMAGE_LIMITS.stageHours*3600000;
      draftId=expired?undefined:saved.draftId;
      initial=saved.initial;
-     update({version:saved.version,items:saved.items.map(item=>{
+     const restored=await Promise.all(saved.items.map(async item=>{
       const attached=gallery?.images.find(i=>i.id===item.image?.id&&i.version===item.image?.version);
-      const image=expired&&!attached?undefined:item.image;
-      return {clientId:item.clientId,...(image?{image}:{}),status:image?'ready':'reselect',progress:image?1:0,recovered:!!image&&!attached};
-     })});
+      let image=expired&&!attached?undefined:item.image;
+      if(!image&&!expired&&adapter.outcome)try{const result=await adapter.outcome(item.clientId);if(['staged','attached'].includes(result.state))image=result.image;}catch{/* Reselection remains available without retaining original bytes. */}
+      return {clientId:item.clientId,...(image?{image}:{}),status:image?'ready' as const:'reselect' as const,progress:image?1:0,recovered:!!image&&!attached};
+     }));
+     update({version:saved.version,fields:saved.fields,items:restored});
     }
     initialized=true;
    }catch(error){update({loaded:true,error:(error as Error).message??'product_image_failed'});}
@@ -77,6 +84,7 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
   move(client:string,index:number){const rows=[...state.items],from=rows.findIndex(i=>i.clientId===client);if(from<0||index<0||index>=rows.length)return;const [row]=rows.splice(from,1);rows.splice(index,0,row);manifest=undefined;update({items:rows});},
   alt(client:string,alt:string){if(alt.length>240||/[\x00-\x1f]/.test(alt))return;const item=state.items.find(i=>i.clientId===client);if(item?.image){manifest=undefined;edit(client,{image:{...item.image,alt}});}},
   dirty:()=>signature()!==initial,
+  setFields(fields:EditorFields){if(JSON.stringify(fields)!==JSON.stringify(state.fields))update({fields:{...fields}});},
   async clearRecovery(){await persistence.catch(()=>{});if(adapter.recovery&&hadCheckpoint)await adapter.recovery.clear();cleared=true;hadCheckpoint=false;},
   async manifest():Promise<GalleryInput|undefined>{
    if(!current())throw Error('auth_session_changed');
