@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button, Card, Chip, Field, Pill } from "../ui";
@@ -216,7 +217,7 @@ export function EstimateEditor({
                 {d.lines.map((l) => (
                   <div className="estimate-line" key={l.id}>
                     <div className="estimate-section-head">
-                      <strong>{l.name}</strong>
+                      <span className="flex items-center gap-3"><ProductImageById productId={l.productId} name={l.name} size={36}/><strong>{l.name}</strong></span>
                       <Button
                         size="sm"
                         tone="quiet"
@@ -412,7 +413,7 @@ export function EstimateEditor({
                   }}
                 >
                   <span>
-                    <strong>{p.name}</strong>
+                    <span className="flex items-center gap-3"><ProductImageById productId={p.id} name={p.name} size={40}/><strong>{p.name}</strong></span>
                     <small>
                       {unit(p.unit)} · {money(p.price)}
                     </small>
@@ -615,7 +616,7 @@ export function EstimateSummary({
           {p.lines.map((l) => (
             <div key={l.id}>
               <div>
-                <strong>{l.name}</strong>
+                <span className="flex items-center gap-3"><ProductImageById productId={l.productId} name={l.name} size={36}/><strong>{l.name}</strong></span>
                 <p className="estimate-muted">
                   {l.quantity} {unit(l.unit)} × {money(l.price)}
                   {Number(l.discount) > 0

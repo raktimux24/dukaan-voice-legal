@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -42,7 +43,7 @@ export function BriefScreen() {
       {premium ? <Card><Button tone="ghost" disabled={audio.isFetching} onClick={()=>void audio.refetch()}>{audio.isFetching?t('common.loading','Loading'):t('brief.listen','Listen')}</Button><SpeechAudio base64={audio.data?.audioBase64} label={t('brief.listen','Listen')} /></Card> : null}
       {items.map((item) => (
         <Card key={item.id}>
-          <p className="font-semibold">{item.title}</p>
+          <p className="flex items-center gap-3 font-semibold">{item.productId?<ProductImageById productId={item.productId} name={item.title} size={36}/>:null}{item.title}</p>
           <p className="mt-1 text-muted">{item.body}</p>
           {canAct(item, perms.canEditProducts) ? (
             <div className="mt-3">

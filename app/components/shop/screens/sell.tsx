@@ -425,7 +425,7 @@ export function SellScreen() {
                   if (match) choose(match);
                 }}
               >
-                {nudge.title}
+                {nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={24}/>:null}{nudge.title}
               </Chip>
             ))}
           </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
@@ -354,7 +355,7 @@ export function HomeScreen() {
                   return (
                     <div key={nudge.id} className="dash-nudge">
                       <div className="min-w-0">
-                        <p className="font-medium">{nudge.title}</p>
+                        <p className="flex items-center gap-3 font-medium">{nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={36}/>:null}{nudge.title}</p>
                         <p className="mt-1 text-sm text-muted">{nudge.body}</p>
                       </div>
                       {action && allowed ? (
