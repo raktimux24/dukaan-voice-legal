@@ -15,5 +15,5 @@ export function useProductEditorFields<T>(media:{editor:ReturnType<typeof create
   }
   media.editor.setFields(JSON.parse(serialized));
  },[media.editor,media.state?.loaded,serialized]);
- return {ready:!!media.editor&&value?.editor===media.editor&&!value.error,error:!!media.editor&&value?.editor===media.editor&&value.error};
+ return {ready:!!media.state?.loaded&&!!media.editor&&value?.editor===media.editor&&!value.error,error:!!media.editor&&value?.editor===media.editor&&value.error};
 }
