@@ -1,3 +1,6 @@
+import Link from "next/link";
+import {ProductImage,ProductImageById} from "../../../components/shop/product-image";
+import {ProductGallery} from "../../../components/shop/product-gallery";
 import { useEffect, useState } from "react";
 import type { OpeningUi } from "../openings/view";
 import type { useCommerce } from "./workflow";
@@ -289,7 +292,7 @@ export function CommerceView({
           />
           {listing ? (
             <Box card>
-              <Text heading>{listing.name}</Text>
+              <ProductGallery productId={listing.productId} name={listing.name} media={listing.media}/><Text heading>{listing.name}</Text><Text tone="muted">{t("product_images.hint")}</Text><Link className="shop-section-link" href={`/shop/products/${listing.productId}/edit`}>{t("modal.add_product.title_edit")}</Link>
               <Text tone="muted">{listing.url}</Text>
               <Input
                 label={tr("listing_name")}
@@ -349,7 +352,7 @@ export function CommerceView({
           ) : null}
           {w.store.data?.items.map((l) => (
             <Box card key={l.id}>
-              <Text heading>{l.name}</Text>
+              <Box row><ProductImage image={l.media?.cover} name={l.name} size={48}/><Text heading>{l.name}</Text></Box>
               <Text>
                 {l.visible ? tr("listed") : tr("hidden")} ·{" "}
                 {tr(l.available ? "available" : "unavailable")}
@@ -417,9 +420,7 @@ export function CommerceView({
                 {tr("config_" + p.fulfilment)} {p.customer.address}
               </Text>
               {p.lines.map((l) => (
-                <Text key={l.listingId}>
-                  {l.name} · {l.quantity} {unitLabel(l.unit)} · ₹{l.price}
-                </Text>
+                <Box row key={l.listingId}><ProductImageById productId={l.productId} name={l.name} size={36}/><Text>{l.name} · {l.quantity} {unitLabel(l.unit)} · ₹{l.price}</Text></Box>
               ))}
               <Text heading>{tr("total_amount", { amount: p.total })}</Text>
               {p.expiresAt && !p.saleId ? (
