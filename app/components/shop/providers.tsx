@@ -22,6 +22,7 @@ import {BillingShell,clearBillingShell} from './billing-shell';
 import { ShopContext, type ShopContextValue } from './context';
 import {retainProductPhotoSaves} from './use-product-save-recovery';
 import {retainProductPhotoEditors} from './product-image-editor';
+import {retainProductThumbnails} from '../../lib/shop/product-images/thumbnail-storage.web';
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
 const APP_LANGUAGES = new Set<string>(SUPPORTED_LANGUAGES.map(l=>l.code));
@@ -155,6 +156,7 @@ function ShopSession({ children }: { children: ReactNode }) {
     if(!isLoaded||(isSignedIn&&userId&&sessionId&&!shop))return;
     void retainProductPhotoSaves(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
     void retainProductPhotoEditors(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
+    void retainProductThumbnails(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
   },[isLoaded,isSignedIn,userId,sessionId,shop?.id]);
   useEffect(()=>{
     if(!shop||!userId||offline||navigator.onLine===false)return;
