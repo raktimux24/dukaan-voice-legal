@@ -152,7 +152,7 @@ function ShopSession({ children }: { children: ReactNode }) {
   useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
   useLayoutEffect(()=>{
     if(!isLoaded||(isSignedIn&&userId&&sessionId&&!shop))return;
-    void retainProductPhotoSaves(userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
+    void retainProductPhotoSaves(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
   },[isLoaded,isSignedIn,userId,sessionId,shop?.id]);
   useEffect(()=>{
     if(!shop||!userId||offline||navigator.onLine===false)return;

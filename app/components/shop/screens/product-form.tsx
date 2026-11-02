@@ -179,8 +179,10 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       const intent=saveIntent.retry()??(imageManifest?await saveIntent.prepare({...body,...(!productId?{initialStock:form.trackStock?Number(form.initialStock||0):0,generateBarcode:generateBarcode&&!form.barcode.trim(),supplier:form.supplier||undefined,expiryDate:form.expiryDate||undefined,purchaseDate:form.purchaseDate||undefined,batchNumber:form.batchNumber||undefined}:{}),imageManifest}):null);
       if (productId) {
         await api.updateProduct(shop.id, productId, intent??body);
+        if(!saveIntent.current())return;
         await saveIntent.succeeded();
         await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
+        if(!saveIntent.current())return;
         router.push(`/shop/products/${productId}`);
         return;
       }
@@ -191,10 +193,13 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
       if (form.batchNumber) body.batchNumber = form.batchNumber;
       const created=createdResult.current??await api.addProduct(shop.id,intent??body);
+      if(!saveIntent.current())return;
       createdResult.current=created;
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
+      if(!saveIntent.current())return;
       if (onCreated) {
+        if(!saveIntent.current())return;
         await onCreated(created.product.id);
         await saveIntent.succeeded();
         return;
@@ -209,6 +214,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       }
       await saveIntent.succeeded();router.push(`/shop/products/${created.product.id}`);
     } catch (caught) {
+      if(!saveIntent.current())return;
       if(!createdResult.current)await saveIntent.failed(caught);setUncertainSave(!!saveIntent.retry()||!!createdResult.current);
       setError(caught);
     } finally {

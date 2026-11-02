@@ -26,7 +26,7 @@ export function useProductSaveRecovery(slot:string){
   if(owner&&typeof id==='string')await locked(()=>journal.remove(owner,slot,id,sameSession));
   if(!sameSession())throw Error('auth_session_changed');controller.pending=null;changed();
  };
- return {identity:key,ready:controller.ready,error:controller.error,pending:controller.pending,retry:()=>controller.pending,
+ return {identity:key,current,ready:controller.ready,error:controller.error,pending:controller.pending,retry:()=>controller.pending,
   prepare:async(body:Record<string,unknown>)=>{
    if(!controller.ready||!owner||!current())throw Error('product_image_recovery_unavailable');
    const retained=controller.pending??{...JSON.parse(JSON.stringify(body)),productRequestId:crypto.randomUUID()};
