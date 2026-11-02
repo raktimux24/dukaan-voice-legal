@@ -1831,7 +1831,9 @@
     "product_images.activity": "Updated photos for {{name}} · {{before}} → {{after}}",
     "product_images.activity_cover": "Cover changed",
     "product_images.reselect": "Choose this photo again. Its temporary file was not kept.",
-    "product_images.restored": "Uploaded photo restored. Preview is available after saving."
+    "product_images.restored": "Uploaded photo restored. Preview is available after saving.",
+    "product_images.draft_restored": "Unsaved photo changes restored. Review them before saving.",
+    "product_images.reset": "Reset photo changes"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3665,7 +3667,9 @@
     "product_images.activity": "{{name}} की फ़ोटो बदलीं · {{before}} → {{after}}",
     "product_images.activity_cover": "मुख्य फ़ोटो बदली",
     "product_images.reselect": "यह फ़ोटो फिर चुनें। इसकी अस्थायी फ़ाइल नहीं रखी गई थी।",
-    "product_images.restored": "अपलोड की गई फ़ोटो वापस मिल गई है। सेव करने के बाद प्रीव्यू दिखेगा।"
+    "product_images.restored": "अपलोड की गई फ़ोटो वापस मिल गई है। सेव करने के बाद प्रीव्यू दिखेगा।",
+    "product_images.draft_restored": "बिना सेव किए फ़ोटो बदलाव वापस मिल गए हैं। सेव करने से पहले जाँच लें।",
+    "product_images.reset": "फ़ोटो बदलाव रीसेट करें"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5499,7 +5503,9 @@
     "product_images.activity": "{{name}} ki photos update hui · {{before}} → {{after}}",
     "product_images.activity_cover": "Cover photo badli",
     "product_images.reselect": "Yeh photo phir chunein. Iski temporary file nahi rakhi gayi thi.",
-    "product_images.restored": "Upload ki gayi photo wapas mil gayi. Save karne ke baad preview dikhega."
+    "product_images.restored": "Upload ki gayi photo wapas mil gayi. Save karne ke baad preview dikhega.",
+    "product_images.draft_restored": "Bina save kiye photo changes wapas mil gaye. Save se pehle review karein.",
+    "product_images.reset": "Photo changes reset karein"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -7333,7 +7339,9 @@
     "product_images.activity": "{{name}} படங்கள் புதுப்பிக்கப்பட்டன · {{before}} → {{after}}",
     "product_images.activity_cover": "முதன்மைப் படம் மாற்றப்பட்டது",
     "product_images.reselect": "இந்தப் படத்தை மீண்டும் தேர்ந்தெடுக்கவும். தற்காலிகக் கோப்பு சேமிக்கப்படவில்லை.",
-    "product_images.restored": "பதிவேற்றிய படம் மீட்கப்பட்டது. சேமித்த பின் முன்னோட்டம் கிடைக்கும்."
+    "product_images.restored": "பதிவேற்றிய படம் மீட்கப்பட்டது. சேமித்த பின் முன்னோட்டம் கிடைக்கும்.",
+    "product_images.draft_restored": "சேமிக்காத பட மாற்றங்கள் மீட்கப்பட்டன. சேமிக்கும் முன் சரிபார்க்கவும்.",
+    "product_images.reset": "பட மாற்றங்களை மீட்டமை"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -9167,7 +9175,9 @@
     "product_images.activity": "{{name}} ఫోటోలు నవీకరించబడ్డాయి · {{before}} → {{after}}",
     "product_images.activity_cover": "ముఖ్య ఫోటో మార్చబడింది",
     "product_images.reselect": "ఈ ఫోటోను మళ్లీ ఎంచుకోండి. తాత్కాలిక ఫైల్ ఉంచబడలేదు.",
-    "product_images.restored": "అప్‌లోడ్ చేసిన ఫోటో తిరిగి పొందబడింది. సేవ్ చేసిన తర్వాత ప్రివ్యూ కనిపిస్తుంది."
+    "product_images.restored": "అప్‌లోడ్ చేసిన ఫోటో తిరిగి పొందబడింది. సేవ్ చేసిన తర్వాత ప్రివ్యూ కనిపిస్తుంది.",
+    "product_images.draft_restored": "సేవ్ చేయని ఫోటో మార్పులు తిరిగి పొందబడ్డాయి. సేవ్ చేసే ముందు పరిశీలించండి.",
+    "product_images.reset": "ఫోటో మార్పులను రీసెట్ చేయండి"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -11001,7 +11011,9 @@
     "product_images.activity": "{{name}}-এর ছবি বদলানো হয়েছে · {{before}} → {{after}}",
     "product_images.activity_cover": "প্রধান ছবি বদলানো হয়েছে",
     "product_images.reselect": "এই ছবিটি আবার বেছে নিন। অস্থায়ী ফাইলটি রাখা হয়নি।",
-    "product_images.restored": "আপলোড করা ছবি ফিরে পাওয়া গেছে। সংরক্ষণের পর প্রিভিউ দেখা যাবে।"
+    "product_images.restored": "আপলোড করা ছবি ফিরে পাওয়া গেছে। সংরক্ষণের পর প্রিভিউ দেখা যাবে।",
+    "product_images.draft_restored": "সংরক্ষণ না করা ছবির পরিবর্তন ফিরে পাওয়া গেছে। সংরক্ষণের আগে দেখে নিন।",
+    "product_images.reset": "ছবির পরিবর্তন রিসেট করুন"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -12835,7 +12847,9 @@
     "product_images.activity": "{{name}} चे फोटो बदलले · {{before}} → {{after}}",
     "product_images.activity_cover": "मुख्य फोटो बदलला",
     "product_images.reselect": "हा फोटो पुन्हा निवडा. त्याची तात्पुरती फाइल ठेवलेली नाही.",
-    "product_images.restored": "अपलोड केलेला फोटो परत मिळाला. सेव्ह केल्यानंतर पूर्वदृश्य दिसेल."
+    "product_images.restored": "अपलोड केलेला फोटो परत मिळाला. सेव्ह केल्यानंतर पूर्वदृश्य दिसेल.",
+    "product_images.draft_restored": "सेव्ह न केलेले फोटो बदल परत मिळाले. सेव्ह करण्यापूर्वी तपासा.",
+    "product_images.reset": "फोटो बदल रीसेट करा"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -14669,7 +14683,9 @@
     "product_images.activity": "{{name}} ಫೋಟೋಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ · {{before}} → {{after}}",
     "product_images.activity_cover": "ಮುಖ್ಯ ಫೋಟೋ ಬದಲಿಸಲಾಗಿದೆ",
     "product_images.reselect": "ಈ ಫೋಟೋವನ್ನು ಮತ್ತೆ ಆಯ್ಕೆಮಾಡಿ. ತಾತ್ಕಾಲಿಕ ಫೈಲ್ ಉಳಿಸಿಲ್ಲ.",
-    "product_images.restored": "ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ಫೋಟೋ ಮರಳಿ ಸಿಕ್ಕಿದೆ. ಉಳಿಸಿದ ನಂತರ ಪೂರ್ವವೀಕ್ಷಣೆ ಸಿಗುತ್ತದೆ."
+    "product_images.restored": "ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ಫೋಟೋ ಮರಳಿ ಸಿಕ್ಕಿದೆ. ಉಳಿಸಿದ ನಂತರ ಪೂರ್ವವೀಕ್ಷಣೆ ಸಿಗುತ್ತದೆ.",
+    "product_images.draft_restored": "ಉಳಿಸದ ಫೋಟೋ ಬದಲಾವಣೆಗಳು ಮರಳಿ ಸಿಕ್ಕಿವೆ. ಉಳಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ.",
+    "product_images.reset": "ಫೋಟೋ ಬದಲಾವಣೆಗಳನ್ನು ಮರುಹೊಂದಿಸಿ"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -16503,7 +16519,9 @@
     "product_images.activity": "{{name}}ના ફોટા બદલ્યા · {{before}} → {{after}}",
     "product_images.activity_cover": "મુખ્ય ફોટો બદલ્યો",
     "product_images.reselect": "આ ફોટો ફરી પસંદ કરો. તેની કામચલાઉ ફાઇલ રાખવામાં આવી નહોતી.",
-    "product_images.restored": "અપલોડ કરેલો ફોટો પાછો મળ્યો. સાચવ્યા પછી પ્રિવ્યૂ દેખાશે."
+    "product_images.restored": "અપલોડ કરેલો ફોટો પાછો મળ્યો. સાચવ્યા પછી પ્રિવ્યૂ દેખાશે.",
+    "product_images.draft_restored": "સાચવ્યા વગરના ફોટાના ફેરફારો પાછા મળ્યા. સાચવતા પહેલાં તપાસો.",
+    "product_images.reset": "ફોટાના ફેરફારો રીસેટ કરો"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -18337,6 +18355,8 @@
     "product_images.activity": "{{name}} ഫോട്ടോകൾ പുതുക്കി · {{before}} → {{after}}",
     "product_images.activity_cover": "പ്രധാന ഫോട്ടോ മാറ്റി",
     "product_images.reselect": "ഈ ഫോട്ടോ വീണ്ടും തിരഞ്ഞെടുക്കുക. താൽക്കാലിക ഫയൽ സൂക്ഷിച്ചിട്ടില്ല.",
-    "product_images.restored": "അപ്‌ലോഡ് ചെയ്ത ഫോട്ടോ വീണ്ടെടുത്തു. സംരക്ഷിച്ച ശേഷം പ്രിവ്യൂ ലഭിക്കും."
+    "product_images.restored": "അപ്‌ലോഡ് ചെയ്ത ഫോട്ടോ വീണ്ടെടുത്തു. സംരക്ഷിച്ച ശേഷം പ്രിവ്യൂ ലഭിക്കും.",
+    "product_images.draft_restored": "സംരക്ഷിക്കാത്ത ഫോട്ടോ മാറ്റങ്ങൾ വീണ്ടെടുത്തു. സംരക്ഷിക്കുന്നതിന് മുമ്പ് പരിശോധിക്കുക.",
+    "product_images.reset": "ഫോട്ടോ മാറ്റങ്ങൾ പുനഃക്രമീകരിക്കുക"
   }
 }

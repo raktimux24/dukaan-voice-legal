@@ -29,6 +29,7 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
  const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
  useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
  const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
+ const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();}catch{setError(true);}finally{setPreparing(false);}};
  const choose=(id?:string)=>{replace.current=id??null;if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}};
  const add=async(files:File[])=>{if(!editor||disabled||preparing)return;setPreparing(true);setError(false);
   try{const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
@@ -36,8 +37,9 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
  };
  return <section aria-label={text('title')} className="grid gap-3" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();replace.current=null;void add([...e.dataTransfer.files]);}}>
   <h2 className="shop-section-title">{text('title')}</h2><p className="shop-hint">{text('hint')}</p>
+  {state?.restored?<p role="status">{text('draft_restored')}</p>:null}
   {!state?.loaded?<p role="status">{text('loading')}</p>:null}
-  {state?.loaded&&(!state.available||state.error)?<p role="status">{text('unavailable')}</p>:null}
+  {state?.loaded&&(!state.available||state.error)?<p role="status">{state.error==='product_image_recovery_unavailable'?t('opening.error.storage','opening.error.storage'):text('unavailable')}</p>:null}
   <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
    {item.local?<img src={item.local.uri} alt={item.image?.alt||name} width={194} height={150} style={{objectFit:'contain',borderRadius:8}}/>:item.recovered?<p className="shop-hint">{text('restored')}</p>:<ProductImage image={item.image} name={name} size={150} variant="card" decorative={false}/>}
    {item.status==='reselect'?<p role="alert">{text('reselect')}</p>:null}
@@ -53,6 +55,7 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
   </div>)}</div>
   <input ref={input} hidden type="file" multiple={!replace.current} accept="image/jpeg,image/png,image/webp" onChange={e=>void add([...(e.target.files??[])])}/>
   {state?.available&&state.canEdit?<Button tone="ghost" disabled={disabled||preparing||state.items.length>=5} onClick={()=>choose()}>{text('library')}</Button>:null}
+  {state?.available&&state.canEdit&&media.dirty?<Button tone="ghost" disabled={disabled||preparing||state.items.some(i=>i.status==='uploading')} onClick={()=>void reset()}>{text('reset')}</Button>:null}
   {error?<p role="alert">{text('error')}</p>:null}
  </section>;
 }
