@@ -4,10 +4,10 @@ import type {ImageReference,ProductMedia} from '../../lib/shop/product-images/co
 import {publicImagePath} from '../../lib/shop/product-images/client';
 const base=process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/,'')??'';
 export function PublicProductImage({store,listing,name,image,compact=false,detail=false}:{store:string;listing:string;name:string;image?:ImageReference|null;compact?:boolean;detail?:boolean}){
- const [failed,setFailed]=useState(''),key=`${store}/${listing}/${image?.id}/${image?.version}`,uri=image?base+publicImagePath(store,listing,image.id,compact?'thumb':detail?'detail':'card'):'';
+ const [failed,setFailed]=useState(''),[loaded,setLoaded]=useState(''),key=`${store}/${listing}/${image?.id}/${image?.version}/${compact?"thumb":detail?"detail":"card"}`,uri=image?base+publicImagePath(store,listing,image.id,compact?'thumb':detail?'detail':'card'):'';
  return <span className={'store-photo'+(compact?' is-compact':'')} aria-hidden="true">
-  <span>{name.trim().charAt(0).toLocaleUpperCase()||'·'}</span>
-  {uri&&failed!==key?<img src={uri} alt="" width={compact?48:detail?1280:640} height={compact?48:detail?1280:640} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>setFailed(key)}/>:null}
+  {!uri||failed===key||loaded!==key?<span>{name.trim().charAt(0).toLocaleUpperCase()||'·'}</span>:null}
+  {uri&&failed!==key?<img src={uri} alt="" width={compact?48:detail?1280:640} height={compact?48:detail?1280:640} loading="lazy" decoding="async" referrerPolicy="no-referrer" onLoad={()=>setLoaded(key)} onError={()=>setFailed(key)}/>:null}
  </span>;
 }
 export function PublicProductGallery({store,listing,name,media,images,closeLabel}:{store:string;listing:string;name:string;media?:ProductMedia|null;images?:ImageReference[];closeLabel:string}){
