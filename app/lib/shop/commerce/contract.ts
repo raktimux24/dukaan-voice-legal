@@ -1,3 +1,4 @@
+import type {ProductMedia,ImageReference} from '../product-images/contract';
 export const commerceLanguages = [
   "en",
   "hi",
@@ -32,6 +33,8 @@ export type OnlineStore = {
   url: string;
 };
 export type OnlineListing = {
+  media?:ProductMedia|null;
+  images?:ImageReference[];
   id: string;
   productId: string;
   name: string;
