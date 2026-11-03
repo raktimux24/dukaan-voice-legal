@@ -1836,7 +1836,8 @@
     "product_images.reset": "Reset photo changes",
     "product_images.leave_title": "Leave this form?",
     "product_images.leave_hint": "Your saved product will not change. Photo changes stay in a draft on this device. Unfinished photos may need to be selected again.",
-    "product_images.leave": "Leave and keep draft"
+    "product_images.leave": "Leave and keep draft",
+    "product_images.load_failed": "Photo could not be loaded."
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3675,7 +3676,8 @@
     "product_images.reset": "फ़ोटो बदलाव रीसेट करें",
     "product_images.leave_title": "यह फ़ॉर्म छोड़ें?",
     "product_images.leave_hint": "आपका सहेजा उत्पाद नहीं बदलेगा। फ़ोटो बदलाव इस डिवाइस पर ड्राफ़्ट में रहेंगे। अधूरी फ़ोटो फिर चुननी पड़ सकती हैं।",
-    "product_images.leave": "ड्राफ़्ट रखकर छोड़ें"
+    "product_images.leave": "ड्राफ़्ट रखकर छोड़ें",
+    "product_images.load_failed": "फ़ोटो लोड नहीं हो सकी।"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5514,7 +5516,8 @@
     "product_images.reset": "Photo changes reset karein",
     "product_images.leave_title": "Yeh form chhodein?",
     "product_images.leave_hint": "Saved product nahi badlega. Photo changes is device par draft mein rahenge. Adhuri photos dobara chunni pad sakti hain.",
-    "product_images.leave": "Draft rakhkar chhodein"
+    "product_images.leave": "Draft rakhkar chhodein",
+    "product_images.load_failed": "Photo load nahi ho saki."
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -7353,7 +7356,8 @@
     "product_images.reset": "பட மாற்றங்களை மீட்டமை",
     "product_images.leave_title": "இந்தப் படிவத்திலிருந்து வெளியேறவா?",
     "product_images.leave_hint": "சேமித்த பொருள் மாறாது. பட மாற்றங்கள் இந்தச் சாதனத்தில் வரைவாக இருக்கும். முடிக்காத படங்களை மீண்டும் தேர்ந்தெடுக்க வேண்டியிருக்கலாம்.",
-    "product_images.leave": "வரைவை வைத்துக்கொண்டு வெளியேறு"
+    "product_images.leave": "வரைவை வைத்துக்கொண்டு வெளியேறு",
+    "product_images.load_failed": "படத்தை ஏற்ற முடியவில்லை."
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -9192,7 +9196,8 @@
     "product_images.reset": "ఫోటో మార్పులను రీసెట్ చేయండి",
     "product_images.leave_title": "ఈ ఫారమ్ నుండి వెళ్లాలా?",
     "product_images.leave_hint": "సేవ్ చేసిన ఉత్పత్తి మారదు. ఫోటో మార్పులు ఈ పరికరంలో డ్రాఫ్ట్‌గా ఉంటాయి. పూర్తికాని ఫోటోలను మళ్లీ ఎంచుకోవాల్సి రావచ్చు.",
-    "product_images.leave": "డ్రాఫ్ట్ ఉంచి వెళ్లండి"
+    "product_images.leave": "డ్రాఫ్ట్ ఉంచి వెళ్లండి",
+    "product_images.load_failed": "ఫోటోను లోడ్ చేయలేకపోయాము."
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -11031,7 +11036,8 @@
     "product_images.reset": "ছবির পরিবর্তন রিসেট করুন",
     "product_images.leave_title": "এই ফর্ম ছেড়ে যাবেন?",
     "product_images.leave_hint": "সেভ করা পণ্য বদলাবে না। ছবির পরিবর্তন এই ডিভাইসে খসড়া হিসেবে থাকবে। অসম্পূর্ণ ছবি আবার বাছতে হতে পারে।",
-    "product_images.leave": "খসড়া রেখে বেরোন"
+    "product_images.leave": "খসড়া রেখে বেরোন",
+    "product_images.load_failed": "ছবি লোড করা যায়নি।"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -12870,7 +12876,8 @@
     "product_images.reset": "फोटो बदल रीसेट करा",
     "product_images.leave_title": "हा फॉर्म सोडायचा?",
     "product_images.leave_hint": "जतन केलेले उत्पादन बदलणार नाही. फोटोतील बदल या डिव्हाइसवर मसुद्यात राहतील. अपूर्ण फोटो पुन्हा निवडावे लागू शकतात.",
-    "product_images.leave": "मसुदा ठेवून बाहेर पडा"
+    "product_images.leave": "मसुदा ठेवून बाहेर पडा",
+    "product_images.load_failed": "फोटो लोड करता आला नाही."
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -14709,7 +14716,8 @@
     "product_images.reset": "ಫೋಟೋ ಬದಲಾವಣೆಗಳನ್ನು ಮರುಹೊಂದಿಸಿ",
     "product_images.leave_title": "ಈ ಫಾರ್ಮ್‌ನಿಂದ ಹೊರಹೋಗಬೇಕೇ?",
     "product_images.leave_hint": "ಉಳಿಸಿದ ಉತ್ಪನ್ನ ಬದಲಾಗುವುದಿಲ್ಲ. ಫೋಟೋ ಬದಲಾವಣೆಗಳು ಈ ಸಾಧನದಲ್ಲಿ ಕರಡಾಗಿ ಉಳಿಯುತ್ತವೆ. ಪೂರ್ಣಗೊಳ್ಳದ ಫೋಟೋಗಳನ್ನು ಮತ್ತೆ ಆಯ್ಕೆ ಮಾಡಬೇಕಾಗಬಹುದು.",
-    "product_images.leave": "ಕರಡು ಉಳಿಸಿ ಹೊರಹೋಗಿ"
+    "product_images.leave": "ಕರಡು ಉಳಿಸಿ ಹೊರಹೋಗಿ",
+    "product_images.load_failed": "ಫೋಟೋ ಲೋಡ್ ಆಗಲಿಲ್ಲ."
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -16548,7 +16556,8 @@
     "product_images.reset": "ફોટાના ફેરફારો રીસેટ કરો",
     "product_images.leave_title": "આ ફોર્મ છોડવું છે?",
     "product_images.leave_hint": "સાચવેલું ઉત્પાદન બદલાશે નહીં. ફોટાના ફેરફારો આ ઉપકરણ પર ડ્રાફ્ટમાં રહેશે. અધૂરા ફોટા ફરી પસંદ કરવા પડી શકે છે.",
-    "product_images.leave": "ડ્રાફ્ટ રાખીને બહાર જાઓ"
+    "product_images.leave": "ડ્રાફ્ટ રાખીને બહાર જાઓ",
+    "product_images.load_failed": "ફોટો લોડ થઈ શક્યો નથી."
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -18387,6 +18396,7 @@
     "product_images.reset": "ഫോട്ടോ മാറ്റങ്ങൾ പുനഃക്രമീകരിക്കുക",
     "product_images.leave_title": "ഈ ഫോം വിടണോ?",
     "product_images.leave_hint": "സേവ് ചെയ്ത ഉൽപ്പന്നം മാറില്ല. ഫോട്ടോ മാറ്റങ്ങൾ ഈ ഉപകരണത്തിൽ ഡ്രാഫ്റ്റായി തുടരും. പൂർത്തിയാകാത്ത ഫോട്ടോകൾ വീണ്ടും തിരഞ്ഞെടുക്കേണ്ടി വന്നേക്കാം.",
-    "product_images.leave": "ഡ്രാഫ്റ്റ് സൂക്ഷിച്ച് പുറത്തുകടക്കുക"
+    "product_images.leave": "ഡ്രാഫ്റ്റ് സൂക്ഷിച്ച് പുറത്തുകടക്കുക",
+    "product_images.load_failed": "ഫോട്ടോ ലോഡ് ചെയ്യാനായില്ല."
   }
 }
