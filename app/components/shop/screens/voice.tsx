@@ -92,7 +92,8 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
         </Card>
         {!entities.length&&!response.analyticsResult?<Card><p>{t('modal.voice.err.not_understood',"Couldn't understand the command. Please try again.")}</p></Card>:null}
         {entities.map((entity,index)=><Card key={index} className="stack-form">
-          {entity.matchedProduct?<ProductImageById productId={entity.matchedProduct.id} name={entity.matchedProduct.name} size={40}/>:null}
+          <ProductImageById productId={entity.matchedProduct?.id} name={entity.matchedProduct?.name??entity.product} size={40}/>
+          {!entity.matchedProduct?<p className="shop-hint">{entity.product}</p>:null}
           <div className="form-grid is-2"><Field label={t('modal.voice.entity_product','Product')}>
             <ProductSelect label={t('modal.voice.entity_product','Product')} disabled={busy||attempted.current||entity.action==='query'} value={entity.matchedProduct?.id??''} onChange={id=>{
               const item=catalog.data?.find(row=>row.productId===id);if(!item)return;
