@@ -87,6 +87,7 @@ export function createProductImageEditor<T>(adapter:Adapter<T>){
   alt(client:string,alt:string){if(alt.length>240||/[\x00-\x1f]/.test(alt))return;const item=state.items.find(i=>i.clientId===client);if(item?.image){manifest=undefined;edit(client,{image:{...item.image,alt}});}},
   dirty:()=>!!state.selectionPending||signature()!==initial,
   setFields(fields:EditorFields){if(JSON.stringify(fields)!==JSON.stringify(state.fields))update({fields:{...fields}});},
+  async flushRecovery(){if(!current())throw Error('auth_session_changed');await persist();if(storageError)throw Error('product_image_recovery_unavailable');},
   async clearRecovery(){const previous=cleared;cleared=true;try{await persistence.catch(()=>{});if(adapter.recovery&&hadCheckpoint)await adapter.recovery.clear();hadCheckpoint=false;}catch(error){cleared=previous;throw error;}},
   async reset(){
    if(!current())throw Error('auth_session_changed');if(flights.size)throw Error('product_image_pending');

@@ -1,6 +1,7 @@
 'use client';
 import {ProductImageEditor,useProductImageEditor} from '../product-image-editor';
 import {useProductSaveRecovery} from '../use-product-save-recovery';
+import {useProductPhotoLeave} from '../use-product-photo-leave';
 import {useProductEditorFields} from '../../../lib/shop/product-images/use-editor-fields';
 
 import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
@@ -135,6 +136,8 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     for(const key of Object.keys(restored) as (keyof Draft)[])if(key!=='trackStock'&&typeof fields[key]==='string')(restored as unknown as Record<string,string>)[key]=fields[key];
     restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(tax);
   });
+  const leaveGuard=useProductPhotoLeave({dirty:media.dirty||preparingPhoto||uncertainSave,busy:pending,current:saveIntent.current,flush:async()=>{await media.editor?.flushRecovery();},message:t('product_images.leave_title','Leave this form?')+'\n\n'+(uncertainSave?t('product_images.save_pending','The previous save is still unconfirmed.')+'\n\n':'')+t('product_images.leave_hint','Your saved product will not change. Photo changes stay in a draft on this device. Unfinished photos may need to be selected again.'),onError:()=>setError(Error(t('opening.error.storage','The draft could not be saved on this device.')))});
+  useEffect(()=>{leaveGuard.reset();},[saveIntent.identity]);
 
   if (!shop) return <Spinner />;
   if (!perms.canEditProducts) return <NoAccess what={uiText("Only an owner or manager can add or edit products.")} />;
@@ -198,7 +201,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
         await saveIntent.succeeded();
         await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
         if(!saveIntent.current())return;
-        router.push(`/shop/products/${productId}`);
+        leaveGuard.allow();router.push(`/shop/products/${productId}`);
         return;
       }
       body.generateBarcode=generateBarcode&&!form.barcode.trim();
@@ -216,11 +219,13 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       await media.clearRecovery();
       if (onCreated) {
         if(!saveIntent.current())return;
+        leaveGuard.allow();
         await onCreated(created.product.id);
         await saveIntent.succeeded();
         return;
       }
       if (addAnother) {
+        leaveGuard.reset();
         setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
         await saveIntent.succeeded();createdResult.current=null;setUncertainSave(false);setPhotoReset(n=>n+1);
         setGenerateBarcode(false);
@@ -228,7 +233,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
         window.scrollTo({ top: 0 });
         return;
       }
-      await saveIntent.succeeded();router.push(`/shop/products/${created.product.id}`);
+      await saveIntent.succeeded();leaveGuard.allow();router.push(`/shop/products/${created.product.id}`);
     } catch (caught) {
       if(!saveIntent.current())return;
       if(!createdResult.current)await saveIntent.failed(caught);setUncertainSave(!!saveIntent.retry()||!!createdResult.current);
@@ -259,9 +264,9 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
         description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : uiText('Name, category, and a price are enough to start selling.')}
-        actions={<Button href={onCancel ? undefined : productId ? `/shop/products/${productId}` : '/shop/products'} onClick={onCancel} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
+        actions={<Button onClick={()=>void leaveGuard.leave(()=>{if(onCancel)onCancel();else router.push(productId?`/shop/products/${productId}`:'/shop/products');})} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
-      {error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
+      {(error as {code?:string}|null)?.code==='product_image_conflict'?<p role="alert" className="shop-notice">{t('product_images.conflict','Photos changed on another device. Reload and review before saving.')}</p>:error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
 
       {uncertainSave?<p role="alert">{t("product_images.save_pending","The previous save is still unconfirmed. Retry it to finish before editing further.")}</p>:null}
       {saveIntent.pending?<p>{String(saveIntent.pending.name??'')}</p>:null}
