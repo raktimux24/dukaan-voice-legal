@@ -1,0 +1,206 @@
+
+> dukaan-voice-legal@1.0.0 check:release
+> next typegen && npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && npm run test:deletion && npm run test:followups && npm run test:auth && npm run test:photo-session && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+> dukaan-voice-legal@1.0.0 test:gst
+> node scripts/test-gst.mjs
+
+Estimate editor: fractional rounding, invalid input preservation, discounts, Indian phones, ten-language UI and shared text passed.
+Bill sharing: stale image/share/clipboard boundaries, denied clipboard download, visible failure and cancellation passed.
+Bill images: 100 long multilingual lines, grapheme-safe wrapping, bounded amounts and measured footer height passed.
+Bill sharing: localized text, image labels, share title and custom footer passed.
+GST contract tests passed: selling-price tax, buying discounts, fractional quantities, mixed rates, IST ranges and retained-document tampering.
+Period recovery checks outcomes only, preserves pending evidence on failure, and rejects stale or cross-account requests. Review defaults and preparation details match native.
+Purchase drafts: refreshed identity invalidation, immutable review evidence, invoice-only services and request metadata isolation passed.
+Browser journal tests passed: immutable retries, scope isolation, confirmed retention, atomic reservations and concurrent locks.
+Financial outcome tests passed: lost response recovery, original identity replay, uncertain outcome retention and delayed account-switch rejection.
+Original quantity, depleted receipts, existing links and cost eligibility passed.
+Purchase reversal dependencies and exact-paise checks passed.
+Purchase closure preserves exact evidence, guards stale state/scope, and requires verified terminal receipts.
+Web parity tests passed: browser hashes, RSP package review, mixed invoice rendering, rounded credits, cumulative returns, scope/tamper rejection, tax timelines and selected-document print output.
+GST check results: complete, issues, partial, failed/stale, never checked, unavailable and offline states passed.
+Customer snapshot: existing customer identity/display, draft client ID, blank selection and immutable legacy retry passed.
+Local receipt: tax/composition/rounding, exact request binding, scope/tamper rejection, atomic lost-response retention and immutable replay passed.
+Queued stock: concurrent last-unit reservation, stale-cache confirmation, fresh baseline and reconnect replay passed.
+Invoice preparation: number/grant reuse, no counter consumption and immutable lost-response grant retry passed.
+Ordinary receipts: discount/payment totals, immutable request binding, scope/tamper guards, consecutive queued stock and original reconnect replay passed.
+Checkout persistence: readback, silent storage refusal, original request preservation and account separation passed.
+Voice review: product scope, active/priced stock, quantities, duplicate aggregation, tax preservation and atomic cart failure passed.
+Offline shop context: account/session scope, expiry, minimal routing data, reduced permissions, denial and verified storage passed.
+Offline evidence: scope, integrity, age, auth rejection, storage refusal and stale response/write invalidation passed.
+Retained rounding preview: exact interval, scope, immutable capture and policy consistency passed.
+Premium evidence: active/trial exact expiry, temporary server grant, cache expiry and private billing redaction passed.
+Offline API: complete catalog retention, cost redaction, tax subset capture, missing product, session separation and denied POS invalidation passed.
+Browser audio: MIME/base64, 30-second stop, cancellation, pending permission cleanup and denial passed.
+Parity API: filtered pagination, refunds path, guarded authorization, conflict and role denial passed.
+Web photo transport: immediate token-wait cancellation, unchanged binary 401 retry, and total deadline passed.
+Web API sessions: stale sends/retries, JSON/CSV and export metadata rejected; current-session refresh passed.
+Pagination: large exports, short pages, stalled endpoints and network failure passed.
+Dates: ten languages, midnight IST boundary, invalid dates and foreign timezones passed.
+Tax history: invalid captures, bounded waits, effective-boundary refresh, cancellation and resumed clock passed.
+Counter parity: query recovery, serial repeated scans, late camera cleanup, denied storage, separate checkout locks and safe draft cleanup passed.
+Counter shell waits for the replacement worker before warming cached routes.
+Billing shell: warm complete resources, navigation fallback, no API/auth/RSC/query caching, denied auth response preservation, logout clear and optional storage passed.
+Browser push worker: account isolation, signout, safe destinations, stale clicks, denied storage and malformed payload passed.
+Browser push sessions: stale work isolation, serialized account switches, retries, rotated keys and worker acknowledgement failure/timeout passed.
+Verified 64 vendored GST contracts.
+
+> dukaan-voice-legal@1.0.0 test:translations
+> node scripts/test-translations.mjs
+
+Translation coverage passed: 1144 web labels across 9 translated languages, mobile catalogs and interpolation.
+
+> dukaan-voice-legal@1.0.0 test:billing
+> node scripts/test-mobile-account.cjs
+
+✔ native account page has no purchase or payment-method setup flow in every billing state (519.256167ms)
+✔ ordinary website retains checkout; native managers cannot cancel billing (249.637708ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 771.42675
+
+> dukaan-voice-legal@1.0.0 test:cashbook
+> node --test tests/cashbook-navigation.test.cjs
+
+✔ cashbook keeps date navigation available while a selected day loads or fails (4.855208ms)
+✔ pending mutations block date navigation; first-time setup retains its own start date (0.662708ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.164375
+
+> dukaan-voice-legal@1.0.0 test:deletion
+> node --test tests/deletion.test.cjs
+
+✔ every published legal locale serves corrected retention, deletion, contact and updated terms (4.920083ms)
+✔ identity removal requires an explicit successful server receipt (0.28775ms)
+✔ all eleven legal locales disclose actual collection and provider retention without obsolete deletion promises (6.218917ms)
+✔ every published privacy page describes optional photos, public visibility, separate storage and delayed cleanup (5.035541ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 264.814083
+
+> dukaan-voice-legal@1.0.0 test:followups
+> node --test tests/followup-read-timeout.test.cjs
+
+✔ a stalled follow-up read becomes a recoverable error and aborts its transport (11.378125ms)
+✔ successful reads return normally and a failed attempt does not poison retry (0.467834ms)
+✔ mutation requests keep their durable request unchanged; read timeout never retries a write (0.144667ms)
+✔ the deadline reports a load failure even when transport rejects synchronously on abort (11.899542ms)
+✔ network failures become a read error while authorization failures retain their meaning (0.239ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 160.232333
+
+> dukaan-voice-legal@1.0.0 test:auth
+> node --test tests/sign-in-verification.test.cjs
+
+✔ new-device and legacy second-factor challenges remain verifiable; complete/unknown states do not offer factor submission (0.532542ms)
+✔ preparation sends email or phone codes only through offered second factors (0.180375ms)
+✔ six-digit verification and reusable backup-code formats are validated before contacting Clerk (0.112291ms)
+✔ each offered method reaches its corresponding SDK verifier with the trimmed code (0.119834ms)
+✔ expired/incorrect/network failures stay available to the verification UI instead of completing sign-in (0.206583ms)
+✔ all ten bundled verification languages have complete keys and matching destination/count placeholders (0.84225ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.36475
+
+> dukaan-voice-legal@1.0.0 test:photo-session
+> node --test tests/product-photo-session.test.cjs && node --test tests/checkout-photo-boundary.test.cjs && node --test tests/product-detail-refresh.test.cjs && node --test tests/product-photo-leave.test.cjs
+
+✔ confirmed membership loss purges photo storage before a stalled shop refresh completes, preserving the bill (64.773042ms)
+✔ pending initial shop lookup preserves eligible cached photos and draft recovery (8.787458ms)
+✔ an authoritative empty shop list clears photo storage without deleting the pending bill (10.813584ms)
+✔ a denied shop lookup clears photo storage without deleting the pending bill (12.942333ms)
+✔ temporary upstream failure retains photos in the validated offline shop scope (6.440417ms)
+✔ a shop switch evicts previous thumbnails but preserves the exact unconfirmed photo save in its original scope (7.995292ms)
+✔ changing the signed-in actor and session clears previous photo storage while keeping the old financial record (6.823916ms)
+✔ a new sign-in session for the same actor cannot reuse the previous session photo storage (8.18325ms)
+✔ sign-out clears photo caches and journals while preserving the exact retained bill (7.137041ms)
+✔ an offline cart photo resolves from a later validated catalogue update and clears when its gallery is empty (27.580583ms)
+✔ offline photo lookup never matches a product by name or reads another shop catalogue (7.740333ms)
+✔ a fresh offline checkout restores its photo without a mounted catalogue query (18.279542ms)
+✔ private detail distinguishes lease and image failures, retries the same URI, then clears its failure after load (51.499084ms)
+✔ public detail exposes localized retry outside its decorative image and resets state on a changed image (9.446917ms)
+✔ photo editor keeps focus on the moved card and adjacent controls after removal (29.4715ms)
+✔ embedded photo save acknowledgement clears only its request after the parent unmounts the form (5.820334ms)
+✔ cleared lease work cannot overwrite a fresh lease after a fast scope return (0.157334ms)
+✔ mounted private viewer renews its lease before expiry and discards its refresh timer on unmount (30.065125ms)
+✔ mounted thumbnails revoke Blob URLs on version changes and unmount while bypassing shared caches (29.821625ms)
+✔ merchant refresh replaces a mounted order cover without changing the order or retained bill (42.619875ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1124.490708
+✔ actual checkout projection strips photo state while retaining RSP and exact canonical identity (3.390084ms)
+✔ cash, UPI, card and split request payments stay exact across photo changes (0.992292ms)
+✔ credit terms and retained customer/document presentation are not replaced by photo state (0.382416ms)
+✔ estimate/collection provenance and discounts remain the reviewed request values (0.238667ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 199.378541
+✔ a newly saved product stays loading while a cached catalogue refreshes, then renders the saved photo gallery (69.723334ms)
+✔ not found is shown only after the refreshed catalogue authoritatively excludes the product (20.699375ms)
+✔ a failed refresh is an error with retry, rather than a false missing-product result (39.889792ms)
+✔ an already loaded product remains usable during its background catalogue refresh (25.5475ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 544.601417
+✔ Back Cancel restores the exact entry before prompting, blocks router popstate, and repeated Back does not skip detail (46.34225ms)
+✔ confirmed multi-entry Back waits for recovery then replays the exact target once (5.260416ms)
+✔ failed recovery keeps editor history intact and another Back can be cancelled normally (8.587542ms)
+✔ busy saves restore the editor without prompting or replaying a navigation (4.832916ms)
+✔ scope loss during an accepted recovery never replays navigation from the old editor (3.932458ms)
+✔ clean and hash-only traversals reach the router without restoration or a prompt (3.617666ms)
+✔ unmount removes the traversal guard and does not retain a stale form blocker (3.244834ms)
+✔ Chromium cancels before router popstate and confirmed leave replays only after recovery (4.593584ms)
+✔ supported precommit handling keeps both repeated cancellations before commit and commits accepted navigation after recovery (3.851583ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 434.053291

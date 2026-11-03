@@ -1,0 +1,141 @@
+✖ Back Cancel restores the exact entry before prompting, blocks router popstate, and repeated Back does not skip detail (48.788542ms)
+✖ confirmed multi-entry Back waits for recovery then replays the exact target once (5.996834ms)
+✖ failed recovery keeps editor history intact and another Back can be cancelled normally (4.0305ms)
+✖ busy saves restore the editor without prompting or replaying a navigation (5.421666ms)
+✖ scope loss during an accepted recovery never replays navigation from the old editor (5.523833ms)
+✔ clean and hash-only traversals reach the router without restoration or a prompt (4.300042ms)
+✔ unmount removes the traversal guard and does not retain a stale form blocker (8.345167ms)
+✔ Chromium cancels before router popstate and confirmed leave replays only after recovery (4.576083ms)
+✖ supported precommit handling keeps both repeated cancellations before commit and commits accepted navigation after recovery (7.382834ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 3
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 791.421542
+
+✖ failing tests:
+
+test at tests/product-photo-leave.test.cjs:35:1
+✖ Back Cancel restores the exact entry before prompting, blocks router popstate, and repeated Back does not skip detail (48.788542ms)
+  AssertionError [ERR_ASSERTION]: must not cancel WebKit traversal
+
+  true !== false
+
+      at traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:21:85)
+      at /Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:102
+      at process.env.NODE_ENV.exports.act (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/node_modules/react/cjs/react.development.js:814:22)
+      at Object.traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:89)
+      at TestContext.<anonymous> (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:37:10)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/product-photo-leave.test.cjs:41:1
+✖ confirmed multi-entry Back waits for recovery then replays the exact target once (5.996834ms)
+  AssertionError [ERR_ASSERTION]: must not cancel WebKit traversal
+
+  true !== false
+
+      at traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:21:85)
+      at /Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:102
+      at process.env.NODE_ENV.exports.act (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/node_modules/react/cjs/react.development.js:814:22)
+      at Object.traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:89)
+      at TestContext.<anonymous> (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:43:10)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/product-photo-leave.test.cjs:46:1
+✖ failed recovery keeps editor history intact and another Back can be cancelled normally (4.0305ms)
+  AssertionError [ERR_ASSERTION]: must not cancel WebKit traversal
+
+  true !== false
+
+      at traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:21:85)
+      at /Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:102
+      at process.env.NODE_ENV.exports.act (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/node_modules/react/cjs/react.development.js:814:22)
+      at Object.traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:89)
+      at TestContext.<anonymous> (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:47:109)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/product-photo-leave.test.cjs:51:1
+✖ busy saves restore the editor without prompting or replaying a navigation (5.421666ms)
+  AssertionError [ERR_ASSERTION]: must not cancel WebKit traversal
+
+  true !== false
+
+      at traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:21:85)
+      at /Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:102
+      at process.env.NODE_ENV.exports.act (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/node_modules/react/cjs/react.development.js:814:22)
+      at Object.traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:89)
+      at TestContext.<anonymous> (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:52:45)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/product-photo-leave.test.cjs:54:1
+✖ scope loss during an accepted recovery never replays navigation from the old editor (5.523833ms)
+  AssertionError [ERR_ASSERTION]: must not cancel WebKit traversal
+
+  true !== false
+
+      at traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:21:85)
+      at /Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:102
+      at process.env.NODE_ENV.exports.act (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/node_modules/react/cjs/react.development.js:814:22)
+      at Object.traverse (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:33:89)
+      at TestContext.<anonymous> (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:55:134)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/product-photo-leave.test.cjs:72:1
+✖ supported precommit handling keeps both repeated cancellations before commit and commits accepted navigation after recovery (7.382834ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+    assert(!v.seen.includes('replay'))
+
+      at TestContext.<anonymous> (/Users/lifecycle/.codex/worktrees/product-images-web/dukaan-voice-legal/tests/product-photo-leave.test.cjs:75:159)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:788:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -1,0 +1,11 @@
+# Product-photo draft history repair
+
+Cancelling Back could leave Safari's toolbar/history inconsistent. A universal traversal/restore candidate passed Safari but failed real Chrome navigation. The final hook uses supported pre-commit handling when available, preserving the editor until the leave decision and recovery flush finish. WebKit uses traversal/restoration before prompting and blocks router popstate handling for those two internal moves, without replacing retained router state. Older non-WebKit browsers retain the original cancelable-navigation path; this drill does not accept that older path as repaired.
+
+Nine mounted actual-hook regressions exercise repeated cancellation, exact/multiple-entry destinations, recovery ordering/failure, busy saves, scope loss, clean/hash routes, cleanup and pre-commit handling. The original hook fails the final suite. Real built-app Safari and Chrome checks are recorded in `readback.json`; screenshots show retained descriptions and recovered drafts. The complete 5-product fixture/inventory is unchanged and both owned drafts are reset. No Save changes, stock, sale or payment action was submitted.
+
+The final candidate has no temporary diagnostics. Existing public content/SEO and shared contract/message sources are unchanged. Release/types, build, SEO and shared-contract/ten-dictionary checks pass. The local build used a same-origin HTTPS fixture connection because Safari could not load its direct local HTTP fixture. This is an isolated injected-owner fixture, not production-auth proof.
+
+Reproduce with the guarded memory API3010, the existing local trusted certificate/443 bridge, a build using `NEXT_PUBLIC_API_BASE_URL=https://local.samaanbol.space`, and the owned renderer's `PHOTO_FIXTURE_SAME_ORIGIN=true` option. Navigate Home → Products → pictured product → Edit, change only the local photo description, then exercise repeated Back/Cancel, Back/Leave and Forward. Reset the owned draft and exit without Save. Preserve the exact fixture/inventory before/after.
+
+Physical mobile Safari, Firefox, older browsers, remaining embedded/role/disconnected states and full route/AT acceptance remain separate. This evidence does not close Tasks 17/41 or the whole product-photo plan.
