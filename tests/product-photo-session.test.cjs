@@ -12,7 +12,7 @@ const image={id:'20000000-0000-4000-8000-000000000002',version:'immutable-test-v
 let getShops=async()=>[shop],auth={isLoaded:true,isSignedIn:true,userId:owner.actor,sessionId:owner.session,getToken:async()=>null};
 const defaultAuth=auth;
 let mediaReads=0,leaseReads=0,savedMedia={},leaseFailure=true;
-const api={getCachedProductMedia:async()=>savedMedia,getShops:()=>getShops(),getEntitlement:async()=>({premium:true}),getPreferences:async()=>({preferences:{appLanguage:'en'}}),assertSession:()=>{},productImages:{query:async()=>{mediaReads++;return {media:{}};},leases:async()=>{leaseReads++;if(leaseFailure)throw Error('Synthetic lease read failure');return {leases:{[image.id]:'synthetic-viewer-lease'},expiresAt:new Date(Date.now()+300_000).toISOString()};}}};
+const api={getCachedProductMedia:async()=>savedMedia,getShops:()=>getShops(),getEntitlement:async()=>({premium:true}),getPreferences:async()=>({preferences:{appLanguage:'en'}}),assertSession:()=>{},productImages:{query:async()=>{mediaReads++;return {media:{}};},leases:async()=>{leaseReads++;if(leaseFailure)throw Error('Synthetic lease read failure');return {leases:{[image.id]:'synthetic-viewer-lease-'+leaseReads},expiresAt:new Date(Date.now()+300_000).toISOString()};}}};
 const router={replace:()=>{},push:()=>{}},passthrough=({children})=>React.createElement(React.Fragment,null,children);
 const oldLoad=Module._load;
 Module._load=function(request,parent,isMain){
@@ -36,6 +36,7 @@ const {PublicProductImage}=require('../app/components/store/product-media.tsx');
 const {ProductImageEditor}=require('../app/components/shop/product-image-editor.tsx');
 const {useProductSaveRecovery}=require('../app/components/shop/use-product-save-recovery.ts');
 const {createProductImageEditor}=require('../app/lib/shop/product-images/editor.ts');
+const {createImageLeaseBatcher}=require('../app/lib/shop/product-images/lease-batcher.ts');
 const thumbs=require('../app/lib/shop/product-images/thumbnail-storage.web.ts');
 const {createProductSaveRecovery}=require('../app/lib/shop/product-images/save-recovery.ts');
 const {createEditorRecovery}=require('../app/lib/shop/product-images/editor-recovery.ts');
@@ -48,7 +49,7 @@ let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,savePro
 function ViewerFrame({children}){return React.createElement('dialog',{open:true},React.createElement('button',null,'Close viewer'),children);}
 function SaveProbe(){activeSaveProbe=useProductSaveRecovery('embedded-photo-test');return React.createElement('p',null,activeSaveProbe.pending?'Pending photo save':'Fresh photo form');}
 function EditorProbe(){const state=React.useSyncExternalStore(editorProbe.subscribe,editorProbe.getSnapshot);return React.createElement(ProductImageEditor,{media:{editor:editorProbe,state,dirty:editorProbe.dirty()},name:'Synthetic editor product'});}
-function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),saveProbe?React.createElement(SaveProbe):editorProbe?React.createElement(EditorProbe):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
+function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),saveProbe?React.createElement(SaveProbe):editorProbe?React.createElement(EditorProbe):viewerProbe==='thumb'?React.createElement(ProductImage,{image:viewerImage,name:'Synthetic thumbnail product'}):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
 async function drain(){await Promise.all(lockNames.map(name=>navigator.locks.request(name,async()=>{})));}
 async function seed(){
  const originalFetch=global.fetch;
@@ -247,4 +248,49 @@ test('embedded photo save acknowledgement clears only its request after the pare
  assert.deepEqual(await financial.retainedRequests({actorId:owner.actor,shopId}),[bill],'bill recovery is untouched');
  saveProbe=true;await view.render();await act(async()=>{await drain();});
  assert.equal(activeSaveProbe.ready,true);assert.equal(activeSaveProbe.pending,null,'reopening the embedded form starts fresh rather than replaying a completed product');
+});
+
+
+test('cleared lease work cannot overwrite a fresh lease after a fast scope return',async()=>{
+ let current=true;const finish=[];
+ const batch=createImageLeaseBatcher(()=>new Promise(resolve=>finish.push(resolve)),()=>current);
+ const retired=batch.load('image'),result=retired.then(()=>false,error=>error.message);await Promise.resolve();
+ current=false;batch.clear();current=true;
+ const fresh=batch.load('image');await Promise.resolve();const expiresAt=new Date(Date.now()+300000).toISOString();
+ finish[1]({leases:{image:'fresh-synthetic'},expiresAt});assert.equal(await fresh,'fresh-synthetic');
+ finish[0]({leases:{image:'retired-synthetic'},expiresAt});assert.equal(await result,'auth_session_changed');
+ assert.equal(await batch.load('image'),'fresh-synthetic');
+});
+
+test('mounted private viewer renews its lease before expiry and discards its refresh timer on unmount',async t=>{
+ const view=await mount(t,async()=>[shop]),originalNow=Date.now,originalSet=global.setTimeout,originalClear=global.clearTimeout;
+ let clock=originalNow()+600000;const timers=new Map();
+ Date.now=()=>clock;
+ global.setTimeout=(callback,delay,...args)=>{if(delay!==270000)return originalSet(callback,delay,...args);const handle={photoRefresh:true};timers.set(handle,callback);return handle;};
+ global.clearTimeout=handle=>{if(timers.delete(handle))return;return originalClear(handle);};
+ t.after(()=>{Date.now=originalNow;global.setTimeout=originalSet;global.clearTimeout=originalClear;});
+ viewerProbe='private';leaseFailure=false;await view.render();await settleViewer();
+ const first=document.querySelector('img');assert(first);const firstUri=first.src,firstReads=leaseReads;
+ assert.equal(timers.size,1);clock+=270000;
+ await act(async()=>{[...timers.values()][0]();await drain();});await settleViewer();
+ assert.equal(leaseReads,firstReads+1,'the 30-second safety boundary must mint a fresh lease');
+ const renewed=document.querySelector('img');assert(renewed);assert.notEqual(renewed.src,firstUri);
+ await act(async()=>renewed.dispatchEvent(new window.Event('load')));assert.equal(document.querySelector('[role="status"]'),null);
+ viewerProbe=null;await view.render();assert.equal(timers.size,0,'a closed viewer must not keep refreshing private reads');
+});
+
+test('mounted thumbnails revoke Blob URLs on version changes and unmount while bypassing shared caches',async t=>{
+ const view=await mount(t,async()=>[shop]),originalFetch=global.fetch,originalCreate=URL.createObjectURL,originalRevoke=URL.revokeObjectURL;
+ const created=[],revoked=[],reads=[];
+ URL.createObjectURL=blob=>{const uri=originalCreate.call(URL,blob);created.push(uri);return uri;};
+ URL.revokeObjectURL=uri=>{revoked.push(uri);return originalRevoke.call(URL,uri);};
+ global.fetch=async(_url,options)=>{reads.push(options);return new Response(new Blob(['synthetic thumbnail bytes']),{headers:{'Content-Type':'image/webp'}});};
+ t.after(()=>{global.fetch=originalFetch;URL.createObjectURL=originalCreate;URL.revokeObjectURL=originalRevoke;});
+ viewerProbe='thumb';leaseFailure=false;await view.render();await settleViewer();
+ const first=document.querySelector('img')?.src;assert.match(first??'',/^blob:/);
+ viewerImage={...image,version:'new-thumbnail-version'};await view.render();await settleViewer();
+ const second=document.querySelector('img')?.src;assert.match(second??'',/^blob:/);assert.notEqual(second,first);assert(revoked.includes(first));
+ assert.equal(created.length,2);assert.equal(reads.length,2);
+ for(const read of reads){assert.equal(read.cache,'no-store');assert.equal(read.credentials,'omit');assert.equal(read.redirect,'error');assert.equal(read.referrerPolicy,'no-referrer');assert.match(read.headers.Authorization,/^Bearer synthetic-/);}
+ viewerProbe=null;await view.render();assert(revoked.includes(second));
 });
