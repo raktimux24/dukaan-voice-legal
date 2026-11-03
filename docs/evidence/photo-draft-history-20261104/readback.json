@@ -1,0 +1,31 @@
+{
+  "observedAt": "2026-11-03T20:45:58.142489+00:00",
+  "scope": "Built web app, https://local.samaanbol.space, existing QA sign-in; isolated5-product injected-owner memory API3010 through loopback same-origin HTTPS adapter",
+  "sourceBefore": "5a9c09c584be8df58dbbcba5c54ca9c5d835d0d8",
+  "buildId": "7_9vYJCttioZI8CV6J7u7",
+  "guardSourceSha256": "b809e82aaeaa007a18945b7f4f02adee3a38009da03c77935e69058888434a10",
+  "checks": {
+    "safari": "Final candidate: Back/Cancel twice retains exact edit URL and description; Back/OK reaches detail with saved photo; Forward recovers draft; Reset reloads saved description; clean Cancel exits. Earlier same restoration path also passes two-entry history-menu Cancel/OK and Forward through detail to editor.",
+    "chrome": "Final candidate using precommit: Back/Cancel twice retains draft; Back/OK commits expected detail; Forward recovers draft;390x844 Back/Cancel retains description; Reset/clean Cancel pass.",
+    "console": "Chrome captured error/warning log empty; no Safari console-health claim",
+    "preservation": "Complete fixture and inventory deeply equal initial5-product checkpoint; no product/gallery/stock/financial UI save submitted",
+    "cleanup": "Owned drafts reset; Chrome viewport reset; owned Chrome and Safari QA tabs closed, original Safari Start Page preserved; prototype3027 stopped; originalAPI3010 process preserved"
+  },
+  "gates": {
+    "mountedGuardCases": 9,
+    "originalGuardRejected": true,
+    "webRelease": "pass",
+    "build": "pass",
+    "seo": "pass",
+    "retailSharedContractsAndTenDictionaries": "pass"
+  },
+  "limits": [
+    "No physical mobile Safari, Firefox or old-browser acceptance is added.",
+    "Browsers without the precommit feature retain the prior non-WebKit cancellation path; repeated-cancellation repair is not claimed for that older path.",
+    "The attempted universal popstate restoration and subsequent cancellation-only Chrome candidate failed the real Chrome checks and were not published.",
+    "No standalone-prototype success is used as proof of application behavior.",
+    "Temporary DOM diagnostics were removed from source and the final tested build.",
+    "The local HTTPS adapter is test-only and does not certify deployed auth/network behavior.",
+    "Tasks17/41 and whole-goal acceptance remain governed by their other unchecked requirements."
+  ]
+}

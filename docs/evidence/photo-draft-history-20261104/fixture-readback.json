@@ -1,0 +1,18 @@
+{
+  "synthetic": true,
+  "storage": "memory",
+  "fixtureAndInventoryDeepEqual": true,
+  "products": 5,
+  "fixtureKeys": [
+    "synthetic",
+    "storage",
+    "authentication",
+    "shopId",
+    "storeId",
+    "products",
+    "media",
+    "secondary",
+    "objects"
+  ],
+  "canonicalSha256": "f93515e961333ead0ef8ebf29d4829f3b8685905c4edf5402efc0bcdc620afa1"
+}

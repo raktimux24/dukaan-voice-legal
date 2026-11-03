@@ -1,0 +1,155 @@
+Window: "Shop — Samaan Bol", App: Safari.
+0 standard window Shop — Samaan Bol, ID: SafariWindow?IsSecure=true&UUID=150F5FF2-FE6E-4C36-9DDF-A5524603B85A, Secondary Actions: Raise
+	1 split group
+		2 tab group
+			3 scroll area
+				4 HTML content Description: Shop — Samaan Bol, URL: local.samaanbol.space/shop/products/5e595060-a515-4744-818c-81f3764bf37a/edit
+					5 container
+						6 link SamaanBol, Value: local.samaanbol.space/shop
+						7 text Local Photo QA (synthetic) OWNER
+						8 container Shop
+							9 text COUNTER
+							10 link Home, Value: local.samaanbol.space/shop
+							11 link Sell, Value: local.samaanbol.space/shop/sell
+							12 link Sales, Value: local.samaanbol.space/shop/sales
+							13 text STOCK
+							14 link products, Value: local.samaanbol.space/shop/products
+							15 link Buy list, Value: local.samaanbol.space/shop/buy-list
+							16 link Suppliers, Value: local.samaanbol.space/shop/suppliers
+							17 text PEOPLE
+							18 link Customers, Value: local.samaanbol.space/shop/customers
+							19 link Staff, Value: local.samaanbol.space/shop/settings/staff
+							20 text INSIGHTS
+							21 link Reports, Value: local.samaanbol.space/shop/reports
+							22 link Activity, Value: local.samaanbol.space/shop/activity
+						23 link Settings, Value: local.samaanbol.space/shop/settings
+						24 link Billing, Value: local.samaanbol.space/shop/settings/subscription
+					25 container
+						26 text Wednesday, 4 November
+						27 link Notifications, Value: local.samaanbol.space/shop/alerts
+						28 link New sale, Value: local.samaanbol.space/shop/sell
+						29 pop-up button Open user menu
+						30 button Sign out
+					31 container
+						32 text CATALOG
+						33 heading Edit product, Value: 1
+							34 text Edit product
+						35 text Stock and batch details are managed from the product page.
+						36 button Cancel
+						37 container Product photos
+							38 heading Product photos, Value: 2
+								39 text Product photos
+							40 text Up to 5 photos. Staff can see them; published store items show them publicly. Photos are compressed before storage.
+							41 container Product photos 1/1
+								42 image Safari final retained draft 20261104
+								43 text Cover photo
+								44 text field (settable) Photo description, 1/1, Value: Safari final retained draft 20261104, Placeholder: Photo description
+								45 button (disabled) Move earlier
+								46 button (disabled) Move later
+								47 button Replace
+								48 button Remove
+							49 button Choose photos
+							50 button Reset photo changes
+						51 heading Product, Value: 2
+							52 text Product
+						53 text What it is and how it is counted.
+						54 container
+							55 text Name
+							56 text field (settable) Name, Value: QA Photo Rice, Placeholder: e.g. Tata Salt 1 kg
+						57 container
+							58 text Category
+							59 pop-up button Category, Value: Staples
+						60 container
+							61 text Sub-category
+							62 pop-up button Sub-category, Value: Rice
+						63 container
+							64 text Barcode
+							65 text field (settable) Barcode Scan or enter barcode
+							66 text Scan or enter barcode
+						67 container
+							68 text Unit
+							69 pop-up button Unit, Value: kg
+						70 heading Prices & GST, Value: 2
+							71 text Prices & GST
+						72 container
+							73 text Buying price ₹
+							74 text field (settable) Buying price ₹ Your cost before the buying discount., Value: 50, Placeholder: 0.00
+							75 text Your cost before the buying discount.
+						76 container
+							77 text Buying discount (%)
+							78 number field (settable) Buying discount (%)
+								79 stepper 0
+									80 unknown
+									81 unknown
+						82 container
+							83 text Effective buying cost :  ₹50.00
+						84 container
+							85 text Selling price ₹
+							86 text field (settable) Selling price ₹, Value: 80, Placeholder: 0.00
+						87 text This shop does not collect GST separately from customers.
+						88 container
+							89 text Product tax settings
+							90 tickbox Product tax settings, Value: 0
+						91 text Before GST ₹80.00 GST ₹0.00 Customer pays ₹80.00
+						92 container
+							93 text Calculate MRP from selling price and GST
+							94 tickbox Calculate MRP from selling price and GST, Value: 0
+						95 container
+							96 text MRP ₹
+							97 text field (settable) Value: 90, Placeholder: 0.00, MRP ₹ MRP includes all taxes. Check it against the printed MRP; enter the printed amount to override the calculation.
+							98 text MRP includes all taxes. Check it against the printed MRP; enter the printed amount to override the calculation.
+						99 heading Stock, Value: 2
+							100 text Stock
+						101 text Add or edit batches from the product page.
+						102 container
+							103 text Track stock Turn off for services or items you never count.
+							104 tickbox Track stock Turn off for services or items you never count., Value: 1
+						105 container
+							106 text Low-stock alert at
+							107 text field (settable) Low-stock alert at Alerts when on-hand falls to this many kg., Value: 5
+							108 text Alerts when on-hand falls to this many kg.
+						109 summary Short code · Pack size, Value: off
+							110 text Short code
+							111 text  ·
+							112 text Pack size
+						113 text SAVING CHANGES TO
+						114 text QA Photo Rice
+						115 text Category Staples  · Rice Sells at ₹80.00 / kg MRP ₹90.00
+						116 text 37.5% margin · ₹30.00 per kg
+						117 button Save changes
+				118 scroll bar (settable, float) 0
+	119 image WindowControlShadowView._shadowImageView
+	120 toolbar
+		121 container Secondary Actions: Move next, Remove from toolbar
+			122 button Description: show sidebar, Help: Show sidebar, ID: SidebarButton
+			123 menu button Description: Tab Group picker, ID: TabGroupPickerButton?TabGroup=
+		124 container BackForwardSegmentedControl
+			125 button Description: Go back, Help: Show the previous page, ID: BackButton
+			126 button (disabled) Description: Go forward, Help: Show the next page, ID: ForwardButton
+		127 container Secondary Actions: Move previous, Move next, Remove from toolbar
+			128 button Page Menu, ID: AssistantButton
+			129 button Add page to Reading List, ID: OneStepBookmarkingButton
+			130 text field (settable) Description: smart search field, Value: https://local.samaanbol.space/shop/products/5e595060-a515-4744-818c-81f3764bf37a/edit, ID: WEB_BROWSER_ADDRESS_AND_SEARCH_FIELD
+			131 button Reload this page, ID: ReloadButton
+		132 button Description: Share, ID: ShareButton, Secondary Actions: Move previous, Move next, Remove from toolbar
+		133 button Description: New Tab, ID: NewTabButton, Secondary Actions: Move previous, Move next, Remove from toolbar
+		134 button Description: Tab Overview, ID: TabOverviewButton, Secondary Actions: Move previous, Remove from toolbar
+	135 tab group Description: Tab bar, 2 tabs, ID: TabBar?isSeparate=false
+		136 tab Start Page, Value: off, ID: TabBarTab?isPinned=false&isNarrow=false&isActive=false, Secondary Actions: close tab
+			137 image Description: favourite, ID: FaviconImageView
+			138 text Value: Start Page, ID: UnifiedTabBarButton._titleTextField
+		139 tab Shop — Samaan Bol, Help: To interact with the items in this button, press Control-Option-Shift-Down Arrow., Value: on, ID: TabBarTab?isPinned=false&isNarrow=false&isActive=true, Secondary Actions: close tab
+			140 image FaviconImageView
+			141 text Value: Shop — Samaan Bol, ID: UnifiedTabBarButton._titleTextField
+	142 close button
+	143 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	144 minimise button
+145 menu bar
+	146 Safari
+	147 File
+	148 Edit
+	149 View, ID: SafariViewMenu
+	150 History
+	151 Bookmarks, ID: SafariBookmarksMenu
+	152 Window, ID: SafariWindowMenu
+	153 Help, ID: SafariHelpMenu
