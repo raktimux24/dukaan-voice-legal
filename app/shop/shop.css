@@ -351,6 +351,8 @@
 
 .shop-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--page-gap);
 }
 
@@ -2892,7 +2894,7 @@ a.party-card:hover {
 .gst-nav-row:hover { color:#FF6B00; }
 .gst-nav-row b { display:block; font-size:17px; }
 .gst-nav-row small { display:block; color:var(--color-muted); margin-top:8px; }
-.gst-table-wrap { overflow-x:auto; }
+.gst-table-wrap { min-width:0; max-width:100%; overflow-x:auto; }
 .gst-table { width:100%; border-collapse:collapse; text-align:left; }
 .gst-table th { color:var(--color-muted); font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
 .gst-table th,.gst-table td { padding:16px 12px; border-bottom:1px solid var(--color-line); vertical-align:top; }
