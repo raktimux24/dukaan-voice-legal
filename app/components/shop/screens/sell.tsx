@@ -505,12 +505,15 @@ function QtyPicker({
   return (
     <div className="pos-picker" role="dialog" aria-label={`Choose a quantity of ${item.product.name}`}>
       <div className="pos-picker-head">
-        <div>
+        <div className="pos-picker-product">
+          <ProductImage image={item.product.media?.cover} name={item.product.name}/>
+          <div>
           <p className="party-name">{item.product.name}</p>
           <p className="party-meta">
             {formatINR(price)} / {unit}
             {tracked ? ` · ${formatQty(item.quantity, unit, { packSize: item.product.packSize, packLabel: item.product.packLabel })} on hand` : ' · not tracked'}
           </p>
+          </div>
         </div>
         <button type="button" className="bill-remove" onClick={onClose}>{t('common.close', 'Close')}</button>
       </div>
