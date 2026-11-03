@@ -1,8 +1,10 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useCallback,useEffect,useRef,useState,useSyncExternalStore} from 'react';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useShop} from './context';
 import type {ShopApi} from '../../lib/shop/api';
+import type {InventoryItem} from '../../lib/shop/types';
+import type {ProductMedia} from '../../lib/shop/product-images/contract';
 import {imageUuid,type ImageReference,type ImageVariant} from '../../lib/shop/product-images/contract';
 import {createProductMediaBatcher} from '../../lib/shop/product-images/media-batcher';
 import {createImageLeaseBatcher} from '../../lib/shop/product-images/lease-batcher';
@@ -56,6 +58,26 @@ export function ProductImage({image,name,size=48,variant='thumb',decorative=true
 }
 
 export function ProductImageById({productId,...props}:{productId?:string|null;name:string;size?:number;decorative?:boolean}){
- const {api,shop,userId,offline}=useShop(),query=useQuery({queryKey:['productMedia',userId,shop?.id,productId],enabled:!!shop&&!offline&&imageUuid(productId),queryFn:()=>mediaById(api,shop!.id,productId!),staleTime:30_000,gcTime:300_000,retry:false});
- return <ProductImage {...props} image={query.data?.cover}/>;
+ const {api,shop,userId,photoSessionId,offline}=useShop(),client=useQueryClient(),query=useQuery({queryKey:['productMedia',userId,shop?.id,productId],enabled:!!shop&&!offline&&imageUuid(productId),queryFn:()=>mediaById(api,shop!.id,productId!),staleTime:30_000,gcTime:300_000,retry:false});
+ const saved=useQuery({queryKey:['offlineProductMedia',userId,photoSessionId,shop?.id],enabled:!!shop&&offline,networkMode:'always',queryFn:()=>api.getCachedProductMedia(shop!.id),staleTime:30_000,retry:false});
+ // Cart requests retain identity and prices, never photo metadata. After a full
+ // offline reopen, use the validated catalogue in this actor/session's client.
+ // Subscribe because that catalogue can finish restoring after the cart mounts.
+ const cached=useSyncExternalStore(useCallback(notify=>{
+  if(!offline||!shop)return()=>{};
+  return client.getQueryCache().subscribe(event=>{if(event.query.queryKey[0]==='catalog'&&event.query.queryKey[1]===shop.id)notify();});
+ },[client,offline,shop?.id]),useCallback(()=>{
+  if(!offline||!shop||!imageUuid(productId))return null;
+  let latest:ProductMedia|null=null;
+  for(const [,rows]of client.getQueriesData<InventoryItem[]>({queryKey:['catalog',shop.id]})){
+   if(!Array.isArray(rows))continue;
+   const item=rows.find(row=>row?.shopId===shop.id&&row.productId===productId&&row.product?.id===productId&&row.product.shopId===shop.id);
+   const media=item?.product.media;
+   if(media&&(!latest||media.version>latest.version))latest=media;
+  }
+  return latest;
+ },[client,offline,shop?.id,productId]),()=>null);
+ let media=query.data;
+ if(offline)for(const candidate of [productId?saved.data?.[productId]:null,cached])if(candidate&&(!media||candidate.version>=media.version))media=candidate;
+ return <ProductImage {...props} image={media?.cover}/>;
 }

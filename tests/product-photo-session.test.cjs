@@ -3,6 +3,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const {JSDOM}=require('jsdom'),{IDBFactory}=require('fake-indexeddb');
 for(const ext of ['.ts','.tsx'])require.extensions[ext]=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{fileName:f,compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,f);
 const React=require('react'),{act}=React,{createRoot}=require('react-dom/client');
+const {useQueryClient}=require('@tanstack/react-query');
 global.IS_REACT_ACT_ENVIRONMENT=true;
 global.indexedDB=new IDBFactory();
 const shopId='10000000-0000-4000-8000-000000000001',owner={actor:'photo-test-owner',session:'photo-test-session',shop:shopId};
@@ -10,7 +11,8 @@ const shop={id:shopId,name:'Synthetic photo test',category:'grocery',ownerId:own
 const image={id:'20000000-0000-4000-8000-000000000002',version:'immutable-test-version',width:160,height:160,alt:'Synthetic thumbnail'};
 let getShops=async()=>[shop],auth={isLoaded:true,isSignedIn:true,userId:owner.actor,sessionId:owner.session,getToken:async()=>null};
 const defaultAuth=auth;
-const api={getShops:()=>getShops(),getEntitlement:async()=>({premium:true}),getPreferences:async()=>({preferences:{appLanguage:'en'}}),assertSession:()=>{}};
+let mediaReads=0,leaseReads=0,savedMedia={};
+const api={getCachedProductMedia:async()=>savedMedia,getShops:()=>getShops(),getEntitlement:async()=>({premium:true}),getPreferences:async()=>({preferences:{appLanguage:'en'}}),assertSession:()=>{},productImages:{query:async()=>{mediaReads++;return {media:{}};},leases:async()=>{leaseReads++;throw Error('Offline photo must not request a lease');}}};
 const router={replace:()=>{},push:()=>{}},passthrough=({children})=>React.createElement(React.Fragment,null,children);
 const oldLoad=Module._load;
 Module._load=function(request,parent,isMain){
@@ -29,6 +31,7 @@ Module._load=function(request,parent,isMain){
 };
 const {ShopProviders}=require('../app/components/shop/providers.tsx');
 const {useShop}=require('../app/components/shop/context.tsx');
+const {ProductImageById}=require('../app/components/shop/product-image.tsx');
 const thumbs=require('../app/lib/shop/product-images/thumbnail-storage.web.ts');
 const {createProductSaveRecovery}=require('../app/lib/shop/product-images/save-recovery.ts');
 const {createEditorRecovery}=require('../app/lib/shop/product-images/editor-recovery.ts');
@@ -37,8 +40,8 @@ const {createOfflineShopContext,saveOfflineShop}=require('../app/lib/shop/offlin
 const locks=new Map();
 const lockNames=['samaan-product-thumbnails-v1','samaan-product-photo-saves-v1','samaan-product-photo-editors-v1'];
 const storage=key=>({get:async()=>localStorage.getItem(key),set:async value=>localStorage.setItem(key,value),clear:async()=>localStorage.removeItem(key)});
-let activeContext;
-function Probe(){activeContext=useShop();return React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop');}
+let activeContext,activeQueryClient,photoProbeId;const queryClients=new Set();
+function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
 async function drain(){await Promise.all(lockNames.map(name=>navigator.locks.request(name,async()=>{})));}
 async function seed(){
  const originalFetch=global.fetch;
@@ -55,11 +58,12 @@ async function seed(){
 async function mount(t,shops){
  const dom=new JSDOM('<div id="root"></div>',{url:'https://fixture.invalid/shop'});
  global.window=dom.window;global.document=dom.window.document;global.localStorage=dom.window.localStorage;global.CustomEvent=dom.window.CustomEvent;
+ global.IntersectionObserver=class{constructor(callback){this.callback=callback;}observe(){this.callback([{isIntersecting:true}]);}disconnect(){}};
  Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});
  Object.defineProperty(navigator,'locks',{value:{request(name,work){const result=(locks.get(name)??Promise.resolve()).catch(()=>{}).then(work);locks.set(name,result);return result;}},configurable:true});
- await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;auth=defaultAuth;
+ await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
  const root=createRoot(document.getElementById('root'));
- t.after(async()=>{await act(async()=>root.unmount());await drain();dom.window.close();});
+ t.after(async()=>{await act(async()=>root.unmount());for(const client of queryClients)client.clear();queryClients.clear();await drain();dom.window.close();});
  return {render:()=>act(async()=>{root.render(React.createElement(ShopProviders,null,React.createElement(Probe)));}),dom};
 }
 async function assertPhotosPresent(){
@@ -127,4 +131,37 @@ test('sign-out clears photo caches and journals while preserving the exact retai
  const view=await mount(t,async()=>[shop]),bill=await seed();await view.render();await assertPhotosPresent();
  auth={...defaultAuth,isSignedIn:false,userId:null,sessionId:null};await view.render();await assertPhotosPurged(bill);
  assert.match(document.body.textContent,/Signed out/);
+});
+test('an offline cart photo resolves from a later validated catalogue update and clears when its gallery is empty',async t=>{
+ const view=await mount(t,async()=>{throw Object.assign(Error('upstream unavailable'),{status:503});});
+ await seed();saveOfflineShop(localStorage,createOfflineShopContext(owner.actor,owner.session,shop));
+ photoProbeId='50000000-0000-4000-8000-000000000005';await view.render();await assertPhotosPresent();
+ assert.equal(document.querySelectorAll('img').length,0);
+ const item={shopId,productId:photoProbeId,product:{id:photoProbeId,shopId,name:'Synthetic cart product',media:{cover:image,count:1,version:1}}};
+ await act(async()=>activeQueryClient.setQueryData(['catalog',shopId,true,false],[item]));
+ await act(async()=>{await drain();});
+ assert.match(document.querySelector('img')?.src??'',/^blob:/,'restored bill must reuse its authorized cached thumbnail');
+ await act(async()=>activeQueryClient.setQueryData(['catalog',shopId,false,false],[{...item,product:{...item.product,media:{cover:null,count:0,version:2}}}]));
+ assert.equal(document.querySelectorAll('img').length,0,'a newer empty gallery cannot borrow the old cover');
+ assert.equal(mediaReads,0);assert.equal(leaseReads,0);
+});
+test('offline photo lookup never matches a product by name or reads another shop catalogue',async t=>{
+ const view=await mount(t,async()=>{throw Object.assign(Error('upstream unavailable'),{status:503});});await seed();saveOfflineShop(localStorage,createOfflineShopContext(owner.actor,owner.session,shop));
+ photoProbeId='50000000-0000-4000-8000-000000000005';await view.render();await assertPhotosPresent();
+ const otherShop='60000000-0000-4000-8000-000000000006',otherProduct='70000000-0000-4000-8000-000000000007';
+ const row=(scope,id)=>({shopId:scope,productId:id,product:{id,shopId:scope,name:'Synthetic cart product',media:{cover:image,count:1,version:1}}});
+ await act(async()=>activeQueryClient.setQueryData(['catalog',otherShop,true,false],[row(otherShop,photoProbeId)]));
+ await act(async()=>{await drain();});assert.equal(document.querySelectorAll('img').length,0);
+ await act(async()=>activeQueryClient.setQueryData(['catalog',shopId,true,false],[row(otherShop,photoProbeId),row(shopId,otherProduct)]));
+ await act(async()=>{await drain();});assert.equal(document.querySelectorAll('img').length,0);
+ assert.equal(mediaReads,0);assert.equal(leaseReads,0);
+});
+
+test('a fresh offline checkout restores its photo without a mounted catalogue query',async t=>{
+ const view=await mount(t,async()=>{throw Object.assign(Error('upstream unavailable'),{status:503});});await seed();saveOfflineShop(localStorage,createOfflineShopContext(owner.actor,owner.session,shop));
+ photoProbeId='50000000-0000-4000-8000-000000000005';savedMedia={[photoProbeId]:{cover:image,count:1,version:2}};
+ await view.render();await act(async()=>{await drain();await new Promise(resolve=>setTimeout(resolve,10));});
+ assert.equal(activeQueryClient.getQueriesData({queryKey:['catalog',shopId]}).length,0);
+ assert.match(document.querySelector('img')?.src??'',/^blob:/);
+ assert.equal(mediaReads,0);assert.equal(leaseReads,0);
 });

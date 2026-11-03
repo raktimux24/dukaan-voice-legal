@@ -11,8 +11,19 @@ export function createOfflineEvidence(scope:EvidenceScope,store:Store={read:read
   const check=(shopId:string)=>{if(!(shopId==='@account'?scope.isSessionCurrent?.():scope.isCurrent(shopId)))throw Error('offline_evidence_scope_changed');};
   const key=(shop:string,kind:string)=>`read-cache:v1:${scope.actorId}:${scope.sessionId}:${shop}:${kind}`;
   const clear=async(shop:string,kind:string)=>{try{await store.write(key(shop,kind),null);}catch{/* Cache invalidation must not mask the originating server error. */}};
+  // Read only previously authorized evidence. This never contacts the API and
+  // does not turn a missing or expired entry into a successful fallback.
+  const readSaved=async<T>(shopId:string,kind:string,validate:(value:unknown)=>value is T):Promise<T|null>=>{
+    check(shopId);
+    try{
+      const entry=await store.read(key(shopId,kind)) as Entry|null;check(shopId);
+      const at=now();
+      if(!entry||entry.version!==1||entry.actorId!==scope.actorId||entry.sessionId!==scope.sessionId||entry.shopId!==shopId||entry.kind!==kind||!Number.isFinite(entry.capturedAt)||entry.capturedAt>at||at-entry.capturedAt>MAX_AGE||!validate(entry.value)||entry.hash!==await sha256(canonicalJson(entry.value)))return null;
+      check(shopId);return entry.value;
+    }catch{check(shopId);return null;}
+  };
   return {
-    clear,
+    clear,readSaved,
     async read<T>(shopId:string,kind:string,load:()=>Promise<T>,validate:(value:unknown)=>value is T,project:(value:T)=>T=value=>value):Promise<T>{
       check(shopId);
       try {
@@ -29,12 +40,9 @@ export function createOfflineEvidence(scope:EvidenceScope,store:Store={read:read
       }catch(error){
         check(shopId);
         if(!permitsOfflineShopFallback(error)){await clear(shopId,kind);throw error;}
-        try{
-          const entry=await store.read(key(shopId,kind)) as Entry|null;check(shopId);
-          const at=now();
-          if(!entry||entry.version!==1||entry.actorId!==scope.actorId||entry.sessionId!==scope.sessionId||entry.shopId!==shopId||entry.kind!==kind||!Number.isFinite(entry.capturedAt)||entry.capturedAt>at||at-entry.capturedAt>MAX_AGE||!validate(entry.value)||entry.hash!==await sha256(canonicalJson(entry.value)))throw error;
-          check(shopId);scope.onFallback?.(shopId);return entry.value;
-        }catch{throw error;}
+        const saved=await readSaved(shopId,kind,validate);
+        if(saved===null)throw error;
+        check(shopId);scope.onFallback?.(shopId);return saved;
       }
     },
   };

@@ -1,3 +1,4 @@
+import type {ProductMedia} from './product-images/contract';
 import {bindProductImages} from './product-images/client';
 import {bindCommerce} from './commerce/client';
 import {bindFollowups} from './followups/client';
@@ -308,6 +309,10 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     return {rows:(page.items??[]).map(item=>mapItem(item,hideCost)),hasMore:page.hasMore};
   });
   const validCatalog=(shopId:string)=>(value:unknown):value is InventoryItem[]=>Array.isArray(value)&&new Set(value.map(row=>row?.productId)).size===value.length&&value.every(row=>row&&row.shopId===shopId&&row.product?.shopId===shopId&&row.productId===row.product.id&&typeof row.id==='string'&&typeof row.product.name==='string'&&Number.isFinite(row.quantity)&&row.quantity>=0&&row.unit===row.product.unit);
+  const validBillingCatalog=(shopId:string)=>(value:unknown):value is BillingCatalog=>{
+    const row=value as BillingCatalog;
+    return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
+  };
   const readTax=async(shopId:string,productIds:string[],completeCatalog=false)=>{
     const load=()=>send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:'POST',body:JSON.stringify({productIds})});
     const validate=(value:unknown):value is CatalogTaxSnapshot=>{try{attachCatalogTaxSnapshot(productIds.map(id=>({product:{id}})),value as CatalogTaxSnapshot,shopId);return true;}catch{return false;}};
@@ -383,11 +388,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
           const items=await readCatalog(shopId,hideCost);online=true;
           return {format:'billing_catalog_v2',items,accountedRequestIds};
         };
-        const validate=(value:unknown):value is BillingCatalog=>{
-          const row=value as BillingCatalog;
-          return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
-        };
-        const snapshot=await evidence.read(shopId,'catalog-v2',load,validate,row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
+        const snapshot=await evidence.read(shopId,'catalog-v2',load,validBillingCatalog(shopId),row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
         let rows:Awaited<ReturnType<typeof retainedRequests>>;
         try{rows=await retainedRequests(scope);}catch(error){if(!online||requireJournal)throw error;rows=[];}
         all=await projectLocalStock(snapshot,rows,scope);
@@ -395,6 +396,15 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       }else all=await readCatalog(shopId,hideCost);
       if(coherentTax){const snapshot=await readTax(shopId,all.map(item=>item.product.id),true);return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
+    },
+    // Photos on a freshly reopened offline checkout cannot depend on Sell
+    // having populated its in-memory QueryClient. Keep this outside bill data.
+    getCachedProductMedia:async(shopId:string):Promise<Record<string,ProductMedia>>=>{
+      assertCurrent();
+      const snapshot=await evidence?.readSaved(shopId,'catalog-v2',validBillingCatalog(shopId));
+      const media:Record<string,ProductMedia>={};
+      for(const row of snapshot?.items??[])if(row.product.media)media[row.productId]=row.product.media;
+      return media;
     },
     getTaxSnapshot: readTax,
     getInventoryStats: async (shopId: string) => {
