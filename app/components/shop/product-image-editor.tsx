@@ -29,12 +29,14 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
  const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
  useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
  useEffect(()=>{const element=input.current;if(!element||!editor)return;const cancel=()=>void editor.endSelection().catch(()=>setError(true));element.addEventListener('cancel',cancel);return()=>element.removeEventListener('cancel',cancel);},[editor]);
- const section=useRef<HTMLElement>(null),cards=useRef(new Map<string,HTMLDivElement>());
- const focusCard=(id:string)=>cards.current.get(id)?.focus({preventScroll:true});
+ const section=useRef<HTMLElement>(null),cards=useRef(new Map<string,HTMLDivElement>()),[resetFocus,setResetFocus]=useState(0);
+ const focusTarget=(target:HTMLElement|null|undefined)=>{target?.focus({preventScroll:true});target?.scrollIntoView({block:'center',inline:'nearest'});};
+ const focusCard=(id:string)=>focusTarget(cards.current.get(id));
+ useEffect(()=>{if(resetFocus)focusTarget(section.current?.querySelector<HTMLButtonElement>('.product-photo-choose'));},[resetFocus]);
  const move=(id:string,index:number)=>{focusCard(id);editor?.move(id,index);};
- const remove=(id:string)=>{const index=state?.items.findIndex(item=>item.clientId===id)??-1,next=state?.items[index+1]??state?.items[index-1];if(next)focusCard(next.clientId);else section.current?.querySelector<HTMLButtonElement>('.product-photo-choose')?.focus({preventScroll:true});editor?.remove(id);};
+ const remove=(id:string)=>{const index=state?.items.findIndex(item=>item.clientId===id)??-1,next=state?.items[index+1]??state?.items[index-1];if(next)focusCard(next.clientId);else focusTarget(section.current?.querySelector<HTMLButtonElement>('.product-photo-choose'));editor?.remove(id);};
  const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
- const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();}catch{setError(true);}finally{setPreparing(false);}};
+ const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();}catch{setError(true);}finally{setPreparing(false);setResetFocus(n=>n+1);}};
  const choose=async(id?:string)=>{if(!editor)return;replace.current=id??null;setError(false);try{await editor.beginSelection();if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}}catch{setError(true);}};
  const add=async(files:File[])=>{if(!editor||disabled||preparing)return;setPreparing(true);setError(false);
   try{await editor.beginSelection();const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}

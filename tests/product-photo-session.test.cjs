@@ -199,6 +199,7 @@ test('public detail exposes localized retry outside its decorative image and res
 
 test('photo editor keeps focus on the moved card and adjacent controls after removal',async t=>{
  const view=await mount(t,async()=>[shop]);
+ const scrolled=[];view.dom.window.HTMLElement.prototype.scrollIntoView=function(options){scrolled.push({target:this,options});};
  const photos=[image,{...image,id:'30000000-0000-4000-8000-000000000003',alt:'Second photo'},{...image,id:'40000000-0000-4000-8000-000000000004',alt:'Third photo'}];
  editorProbe=createProductImageEditor({uuid:()=>crypto.randomUUID(),current:()=>true,
   capabilities:async()=>({available:true,canEdit:true}),gallery:async()=>({version:1,count:3,cover:photos[0],images:photos}),
@@ -211,6 +212,7 @@ test('photo editor keeps focus on the moved card and adjacent controls after rem
  assert.equal(groups()[0]===moved,true,'the same card node follows its photo');
  assert.equal(document.activeElement===moved,true,'cover action must keep keyboard focus with its photo');
  assert.equal(moved.getAttribute('aria-label'),'product_images.title 1/3');
+ assert.equal(scrolled.at(-1).target===moved,true);assert.deepEqual(scrolled.at(-1).options,{block:'center',inline:'nearest'});
  button(moved,'product_images.next').focus();await act(async()=>button(moved,'product_images.next').click());
  assert.equal(groups()[1]===moved,true);assert.equal(document.activeElement===moved,true);
  assert.deepEqual(editor.getSnapshot().items.map(item=>item.image.id),photos.map(photo=>photo.id));assert.equal(await editor.manifest(),undefined,'returning to the original order needs no save');
@@ -220,5 +222,10 @@ test('photo editor keeps focus on the moved card and adjacent controls after rem
  assert.equal(document.activeElement===originalGroups[0],true,'last-position removal focuses the previous photo');
  button(originalGroups[0],'product_images.remove').focus();await act(async()=>button(originalGroups[0],'product_images.remove').click());
  assert.equal(document.activeElement.textContent,'product_images.library','empty gallery focuses the add action');
+ assert.equal(scrolled.at(-1).target===document.activeElement,true,'the empty-gallery action must be brought into view');
  assert.equal(groups().length,0);assert.deepEqual((await editor.manifest()).images,[]);
+ const reset=[...document.querySelectorAll('button')].find(element=>element.textContent==='product_images.reset');
+ reset.focus();await act(async()=>reset.click());assert.equal(groups().length,3);
+ assert.equal(document.activeElement.textContent,'product_images.library','reset must focus an available action after its own button disappears');
+ assert.equal(scrolled.at(-1).target===document.activeElement,true);
 });
