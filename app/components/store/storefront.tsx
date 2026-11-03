@@ -554,7 +554,7 @@ export function Storefront() {
             <section className={"store-grid"+(params.itemId?" is-detail":"")}>
               {(params.itemId ? (item ? [item] : []) : store.items).map((p) => (
                 <article key={p.id} className="store-card store-product">
-                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")}/>:<Link href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
+                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>:<Link href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
                   <h2>
                     <Link href={"/store/" + id + "/p/" + p.id}>{p.name}</Link>
                   </h2>

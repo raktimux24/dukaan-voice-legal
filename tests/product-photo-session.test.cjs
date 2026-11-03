@@ -11,8 +11,8 @@ const shop={id:shopId,name:'Synthetic photo test',category:'grocery',ownerId:own
 const image={id:'20000000-0000-4000-8000-000000000002',version:'immutable-test-version',width:160,height:160,alt:'Synthetic thumbnail'};
 let getShops=async()=>[shop],auth={isLoaded:true,isSignedIn:true,userId:owner.actor,sessionId:owner.session,getToken:async()=>null};
 const defaultAuth=auth;
-let mediaReads=0,leaseReads=0,savedMedia={};
-const api={getCachedProductMedia:async()=>savedMedia,getShops:()=>getShops(),getEntitlement:async()=>({premium:true}),getPreferences:async()=>({preferences:{appLanguage:'en'}}),assertSession:()=>{},productImages:{query:async()=>{mediaReads++;return {media:{}};},leases:async()=>{leaseReads++;throw Error('Offline photo must not request a lease');}}};
+let mediaReads=0,leaseReads=0,savedMedia={},leaseFailure=true;
+const api={getCachedProductMedia:async()=>savedMedia,getShops:()=>getShops(),getEntitlement:async()=>({premium:true}),getPreferences:async()=>({preferences:{appLanguage:'en'}}),assertSession:()=>{},productImages:{query:async()=>{mediaReads++;return {media:{}};},leases:async()=>{leaseReads++;if(leaseFailure)throw Error('Synthetic lease read failure');return {leases:{[image.id]:'synthetic-viewer-lease'},expiresAt:new Date(Date.now()+300_000).toISOString()};}}};
 const router={replace:()=>{},push:()=>{}},passthrough=({children})=>React.createElement(React.Fragment,null,children);
 const oldLoad=Module._load;
 Module._load=function(request,parent,isMain){
@@ -31,7 +31,8 @@ Module._load=function(request,parent,isMain){
 };
 const {ShopProviders}=require('../app/components/shop/providers.tsx');
 const {useShop}=require('../app/components/shop/context.tsx');
-const {ProductImageById}=require('../app/components/shop/product-image.tsx');
+const {ProductImageById,ProductImage}=require('../app/components/shop/product-image.tsx');
+const {PublicProductImage}=require('../app/components/store/product-media.tsx');
 const thumbs=require('../app/lib/shop/product-images/thumbnail-storage.web.ts');
 const {createProductSaveRecovery}=require('../app/lib/shop/product-images/save-recovery.ts');
 const {createEditorRecovery}=require('../app/lib/shop/product-images/editor-recovery.ts');
@@ -40,8 +41,9 @@ const {createOfflineShopContext,saveOfflineShop}=require('../app/lib/shop/offlin
 const locks=new Map();
 const lockNames=['samaan-product-thumbnails-v1','samaan-product-photo-saves-v1','samaan-product-photo-editors-v1'];
 const storage=key=>({get:async()=>localStorage.getItem(key),set:async value=>localStorage.setItem(key,value),clear:async()=>localStorage.removeItem(key)});
-let activeContext,activeQueryClient,photoProbeId;const queryClients=new Set();
-function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
+let activeContext,activeQueryClient,photoProbeId,viewerProbe,viewerImage=image;const queryClients=new Set();
+function ViewerFrame({children}){return React.createElement('dialog',{open:true},React.createElement('button',null,'Close viewer'),children);}
+function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
 async function drain(){await Promise.all(lockNames.map(name=>navigator.locks.request(name,async()=>{})));}
 async function seed(){
  const originalFetch=global.fetch;
@@ -61,7 +63,7 @@ async function mount(t,shops){
  global.IntersectionObserver=class{constructor(callback){this.callback=callback;}observe(){this.callback([{isIntersecting:true}]);}disconnect(){}};
  Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});
  Object.defineProperty(navigator,'locks',{value:{request(name,work){const result=(locks.get(name)??Promise.resolve()).catch(()=>{}).then(work);locks.set(name,result);return result;}},configurable:true});
- await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
+ await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
  const root=createRoot(document.getElementById('root'));
  t.after(async()=>{await act(async()=>root.unmount());for(const client of queryClients)client.clear();queryClients.clear();await drain();dom.window.close();});
  return {render:()=>act(async()=>{root.render(React.createElement(ShopProviders,null,React.createElement(Probe)));}),dom};
@@ -164,4 +166,29 @@ test('a fresh offline checkout restores its photo without a mounted catalogue qu
  assert.equal(activeQueryClient.getQueriesData({queryKey:['catalog',shopId]}).length,0);
  assert.match(document.querySelector('img')?.src??'',/^blob:/);
  assert.equal(mediaReads,0);assert.equal(leaseReads,0);
+});
+
+async function settleViewer(){await act(async()=>{await drain();await new Promise(resolve=>setTimeout(resolve,10));});}
+test('private detail distinguishes lease and image failures, retries the same URI, then clears its failure after load',async t=>{
+ const view=await mount(t,async()=>[shop]);viewerProbe='private';await view.render();await settleViewer();
+ assert.match(document.querySelector('[role="alert"]')?.textContent??'',/photo could not be loaded/);
+ assert.equal(document.querySelectorAll('img').length,0);
+ const retry=()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Retry');assert(retry());
+ leaseFailure=false;retry().focus();await act(async()=>retry().click());assert.equal(document.activeElement.textContent,'Close viewer');await settleViewer();
+ const first=document.querySelector('img');assert(first);assert.match(first.src,/\/detail\?/);
+ await act(async()=>first.dispatchEvent(new window.Event('error')));
+ assert(retry());assert.equal(document.querySelectorAll('img').length,0);
+ await act(async()=>retry().click());await settleViewer();const second=document.querySelector('img');assert(second);assert.notEqual(second,first);assert.equal(second.src,first.src);
+ await act(async()=>second.dispatchEvent(new window.Event('load')));
+ assert.equal(document.querySelector('[role="alert"]'),null);assert.equal(document.querySelector('[role="status"]'),null);assert.equal(retry(),undefined);
+});
+test('public detail exposes localized retry outside its decorative image and resets state on a changed image',async t=>{
+ const view=await mount(t,async()=>[shop]);viewerProbe='public';await view.render();
+ const first=document.querySelector('img');assert(first);await act(async()=>first.dispatchEvent(new window.Event('error')));
+ const alert=document.querySelector('[role="alert"]');assert.match(alert?.textContent??'',/Photo unavailable/);assert.equal(alert.closest('[aria-hidden="true"]'),null);
+ const retry=[...document.querySelectorAll('button')].find(button=>button.textContent==='Retry photo');assert(retry);
+ retry.focus();await act(async()=>retry.click());assert.equal(document.activeElement.textContent,'Close viewer');const second=document.querySelector('img');assert(second);assert.notEqual(second,first);assert.equal(second.src,first.src);
+ await act(async()=>second.dispatchEvent(new window.Event('load')));assert.equal(document.querySelector('[role="alert"]'),null);assert.equal(document.querySelector('[role="status"]'),null);
+ await act(async()=>second.dispatchEvent(new window.Event('error')));assert(document.querySelector('[role="alert"]'));
+ viewerImage={...image,version:'different-immutable-version'};await view.render();assert.equal(document.querySelector('[role="alert"]'),null);assert(document.querySelector('[role="status"]'));
 });
