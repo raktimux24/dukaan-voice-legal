@@ -194,7 +194,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     try {
       if(media.busy||preparingPhoto)throw Error(t('product_images.pending','Finish or remove failed uploads before saving.'));
       const imageManifest=uncertainSave?undefined:await media.manifest();
-      const intent=saveIntent.retry()??(imageManifest?await saveIntent.prepare({...body,...(!productId?{initialStock:form.trackStock?Number(form.initialStock||0):0,generateBarcode:generateBarcode&&!form.barcode.trim(),supplier:form.supplier||undefined,expiryDate:form.expiryDate||undefined,purchaseDate:form.purchaseDate||undefined,batchNumber:form.batchNumber||undefined}:{}),imageManifest}):null);
+      const intent=saveIntent.retry()??(!productId||imageManifest?await saveIntent.prepare({...body,...(!productId?{initialStock:form.trackStock?Number(form.initialStock||0):0,generateBarcode:generateBarcode&&!form.barcode.trim(),supplier:form.supplier||undefined,expiryDate:form.expiryDate||undefined,purchaseDate:form.purchaseDate||undefined,batchNumber:form.batchNumber||undefined}:{}),...(imageManifest?{imageManifest}:{})}):null);
       if (productId) {
         await api.updateProduct(shop.id, productId, intent??body);
         if(!saveIntent.current())return;
