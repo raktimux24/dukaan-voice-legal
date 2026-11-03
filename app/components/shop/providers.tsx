@@ -23,6 +23,13 @@ import { ShopContext, type ShopContextValue } from './context';
 import {retainProductPhotoSaves} from './use-product-save-recovery';
 import {retainProductPhotoEditors} from './product-image-editor';
 import {retainProductThumbnails} from '../../lib/shop/product-images/thumbnail-storage.web';
+import type {ProductSaveScope} from '../../lib/shop/product-images/save-recovery';
+
+function retainPhotoScope(scope:ProductSaveScope|null){
+  void retainProductPhotoSaves(scope).catch(()=>{});
+  void retainProductPhotoEditors(scope).catch(()=>{});
+  void retainProductThumbnails(scope).catch(()=>{});
+}
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
 const APP_LANGUAGES = new Set<string>(SUPPORTED_LANGUAGES.map(l=>l.code));
@@ -153,11 +160,11 @@ function ShopSession({ children }: { children: ReactNode }) {
   const shop = shops?.find((item) => item.id === shopId) ?? null;
   useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
   useLayoutEffect(()=>{
-    if(!isLoaded||(isSignedIn&&userId&&sessionId&&!shop))return;
-    void retainProductPhotoSaves(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
-    void retainProductPhotoEditors(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
-    void retainProductThumbnails(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null).catch(()=>{});
-  },[isLoaded,isSignedIn,userId,sessionId,shop?.id]);
+    // Keep eligible offline data while the initial shop lookup is unresolved.
+    // A completed empty list or denied lookup must clear the previous scope.
+    if(!isLoaded||(isSignedIn&&userId&&sessionId&&!shop&&shops===null&&!loadError))return;
+    retainPhotoScope(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null);
+  },[isLoaded,isSignedIn,userId,sessionId,shop?.id,shops,loadError]);
   useEffect(()=>{
     if(!shop||!userId||offline||navigator.onLine===false)return;
     let canceled=false,running=false;
@@ -232,6 +239,8 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onRemoved = () => {
+      // Revocation is already authoritative even if refreshing other shops stalls.
+      retainPhotoScope(null);
       try{if(userId)clearOfflineShop(localStorage,userId);}catch{}
       setShops(null);setOffline(false);activeShop.current=null;
       setShopId(null);
