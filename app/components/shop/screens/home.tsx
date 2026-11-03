@@ -1,6 +1,6 @@
 'use client';
 
-import {ProductImageById} from "../product-image";
+import {ProductImage,ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
@@ -173,7 +173,8 @@ export function HomeScreen() {
         <Card flush>
           <div className="shop-list">
             {localHits.map((item) => (
-              <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
+              <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row home-product-row">
+                <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.product.name}</p>
                   <p className="shop-list-meta">{t('home.search_products', 'Product')} · {formatQty(item.quantity, item.unit)}</p>
@@ -327,7 +328,8 @@ export function HomeScreen() {
               <Card flush>
                 <div className="shop-list">
                   {attentionItems.map((item) => (
-                    <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
+                    <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row home-product-row">
+                      <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                       <div className="shop-list-main">
                         <p className="shop-list-title">{item.product.name}</p>
                         <p className="shop-list-meta">
