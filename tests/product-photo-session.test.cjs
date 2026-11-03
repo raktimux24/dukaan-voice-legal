@@ -34,6 +34,7 @@ const {useShop}=require('../app/components/shop/context.tsx');
 const {ProductImageById,ProductImage}=require('../app/components/shop/product-image.tsx');
 const {PublicProductImage}=require('../app/components/store/product-media.tsx');
 const {ProductImageEditor}=require('../app/components/shop/product-image-editor.tsx');
+const {useProductSaveRecovery}=require('../app/components/shop/use-product-save-recovery.ts');
 const {createProductImageEditor}=require('../app/lib/shop/product-images/editor.ts');
 const thumbs=require('../app/lib/shop/product-images/thumbnail-storage.web.ts');
 const {createProductSaveRecovery}=require('../app/lib/shop/product-images/save-recovery.ts');
@@ -43,10 +44,11 @@ const {createOfflineShopContext,saveOfflineShop}=require('../app/lib/shop/offlin
 const locks=new Map();
 const lockNames=['samaan-product-thumbnails-v1','samaan-product-photo-saves-v1','samaan-product-photo-editors-v1'];
 const storage=key=>({get:async()=>localStorage.getItem(key),set:async value=>localStorage.setItem(key,value),clear:async()=>localStorage.removeItem(key)});
-let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,viewerImage=image;const queryClients=new Set();
+let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,saveProbe,activeSaveProbe,viewerImage=image;const queryClients=new Set();
 function ViewerFrame({children}){return React.createElement('dialog',{open:true},React.createElement('button',null,'Close viewer'),children);}
+function SaveProbe(){activeSaveProbe=useProductSaveRecovery('embedded-photo-test');return React.createElement('p',null,activeSaveProbe.pending?'Pending photo save':'Fresh photo form');}
 function EditorProbe(){const state=React.useSyncExternalStore(editorProbe.subscribe,editorProbe.getSnapshot);return React.createElement(ProductImageEditor,{media:{editor:editorProbe,state,dirty:editorProbe.dirty()},name:'Synthetic editor product'});}
-function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),editorProbe?React.createElement(EditorProbe):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
+function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),saveProbe?React.createElement(SaveProbe):editorProbe?React.createElement(EditorProbe):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
 async function drain(){await Promise.all(lockNames.map(name=>navigator.locks.request(name,async()=>{})));}
 async function seed(){
  const originalFetch=global.fetch;
@@ -66,7 +68,7 @@ async function mount(t,shops){
  global.IntersectionObserver=class{constructor(callback){this.callback=callback;}observe(){this.callback([{isIntersecting:true}]);}disconnect(){}};
  Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});
  Object.defineProperty(navigator,'locks',{value:{request(name,work){const result=(locks.get(name)??Promise.resolve()).catch(()=>{}).then(work);locks.set(name,result);return result;}},configurable:true});
- await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;editorProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
+ await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;editorProbe=null;saveProbe=false;activeSaveProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
  const root=createRoot(document.getElementById('root'));
  t.after(async()=>{await act(async()=>root.unmount());for(const client of queryClients)client.clear();queryClients.clear();await drain();dom.window.close();});
  return {render:()=>act(async()=>{root.render(React.createElement(ShopProviders,null,React.createElement(Probe)));}),dom};
@@ -228,4 +230,21 @@ test('photo editor keeps focus on the moved card and adjacent controls after rem
  reset.focus();await act(async()=>reset.click());assert.equal(groups().length,3);
  assert.equal(document.activeElement.textContent,'product_images.library','reset must focus an available action after its own button disappears');
  assert.equal(scrolled.at(-1).target===document.activeElement,true);
+});
+
+
+test('embedded photo save acknowledgement clears only its request after the parent unmounts the form',async t=>{
+ const view=await mount(t,async()=>[shop]),bill=await seed();saveProbe=true;await view.render();await act(async()=>{await drain();});
+ assert.equal(activeSaveProbe.ready,true);
+ const controller=activeSaveProbe;let body;
+ await act(async()=>{body=await controller.prepare({name:'Embedded synthetic photo product',initialStock:0,imageManifest:{images:[{id:image.id,alt:'Front'}]}});});
+ const journal=createProductSaveRecovery(storage('samaan-product-photo-saves-v1'));
+ assert.deepEqual(await journal.load(owner,'embedded-photo-test',()=>true),body);
+ saveProbe=false;await view.render();assert.equal(controller.current(),false,'parent callback unmounted the originating form');
+ await act(async()=>controller.succeeded());
+ assert.equal(await journal.load(owner,'embedded-photo-test',()=>true),null);
+ assert.deepEqual(await journal.load(owner,'new',()=>true),{productRequestId:'fixture-save',name:'Private draft'},'an unrelated unconfirmed photo save remains exact');
+ assert.deepEqual(await financial.retainedRequests({actorId:owner.actor,shopId}),[bill],'bill recovery is untouched');
+ saveProbe=true;await view.render();await act(async()=>{await drain();});
+ assert.equal(activeSaveProbe.ready,true);assert.equal(activeSaveProbe.pending,null,'reopening the embedded form starts fresh rather than replaying a completed product');
 });
