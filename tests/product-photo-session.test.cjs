@@ -37,6 +37,7 @@ const {ProductImageEditor}=require('../app/components/shop/product-image-editor.
 const {useProductSaveRecovery}=require('../app/components/shop/use-product-save-recovery.ts');
 const {createProductImageEditor}=require('../app/lib/shop/product-images/editor.ts');
 const {createImageLeaseBatcher}=require('../app/lib/shop/product-images/lease-batcher.ts');
+const {useCommerce}=require('../app/lib/shop/commerce/workflow.ts');
 const thumbs=require('../app/lib/shop/product-images/thumbnail-storage.web.ts');
 const {createProductSaveRecovery}=require('../app/lib/shop/product-images/save-recovery.ts');
 const {createEditorRecovery}=require('../app/lib/shop/product-images/editor-recovery.ts');
@@ -45,11 +46,13 @@ const {createOfflineShopContext,saveOfflineShop}=require('../app/lib/shop/offlin
 const locks=new Map();
 const lockNames=['samaan-product-thumbnails-v1','samaan-product-photo-saves-v1','samaan-product-photo-editors-v1'];
 const storage=key=>({get:async()=>localStorage.getItem(key),set:async value=>localStorage.setItem(key,value),clear:async()=>localStorage.removeItem(key)});
-let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,saveProbe,activeSaveProbe,viewerImage=image;const queryClients=new Set();
+let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,saveProbe,activeSaveProbe,commerceProbe,activeCommerce,commerceApi,viewerImage=image;const queryClients=new Set();
 function ViewerFrame({children}){return React.createElement('dialog',{open:true},React.createElement('button',null,'Close viewer'),children);}
 function SaveProbe(){activeSaveProbe=useProductSaveRecovery('embedded-photo-test');return React.createElement('p',null,activeSaveProbe.pending?'Pending photo save':'Fresh photo form');}
 function EditorProbe(){const state=React.useSyncExternalStore(editorProbe.subscribe,editorProbe.getSnapshot);return React.createElement(ProductImageEditor,{media:{editor:editorProbe,state,dirty:editorProbe.dirty()},name:'Synthetic editor product'});}
-function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),saveProbe?React.createElement(SaveProbe):editorProbe?React.createElement(EditorProbe):viewerProbe==='thumb'?React.createElement(ProductImage,{image:viewerImage,name:'Synthetic thumbnail product'}):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
+const commerceStorage={getItem:async()=>null,setItem:async()=>{},removeItem:async()=>{}};
+function CommerceProbe(){activeCommerce=useCommerce(commerceApi,"photo-commerce",shopId,true,()=>crypto.randomUUID(),commerceStorage);return React.createElement(ProductImageById,{productId:photoProbeId,name:"Synthetic order product"});}
+function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),commerceProbe?React.createElement(CommerceProbe):saveProbe?React.createElement(SaveProbe):editorProbe?React.createElement(EditorProbe):viewerProbe==='thumb'?React.createElement(ProductImage,{image:viewerImage,name:'Synthetic thumbnail product'}):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
 async function drain(){await Promise.all(lockNames.map(name=>navigator.locks.request(name,async()=>{})));}
 async function seed(){
  const originalFetch=global.fetch;
@@ -69,7 +72,7 @@ async function mount(t,shops){
  global.IntersectionObserver=class{constructor(callback){this.callback=callback;}observe(){this.callback([{isIntersecting:true}]);}disconnect(){}};
  Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});
  Object.defineProperty(navigator,'locks',{value:{request(name,work){const result=(locks.get(name)??Promise.resolve()).catch(()=>{}).then(work);locks.set(name,result);return result;}},configurable:true});
- await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;editorProbe=null;saveProbe=false;activeSaveProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
+ await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;editorProbe=null;saveProbe=false;commerceProbe=false;activeCommerce=null;commerceApi=null;activeSaveProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
  const root=createRoot(document.getElementById('root'));
  t.after(async()=>{await act(async()=>root.unmount());for(const client of queryClients)client.clear();queryClients.clear();await drain();dom.window.close();});
  return {render:()=>act(async()=>{root.render(React.createElement(ShopProviders,null,React.createElement(Probe)));}),dom};
@@ -293,4 +296,25 @@ test('mounted thumbnails revoke Blob URLs on version changes and unmount while b
  assert.equal(created.length,2);assert.equal(reads.length,2);
  for(const read of reads){assert.equal(read.cache,'no-store');assert.equal(read.credentials,'omit');assert.equal(read.redirect,'error');assert.equal(read.referrerPolicy,'no-referrer');assert.match(read.headers.Authorization,/^Bearer synthetic-/);}
  viewerProbe=null;await view.render();assert(revoked.includes(second));
+});
+
+
+test('merchant refresh replaces a mounted order cover without changing the order or retained bill',async t=>{
+ const view=await mount(t,async()=>[shop]),bill=await seed(),originalFetch=global.fetch,originalQuery=api.productImages.query,originalLeases=api.productImages.leases;
+ const product='60000000-0000-4000-8000-000000000006',first={...image,version:'commerce-first-cover'},second={...image,id:'70000000-0000-4000-8000-000000000007',version:'commerce-second-cover'};
+ let cover=first,reads=0,actions=0;const order={id:'synthetic-order',state:'accepted',version:2,total:'160.00',lines:[{productId:product,quantity:'2',price:'80.00'}]};
+ commerceApi={store:async()=>({store:{id:shopId},items:[],more:false}),orders:async()=>({items:[order],more:false}),order:async()=>order,action:async()=>{actions++;throw Error('No financial action expected');}};
+ api.productImages.query=async()=>{reads++;return {media:{[product]:{cover,count:1,version:cover===first?1:2}}};};
+ api.productImages.leases=async(_shop,ids)=>({leases:Object.fromEntries(ids.map(id=>[id,'synthetic-commerce-lease'])),expiresAt:new Date(Date.now()+300000).toISOString()});
+ global.fetch=async()=>new Response(new Blob(['synthetic order thumbnail']),{headers:{'Content-Type':'image/webp'}});
+ t.after(()=>{global.fetch=originalFetch;api.productImages.query=originalQuery;api.productImages.leases=originalLeases;});
+ photoProbeId=product;commerceProbe=true;await view.render();await settleViewer();
+ await act(async()=>activeCommerce.open(order.id));await settleViewer();
+ const before=document.querySelector('img')?.src;assert.match(before??'',/^blob:/);assert.equal(activeCommerce.order,order);const initialReads=reads;
+ cover=second;await act(async()=>activeCommerce.refresh());await settleViewer();
+ assert.equal(reads,initialReads+1,'merchant Refresh must refetch product-ID photos, even while their 30-second cache is fresh');
+ assert.notEqual(document.querySelector('img')?.src,before,'the mounted order must display the new cover');
+ assert.deepEqual(activeQueryClient.getQueryData(['productMedia',owner.actor,shopId,product]).cover,second);
+ assert.deepEqual(activeCommerce.order,order);assert.equal(actions,0);
+ assert.deepEqual(await financial.retainedRequests({actorId:owner.actor,shopId}),[bill],'photo refresh cannot alter retained billing evidence');
 });
