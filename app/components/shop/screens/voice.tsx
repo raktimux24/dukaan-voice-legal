@@ -66,7 +66,7 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
         }
         cart.paymentHint=sale?.paymentHint??undefined;
         writeCart(userId,shop.id,cart);
-        router.push('/shop/checkout');
+        router.push('/shop/sell/checkout');
       }
     } catch(caught) {
       if(alive.current){
