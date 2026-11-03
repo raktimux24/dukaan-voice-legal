@@ -3,6 +3,7 @@ import {ProductImageEditor,useProductImageEditor} from '../product-image-editor'
 import {useProductSaveRecovery} from '../use-product-save-recovery';
 import {useProductPhotoLeave} from '../use-product-photo-leave';
 import {useProductEditorFields} from '../../../lib/shop/product-images/use-editor-fields';
+import {productFormTaxPatch,restoredTaxWasEdited} from '../../../lib/shop/product-images/product-tax-intent';
 
 import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 import { useGstText as useUiText } from "../gst-ui";
@@ -127,14 +128,14 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   }, [item, l1, params, productId, shop]);
   const form = draft ?? initial;
   const editorFields=useProductEditorFields(form?media:{editor:null,state:null},form?{
-    ...Object.fromEntries(Object.entries(form).map(([key,value])=>[key,String(value)])),purchaseDiscount:buyingDiscount,autoMrp:String(autoMrp),generateBarcode:String(generateBarcode),gstConfig:JSON.stringify(gstDraft===undefined?item?.product.gstConfig??null:gstDraft),
+    ...Object.fromEntries(Object.entries(form).map(([key,value])=>[key,String(value)])),purchaseDiscount:buyingDiscount,autoMrp:String(autoMrp),generateBarcode:String(generateBarcode),gstConfig:JSON.stringify(gstDraft===undefined?item?.product.gstConfig??null:gstDraft),gstEdited:String(gstDraft!==undefined),
   }:{},fields=>{
     const bool=(key:string)=>{if(!['true','false'].includes(fields[key]))throw Error('product_image_recovery_unavailable');return fields[key]==='true';};
     const tax=JSON.parse(fields.gstConfig??'null');
     if(!(UNITS as readonly string[]).includes(fields.unit))throw Error('product_image_recovery_unavailable');
     const restored=blank(fields.category??'',fields.subcategory??'');
     for(const key of Object.keys(restored) as (keyof Draft)[])if(key!=='trackStock'&&typeof fields[key]==='string')(restored as unknown as Record<string,string>)[key]=fields[key];
-    restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(tax);
+    restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(restoredTaxWasEdited(fields.gstEdited,tax,item?.product.gstConfig??null)?tax:undefined);
   });
   const leaveGuard=useProductPhotoLeave({dirty:media.dirty||preparingPhoto||uncertainSave,busy:pending,current:saveIntent.current,flush:async()=>{await media.editor?.flushRecovery();},message:t('product_images.leave_title','Leave this form?')+'\n\n'+(uncertainSave?t('product_images.save_pending','The previous save is still unconfirmed.')+'\n\n':'')+t('product_images.leave_hint','Your saved product will not change. Photo changes stay in a draft on this device. Unfinished photos may need to be selected again.'),onError:()=>setError(Error(t('opening.error.storage','The draft could not be saved on this device.')))});
   useEffect(()=>{leaveGuard.reset();},[saveIntent.identity]);
@@ -180,7 +181,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       unit: form.unit,
       minStockLevel: Number(form.minStockLevel || 0),
       sellingPrice: form.sellingPrice === '' ? null : Number(form.sellingPrice),
-      gstConfig,
+      ...productFormTaxPatch(!productId,gstDraft!==undefined,gstConfig),
       mrp: autoMrp&&priceBreakdown?priceBreakdown.gross:form.mrp === '' ? null : Number(form.mrp),
       trackStock: form.trackStock,
       shortCode: form.shortCode.trim() || null,

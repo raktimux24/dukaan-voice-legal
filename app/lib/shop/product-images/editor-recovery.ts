@@ -1,8 +1,8 @@
 import {imageUuid,type ImageReference} from './contract';
 import type {ProductSaveScope} from './save-recovery';
 export type EditorFields=Record<string,string>;
-const fieldNames=new Set(['name','category','subcategory','unit','initialStock','minStockLevel','purchasePrice','purchaseDiscount','sellingPrice','mrp','autoMrp','shortCode','trackStock','depletionOrder','inPacks','packLabel','packSize','packPrice','generateBarcode','barcode','batchNumber','purchaseDate','expiryDate','supplier','gstConfig']);
-const validFields=(fields:EditorFields)=>fields&&typeof fields==='object'&&!Array.isArray(fields)&&Object.entries(fields).every(([k,v])=>fieldNames.has(k)&&typeof v==='string'&&v.length<=8192)&&bytes(JSON.stringify(fields))<=32768;
+const fieldNames=new Set(['name','category','subcategory','unit','initialStock','minStockLevel','purchasePrice','purchaseDiscount','sellingPrice','mrp','autoMrp','shortCode','trackStock','depletionOrder','inPacks','packLabel','packSize','packPrice','generateBarcode','barcode','batchNumber','purchaseDate','expiryDate','supplier','gstConfig','gstEdited']);
+const validFields=(fields:EditorFields)=>fields&&typeof fields==='object'&&!Array.isArray(fields)&&Object.entries(fields).every(([k,v])=>fieldNames.has(k)&&typeof v==='string'&&v.length<=8192&&(k!=='gstEdited'||v==='true'||v==='false'))&&bytes(JSON.stringify(fields))<=32768;
 export type EditorCheckpoint={version:number;initial:string;draftId?:string;items:{clientId:string;image?:ImageReference}[];updatedAt:number;fields?:EditorFields;selectionPending?:boolean};
 type Storage={get:()=>Promise<string|null>;set:(value:string)=>Promise<void>;clear:()=>Promise<void>};
 type Row={scope:ProductSaveScope;slot:string;checkpoint:EditorCheckpoint};
