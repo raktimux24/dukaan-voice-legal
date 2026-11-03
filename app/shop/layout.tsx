@@ -8,6 +8,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function ShopLayout({ children }: { children: React.ReactNode }) {
-  return <AuthProvider><ShopProviders>{children}</ShopProviders></AuthProvider>;
+export default function ShopLayout({ children, voice }: { children: React.ReactNode; voice: React.ReactNode }) {
+  return <AuthProvider><ShopProviders>{children}{voice}</ShopProviders></AuthProvider>;
 }

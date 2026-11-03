@@ -2,21 +2,23 @@
 import {ProductImageById} from "../product-image";
 import {ProductSelect} from "../product-select";
 import {useEffect,useRef,useState} from 'react';
+import {VoiceSheet} from '../voice-sheet';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useShop} from '../context';
 import {VoiceCapture,SpeechAudio} from '../voice-capture';
 import {useGstText} from '../gst-ui';
-import {Button,Card,Field,Notice,PageHeader,PremiumLock,Spinner,inputClass} from '../ui';
+import {Button,Card,Field,Notice,PremiumLock,Spinner,inputClass} from '../ui';
 import {readCart,writeCart} from '../../../lib/shop/cart';
 import {appendVoiceSale,confirmStockOnce,editVoiceEntity,voiceEntityValid,voiceSalePlan,type VoiceStockAttempt} from '../../../lib/shop/voice-review';
 import type {VoiceProcessResponse,VoiceConfirmResponse,VoiceEntityWithMatch} from '../../../lib/shop/voice-types';
 
-export function VoiceScreen(){
-  const {userId,shop,prefs}=useShop();
+export function VoiceScreen({intercepted=false}:{intercepted?:boolean}){
+  const {userId,shop,prefs,t}=useShop();
+  const router=useRouter();
   const params=useSearchParams();
   const context=params.get('mode')==='sell'?'counter':'inventory';
-  return <VoiceWorkspace key={`${userId}:${shop?.id}:${prefs?.voiceLanguage}:${context}`} context={context}/>;
+  return <VoiceSheet title={t('a11y.voice','Voice command')} closeLabel={t('common.close','Close')} onClose={()=>intercepted?router.back():router.replace(context==='counter'?'/shop/sell':'/shop')}><VoiceWorkspace key={`${userId}:${shop?.id}:${prefs?.voiceLanguage}:${context}`} context={context}/></VoiceSheet>;
 }
 function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
   const {api,userId,shop,prefs,perms,premium,t,hideCost}=useShop();
@@ -77,8 +79,8 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
       }
     } finally {if(alive.current)setBusy(false);}
   };
-  return <div className="shop-page">
-    <PageHeader title={t('a11y.voice','Voice command')} back={{href:context==='counter'?'/shop/sell':'/shop',label:t(context==='counter'?'nav.sell':'nav.home',context==='counter'?'Sell':'Home')}} description={t('modal.voice.verify_command','Please verify the command')}/>
+  return <div className="shop-page shop-voice-content">
+    <p className="shop-hint">{t('modal.voice.verify_command','Please verify the command')}</p>
     {!premium?<PremiumLock feature="voice"/>:<>
       <Notice error={error}/>
       {!response?<Card><VoiceCapture disabled={busy} onRecorded={async recording=>{
