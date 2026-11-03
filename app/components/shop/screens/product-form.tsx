@@ -1,4 +1,9 @@
 'use client';
+import {ProductImageEditor,useProductImageEditor} from '../product-image-editor';
+import {useProductSaveRecovery} from '../use-product-save-recovery';
+import {useProductPhotoLeave} from '../use-product-photo-leave';
+import {useProductEditorFields} from '../../../lib/shop/product-images/use-editor-fields';
+import {productFormTaxPatch,restoredTaxWasEdited} from '../../../lib/shop/product-images/product-tax-intent';
 
 import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 import { useGstText as useUiText } from "../gst-ui";
@@ -11,7 +16,7 @@ import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, l2ItemType, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty } from '../../../lib/shop/units';
@@ -84,6 +89,15 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const l1 = enabledL1(shop?.category, shop?.subtype);
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
+  const [photoReset,setPhotoReset]=useState(0);
+  const formSlot=JSON.stringify([productId??'new',params.get('buyListItemId'),onCreated?'embedded':'route']);
+  const media=useProductImageEditor(productId,photoReset,formSlot);
+  const [preparingPhoto,setPreparingPhoto]=useState(false);
+  const [uncertainOutcome,setUncertainSave]=useState(false);
+  const saveIntent=useProductSaveRecovery(formSlot);
+  const uncertainSave=uncertainOutcome||!!saveIntent.pending;
+  const createdResult=useRef<Awaited<ReturnType<typeof api.addProduct>>|null>(null);
+  useEffect(()=>{createdResult.current=null;setUncertainSave(false);},[saveIntent.identity]);
   const [generateBarcode,setGenerateBarcode]=useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const initial = useMemo(() => {
@@ -113,6 +127,18 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     });
   }, [item, l1, params, productId, shop]);
   const form = draft ?? initial;
+  const editorFields=useProductEditorFields(form?media:{editor:null,state:null},form?{
+    ...Object.fromEntries(Object.entries(form).map(([key,value])=>[key,String(value)])),purchaseDiscount:buyingDiscount,autoMrp:String(autoMrp),generateBarcode:String(generateBarcode),gstConfig:JSON.stringify(gstDraft===undefined?item?.product.gstConfig??null:gstDraft),gstEdited:String(gstDraft!==undefined),
+  }:{},fields=>{
+    const bool=(key:string)=>{if(!['true','false'].includes(fields[key]))throw Error('product_image_recovery_unavailable');return fields[key]==='true';};
+    const tax=JSON.parse(fields.gstConfig??'null');
+    if(!(UNITS as readonly string[]).includes(fields.unit))throw Error('product_image_recovery_unavailable');
+    const restored=blank(fields.category??'',fields.subcategory??'');
+    for(const key of Object.keys(restored) as (keyof Draft)[])if(key!=='trackStock'&&typeof fields[key]==='string')(restored as unknown as Record<string,string>)[key]=fields[key];
+    restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(restoredTaxWasEdited(fields.gstEdited,tax,item?.product.gstConfig??null)?tax:undefined);
+  });
+  const leaveGuard=useProductPhotoLeave({dirty:media.dirty||preparingPhoto||uncertainSave,busy:pending,current:saveIntent.current,flush:async()=>{await media.editor?.flushRecovery();},message:t('product_images.leave_title','Leave this form?')+'\n\n'+(uncertainSave?t('product_images.save_pending','The previous save is still unconfirmed.')+'\n\n':'')+t('product_images.leave_hint','Your saved product will not change. Photo changes stay in a draft on this device. Unfinished photos may need to be selected again.'),onError:()=>setError(Error(t('opening.error.storage','The draft could not be saved on this device.')))});
+  useEffect(()=>{leaveGuard.reset();},[saveIntent.identity]);
 
   if (!shop) return <Spinner />;
   if (!perms.canEditProducts) return <NoAccess what={uiText("Only an owner or manager can add or edit products.")} />;
@@ -122,7 +148,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
 
   const subs = l2ForL1(form.category);
   const set = (partial: Partial<Draft>) => setDraft({ ...form, ...partial });
-  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp;
+  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp||media.dirty;
   const selling = form.sellingPrice === '' ? null : Number(form.sellingPrice);
   const gstConfig=gstDraft===undefined?item?.product.gstConfig??null:gstDraft;
   const priceBreakdown=productPriceBreakdown(form.sellingPrice,gstConfig,pos.data?.gstSettings);
@@ -130,18 +156,23 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const netSelling=priceBreakdown?.net??selling;
   const marginPct = netSelling != null && cost != null && netSelling > 0 ? ((netSelling - cost) / netSelling) * 100 : null;
   const opening = Number(form.initialStock || 0);
-  const canSave = !pending && !!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error;
+  const canSave = !pending && !media.busy && !preparingPhoto && saveIntent.ready && !saveIntent.error && (uncertainSave||editorFields.ready&&!!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error);
 
   const handleSubmit = async (addAnother = false) => {
+    if(pending||!saveIntent.ready||saveIntent.error||(!uncertainSave&&!editorFields.ready))return;
+    if(!uncertainSave){
     if (!isAllowedL2(shop.category, shop.subtype, form.category, form.subcategory)) {
       setError(new Error('That category is not available for this shop.'));
       return;
     }
     if(!hideCost && form.purchasePrice!=='' && cost===null){setError(Error(text('Enter a valid buying price and a discount between 0 and 100%.')));return;}
     if(autoMrp&&!priceBreakdown){setError(Error(text('Confirm selling price and GST before calculating MRP.')));return;}
-    const buyListItemId = onCreated ? null : params.get('buyListItemId');
+    const threshold=Number(form.minStockLevel||0);
+    if(!Number.isInteger(threshold)||threshold<0||threshold>1000000000){setError(Error(t('imports.issue.number_invalid','Enter a non-negative whole number for the reorder level.')));return;}
     if(gstConfig){try{validateProductTaxDraft(gstConfig);}catch(e){setError(e);return;}}
     if(form.mrp&&priceBreakdown&&priceBreakdown.gross>Number(form.mrp)&&!autoMrp){setError(new Error(text('Selling price including GST must not exceed MRP.')));return;}
+    }
+    const buyListItemId = onCreated ? null : params.get('buyListItemId');
     const body: Record<string, unknown> = {
       name: form.name.trim(),
       barcode: item?.product.barcode ?? (form.barcode.trim() || null),
@@ -150,7 +181,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       unit: form.unit,
       minStockLevel: Number(form.minStockLevel || 0),
       sellingPrice: form.sellingPrice === '' ? null : Number(form.sellingPrice),
-      gstConfig,
+      ...productFormTaxPatch(!productId,gstDraft!==undefined,gstConfig),
       mrp: autoMrp&&priceBreakdown?priceBreakdown.gross:form.mrp === '' ? null : Number(form.mrp),
       trackStock: form.trackStock,
       shortCode: form.shortCode.trim() || null,
@@ -161,10 +192,17 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     setPending(true);
     setError(null);
     try {
+      if(media.busy||preparingPhoto)throw Error(t('product_images.pending','Finish or remove failed uploads before saving.'));
+      const imageManifest=uncertainSave?undefined:await media.manifest();
+      const intent=saveIntent.retry()??(imageManifest?await saveIntent.prepare({...body,...(!productId?{initialStock:form.trackStock?Number(form.initialStock||0):0,generateBarcode:generateBarcode&&!form.barcode.trim(),supplier:form.supplier||undefined,expiryDate:form.expiryDate||undefined,purchaseDate:form.purchaseDate||undefined,batchNumber:form.batchNumber||undefined}:{}),imageManifest}):null);
       if (productId) {
-        await api.updateProduct(shop.id, productId, body);
-        await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
-        router.push(`/shop/products/${productId}`);
+        await api.updateProduct(shop.id, productId, intent??body);
+        if(!saveIntent.current())return;
+        await media.clearRecovery();
+        await saveIntent.succeeded();
+        await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
+        if(!saveIntent.current())return;
+        leaveGuard.allow();router.push(`/shop/products/${productId}`);
         return;
       }
       body.generateBarcode=generateBarcode&&!form.barcode.trim();
@@ -173,22 +211,33 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (form.expiryDate) body.expiryDate = form.expiryDate;
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
       if (form.batchNumber) body.batchNumber = form.batchNumber;
-      const created = await api.addProduct(shop.id, body);
+      const created=createdResult.current??await api.addProduct(shop.id,intent??body);
+      if(!saveIntent.current())return;
+      createdResult.current=created;
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
-      await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
+      await Promise.all([queryClient.invalidateQueries({queryKey:['productMedia']}),queryClient.invalidateQueries({queryKey:['productImages']}),queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] })]);
+      if(!saveIntent.current())return;
+      await media.clearRecovery();
       if (onCreated) {
+        if(!saveIntent.current())return;
+        leaveGuard.allow();
         await onCreated(created.product.id);
+        await saveIntent.succeeded();
         return;
       }
       if (addAnother) {
+        leaveGuard.reset();
         setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
+        await saveIntent.succeeded();createdResult.current=null;setUncertainSave(false);setPhotoReset(n=>n+1);
         setGenerateBarcode(false);
         setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
         window.scrollTo({ top: 0 });
         return;
       }
-      router.push(`/shop/products/${created.product.id}`);
+      await saveIntent.succeeded();leaveGuard.allow();router.push(`/shop/products/${created.product.id}`);
     } catch (caught) {
+      if(!saveIntent.current())return;
+      if(!createdResult.current)await saveIntent.failed(caught);setUncertainSave(!!saveIntent.retry()||!!createdResult.current);
       setError(caught);
     } finally {
       setPending(false);
@@ -216,12 +265,16 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
         description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : uiText('Name, category, and a price are enough to start selling.')}
-        actions={<Button href={onCancel ? undefined : productId ? `/shop/products/${productId}` : '/shop/products'} onClick={onCancel} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
+        actions={<Button onClick={()=>void leaveGuard.leave(()=>{if(onCancel)onCancel();else router.push(productId?`/shop/products/${productId}`:'/shop/products');})} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
-      {error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
+      {(error as {code?:string}|null)?.code==='product_image_conflict'?<p role="alert" className="shop-notice">{t('product_images.conflict','Photos changed on another device. Reload and review before saving.')}</p>:error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
 
+      {uncertainSave?<p role="alert">{t("product_images.save_pending","The previous save is still unconfirmed. Retry it to finish before editing further.")}</p>:null}
+      {saveIntent.pending?<p>{String(saveIntent.pending.name??'')}</p>:null}
+      {saveIntent.error||editorFields.error?<p role="alert">{t('opening.error.storage',"The saved request could not be verified. Keep this device's data and check recovery before continuing.")}</p>:null}
       <div className="form-layout">
-        <div className="form-stack">
+        <fieldset className="form-stack" style={{border:0,padding:0,margin:0,minWidth:0}} disabled={uncertainSave||!saveIntent.ready} inert={uncertainSave||!saveIntent.ready}>
+          <Card><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto}/></Card>
           <Card className="grid gap-5">
             <div>
               <h2 className="shop-section-title">{t('products.title', 'Product')}</h2>
@@ -288,7 +341,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 <input type="checkbox" className="shop-field" checked={form.trackStock} onChange={(event) => set({ trackStock: event.target.checked })} />
               </label>
               {form.trackStock ? <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
-                <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
+                <input className={cx(inputClass, 'num')} inputMode="numeric" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
               </Field> : null}
             </div>
             {!productId && form.trackStock ? (
@@ -328,10 +381,11 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               </div>
             </details>
           </Card>
-        </div>
+        </fieldset>
 
         <aside className="form-aside">
           <Card className="form-summary">
+            {!uncertainSave?<>
             <p className="shop-kicker">{productId ? t('common.saving', 'Saving changes to') : t('modal.add_product.title', 'Adding')}</p>
             <p className="form-summary-name">{form.name.trim() || t('modal.add_product.title', 'New product')}</p>
             <div className="grid gap-2">
@@ -348,13 +402,14 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 {t('modal.add_product.margin_line', '{{pct}}% margin · {{margin}} per {{unit}}', { pct: marginPct.toFixed(1), margin: formatINR(netSelling! - cost!), unit: form.unit })}
               </div>
             ) : null}
+            </>:null}
             <div className="grid gap-2">
-              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
+              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : uncertainSave?t('product_images.retry','Retry'):productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
               {!productId && !onCreated ? (
                 <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>{uiText("Save and add another")}</Button>
               ) : null}
             </div>
-            {!form.name.trim() ? <p className="text-center text-xs text-faint">{t('modal.add_product.alert_name_required', 'A name is required.')}</p> : null}
+            {!uncertainSave&&!form.name.trim() ? <p className="text-center text-xs text-faint">{t('modal.add_product.alert_name_required', 'A name is required.')}</p> : null}
           </Card>
         </aside>
       </div>

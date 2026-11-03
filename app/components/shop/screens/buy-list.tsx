@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -59,11 +60,12 @@ export function BuyListScreen() {
         {(list.data ?? []).map((item) => (
           <Card key={item.id}>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="font-semibold">{item.itemName}</p>
+              <div className="flex min-w-0 items-center gap-3">
+                <ProductImageById productId={item.productId} name={item.itemName} size={44}/>
+                <div><p className="font-semibold">{item.itemName}</p>
                 <p className="text-sm text-muted">{item.quantity ?? ''} {item.unit ? t(`unit_picker.${item.unit}`, item.unit) : ''} · {item.status === 'pending' ? t('buy_list.filter_pending', 'pending') : item.status === 'stocked' ? t('badge.stocked', 'stocked') : item.status}{item.isAiSuggested ? ` · ${t('buy_list.filter_ai_suggested', 'suggested')}` : ''}</p>
                 {item.aiReason ? <p className="text-sm text-muted">{item.aiReason}</p> : null}
-              </div>
+              </div></div>
               <div className="flex gap-2">
                 {item.status==='pending'?<Button tone="ghost" href={'/shop/purchase-orders?buyListItemId='+item.id}>{t('po.order_item','Order')}</Button>:null}
                 {item.status !== 'stocked' && !(item.isAiSuggested && !premium) ? (

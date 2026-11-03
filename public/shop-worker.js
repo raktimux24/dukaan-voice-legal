@@ -53,7 +53,12 @@ self.addEventListener('fetch',event=>{
  const request=event.request,url=new URL(request.url);
  if(request.method!=='GET'||request.headers.get('RSC')==='1')return;
  if(asset(url)){
-  event.respondWith((async()=>{let saved;try{saved=await (await caches.open(CACHE)).match(request);}catch{}if(saved)return saved;const response=await fetch(request);await save(request,response);return response;})());return;
+  // Prefer the current asset (or the browser's normal HTTP cache). Development
+  // chunk names can stay unchanged when their contents or local API URL change.
+  event.respondWith((async()=>{
+   try{const response=await fetch(request);if([404,408,502,503,504].includes(response.status)){try{const saved=await (await caches.open(CACHE)).match(request);if(saved)return saved;}catch{}}await save(request,response);return response;}
+   catch(error){try{const saved=await (await caches.open(CACHE)).match(request);if(saved)return saved;}catch{}throw error;}
+  })());return;
  }
  if(request.mode==='navigate'&&shell(url)){
   event.respondWith((async()=>{

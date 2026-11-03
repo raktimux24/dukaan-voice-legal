@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImage,ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
@@ -172,7 +173,8 @@ export function HomeScreen() {
         <Card flush>
           <div className="shop-list">
             {localHits.map((item) => (
-              <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
+              <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row home-product-row">
+                <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.product.name}</p>
                   <p className="shop-list-meta">{t('home.search_products', 'Product')} · {formatQty(item.quantity, item.unit)}</p>
@@ -326,7 +328,8 @@ export function HomeScreen() {
               <Card flush>
                 <div className="shop-list">
                   {attentionItems.map((item) => (
-                    <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
+                    <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row home-product-row">
+                      <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                       <div className="shop-list-main">
                         <p className="shop-list-title">{item.product.name}</p>
                         <p className="shop-list-meta">
@@ -354,7 +357,7 @@ export function HomeScreen() {
                   return (
                     <div key={nudge.id} className="dash-nudge">
                       <div className="min-w-0">
-                        <p className="font-medium">{nudge.title}</p>
+                        <p className="flex items-center gap-3 font-medium">{nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={36}/>:null}{nudge.title}</p>
                         <p className="mt-1 text-sm text-muted">{nudge.body}</p>
                       </div>
                       {action && allowed ? (

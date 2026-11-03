@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useRef, useState } from "react";
 import { useShop } from "../context";
 import { Button, Card, PageHeader, Pill } from "../ui";
@@ -325,7 +326,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                         }`;
                         return (
                         <tr key={item.id}>
-                          <td>{item.name}</td>
+                          <td><span className="flex items-center gap-3"><ProductImageById productId={item.productId} name={item.name} size={36}/>{item.name}</span></td>
                           <td>
                             {item.quantity} {text(item.unit)}
                           </td>
@@ -486,7 +487,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   <ReadState query={preview}>
                     {preview.data?.changes.map((row, i) => (
                       <div className="gst-row" key={i}>
-                        <b>{row.name}</b>
+                        <span className="flex items-center gap-3"><ProductImageById productId={detail.items.find(item=>item.id===row.purchaseItemId)?.productId} name={row.name} size={36}/><b>{row.name}</b></span>
                         <span>
                           {formatINR(Number(row.previousUnitCost))} →{" "}
                           {formatINR(Number(row.newUnitCost))}
@@ -689,6 +690,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     if (Number(item.quantity) - returned <= 0) return null;
                     return (
                       <div key={item.id} className="gst-row">
+                        <ProductImageById productId={item.productId} name={item.name} size={36}/>
                         <TextField
                           label={`${item.name} · ${text("Remaining")} ${Number(item.quantity) - returned}`}
                           type="number"

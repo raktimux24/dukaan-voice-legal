@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "./product-image";
 import { useState, useRef } from "react";
 import { useShop } from "./context";
 import { Button, Card, Pill } from "./ui";
@@ -207,7 +208,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
           }}
         />
         {sale.items.map((item) => (
-          <div key={item.id} className="gst-row">
+          <div key={item.id} className="gst-row"><ProductImageById productId={item.productId} name={item.name} size={40}/>
             <TextField
               label={`${item.name} · ${text("Quantity")}`}
               type="number"

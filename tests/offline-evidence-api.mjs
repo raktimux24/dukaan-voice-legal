@@ -8,7 +8,8 @@ const require=createRequire(import.meta.url);
 const {bindApi}=require(process.env.GST_TEST_BUILD+'/api.js');
 const shop='11111111-1111-4111-8111-111111111111';
 const ids=['22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'];
-const items=ids.map((id,index)=>({id:'inventory-'+index,productId:id,shopId:shop,quantity:'10',unit:'piece',stockStatus:'OK',product:{id,shopId:shop,name:'Pen '+index,unit:'piece',purchasePrice:100,sellingPrice:120,createdAt:'2026-01-01T00:00:00Z'}}));
+const photo={cover:{id:'55555555-5555-4555-8555-555555555555',version:'saved-version',width:160,height:160,alt:''},count:1,version:3};
+const items=ids.map((id,index)=>({id:'inventory-'+index,productId:id,shopId:shop,quantity:'10',unit:'piece',stockStatus:'OK',product:{id,shopId:shop,name:'Pen '+index,media:index===0?photo:{cover:null,count:0,version:4},unit:'piece',purchasePrice:100,sellingPrice:120,createdAt:'2026-01-01T00:00:00Z'}}));
 const snapshot={version:1,shopId:shop,capturedAt:new Date().toISOString(),products:ids.map(productId=>({productId,profiles:[]}))};
 const api=bindApi(async()=> 'token',{actorId:'actor',sessionId:'session',isSessionCurrent:()=>true,isCurrent:()=>true});
 const original=globalThis.fetch;
@@ -16,6 +17,23 @@ try {
  globalThis.fetch=async url=>Response.json(url.includes('tax-snapshot')?snapshot:url.includes('pos-settings')?{shopId:shop,shopName:'Store',gstSettings:null,updatedAt:new Date().toISOString(),saleCounter:0,defaultPaymentMethod:'cash',cardEnabled:false}: {items,hasMore:false});
  const live=await api.getAllInventory(shop,false,true);assert.equal(live[0].product.purchasePrice,100);
  await api.getPosSettings(shop);
+ let photoNetworkReads=0;globalThis.fetch=async()=>{photoNetworkReads++;throw Error('Cached media must never use the network');};
+ assert.deepEqual(await api.getCachedProductMedia(shop),{[ids[0]]:photo,[ids[1]]:{cover:null,count:0,version:4}});
+ assert.equal(photoNetworkReads,0);
+ const {readState,writeState}=require(process.env.GST_TEST_BUILD+'/gst-storage.js');
+ const photoKey=`read-cache:v1:actor:session:${shop}:catalog-v2`,savedPhotoEntry=await readState(photoKey);
+ await writeState(photoKey,{...savedPhotoEntry,capturedAt:Date.now()-7*86400000-1});
+ assert.deepEqual(await api.getCachedProductMedia(shop),{},'expired catalogue cannot authorize a thumbnail');
+ await writeState(photoKey,{...savedPhotoEntry,value:{...savedPhotoEntry.value,items:[]}});
+ assert.deepEqual(await api.getCachedProductMedia(shop),{},'tampered catalogue cannot authorize a thumbnail');
+ await writeState(photoKey,savedPhotoEntry);
+
+ const photoOtherSession=bindApi(async()=> 'token',{actorId:'actor',sessionId:'other-photo-session',isCurrent:()=>true});
+ assert.deepEqual(await photoOtherSession.getCachedProductMedia(shop),{});
+ assert.deepEqual(await api.getCachedProductMedia('44444444-4444-4444-8444-444444444444'),{});
+ const photoRetired=bindApi(async()=> 'token',{actorId:'actor',sessionId:'session',isSessionCurrent:()=>false,isCurrent:()=>false});
+ await assert.rejects(photoRetired.getCachedProductMedia(shop),/sign-in changed/);
+
  globalThis.fetch=async()=>{throw new TypeError('Failed to fetch');};
  const cached=await api.getAllInventory(shop,true,true);
  assert.equal(cached.length,2);assert.equal(cached[0].product.purchasePrice,undefined);

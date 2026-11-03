@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from '@tanstack/react-query';
@@ -53,6 +54,7 @@ export function SupplierDetailScreen({ name }: { name: string }) {
           {items.length === 0 ? <p className="shop-list-empty">{uiText("No products from this supplier yet.")}</p> : null}
           {items.map((item) => (
             <Link key={item.productId} href={`/shop/products/${item.productId}`} className="shop-list-row">
+              <ProductImageById productId={item.productId} name={item.name} size={44}/>
               <div className="shop-list-main">
                 <p className="shop-list-title">{item.name}</p>
                 <p className="shop-list-meta"> {uiText("Last")} {formatINR(item.lastPrice)}
@@ -78,6 +80,7 @@ export function SupplierDetailScreen({ name }: { name: string }) {
           {batches.length === 0 ? <p className="shop-list-empty">{uiText("No batches recorded.")}</p> : null}
           {batches.map((batch) => (
             <div key={batch.id} className="shop-list-row">
+              <ProductImageById productId={batch.productId} name={batch.name} size={36}/>
               <div className="shop-list-main">
                 <p className="shop-list-title">{batch.name}</p>
                 <p className="shop-list-meta">

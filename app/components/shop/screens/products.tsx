@@ -1,4 +1,5 @@
 "use client";
+import {ProductImage} from "../product-image";
 
 import { useGstText as useUiText } from "../gst-ui";
 
@@ -133,7 +134,7 @@ export function ProductsScreen() {
   if (!shop) return <Spinner label={uiText("Loading products")} />;
 
   return (
-    <div className="shop-page">
+    <div className="shop-page product-catalogue">
       <PageHeader
         kicker={t("reports.stock.on_hand", "Stock")}
         title={t("products.title", "Products")}
@@ -293,6 +294,7 @@ export function ProductsScreen() {
                 href={`/shop/products/${item.productId}`}
                 className="shop-list-row"
               >
+                <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                 <div className="shop-list-main">
                   <p className="shop-list-title">{item.product.name}</p>
                   <p className="shop-list-meta">

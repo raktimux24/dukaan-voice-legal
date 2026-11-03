@@ -77,6 +77,7 @@ export function useCommerce(
         "commerceStore",
         "commerceOrders",
         "commerceOrder",
+        "productMedia",
         "catalog",
         "inventory",
         "estimates",

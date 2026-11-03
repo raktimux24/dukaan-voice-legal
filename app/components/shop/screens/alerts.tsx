@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -93,7 +94,7 @@ export function AlertsScreen() {
           {stock.map((row) => (
             <article key={row.productId} className={row.tone === 'out' ? 'alert-card is-out' : 'alert-card is-low'}>
               <div>
-                <Link href={`/shop/products/${row.productId}`} className="shop-list-title">{row.productName}</Link>
+                <Link href={`/shop/products/${row.productId}`} className="shop-list-title flex items-center gap-3"><ProductImageById productId={row.productId} name={row.productName} size={40}/>{row.productName}</Link>
                 <p className="shop-list-meta">
                   {row.tone === 'out' ? `0 ${row.unit}` : formatQty(row.quantity, row.unit)} {uiText("· alert at")} {formatQty(row.minStockLevel, row.unit)}
                 </p>
@@ -114,7 +115,7 @@ export function AlertsScreen() {
           {expiry.map((row) => (
             <article key={`${row.productId}-${row.expiryDate}`} className={row.daysRemaining <= 7 ? 'alert-card is-out' : 'alert-card is-low'}>
               <div>
-                <Link href={`/shop/products/${row.productId}`} className="shop-list-title">{row.productName}</Link>
+                <Link href={`/shop/products/${row.productId}`} className="shop-list-title flex items-center gap-3"><ProductImageById productId={row.productId} name={row.productName} size={40}/>{row.productName}</Link>
                 <p className="shop-list-meta">{formatQty(row.quantity, row.unit)} {uiText("· expires")} {formatDay(row.expiryDate)}</p>
               </div>
               <div className="alert-side">
@@ -138,7 +139,7 @@ export function AlertsScreen() {
               {ai.map((row) => (
                 <article key={row.id} className="alert-card">
                   <div>
-                    <p className="shop-list-title">{row.title}</p>
+                    <p className="shop-list-title flex items-center gap-3">{row.productId?<ProductImageById productId={row.productId} name={row.title} size={40}/>:null}{row.title}</p>
                     <p className="shop-list-meta">{row.description}</p>
                   </div>
                   <Button size="sm" tone="ghost" onClick={() => void api.dismissPrediction(shop.id, row.id).then(() => {

@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -354,7 +355,7 @@ export function ProductBulkScreen() {
                   <p>{t("bulk.counts", counts)}</p>
                   {job.rows.slice(0, limit).map((row) => (
                     <div key={row.id} className="border-t border-white/10 py-3">
-                      <h3 className="font-semibold">{row.name}</h3>
+                      <h3 className="flex items-center gap-3 font-semibold"><ProductImageById productId={row.id} name={row.name} size={36}/>{row.name}</h3>
                       {row.fields.length ? (
                         <dl className="mt-2 space-y-2">
                           {row.fields.map((f) => (

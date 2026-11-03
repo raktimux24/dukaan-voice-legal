@@ -19,10 +19,13 @@ transport=async r=>key(r).endsWith('/style.css')?new Response('body{src:url("/_n
 await message('WARM_BILLING_SHELL');
 assert.equal(entries.size,6);assert.ok(calls.every(url=>url.startsWith(origin)));assert.ok(calls.every(url=>!url.includes('%23n')&&!url.includes('#n')));
 entries.delete(origin+'/_next/static/font.woff2');await message('WARM_BILLING_SHELL');assert.ok(entries.has(origin+'/_next/static/font.woff2'));
+transport=async()=>new Response('updated bundle');
+assert.equal(await (await request('/_next/static/app.js',{mode:'cors'})).text(),'updated bundle','a stable chunk URL must not pin old development code');
 transport=async()=>{throw new TypeError('Failed to fetch');};
 assert.match(await (await request('/shop/sell')).text(),/script/);
-assert.equal(await (await request('/_next/static/app.js',{mode:'cors'})).text(),'bundle');
-for(const path of ['/api/shops/private/sales','/shop/settings','/shop/sell?secret=1','https://clerk.example/client','/shop/settings/gst/recovery/secret'])assert.equal(await request(path),null,path);
+assert.equal(await (await request('/_next/static/app.js',{mode:'cors'})).text(),'updated bundle');
+for(const path of ['/api/shops/private/sales','/shop/settings','/shop/sell?secret=1','https://clerk.example/client','/shop/settings/gst/recovery/secret','/media/private/synthetic/thumb?lease=synthetic-read-lease','/media/public/store/listing/image/thumb'])assert.equal(await request(path),null,path);
+assert.equal(await request('/media/private/synthetic/thumb',{mode:'cors',headers:{Authorization:'Bearer synthetic-read-lease'}}),null);
 assert.equal(await request('/shop/sell',{headers:{RSC:'1'}}),null);
 assert.equal(await request('/shop/sell',{method:'POST'}),null);
 for(const status of [401,403,404,500]){transport=async()=>new Response('denied',{status});assert.equal((await request('/shop/sell')).status,status);}

@@ -61,6 +61,7 @@
 }
 
 /* home.css pads every <section> for marketing pages. Undo it here. */
+.product-photo-dialog::backdrop { background: #000b; }
 .shop-root :where(section) {
   padding: 0;
 }
@@ -129,16 +130,11 @@
 }
 
 .shop-mark {
-  display: grid;
+  display: block;
   width: 32px;
   height: 32px;
-  place-items: center;
-  border-radius: 10px;
-  background: #ff6b00;
-  color: #0a0a0f;
-  font-family: var(--font-dm-sans), Inter, sans-serif;
-  font-size: 16px;
-  font-weight: 700;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .shop-rail-shop {
@@ -350,6 +346,8 @@
 
 .shop-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--page-gap);
 }
 
@@ -513,6 +511,20 @@ a.shop-list-row:hover {
   flex: 0 0 auto;
 }
 
+/* Photo, name and price must share the available row width at larger text sizes. */
+.product-catalogue { grid-template-columns: minmax(0, 1fr); }
+.product-catalogue .shop-card,
+.product-catalogue .shop-list > div { min-width: 0; }
+.product-catalogue .shop-list { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 640px) {
+  .product-catalogue .shop-list-row, .home-product-row { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 8px 12px; padding: 12px; }
+  .product-catalogue .shop-list-row > span:first-child, .home-product-row > span:first-child { grid-row: 1 / span 2; }
+  .product-catalogue .shop-list-main, .home-product-row .shop-list-main { grid-column: 2; }
+  .product-catalogue .shop-list-title, .home-product-row .shop-list-title { white-space: normal; overflow-wrap: anywhere; }
+  .product-catalogue .shop-list-right, .home-product-row .shop-list-right { grid-column: 2; min-width: 0; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; }
+  .home-product-row > .shop-pill { justify-self: start; }
+}
+
 .shop-list-empty {
   padding: 28px 18px;
   text-align: center;
@@ -623,6 +635,16 @@ a.shop-list-row:hover {
   padding: 6px 11px;
   font-size: 13px;
   border-radius: 8px;
+}
+
+.shop-btn.barcode-conflict-choice {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+  line-height: 1.4;
 }
 
 .shop-btn.is-lg {
@@ -2222,6 +2244,10 @@ a.party-card:hover {
   align-items: center;
 }
 
+.pos-picker-product { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pos-picker-product > div { min-width: 0; }
+.pos-picker-product .party-name { overflow-wrap: anywhere; }
+
 .pos-picker-step button {
   width: 40px;
   height: 40px;
@@ -2878,12 +2904,13 @@ a.party-card:hover {
 .gst-nav-row:hover { color:#FF6B00; }
 .gst-nav-row b { display:block; font-size:17px; }
 .gst-nav-row small { display:block; color:var(--color-muted); margin-top:8px; }
-.gst-table-wrap { overflow-x:auto; }
+.gst-table-wrap { min-width:0; max-width:100%; overflow-x:auto; }
 .gst-table { width:100%; border-collapse:collapse; text-align:left; }
 .gst-table th { color:var(--color-muted); font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
 .gst-table th,.gst-table td { padding:16px 12px; border-bottom:1px solid var(--color-line); vertical-align:top; }
 .gst-table td a { color:#FF6B00; }
 .gst-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--color-line); }
+.sale-return-product { display:grid; grid-template-columns:40px minmax(0,1fr); align-items:start; gap:12px; }
 .gst-row p,.gst-row small { flex-basis:100%; color:var(--color-muted); }
 .gst-price-preview { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; background:#15151b; padding:18px; border-radius:12px; }
 .gst-price-preview span { color:var(--color-muted); font-size:13px; }

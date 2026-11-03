@@ -1,4 +1,5 @@
 'use client';
+import {ProductImage,ProductImageById} from '../product-image';
 import {serialScanner} from '../../../lib/shop/counter/scanner';
 import {UsbCounterScanner,CounterCamera} from '../counter-scanner';
 import {CounterStatus} from '../counter-status';
@@ -316,6 +317,7 @@ export function SellScreen() {
             if (unpriced && perms.canEditProducts) {
               return (
                 <div key={item.id} className={cx('pos-tile', index === highlight && query && 'is-highlight')}>
+                  <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                   <p className="pos-tile-name">{item.product.name}</p>
                   <div className="grid gap-2">
                     <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} {uiText("· no price")}</p>
@@ -350,6 +352,7 @@ export function SellScreen() {
                 onClick={() => choose(item)}
                 title={out ? 'Out of stock' : `Add ${item.product.name}`}
               >
+                <ProductImage image={item.product.media?.cover} name={item.product.name}/>
                 <p className="pos-tile-name">
                   {item.product.name}
                   {inCart ? <span className="ml-2 text-saffron">×{formatQty(inCart.quantity, inCart.unit)}</span> : null}
@@ -422,7 +425,7 @@ export function SellScreen() {
                   if (match) choose(match);
                 }}
               >
-                {nudge.title}
+                {nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={24}/>:null}{nudge.title}
               </Chip>
             ))}
           </div>
@@ -502,12 +505,15 @@ function QtyPicker({
   return (
     <div className="pos-picker" role="dialog" aria-label={`Choose a quantity of ${item.product.name}`}>
       <div className="pos-picker-head">
-        <div>
+        <div className="pos-picker-product">
+          <ProductImage image={item.product.media?.cover} name={item.product.name}/>
+          <div>
           <p className="party-name">{item.product.name}</p>
           <p className="party-meta">
             {formatINR(price)} / {unit}
             {tracked ? ` · ${formatQty(item.quantity, unit, { packSize: item.product.packSize, packLabel: item.product.packLabel })} on hand` : ' · not tracked'}
           </p>
+          </div>
         </div>
         <button type="button" className="bill-remove" onClick={onClose}>{t('common.close', 'Close')}</button>
       </div>
@@ -569,7 +575,7 @@ function BillLine({
 
   return (
     <div className="bill-line">
-      <p className="bill-line-name">{line.name}</p>
+      <p className="bill-line-name" style={{display:"flex",alignItems:"center",gap:10}}><ProductImageById productId={line.productId} name={line.name} size={36}/><span>{line.name}</span></p>
       <p className="bill-line-total num">{formatINR(line.price * line.quantity)}</p>
       <div className="bill-line-controls">
         <div className="bill-qty" aria-label={`Quantity of ${line.name}`}>

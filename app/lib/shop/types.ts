@@ -30,6 +30,7 @@ export type Member = {
 };
 
 export type Product = {
+  media?:import("./product-images/contract").ProductMedia|null;
   gstTaxSnapshot?:import("./gst-core/gst-tax-cache").ProductTaxSnapshot;
   gstRspSnapshot?:import("./gst-core/gst-rsp-cache").ProductRspSnapshot;
   gstConfig?: ProductTax | null;

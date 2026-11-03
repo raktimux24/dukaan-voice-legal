@@ -1,5 +1,6 @@
 'use client';
 
+import {ProductImageById} from "../product-image";
 import {useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useInventoryImport} from '../../../lib/shop/imports/workflow';
@@ -59,7 +60,7 @@ export function InventoryImportPanel({api,shopId,actorId,language,t,allowed=true
     <div className="import-template-actions"><Button tone="ghost" disabled={busy} onClick={()=>void w.run(async guard=>{const file=await api.issues(shopId,job.id,language);guard();download(file);})}>{t('imports.download_issues')}</Button>{job.state!=='applied'?<Button tone="ghost" disabled={busy} onClick={()=>{setConfirmed(false);void w.review();}}>{t('imports.refresh')}</Button>:null}</div>
    </Card>
    <div className="import-review-list">{job.rows.slice(0,limit).map(row=><Card key={row.row} className={row.action==='skip'?'import-skipped':''}>
-    <div className="import-row-head"><h3>{t('imports.row')} {row.row} · {row.name||'—'}</h3><span className="import-row-status">{row.outcome?t('imports.done'):row.action==='skip'?t('imports.skip'):row.issues.length?t('imports.issues'):t(row.action==='create'?'imports.mode_create':'imports.mode_update')}</span></div>
+    <div className="import-row-head"><h3 className="flex items-center gap-3"><ProductImageById productId={row.outcome?.productId??row.targetId} name={row.name||"—"} size={36}/>{t('imports.row')} {row.row} · {row.name||'—'}</h3><span className="import-row-status">{row.outcome?t('imports.done'):row.action==='skip'?t('imports.skip'):row.issues.length?t('imports.issues'):t(row.action==='create'?'imports.mode_create':'imports.mode_update')}</span></div>
     {row.product?<dl className="import-values">{IMPORT_FIELDS.filter(f=>row.action==='update'?row.changes?.[f]!==undefined:row.product?.[f]!==undefined).map(f=><div key={f}><dt>{fieldLabel(f)}</dt><dd>{row.action==='update'?display(f,row.before?.[f])+' → ':''}{display(f,(row.action==='update'?row.changes:row.product)?.[f])}</dd></div>)}</dl>:null}
     {row.issues.map((issue,i)=><p className="import-row-error" key={'e'+i}>{issue.field?fieldLabel(issue.field)+': ':''}{t('imports.issue.'+issue.code)}</p>)}
     {row.warnings.map((issue,i)=><p className="shop-hint" key={'w'+i}>{t('imports.issue.'+issue.code)}</p>)}

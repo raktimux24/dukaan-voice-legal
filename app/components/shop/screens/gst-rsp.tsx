@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useEffect, useRef, useState } from "react";
 import { useShop } from "../context";
 import { Card, Button, PageHeader, Notice } from "../ui";
@@ -204,6 +205,7 @@ export function GstRspScreen({ id }: { id: string }) {
           }}
           description={label("notice")}
         />
+        <ProductImageById productId={id} name={text("Product")} size={48}/>
         <ReadState query={settings}>
           {settings.data?.gstRspProfileReviewsAvailable ? (
             <>

@@ -1,5 +1,6 @@
 "use client";
 
+import {ProductImageById} from "../product-image";
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery } from "@tanstack/react-query";
@@ -158,7 +159,7 @@ export function SuppliersScreen() {
           <div className="chart-rows">
             {compared.map((product) => (
               <div key={product.productId} className="chart-row is-compare">
-                <span>{product.name}</span>
+                <span className="flex items-center gap-3"><ProductImageById productId={product.productId} name={product.name} size={36}/>{product.name}</span>
                 <span className="party-meta">
                   {product.suppliers
                     .map((row) => `${row.name} ${formatINR(row.price)}`)

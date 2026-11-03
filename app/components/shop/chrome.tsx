@@ -153,7 +153,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
       {showNav ? (
         <aside className="shop-rail no-print">
           <Link href="/shop" className="shop-brand">
-            <span className="shop-mark" aria-hidden="true">S</span>
+            <img src="/logo1.svg" width={32} height={32} className="shop-mark" alt="" />
             <span>Samaan<span className="text-saffron">Bol</span></span>
           </Link>
 

@@ -1,4 +1,5 @@
 'use client';
+import {ProductPhotos} from '../product-photos';
 import {useCheckoutCredit,CheckoutCreditView} from '../../../lib/shop/credit/checkout';
 import {cashWebUi} from './cashbook';
 import {assertEstimateCart} from '../../../lib/shop/estimates/handoff';
@@ -317,6 +318,7 @@ export function CheckoutScreen() {
         title={t('checkout.title', 'Checkout')}
         actions={<Button href="/shop/sell" tone="quiet" size="sm">{uiText("← Back to counter")}</Button>}
       />
+      <ProductPhotos rows={(cartApi.pending?.payload.items??cartApi.cart.lines).map(item=>({productId:item.productId,name:item.name??t("bill.item","Item"),quantity:item.quantity,unit:item.unit??""}))} historical={false} title={t("pos.cart_title","Cart ({{n}})",{n:cartApi.cart.lines.length})}/>
 
       <div className="pos">
         <div className="pos-catalog">

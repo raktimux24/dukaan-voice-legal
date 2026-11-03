@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { BarcodeRequest } from "../../../lib/shop/barcodes/contract";
@@ -211,9 +212,11 @@ export function ProductBarcodesScreen() {
                       <Button
                         key={p.id}
                         tone="ghost"
+                        className="barcode-conflict-choice"
                         href={"/shop/products/barcodes?productId=" + p.id}
                       >
-                        {p.name}
+                        <ProductImageById productId={p.id} name={p.name} size={32}/>
+                        <span className="min-w-0">{p.name}</span>
                       </Button>
                     ))}
                   </div>
@@ -278,7 +281,7 @@ export function ProductBarcodesScreen() {
           <div className="grid min-w-0 gap-4 lg:grid-cols-2">
             {visible.map((item) => (
               <section key={item.id} className="min-w-0">
-                <h2 className="shop-section-title mb-3">{item.name}</h2>
+                <h2 className="shop-section-title mb-3 flex items-center gap-3"><ProductImageById productId={item.id} name={item.name} size={40}/>{item.name}</h2>
                 {!item.value ? (
                   <label className="import-confirm">
                     <input

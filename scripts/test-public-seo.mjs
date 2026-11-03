@@ -12,7 +12,7 @@ try {
     '--ignoreConfig', '--outDir', folder, '--target', 'ES2022', '--module', 'commonjs',
     '--moduleResolution', 'node', '--ignoreDeprecations', '6.0', '--skipLibCheck',
     '--esModuleInterop', '--resolveJsonModule', 'app/content/localized.ts',
-    'app/content/laptopPage.ts', 'app/seo.ts', 'app/sitemap.ts'], { stdio: 'inherit' });
+    'app/content/laptopPage.ts', 'app/seo.ts', 'app/sitemap.ts', 'app/lib/store-metadata.ts'], { stdio: 'inherit' });
   assert.equal(compiled.status, 0, 'Content compilation');
   writeFileSync(join(folder, 'package.json'), '{"type":"commonjs"}');
   const require = createRequire(join(folder, 'package.json'));
@@ -57,6 +57,23 @@ try {
     assert.ok(!JSON.stringify(getSubscriptionStrings(code).pricing).includes('Samaan-Bol'), `${code}: pricing branding`);
     console.log(`PASS ${code}: FAQ, GST, languages, pricing, metadata, sitemap, browser copy`);
   }
+  const {storeMetadata}=require('./lib/store-metadata.js');
+  const originalFetch=globalThis.fetch,originalApi=process.env.NEXT_PUBLIC_API_BASE_URL,originalSite=process.env.NEXT_PUBLIC_SITE_URL;
+  try {
+    process.env.NEXT_PUBLIC_API_BASE_URL='https://api.example.invalid';process.env.NEXT_PUBLIC_SITE_URL='https://shop.example.invalid';
+    const storeId='20000000-0000-4000-8000-000000000002',itemId='30000000-0000-4000-8000-000000000003',imageId='40000000-0000-4000-8000-000000000004';
+    const store={id:storeId,config:{name:'Synthetic QA shop'}},item={id:itemId,name:'Photo rice',description:'Synthetic package',visible:true,supported:true,media:{cover:{id:imageId,alt:'Rice package'}}};
+    let status=200,data={store,item},calls=0;
+    globalThis.fetch=async(url,options)=>{calls++;assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');assert.equal(String(url),`https://api.example.invalid/api/storefront/${storeId}/products/${itemId}`);return new Response(JSON.stringify(data),{status});};
+    const visible=await storeMetadata(storeId,itemId);
+    assert.deepEqual(visible.title,{absolute:'Photo rice · Synthetic QA shop'});
+    assert.equal(visible.robots.index,true);assert.equal(visible.alternates.canonical,`https://shop.example.invalid/store/${storeId}/p/${itemId}`);
+    assert.equal(visible.openGraph.images.length,1);assert.match(visible.openGraph.images[0].url,/media\/public\//);assert.ok(!/lease|private|token/.test(visible.openGraph.images[0].url));
+    data={store,item:{...item,visible:false}};const hidden=await storeMetadata(storeId,itemId);assert.equal(hidden.robots.index,false);assert.deepEqual(hidden.openGraph.images,[]);
+    status=404;const unpublished=await storeMetadata(storeId,itemId);assert.equal(unpublished.robots.index,false);assert.deepEqual(unpublished.openGraph.images,[]);
+    const before=calls;await storeMetadata('../bad',itemId);assert.equal(calls,before);
+    console.log('PASS public product metadata: anonymous visibility, no cached private images, canonical link and unavailable fallback');
+  }finally{globalThis.fetch=originalFetch;if(originalApi===undefined)delete process.env.NEXT_PUBLIC_API_BASE_URL;else process.env.NEXT_PUBLIC_API_BASE_URL=originalApi;if(originalSite===undefined)delete process.env.NEXT_PUBLIC_SITE_URL;else process.env.NEXT_PUBLIC_SITE_URL=originalSite;}
   assert.deepEqual(pricingOfferSchema.offers.map(x => x.price), ['499', '3999']);
   const guide = readFileSync('app/guides/voice-billing-for-kirana/page.tsx', 'utf8');
   assert.ok(guide.includes('lang="hi-IN"'));

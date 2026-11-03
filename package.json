@@ -11,13 +11,14 @@
     "test:gst": "node scripts/test-gst.mjs",
     "check:gst-core": "node scripts/check-gst-core.mjs",
     "test:translations": "node scripts/test-translations.mjs",
-    "check:release": "npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && npm run test:deletion && npm run test:followups && npm run test:auth && tsc --noEmit",
+    "check:release": "npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && npm run test:deletion && npm run test:followups && npm run test:auth && npm run test:photo-session && tsc --noEmit",
     "build:verified": "npm run check:release && npm run build",
     "test:seo": "node scripts/test-public-seo.mjs",
     "test:billing": "node scripts/test-mobile-account.cjs",
     "test:cashbook": "node --test tests/cashbook-navigation.test.cjs",
     "test:deletion": "node --test tests/deletion.test.cjs",
     "test:auth": "node --test tests/sign-in-verification.test.cjs",
+    "test:photo-session": "node --test tests/product-photo-session.test.cjs && node --test tests/checkout-photo-boundary.test.cjs",
     "test:followups": "node --test tests/followup-read-timeout.test.cjs"
   },
   "repository": {
@@ -40,7 +41,7 @@
     "@tanstack/react-query": "^5.104.0",
     "barcode-detector": "^3.2.2",
     "html-to-image": "^1.11.13",
-    "next": "16.2.6",
+    "next": "16.4.4",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "react": "19.2.6",
@@ -54,6 +55,7 @@
     "@types/react": "19.2.14",
     "@types/three": "0.128.0",
     "fake-indexeddb": "^6.2.5",
+    "jsdom": "29.1.1",
     "typescript": "6.0.3"
   }
 }

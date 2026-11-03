@@ -1,3 +1,6 @@
+import {withRequestDeadline,RequestTimeoutError} from './request-deadline';
+import type {ProductMedia} from './product-images/contract';
+import {bindProductImages} from './product-images/client';
 import {bindCommerce} from './commerce/client';
 import {bindFollowups} from './followups/client';
 import {bindCredit} from './credit/client';
@@ -218,6 +221,7 @@ type ServerInventoryItem = {
   updatedBy: string | null;
   updatedByName: string;
   product: {
+    media?:import("./product-images/contract").ProductMedia|null;
     gstConfig?: ProductTax | null;
     id: string;
     shopId: string;
@@ -258,6 +262,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     updatedBy: item.updatedBy || '',
     updatedByName: item.updatedByName,
     product: {
+      media:item.product.media,
       gstConfig: item.product.gstConfig,
       id: item.product.id,
       shopId: item.product.shopId,
@@ -299,12 +304,17 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     if(evidenceScope?.isSessionCurrent&&!evidenceScope.isSessionCurrent())throw new ApiError('Your sign-in changed. Refresh before trying again.',409,'auth_session_changed');
   };
   const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init,0,undefined,assertCurrent);
+  const sendMedia = <T>(path:string,init?:RequestInit) => withRequestDeadline(signal=>send<T>(path,{...init,signal}),60_000,init?.signal).catch(error=>{assertCurrent();if(error instanceof RequestTimeoutError)throw new ApiError('The connection is taking too long. Try again.',408,'request_timeout');throw error;});
   const evidence=evidenceScope?createOfflineEvidence(evidenceScope):null;
   const readCatalog=async(shopId:string,hideCost:boolean)=>collectPages(async offset=>{
     const page=await send<{items:ServerInventoryItem[];hasMore:boolean}>(`/api/shops/${shopId}/inventory${queryString({limit:100,offset})}`);
     return {rows:(page.items??[]).map(item=>mapItem(item,hideCost)),hasMore:page.hasMore};
   });
   const validCatalog=(shopId:string)=>(value:unknown):value is InventoryItem[]=>Array.isArray(value)&&new Set(value.map(row=>row?.productId)).size===value.length&&value.every(row=>row&&row.shopId===shopId&&row.product?.shopId===shopId&&row.productId===row.product.id&&typeof row.id==='string'&&typeof row.product.name==='string'&&Number.isFinite(row.quantity)&&row.quantity>=0&&row.unit===row.product.unit);
+  const validBillingCatalog=(shopId:string)=>(value:unknown):value is BillingCatalog=>{
+    const row=value as BillingCatalog;
+    return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
+  };
   const readTax=async(shopId:string,productIds:string[],completeCatalog=false)=>{
     const load=()=>send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:'POST',body:JSON.stringify({productIds})});
     const validate=(value:unknown):value is CatalogTaxSnapshot=>{try{attachCatalogTaxSnapshot(productIds.map(id=>({product:{id}})),value as CatalogTaxSnapshot,shopId);return true;}catch{return false;}};
@@ -327,6 +337,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     openings:bindOpenings(send),
     purchaseOrders:bindPurchaseOrders(send),
     commerce:bindCommerce(send),
+    productImages:bindProductImages(sendMedia),
     estimates:bindEstimates(send),
     cashbook:bindCashbook(send),
     credit:bindCredit(send),
@@ -379,11 +390,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
           const items=await readCatalog(shopId,hideCost);online=true;
           return {format:'billing_catalog_v2',items,accountedRequestIds};
         };
-        const validate=(value:unknown):value is BillingCatalog=>{
-          const row=value as BillingCatalog;
-          return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
-        };
-        const snapshot=await evidence.read(shopId,'catalog-v2',load,validate,row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
+        const snapshot=await evidence.read(shopId,'catalog-v2',load,validBillingCatalog(shopId),row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
         let rows:Awaited<ReturnType<typeof retainedRequests>>;
         try{rows=await retainedRequests(scope);}catch(error){if(!online||requireJournal)throw error;rows=[];}
         all=await projectLocalStock(snapshot,rows,scope);
@@ -391,6 +398,15 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       }else all=await readCatalog(shopId,hideCost);
       if(coherentTax){const snapshot=await readTax(shopId,all.map(item=>item.product.id),true);return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
+    },
+    // Photos on a freshly reopened offline checkout cannot depend on Sell
+    // having populated its in-memory QueryClient. Keep this outside bill data.
+    getCachedProductMedia:async(shopId:string):Promise<Record<string,ProductMedia>>=>{
+      assertCurrent();
+      const snapshot=await evidence?.readSaved(shopId,'catalog-v2',validBillingCatalog(shopId));
+      const media:Record<string,ProductMedia>={};
+      for(const row of snapshot?.items??[])if(row.product.media)media[row.productId]=row.product.media;
+      return media;
     },
     getTaxSnapshot: readTax,
     getInventoryStats: async (shopId: string) => {
@@ -579,7 +595,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send(`/api/shops/${shopId}/nudges/demand`, { method: 'POST', body: JSON.stringify({ term, source: 'search' }) }),
 
     getAlerts: (shopId: string) => send<UnifiedAlerts>(`/api/shops/${shopId}/predictions/alerts`),
-    getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string }[] }>(`/api/shops/${shopId}/predictions`),
+    getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string; productId?: string | null; productName?: string | null }[] }>(`/api/shops/${shopId}/predictions`),
     dismissPrediction: (shopId: string, id: string) => send(`/api/shops/${shopId}/predictions/${id}/dismiss`, { method: 'PATCH' }),
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
     getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
