@@ -33,6 +33,8 @@ const {ShopProviders}=require('../app/components/shop/providers.tsx');
 const {useShop}=require('../app/components/shop/context.tsx');
 const {ProductImageById,ProductImage}=require('../app/components/shop/product-image.tsx');
 const {PublicProductImage}=require('../app/components/store/product-media.tsx');
+const {ProductImageEditor}=require('../app/components/shop/product-image-editor.tsx');
+const {createProductImageEditor}=require('../app/lib/shop/product-images/editor.ts');
 const thumbs=require('../app/lib/shop/product-images/thumbnail-storage.web.ts');
 const {createProductSaveRecovery}=require('../app/lib/shop/product-images/save-recovery.ts');
 const {createEditorRecovery}=require('../app/lib/shop/product-images/editor-recovery.ts');
@@ -41,9 +43,10 @@ const {createOfflineShopContext,saveOfflineShop}=require('../app/lib/shop/offlin
 const locks=new Map();
 const lockNames=['samaan-product-thumbnails-v1','samaan-product-photo-saves-v1','samaan-product-photo-editors-v1'];
 const storage=key=>({get:async()=>localStorage.getItem(key),set:async value=>localStorage.setItem(key,value),clear:async()=>localStorage.removeItem(key)});
-let activeContext,activeQueryClient,photoProbeId,viewerProbe,viewerImage=image;const queryClients=new Set();
+let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,viewerImage=image;const queryClients=new Set();
 function ViewerFrame({children}){return React.createElement('dialog',{open:true},React.createElement('button',null,'Close viewer'),children);}
-function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
+function EditorProbe(){const state=React.useSyncExternalStore(editorProbe.subscribe,editorProbe.getSnapshot);return React.createElement(ProductImageEditor,{media:{editor:editorProbe,state,dirty:editorProbe.dirty()},name:'Synthetic editor product'});}
+function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),editorProbe?React.createElement(EditorProbe):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
 async function drain(){await Promise.all(lockNames.map(name=>navigator.locks.request(name,async()=>{})));}
 async function seed(){
  const originalFetch=global.fetch;
@@ -63,7 +66,7 @@ async function mount(t,shops){
  global.IntersectionObserver=class{constructor(callback){this.callback=callback;}observe(){this.callback([{isIntersecting:true}]);}disconnect(){}};
  Object.defineProperty(global,'navigator',{value:dom.window.navigator,configurable:true});
  Object.defineProperty(navigator,'locks',{value:{request(name,work){const result=(locks.get(name)??Promise.resolve()).catch(()=>{}).then(work);locks.set(name,result);return result;}},configurable:true});
- await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
+ await thumbs.retainProductThumbnails(null);getShops=shops;activeContext=null;activeQueryClient=null;photoProbeId=null;viewerProbe=null;editorProbe=null;viewerImage=image;leaseFailure=true;savedMedia={};auth=defaultAuth;mediaReads=0;leaseReads=0;
  const root=createRoot(document.getElementById('root'));
  t.after(async()=>{await act(async()=>root.unmount());for(const client of queryClients)client.clear();queryClients.clear();await drain();dom.window.close();});
  return {render:()=>act(async()=>{root.render(React.createElement(ShopProviders,null,React.createElement(Probe)));}),dom};
@@ -191,4 +194,31 @@ test('public detail exposes localized retry outside its decorative image and res
  await act(async()=>second.dispatchEvent(new window.Event('load')));assert.equal(document.querySelector('[role="alert"]'),null);assert.equal(document.querySelector('[role="status"]'),null);
  await act(async()=>second.dispatchEvent(new window.Event('error')));assert(document.querySelector('[role="alert"]'));
  viewerImage={...image,version:'different-immutable-version'};await view.render();assert.equal(document.querySelector('[role="alert"]'),null);assert(document.querySelector('[role="status"]'));
+});
+
+
+test('photo editor keeps focus on the moved card and adjacent controls after removal',async t=>{
+ const view=await mount(t,async()=>[shop]);
+ const photos=[image,{...image,id:'30000000-0000-4000-8000-000000000003',alt:'Second photo'},{...image,id:'40000000-0000-4000-8000-000000000004',alt:'Third photo'}];
+ editorProbe=createProductImageEditor({uuid:()=>crypto.randomUUID(),current:()=>true,
+  capabilities:async()=>({available:true,canEdit:true}),gallery:async()=>({version:1,count:3,cover:photos[0],images:photos}),
+  draft:async id=>({id}),upload:async()=>{throw Error('No upload expected');}});
+ const editor=editorProbe;t.after(()=>editor.dispose());await editor.load();await view.render();
+ const groups=()=>[...document.querySelectorAll('[role="group"]')];
+ const button=(group,label)=>[...group.querySelectorAll('button')].find(element=>element.textContent===label);
+ const originalGroups=groups(),moved=originalGroups[1];
+ button(moved,'product_images.set_cover').focus();await act(async()=>button(moved,'product_images.set_cover').click());
+ assert.equal(groups()[0]===moved,true,'the same card node follows its photo');
+ assert.equal(document.activeElement===moved,true,'cover action must keep keyboard focus with its photo');
+ assert.equal(moved.getAttribute('aria-label'),'product_images.title 1/3');
+ button(moved,'product_images.next').focus();await act(async()=>button(moved,'product_images.next').click());
+ assert.equal(groups()[1]===moved,true);assert.equal(document.activeElement===moved,true);
+ assert.deepEqual(editor.getSnapshot().items.map(item=>item.image.id),photos.map(photo=>photo.id));assert.equal(await editor.manifest(),undefined,'returning to the original order needs no save');
+ button(moved,'product_images.remove').focus();await act(async()=>button(moved,'product_images.remove').click());
+ assert.equal(document.activeElement===originalGroups[2],true,'removal focuses the next remaining photo');
+ button(originalGroups[2],'product_images.remove').focus();await act(async()=>button(originalGroups[2],'product_images.remove').click());
+ assert.equal(document.activeElement===originalGroups[0],true,'last-position removal focuses the previous photo');
+ button(originalGroups[0],'product_images.remove').focus();await act(async()=>button(originalGroups[0],'product_images.remove').click());
+ assert.equal(document.activeElement.textContent,'product_images.library','empty gallery focuses the add action');
+ assert.equal(groups().length,0);assert.deepEqual((await editor.manifest()).images,[]);
 });

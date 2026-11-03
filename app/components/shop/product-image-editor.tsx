@@ -29,6 +29,10 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
  const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
  useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
  useEffect(()=>{const element=input.current;if(!element||!editor)return;const cancel=()=>void editor.endSelection().catch(()=>setError(true));element.addEventListener('cancel',cancel);return()=>element.removeEventListener('cancel',cancel);},[editor]);
+ const section=useRef<HTMLElement>(null),cards=useRef(new Map<string,HTMLDivElement>());
+ const focusCard=(id:string)=>cards.current.get(id)?.focus({preventScroll:true});
+ const move=(id:string,index:number)=>{focusCard(id);editor?.move(id,index);};
+ const remove=(id:string)=>{const index=state?.items.findIndex(item=>item.clientId===id)??-1,next=state?.items[index+1]??state?.items[index-1];if(next)focusCard(next.clientId);else section.current?.querySelector<HTMLButtonElement>('.product-photo-choose')?.focus({preventScroll:true});editor?.remove(id);};
  const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
  const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();}catch{setError(true);}finally{setPreparing(false);}};
  const choose=async(id?:string)=>{if(!editor)return;replace.current=id??null;setError(false);try{await editor.beginSelection();if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}}catch{setError(true);}};
@@ -36,13 +40,13 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
   try{await editor.beginSelection();const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
   catch{setError(true);}finally{await editor.endSelection().catch(()=>setError(true));setPreparing(false);}
  };
- return <section aria-label={text('title')} className="grid gap-3" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();replace.current=null;void add([...e.dataTransfer.files]);}}>
+ return <section ref={section} aria-label={text('title')} className="grid gap-3" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();replace.current=null;void add([...e.dataTransfer.files]);}}>
   <h2 className="shop-section-title">{text('title')}</h2><p className="shop-hint">{text('hint')}</p>
   {state?.restored?<p role="status">{text('draft_restored')}</p>:null}
   {state?.restored&&state.selectionPending?<div><p role="alert">{text('reselect')}</p><Button tone="ghost" disabled={disabled||preparing} onClick={()=>void editor?.endSelection().catch(()=>setError(true))}>{text('remove')}</Button></div>:null}
   {!state?.loaded?<p role="status">{text('loading')}</p>:null}
   {state?.loaded&&(!state.available||state.error)?<p role="status">{state.error==='product_image_recovery_unavailable'?t('opening.error.storage','opening.error.storage'):text('unavailable')}</p>:null}
-  <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} role="group" aria-label={`${text('title')} ${index+1}/${state.items.length}`} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
+  <div style={{display:'flex',gap:12,overflowX:'auto',paddingBottom:8}}>{state?.items.map((item,index)=><div key={item.clientId} ref={node=>{if(node)cards.current.set(item.clientId,node);else cards.current.delete(item.clientId);}} tabIndex={-1} role="group" aria-label={`${text('title')} ${index+1}/${state.items.length}`} style={{width:220,flexShrink:0,padding:12,borderRadius:12,border:'1px solid '+(index===0?'#FF6B00':'#555560'),display:'grid',gap:8}}>
    {item.local?<img src={item.local.uri} alt={item.image?.alt||name} width={194} height={150} style={{objectFit:'contain',borderRadius:8}}/>:item.recovered?<p className="shop-hint">{text('restored')}</p>:<ProductImage image={item.image} name={name} size={150} variant="card" decorative={false}/>}
    {item.status==='reselect'?<p role="alert">{text('reselect')}</p>:null}
    {index===0?<span className="shop-hint">{text('cover')}</span>:null}
@@ -50,13 +54,13 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
    {item.status==='failed'?<><span role="alert">{text('failed')}</span><Button tone="ghost" disabled={disabled} onClick={()=>void editor?.retry(item.clientId)}>{text('retry')}</Button></>:null}
    {state.available&&state.canEdit?<>
     <input className="shop-field" aria-label={`${text('alt')}, ${index+1}/${state.items.length}`} placeholder={text('alt')} value={item.image?.alt??''} maxLength={240} disabled={disabled||preparing||item.status!=='ready'} onChange={e=>editor?.alt(item.clientId,e.target.value)}/>
-    {index>0?<Button tone="ghost" disabled={disabled||preparing} onClick={()=>editor?.move(item.clientId,0)}>{text('set_cover')}</Button>:null}
-    <div className="flex flex-wrap gap-2"><Button tone="ghost" disabled={disabled||preparing||index===0} onClick={()=>editor?.move(item.clientId,index-1)}>{text('previous')}</Button><Button tone="ghost" disabled={disabled||preparing||index===state.items.length-1} onClick={()=>editor?.move(item.clientId,index+1)}>{text('next')}</Button></div>
-    <Button tone="ghost" disabled={disabled||preparing} onClick={()=>choose(item.clientId)}>{text('replace')}</Button><Button tone="ghost" disabled={disabled||preparing} onClick={()=>editor?.remove(item.clientId)}>{text('remove')}</Button>
+    {index>0?<Button tone="ghost" disabled={disabled||preparing} onClick={()=>move(item.clientId,0)}>{text('set_cover')}</Button>:null}
+    <div className="flex flex-wrap gap-2"><Button tone="ghost" disabled={disabled||preparing||index===0} onClick={()=>move(item.clientId,index-1)}>{text('previous')}</Button><Button tone="ghost" disabled={disabled||preparing||index===state.items.length-1} onClick={()=>move(item.clientId,index+1)}>{text('next')}</Button></div>
+    <Button tone="ghost" disabled={disabled||preparing} onClick={()=>choose(item.clientId)}>{text('replace')}</Button><Button tone="ghost" disabled={disabled||preparing} onClick={()=>remove(item.clientId)}>{text('remove')}</Button>
    </>:null}
   </div>)}</div>
   <input ref={input} hidden type="file" multiple={!replace.current} accept="image/jpeg,image/png,image/webp" onChange={e=>void add([...(e.target.files??[])])}/>
-  {state?.available&&state.canEdit?<Button tone="ghost" disabled={disabled||preparing||state.items.length>=5} onClick={()=>choose()}>{text('library')}</Button>:null}
+  {state?.available&&state.canEdit?<Button className="product-photo-choose" tone="ghost" disabled={disabled||preparing||state.items.length>=5} onClick={()=>choose()}>{text('library')}</Button>:null}
   {state?.available&&state.canEdit&&media.dirty?<Button tone="ghost" disabled={disabled||preparing||state.items.some(i=>i.status==='uploading')} onClick={()=>void reset()}>{text('reset')}</Button>:null}
   {error?<p role="alert">{text('error')}</p>:null}
  </section>;
