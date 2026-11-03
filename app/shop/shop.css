@@ -2900,6 +2900,7 @@ a.party-card:hover {
 .gst-table th,.gst-table td { padding:16px 12px; border-bottom:1px solid var(--color-line); vertical-align:top; }
 .gst-table td a { color:#FF6B00; }
 .gst-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--color-line); }
+.sale-return-product { display:grid; grid-template-columns:40px minmax(0,1fr); align-items:start; gap:12px; }
 .gst-row p,.gst-row small { flex-basis:100%; color:var(--color-muted); }
 .gst-price-preview { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; background:#15151b; padding:18px; border-radius:12px; }
 .gst-price-preview span { color:var(--color-muted); font-size:13px; }

@@ -264,14 +264,17 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
               {returnable.map((item) => {
                 const left = item.quantity - item.returnedQuantity;
                 return (
-                  <Field key={item.id} label={item.name} hint={`Up to ${formatQty(left, item.unit)}`}>
-                    <input
-                      className={inputClass}
-                      inputMode="decimal"
-                      value={returns[item.id] ?? ''}
-                      onChange={(event) => setReturns((current) => ({ ...current, [item.id]: event.target.value }))}
-                    />
-                  </Field>
+                  <div key={item.id} className="sale-return-product">
+                    <ProductImageById productId={item.productId} name={item.name} size={40}/>
+                    <Field label={item.name} hint={`Up to ${formatQty(left, item.unit)}`}>
+                      <input
+                        className={inputClass}
+                        inputMode="decimal"
+                        value={returns[item.id] ?? ''}
+                        onChange={(event) => setReturns((current) => ({ ...current, [item.id]: event.target.value }))}
+                      />
+                    </Field>
+                  </div>
                 );
               })}
               <Field label={uiText("Refund")}>
