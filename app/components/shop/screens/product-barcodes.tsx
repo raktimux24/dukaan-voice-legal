@@ -212,9 +212,11 @@ export function ProductBarcodesScreen() {
                       <Button
                         key={p.id}
                         tone="ghost"
+                        className="barcode-conflict-choice"
                         href={"/shop/products/barcodes?productId=" + p.id}
                       >
-                        {p.name}
+                        <ProductImageById productId={p.id} name={p.name} size={32}/>
+                        <span className="min-w-0">{p.name}</span>
                       </Button>
                     ))}
                   </div>
