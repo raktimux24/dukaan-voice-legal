@@ -7,7 +7,7 @@ const keyFor=(scope:ProductSaveScope,image:Pick<ImageReference,'id'|'version'>)=
 const ttl=7*24*3600000;
 const valid=(entry:ThumbnailEntry,now:number)=>entry&&entry.scope&&typeof entry.scope.actor==='string'&&typeof entry.scope.session==='string'&&typeof entry.scope.shop==='string'&&imageUuid(entry.imageId)&&typeof entry.version==='string'&&entry.version.length<=128&&entry.key===keyFor(entry.scope,{id:entry.imageId,version:entry.version})&&Number.isSafeInteger(entry.bytes)&&entry.bytes>0&&entry.bytes<=IMAGE_VARIANTS.thumb.maxBytes&&Number.isFinite(entry.savedAt)&&entry.savedAt<=now&&now-entry.savedAt<ttl&&Number.isFinite(entry.usedAt);
 /** Optional thumbnail bytes only. Every online read still revalidates at the media endpoint. */
-export function createThumbnailCache<T>(storage:ThumbnailStorage<T>,options:{maxBytes?:number;maxEntries?:number;now?:()=>number}={}){
+export function createThumbnailCache<T>(storage:ThumbnailStorage<T>,options:{maxBytes?:number;maxEntries?:number;now?:()=>number;sameValue?:(existing:T,incoming:T)=>Promise<boolean>}={}){
  const maxBytes=options.maxBytes??50*1024*1024,maxEntries=options.maxEntries??2000,now=options.now??Date.now;
  if(!Number.isSafeInteger(maxBytes)||maxBytes<1||!Number.isSafeInteger(maxEntries)||maxEntries<1)throw Error('product_image_cache_limits');
  let queue:Promise<unknown>=Promise.resolve();
@@ -29,7 +29,16 @@ export function createThumbnailCache<T>(storage:ThumbnailStorage<T>,options:{max
    if(!current())return false;
    const entry:ThumbnailEntry={key:keyFor(scope,image),scope:{...scope},imageId:image.id,version:image.version,bytes,savedAt:now(),usedAt:now()};
    if(!valid(entry,now())||bytes>maxBytes)return false;
-   const entries=(await rows()).filter(e=>e.key!==entry.key).sort((a,b)=>a.usedAt-b.usedAt);
+   const all=await rows(),existing=all.find(e=>e.key===entry.key);
+   // Native file URIs can remain mounted in several rows. After fresh online
+   // authorization, equal immutable bytes must retain the already-issued file.
+   if(options.sameValue&&existing?.bytes===bytes){
+    const prior=await storage.read(entry.key);if(!current())return false;
+    if(prior!==null&&await options.sameValue(prior,value)){
+     if(!current())return false;await storage.touch(entry);return current();
+    }
+   }
+   const entries=all.filter(e=>e.key!==entry.key).sort((a,b)=>a.usedAt-b.usedAt);
    let total=entries.reduce((n,e)=>n+e.bytes,0)+bytes,count=entries.length+1;const remove:string[]=[];
    // An updated image version retires all old versions of that image in this scope.
    for(const old of [...entries])if(same(old.scope,scope)&&old.imageId===image.id){remove.push(old.key);total-=old.bytes;count--;entries.splice(entries.indexOf(old),1);}
