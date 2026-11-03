@@ -88,7 +88,11 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
   const [pending, setPending] = useState(false);
 
   if (!shop) return <Spinner />;
-  if (catalog.isLoading) return <Spinner label={uiText("Loading product")} />;
+  if (catalog.isPending || (!item && catalog.isFetching)) return <Spinner label={uiText("Loading product")} />;
+  if (!item && catalog.isError) return <Card>
+    <Notice error={catalog.error} />
+    <Button onClick={() => void catalog.refetch()}>{t('common.retry', 'Retry')}</Button>
+  </Card>;
   if (!item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
 
   const product = item.product;
