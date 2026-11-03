@@ -1,3 +1,4 @@
+import {withRequestDeadline,RequestTimeoutError} from './request-deadline';
 import type {ProductMedia} from './product-images/contract';
 import {bindProductImages} from './product-images/client';
 import {bindCommerce} from './commerce/client';
@@ -303,6 +304,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     if(evidenceScope?.isSessionCurrent&&!evidenceScope.isSessionCurrent())throw new ApiError('Your sign-in changed. Refresh before trying again.',409,'auth_session_changed');
   };
   const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init,0,undefined,assertCurrent);
+  const sendMedia = <T>(path:string,init?:RequestInit) => withRequestDeadline(signal=>send<T>(path,{...init,signal}),60_000,init?.signal).catch(error=>{assertCurrent();if(error instanceof RequestTimeoutError)throw new ApiError('The connection is taking too long. Try again.',408,'request_timeout');throw error;});
   const evidence=evidenceScope?createOfflineEvidence(evidenceScope):null;
   const readCatalog=async(shopId:string,hideCost:boolean)=>collectPages(async offset=>{
     const page=await send<{items:ServerInventoryItem[];hasMore:boolean}>(`/api/shops/${shopId}/inventory${queryString({limit:100,offset})}`);
@@ -335,7 +337,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     openings:bindOpenings(send),
     purchaseOrders:bindPurchaseOrders(send),
     commerce:bindCommerce(send),
-    productImages:bindProductImages(send),
+    productImages:bindProductImages(sendMedia),
     estimates:bindEstimates(send),
     cashbook:bindCashbook(send),
     credit:bindCredit(send),
