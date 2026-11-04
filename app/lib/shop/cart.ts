@@ -23,6 +23,8 @@ export type CartLine = {
   quantity: number;
   price: number;
   listPrice: number | null;
+  // undefined is a legacy/unknown limit; null is a confirmed product without MRP.
+  mrp?: number | null;
   discount: number;
   trackStock: boolean;
   available: number | null;
@@ -281,6 +283,7 @@ export function useCart(userId: string | null, shopId: string | null) {
         quantity: nextQty,
         price: existing?.price ?? price,
         listPrice: price,
+        mrp: item.product.mrp,
         discount: existing?.discount ?? 0,
         trackStock: track,
         available,
