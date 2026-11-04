@@ -274,7 +274,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       {saveIntent.error||editorFields.error?<p role="alert">{t('opening.error.storage',"The saved request could not be verified. Keep this device's data and check recovery before continuing.")}</p>:null}
       <div className="form-layout">
         <fieldset className="form-stack" style={{border:0,padding:0,margin:0,minWidth:0}} disabled={uncertainSave||!saveIntent.ready} inert={uncertainSave||!saveIntent.ready}>
-          <Card><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto}/></Card>
+          <Card><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto} onReset={()=>setError((current:unknown)=>(current as {code?:string}|null)?.code==='product_image_conflict'?null:current)}/></Card>
           <Card className="grid gap-5">
             <div>
               <h2 className="shop-section-title">{t('products.title', 'Product')}</h2>

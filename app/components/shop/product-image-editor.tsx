@@ -25,7 +25,7 @@ export function useProductImageEditor(product?:string,reset=0,slot=product??'new
  const editor=ref.current?.key===key&&ref.current.api===api?ref.current.editor:null,state=value?.key===key&&value.api===api?value.state:null;
  return {editor,state,dirty:editor?.dirty()??false,busy:!!state?.selectionPending||(state?.items.some(i=>i.status!=='ready')??false),clearRecovery:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');await active.editor.clearRecovery();},manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
 }
-export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{media:ReturnType<typeof useProductImageEditor>;name:string;disabled?:boolean;onBusyChange?:(busy:boolean)=>void}){
+export function ProductImageEditor({media,name,disabled=false,onBusyChange,onReset}:{media:ReturnType<typeof useProductImageEditor>;name:string;disabled?:boolean;onBusyChange?:(busy:boolean)=>void;onReset?:()=>void}){
  const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
  useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
  useEffect(()=>{const element=input.current;if(!element||!editor)return;const cancel=()=>void editor.endSelection().catch(()=>setError(true));element.addEventListener('cancel',cancel);return()=>element.removeEventListener('cancel',cancel);},[editor]);
@@ -36,7 +36,7 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange}:{med
  const move=(id:string,index:number)=>{focusCard(id);editor?.move(id,index);};
  const remove=(id:string)=>{const index=state?.items.findIndex(item=>item.clientId===id)??-1,next=state?.items[index+1]??state?.items[index-1];if(next)focusCard(next.clientId);else focusTarget(section.current?.querySelector<HTMLButtonElement>('.product-photo-choose'));editor?.remove(id);};
  const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
- const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();}catch{setError(true);}finally{setPreparing(false);setResetFocus(n=>n+1);}};
+ const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();onReset?.();}catch{setError(true);}finally{setPreparing(false);setResetFocus(n=>n+1);}};
  const choose=async(id?:string)=>{if(!editor)return;replace.current=id??null;setError(false);try{await editor.beginSelection();if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}}catch{setError(true);}};
  const add=async(files:File[])=>{if(!editor||disabled||preparing)return;setPreparing(true);setError(false);
   try{await editor.beginSelection();const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
