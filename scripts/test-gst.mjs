@@ -39,6 +39,7 @@ try {
     "app/lib/shop/gst-core/gst-export-review.ts",
     "app/lib/shop/browser-push-session.ts",
     "app/lib/shop/checkout-customer.ts",
+    "app/lib/shop/checkout-mrp.ts",
     "app/lib/shop/checkout-rejection.ts",
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/gst-recovery.ts",
@@ -164,6 +165,7 @@ try {
   });
   run(resolve("tests/tax-history-refresh.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/counter-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/checkout-mrp.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/billing-shell.mjs"), []);
   run(resolve("tests/browser-push-worker.mjs"), []);
   run(resolve("tests/browser-push-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

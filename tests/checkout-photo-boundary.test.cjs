@@ -34,7 +34,7 @@ function withPhotos(original,marker){
 test('actual checkout projection strips photo state while retaining RSP and exact canonical identity',()=>{
  const original=cart(),expected=build(original),before=structuredClone(original);
  for(const marker of ['old-cover','replacement-cover','failed-photo']){
-  const input=withPhotos(original,marker),saved=structuredClone(input),body=build(input);
+  const input=withPhotos(original,marker);input.lines[0].mrp=90;input.lines[1].mrp=null;const saved=structuredClone(input),body=build(input);
   assert.deepEqual(body,expected);assert.deepEqual(input,saved,'projection cannot mutate the draft');
   assert.equal(canonical(body),canonical(expected));assert.equal(createHash('sha256').update(canonical(body)).digest('hex'),createHash('sha256').update(canonical(expected)).digest('hex'));
   assert(!JSON.stringify(body).includes(marker));

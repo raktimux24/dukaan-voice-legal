@@ -36,6 +36,7 @@ import { useShop } from '../context';
 import { Button, Card, Field, Notice, PageHeader, PremiumLock, SectionHead, Spinner, cx, inputClass } from '../ui';
 import {LocalFiscalReceiptScreen} from './local-fiscal-receipt';
 import {checkoutCustomer} from '../../../lib/shop/checkout-customer';
+import {assertCartMrp,captureCartMrp,missingCartMrp,restoreCartMrp} from '../../../lib/shop/checkout-mrp';
 import { CustomerAttach } from '../customer-attach';
 
 const CHIPS = [10, 20, 50, 100, 200, 500, 2000];
@@ -60,6 +61,16 @@ export function CheckoutScreen() {
     queryFn: () => api.getPosSettings(shop!.id),
   });
   const taxRequired=settings.data?.gstAvailable===true&&settings.data.gstSettings?.registration==='regular';
+  const missingMrp=missingCartMrp(cartApi.cart);
+  const mrpRequired=!!settings.data?.gstSettings&&['regular','composition'].includes(settings.data.gstSettings.registration);
+  // New carts carry their limit. Only older working drafts need a catalogue read;
+  // the existing actor/session-scoped offline catalogue can recover them offline.
+  const mrpSnapshot=useQuery({queryKey:['checkout-mrp',shop?.id,userId,...missingMrp],enabled:!!shop?.id&&!!userId&&mrpRequired&&!cartApi.pending&&missingMrp.length>0,networkMode:'always',queryFn:async()=>captureCartMrp(await api.getAllInventory(shop!.id,true),shop!.id,missingMrp)});
+  useEffect(()=>{
+    if(!shop||cartApi.pending||!mrpSnapshot.data||!missingMrp.length)return;
+    const restored=restoreCartMrp(cartApi.cart,mrpSnapshot.data,shop.id);
+    if(restored.lines.some((line,index)=>line!==cartApi.cart.lines[index]))cartApi.patch({lines:restored.lines});
+  },[mrpSnapshot.data,cartApi,shop,missingMrp.length]);
   const productIds=cartApi.cart.lines.map(line=>line.productId);
   const taxSnapshot=useQuery({queryKey:['checkout-tax-snapshot',shop?.id,userId,...productIds],enabled:!!shop?.id&&taxRequired&&productIds.length>0,networkMode:'always',queryFn:()=>api.getTaxSnapshot(shop!.id,productIds)});
   const adoptedSnapshot=useRef<unknown>(null);
@@ -134,6 +145,7 @@ export function CheckoutScreen() {
     if(gstContext?.settings.registration==='regular')for(const line of cartApi.cart.lines){if(line.gstRspSnapshot?.profiles.length&&!line.rsp){let active=false;try{cachedRspProductAt(line.gstRspSnapshot,shop!.id,line.productId,new Date().toISOString());active=true;}catch{/* An inactive review does not enable RSP. */}if(active)throw Error('Review package details below before charging this product.');}}
     if(cartApi.cart.lines.some(line=>line.rsp)&&settings.data?.gstRspBillingAvailable!==true)throw Error('RSP billing is unavailable for this shop.');
     totals=computeTotals(cartApi.cart,gstContext);if(gstContext)validateContext(gstContext,totals.total);
+    if(!cartApi.pending){if(missingMrp.length&&mrpSnapshot.error)throw mrpSnapshot.error;assertCartMrp(cartApi.cart,totals,gstContext);}
     if(roundingEnabled&&(rounding.error||!rounding.data||!roundingSelectionCurrent(rounding.data,previewNow)))throw rounding.error??Error('Loading the current rounding policy.');
     const payable=checkoutPayable(totals.total,shop?.id??'',gstContext,roundingEnabled,rounding.data?.selection?.policy,previewAt);
     roundOff=payable.roundOff;totals={...totals,total:payable.total};
@@ -239,6 +251,7 @@ export function CheckoutScreen() {
       cartApi.patch({ customerClientId });
     }
     const soldAt = existing?.payload.soldAt ?? new Date().toISOString();
+    if(!existing)assertCartMrp(cartApi.cart,computeTotals(cartApi.cart,gstContext),gstContext);
     const body = buildBody(soldAt, customerClientId, existing?.payload);
     const fingerprint = saleFingerprint(body);
     if (existing && existing.fingerprint !== fingerprint) {
