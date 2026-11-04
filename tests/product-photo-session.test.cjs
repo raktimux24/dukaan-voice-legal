@@ -49,7 +49,8 @@ const storage=key=>({get:async()=>localStorage.getItem(key),set:async value=>loc
 let activeContext,activeQueryClient,photoProbeId,viewerProbe,editorProbe,saveProbe,activeSaveProbe,commerceProbe,activeCommerce,commerceApi,viewerImage=image;const queryClients=new Set();
 function ViewerFrame({children}){return React.createElement('dialog',{open:true},React.createElement('button',null,'Close viewer'),children);}
 function SaveProbe(){activeSaveProbe=useProductSaveRecovery('embedded-photo-test');return React.createElement('p',null,activeSaveProbe.pending?'Pending photo save':'Fresh photo form');}
-function EditorProbe(){const state=React.useSyncExternalStore(editorProbe.subscribe,editorProbe.getSnapshot);return React.createElement(ProductImageEditor,{media:{editor:editorProbe,state,dirty:editorProbe.dirty()},name:'Synthetic editor product'});}
+let editorResetCount=0;
+function EditorProbe(){const state=React.useSyncExternalStore(editorProbe.subscribe,editorProbe.getSnapshot);return React.createElement(ProductImageEditor,{media:{editor:editorProbe,state,dirty:editorProbe.dirty()},name:'Synthetic editor product',onReset:()=>{editorResetCount++;}});}
 const commerceStorage={getItem:async()=>null,setItem:async()=>{},removeItem:async()=>{}};
 function CommerceProbe(){activeCommerce=useCommerce(commerceApi,"photo-commerce",shopId,true,()=>crypto.randomUUID(),commerceStorage);return React.createElement(ProductImageById,{productId:photoProbeId,name:"Synthetic order product"});}
 function Probe(){activeContext=useShop();activeQueryClient=useQueryClient();queryClients.add(activeQueryClient);return React.createElement('div',null,React.createElement('p',null,activeContext.offline?'Saved shop':'Online shop'),commerceProbe?React.createElement(CommerceProbe):saveProbe?React.createElement(SaveProbe):editorProbe?React.createElement(EditorProbe):viewerProbe==='thumb'?React.createElement(ProductImage,{image:viewerImage,name:'Synthetic thumbnail product'}):viewerProbe==='private'?React.createElement(ViewerFrame,null,React.createElement(ProductImage,{image:viewerImage,name:'Synthetic viewer product',variant:'detail',decorative:false,size:240})):viewerProbe==='public'?React.createElement(ViewerFrame,null,React.createElement(PublicProductImage,{image:viewerImage,name:'Synthetic viewer product',store:shopId,listing:'fixture-listing',detail:true,labels:{loading:'Loading photos',failed:'Photo unavailable',retry:'Retry photo'}})):photoProbeId?React.createElement(ProductImageById,{productId:photoProbeId,name:'Synthetic cart product'}):null);}
@@ -231,8 +232,9 @@ test('photo editor keeps focus on the moved card and adjacent controls after rem
  assert.equal(scrolled.at(-1).target===document.activeElement,true,'the empty-gallery action must be brought into view');
  assert.equal(groups().length,0);assert.deepEqual((await editor.manifest()).images,[]);
  const reset=[...document.querySelectorAll('button')].find(element=>element.textContent==='product_images.reset');
- reset.focus();await act(async()=>reset.click());assert.equal(groups().length,3);
+ const resetCount=editorResetCount;reset.focus();await act(async()=>reset.click());assert.equal(groups().length,3);assert.equal(editorResetCount,resetCount+1,'successful reset must notify the form to clear its stale conflict');
  assert.equal(document.activeElement.textContent,'product_images.library','reset must focus an available action after its own button disappears');
+ await act(async()=>editor.remove(editor.getSnapshot().items[0].clientId));editor.reset=async()=>{throw Error('Synthetic reset failure');};const failedReset=[...document.querySelectorAll('button')].find(element=>element.textContent==='product_images.reset');await act(async()=>failedReset.click());assert.equal(editorResetCount,resetCount+1,'failed reset must not clear the form conflict');
  assert.equal(scrolled.at(-1).target===document.activeElement,true);
 });
 
