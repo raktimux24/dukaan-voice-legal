@@ -52,7 +52,7 @@ export function languageSwitcher(locale: Locale, page: PageKind) {
       </span>
       <span class="language-switcher-copy">
         <span class="language-switcher-label">${languageLabel}</span>
-        <span class="language-current"><span class="language-local-icon" aria-hidden="true">${currentLocale.icon}</span>${currentLocale.nativeLabel}</span>
+        <span class="language-current"><span class="language-local-icon" aria-hidden="true">${currentLocale.icon}</span><span class="language-current-label">${currentLocale.nativeLabel}</span></span>
       </span>
       <span class="language-chevron" aria-hidden="true">
         <svg viewBox="0 0 20 20" focusable="false"><path d="M5.5 7.5 10 12l4.5-4.5"></path></svg>
