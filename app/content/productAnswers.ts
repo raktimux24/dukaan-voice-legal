@@ -1,17 +1,18 @@
 import type { Locale } from '../i18n';
 import localizedAnswers from './productAnswersLocales.json';
+import offerCorrections from './offerCorrections.json';
 
 export function productAnswersTitle(locale: Locale) {
   return locale === 'en' ? 'Before you download' : locale === 'hi' ? 'डाउनलोड करने से पहले' : localizedAnswers[locale].title;
 }
 
-export function productAnswers(locale: Locale) {
+function rawProductAnswers(locale: Locale) {
   if (locale === 'en') return [
     { q: 'What is Samaan Bol?', a: 'Samaan Bol is a voice billing app for Indian kirana stores. Speak a sale on your phone, review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the completed sale. You can also use the same shop in a browser.' },
-    { q: 'Is Samaan Bol free?', a: 'The app is free to download. The free plan includes manual billing, stock, cash and UPI QR bills. New shops get a 7-day Premium trial in the app without a card. Voice billing and the outstanding udhaar list are Premium features. Premium costs ₹499/month or ₹3,999/year.' },
+    { q: 'Is Samaan Bol free?', a: 'The app is free to download. The free plan includes manual billing, stock, cash and UPI QR bills. Eligible new shops get a 7-day Premium trial without a card. Voice billing and recording udhaar are Premium features. Premium costs ₹499/month or ₹3,999/year.' },
     { q: 'Does voice billing need an internet connection?', a: 'Yes. Voice commands are sent to the server for speech recognition and processing, so voice billing needs an internet connection. Review the recognized items and quantities before completing a sale.' },
     { q: 'Which languages can I speak?', a: 'Voice supports Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam and English. You can speak Hindi mixed with English (Hinglish). The website can be read in eleven languages. Punjabi and Odia are reading options on this website, not voice or app-interface choices. App and browser language settings are separate from website language.' },
-    { q: 'Can I use voice billing on a laptop?', a: 'Use the same shop in your browser to search or scan products, check quantities and prices, and complete the bill. For voice billing, use the phone app and review the recognized items before checkout. Phone and browser sales belong to the same shop.' },
+    { q: 'Can I use voice billing on a laptop?', a: 'Use the browser shop to search or scan products and complete a sale. Voice billing is available in the phone app with Premium access and an internet connection. Review recognized items before checkout; phone and browser sales belong to the same shop.' },
     { q: 'Does speaking a bill automatically collect UPI payment?', a: 'No. You review the bill and choose the payment method. The app can show a UPI QR for the amount, but you must check and confirm the payment yourself.' },
     { q: 'What GST tools does Samaan Bol provide?', a: 'Samaan Bol includes GST settings, product tax profiles, billing and purchase records, and report exports. Availability depends on your shop registration and enabled capabilities. Exports are preparation and review records, not GST return filing. Check GSTIN, tax rates and buyer details before issuing a bill. Special billing and provider features require their own eligibility and activation.' },
   ];
@@ -25,6 +26,15 @@ export function productAnswers(locale: Locale) {
     { q: 'Samaan Bol में GST के लिए क्या है?', a: 'GST सेटिंग्स, सामान की टैक्स प्रोफ़ाइल, बिल और खरीद के रिकॉर्ड व रिपोर्ट एक्सपोर्ट उपलब्ध हैं। सुविधाएँ दुकान के रजिस्ट्रेशन और चालू क्षमताओं पर निर्भर हैं। एक्सपोर्ट तैयारी और जाँच के रिकॉर्ड हैं, GST रिटर्न फ़ाइल करना नहीं। बिल जारी करने से पहले GSTIN, टैक्स दर और खरीदार की जानकारी जाँचें। विशेष बिलिंग और प्रोवाइडर सुविधाओं के लिए अलग पात्रता और सक्रियण चाहिए।' },
   ];
   return localizedAnswers[locale].answers;
+}
+
+export function productAnswers(locale: Locale) {
+  const copy = offerCorrections[locale];
+  return rawProductAnswers(locale).map((item, index) => {
+    if (index === 1) return { ...item, a: copy.offer };
+    if (index === 4) return { q: copy.laptopQuestion, a: copy.laptopAnswer };
+    return item;
+  });
 }
 
 export function productAnswersHtml(locale: Locale) {

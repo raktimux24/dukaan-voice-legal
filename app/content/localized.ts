@@ -1,5 +1,7 @@
 import { defaultLocale, type Locale, type PageKind, localizedPath, locales } from '../i18n';
 import { homeHtml, proofSectionHtml } from './home';
+import { getShopWorkflowsHtml } from './shopWorkflows';
+import offerCorrections from './offerCorrections.json';
 import { productAnswers, productAnswersHtml } from './productAnswers';
 import { privacyHtml } from './privacy';
 import { applyPrivacyDisclosures } from './privacy-disclosure-html';
@@ -158,9 +160,11 @@ function adaptHome(html: string, locale: Locale) {
     locale,
   );
 
+  const webAction = locale === 'en' ? `<a href="/shop" class="btn-secondary">Open your shop in a browser</a>` : '';
   const storeActions = `<div class="hero-actions" data-store-placement="hero">
     <a href="${playStoreUrl}" class="btn-primary" data-store-placement="hero" aria-label="Samaan Bol — Google Play">Google Play</a>
     <a href="${appStoreUrl}" class="btn-secondary" data-store-placement="hero" aria-label="Samaan Bol — App Store">App Store</a>
+    ${webAction}
   </div>`;
   // Customer quote approval is not documented in this repository. Keep the
   // source intact, but omit attributed testimonials until they are verified.
@@ -180,12 +184,49 @@ function adaptHome(html: string, locale: Locale) {
     .replace(/(<section class="web-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${productAnswers(locale)[4].a}${after}`)
     .replace(/<h4>/g, '<h2>').replace(/<\/h4>/g, '</h2>');
 
-  acquisitionHtml = acquisitionHtml.replace(/<p class="hero-sub">[\s\S]*?<\/p>/, `<p class="hero-sub">${productAnswers(locale)[0].a}</p>`);
+  acquisitionHtml = acquisitionHtml
+    .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, `<p class="hero-sub">${productAnswers(locale)[0].a}</p>`)
+    .replace('<section class="features" id="features"', `${getShopWorkflowsHtml(locale)}<section class="features" id="features"`)
+    .replaceAll('href="#features"', 'href="#shop-workflows"')
+    .replace('<div class="hero-visual">', `<div class="hero-visual"><p class="illustration-note">${offerCorrections[locale].exampleLabel}</p>`)
+    .replace(/(<section class="cta-section" id="download"[\s\S]*?<h2 class="section-heading">)[\s\S]*?(<\/h2>)/, (_match, before, after) => `${before}${offerCorrections[locale].sampleSetup}${after}`)
+    .replace(/(<section class="cta-section" id="download"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${offerCorrections[locale].closing}${after}`);
+
+  if (locale !== 'en') {
+    const slots = getLocaleHomeSlots(locale);
+    const copy = offerCorrections[locale];
+    // Replace the published per-locale fragments, not arbitrary similar wording.
+    for (const [original, replacement] of [
+      [slots?.how3Body, copy.saleShare],
+      [slots?.hisaab4Body, copy.stockCount],
+      [slots?.hisaab1Body, copy.cashReview],
+      [slots?.cmpWithHeading, copy.saleReview],
+      [slots?.cmpWith1, copy.saleReview],
+      [slots?.cmpWithout3, copy.paperStock],
+    ]) {
+      if (original && replacement) acquisitionHtml = acquisitionHtml.replaceAll(original, replacement);
+    }
+  }
 
   if (locale === 'en') {
     acquisitionHtml = acquisitionHtml
-      .replace('You already said it out loud.<br>The bill should keep up.', 'Voice billing for your kirana.')
-      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Samaan Bol turns a spoken sale into a bill on your phone. Review the items, choose cash, UPI or udhaar, and share the bill. Stock updates with the sale. Speak in 8 Indian languages or English, including Hinglish. Use the same shop on a laptop with search and barcode scanning.</p>');
+      .replace('You already said it out loud.<br>The bill should keep up.', 'Make the bill. Track the stock.')
+      .replace(/<p class="hero-sub">[\s\S]*?<\/p>/, '<p class="hero-sub">Speak a sale, review the items, and complete the bill. Samaan Bol keeps the sale and tracked stock together across your phone and browser. Use cash or UPI; record udhaar with Premium. Voice needs Premium and internet.</p>');
+  }
+
+  if (locale === 'en') {
+    acquisitionHtml = acquisitionHtml
+      .replace('On the phone, say what they took. On a laptop, search, scan, or weigh it — 250 g or 0.25 kg.', 'Speak the sale or search and scan products. Check the item and quantity before checkout — for example, 250 g or 0.25 kg.')
+      .replace('You still tap to take money — a spoken sentence cannot send UPI alone.', 'Review the bill and confirm the payment yourself. Speaking a sale does not collect UPI.')
+      .replace("Cash, show the UPI amount on a QR, or put it on that customer's udhaar. Card appears when the shop has turned it on. You still confirm the payment yourself.", "Take cash, show a configured UPI QR, or record udhaar with Premium. Card appears when enabled. Confirm any payment yourself.")
+      .replace('Hinglish is how you speak. It is not a chip. Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, English.', 'Speak Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam or English, including Hindi mixed with English.')
+      .replace("Ramesh's rice on his name. Premium, once, plainly.", 'Record a credit sale against the customer and see their outstanding balance with Premium.')
+      .replace('Not stock-in unless you are adding stock.', 'Scan a barcode to find a product and add it to the bill.')
+      .replace('Ask the day. Cash in the box should match what the bills say.', 'Compare recorded cash sales with the cash you have counted.')
+      .replace('You do not count it again on Sunday to know what the bill already took.', 'A completed sale updates tracked stock, giving you a record to check against a physical count.')
+      .replace('The sentence you said is the bill', 'A sale you can review')
+      .replace('The sentence you said becomes the bill', 'Review the items before completing the sale')
+      ;
   }
 
   if (locale === 'pa' || locale === 'or') {

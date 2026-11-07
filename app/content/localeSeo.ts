@@ -81,7 +81,7 @@ export function getLocaleSeo(locale: Locale): (LocaleSeo & { websiteDescription:
   return {
     ...seo,
     description,
-    featureList: [...seo.featureList, ...(feature ? [feature] : []), productAnswers(locale)[3].a, productAnswers(locale)[6].a],
+    featureList: [...seo.featureList.slice(0, -1), ...(feature ? [feature] : []), productAnswers(locale)[1].a, productAnswers(locale)[3].a, productAnswers(locale)[6].a],
     websiteDescription: description,
   };
 }
