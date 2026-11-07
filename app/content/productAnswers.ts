@@ -1,6 +1,10 @@
+import webAppCopy from './webAppCopy.json';
 import type { Locale } from '../i18n';
 import localizedAnswers from './productAnswersLocales.json';
 import offerCorrections from './offerCorrections.json';
+import openingCopy from './landingOpeningCopy.json';
+import { localizedPath } from '../i18n';
+import workflowCopy from './shopWorkflowsLocales.json';
 
 export function productAnswersTitle(locale: Locale) {
   return locale === 'en' ? 'Before you download' : locale === 'hi' ? 'डाउनलोड करने से पहले' : localizedAnswers[locale].title;
@@ -30,16 +34,26 @@ function rawProductAnswers(locale: Locale) {
 
 export function productAnswers(locale: Locale) {
   const copy = offerCorrections[locale];
-  return rawProductAnswers(locale).map((item, index) => {
+  const web = webAppCopy[locale];
+  const answers = rawProductAnswers(locale).map((item, index) => {
     if (index === 1) return { ...item, a: copy.offer };
-    if (index === 4) return { q: copy.laptopQuestion, a: copy.laptopAnswer };
+    if (index === 4) return { q: copy.laptopQuestion, a: `${copy.laptopAnswer} ${web.syncNote}` };
     return item;
   });
+  return [...answers, { q: web.setupQuestion, a: web.setupAnswer }];
 }
 
 export function productAnswersHtml(locale: Locale) {
   const answers = productAnswers(locale);
   if (!answers.length) return '';
   const title = productAnswersTitle(locale);
-  return `<section class="product-answers" id="questions" aria-labelledby="questions-title"><div class="container"><h2 id="questions-title">${title}</h2><div class="faq-list">${answers.map(({q,a}, index)=>`<details${index === 0 ? ' open' : ''}><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></div></section>`;
+  const t = openingCopy[locale];
+  const groups = [[0, 1], [7, 4, 2, 3], [5, 6]];
+  return `<section class="product-answers answers-editorial" id="questions" aria-labelledby="questions-title"><div class="container">
+    <div class="answers-intro"><p class="section-label">${t.faqEyebrow}</p><h2 id="questions-title">${title}</h2><p class="answers-description">${t.faqIntro}</p>
+      <div class="answers-illustration" aria-hidden="true"></div><nav class="answers-index" aria-labelledby="answers-jump-label"><p id="answers-jump-label">${t.faqJump}</p>${t.faqGroups.map((label, index) => `<a href="#answers-group-${index}"><span aria-hidden="true">0${index + 1}</span>${label}<span aria-hidden="true">↓</span></a>`).join('')}</nav>
+      <a class="story-text-link" href="${localizedPath(locale, 'pricing')}">${workflowCopy[locale].pricing} <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="answers-groups">${groups.map((indices, group) => `<div class="answers-group" id="answers-group-${group}" role="group" aria-labelledby="answers-group-title-${group}"><div class="answers-group-heading"><span aria-hidden="true">0${group + 1}</span><h3 id="answers-group-title-${group}">${t.faqGroups[group]}</h3></div><div class="faq-list">${indices.map(index => { const {q, a} = answers[index]; return `<details${index === 0 ? ' open' : ''}><summary>${q}</summary><p>${a}</p></details>`; }).join('')}</div></div>`).join('')}</div>
+  </div></section>`;
 }

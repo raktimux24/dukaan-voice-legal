@@ -5,7 +5,6 @@ import { localizedLanguageAlternates, localizedPath, locales, type PageKind } fr
 const pages: Array<{ page: PageKind; changeFrequency: 'weekly' | 'monthly'; priority: number }> = [
   { page: 'home', changeFrequency: 'weekly', priority: 1 },
   { page: 'pricing', changeFrequency: 'weekly', priority: 0.8 },
-  { page: 'laptop', changeFrequency: 'weekly', priority: 0.8 },
   { page: 'udhaar', changeFrequency: 'weekly', priority: 0.8 },
   { page: 'contact', changeFrequency: 'monthly', priority: 0.4 },
   { page: 'privacy', changeFrequency: 'monthly', priority: 0.3 },
@@ -17,7 +16,7 @@ const englishPages: Array<{ path: string; changeFrequency: 'weekly' | 'monthly';
 ];
 
 // Only dates of substantive, verified content changes; omit unknown dates.
-const updatedPages = new Set<PageKind>(['home', 'laptop', 'udhaar']);
+const updatedPages = new Set<PageKind>(['home', 'udhaar']);
 const contentUpdated = new Date('2026-10-01T00:00:00+05:30');
 
 export default function sitemap(): MetadataRoute.Sitemap {

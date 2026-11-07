@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { defaultLocale, type Locale, type PageKind, localizedPath } from '../i18n';
+import { defaultLocale, type Locale, type PageKind, localizedPath, webAppHref } from '../i18n';
 import { getSubscriptionStrings } from '../content/subscriptionStrings';
 import { getUdhaarCopy } from '../content/udhaarPage';
 import { getLocaleHomeSlots } from '../content/localeHomeSlots';
@@ -19,7 +19,7 @@ export function SubscriptionNav({ locale = defaultLocale, page, showLanguageSwit
   const menuLabel = getLocaleHomeSlots(locale)?.ariaMenu ?? 'Menu';
   const home = localizedPath(locale, 'home');
   const pricingHref = localizedPath(locale, 'pricing');
-  const laptopHref = localizedPath(locale, 'laptop');
+  const webHref = webAppHref(locale);
   const switcherHtml = languageSwitcher(locale, page);
 
   return (
@@ -37,7 +37,7 @@ export function SubscriptionNav({ locale = defaultLocale, page, showLanguageSwit
               <a href={`${home}#features`}>{t.nav.features}</a>
             </li>
             <li>
-              <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
+              <Link href={webHref}>{t.nav.webApp ?? 'Web app'}</Link>
             </li>
             <li>
               <Link href={pricingHref}>{t.nav.pricing}</Link>
@@ -62,7 +62,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
   const t = getSubscriptionStrings(locale);
   const home = localizedPath(locale, 'home');
   const pricingHref = localizedPath(locale, 'pricing');
-  const laptopHref = localizedPath(locale, 'laptop');
+  const webHref = webAppHref(locale);
   const udhaarHref = localizedPath(locale, 'udhaar');
   const accountHref = localizedPath(locale, 'account');
   const contactHref = localizedPath(locale, 'contact');
@@ -94,7 +94,7 @@ export function SubscriptionFooter({ locale = defaultLocale, page }: ChromeProps
                 <a href={homeAnchor('features')}>{t.footer.features}</a>
               </li>
               <li>
-                <Link href={laptopHref}>{t.nav.laptop ?? 'On a laptop'}</Link>
+                <Link href={webHref}>{t.nav.webApp ?? 'Web app'}</Link>
               </li>
               <li><Link href="/guides/voice-billing-for-kirana">Voice billing guide{locale === 'en' ? '' : ' (English)'}</Link></li>
               <li>

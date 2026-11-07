@@ -1,5 +1,5 @@
 import { localizedPath, type Locale } from '../i18n';
-import { getLaptopCopy } from './laptopPage';
+import webAppCopy from './webAppCopy.json';
 import { getUdhaarCopy } from './udhaarPage';
 import { homeHtml } from './home';
 
@@ -1316,23 +1316,23 @@ function slashPair(body: string | undefined, left: string, right: string): [stri
  * - Bengaluru Hinglish quotes; brand tokens (UPI, WhatsApp, Maggi, Samaan Bol)
  */
 
-type SurfaceNav = { laptop: string; openShop: string; openTheShop: string; billing: string };
+type SurfaceNav = { webApp: string; openShop: string; openTheShop: string; billing: string };
 
 const SURFACE_NAV: Partial<Record<Locale, SurfaceNav>> = {
-  hi: { laptop: 'लैपटॉप पर', openShop: 'दुकान खोलो', openTheShop: 'दुकान खोलो', billing: 'बिलिंग' },
-  bn: { laptop: 'ল্যাপটপে', openShop: 'দোকান খুলুন', openTheShop: 'দোকান খুলুন', billing: 'বিলিং' },
-  ta: { laptop: 'லேப்டாப்பில்', openShop: 'கடையைத் திற', openTheShop: 'கடையைத் திற', billing: 'பில்லிங்' },
-  te: { laptop: 'ల్యాప్‌టాప్‌లో', openShop: 'దుకాణం తెరవండి', openTheShop: 'దుకాణం తెరవండి', billing: 'బిల్లింగ్' },
-  mr: { laptop: 'लॅपटॉपवर', openShop: 'दुकान उघडा', openTheShop: 'दुकान उघडा', billing: 'बिलिंग' },
-  kn: { laptop: 'ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ', openShop: 'ಅಂಗಡಿ ತೆರೆಯಿರಿ', openTheShop: 'ಅಂಗಡಿ ತೆರೆಯಿರಿ', billing: 'ಬಿಲ್ಲಿಂಗ್' },
-  gu: { laptop: 'લેપટોપ પર', openShop: 'દુકાન ખોલો', openTheShop: 'દુકાન ખોલો', billing: 'બિલિંગ' },
-  ml: { laptop: 'ലാപ്‌ടോപ്പിൽ', openShop: 'കട തുറക്കൂ', openTheShop: 'കട തുറക്കൂ', billing: 'ബില്ലിംഗ്' },
-  pa: { laptop: 'ਲੈਪਟਾਪ ’ਤੇ', openShop: 'ਦੁਕਾਨ ਖੋਲ੍ਹੋ', openTheShop: 'ਦੁਕਾਨ ਖੋਲ੍ਹੋ', billing: 'ਬਿਲਿੰਗ' },
-  or: { laptop: 'ଲ୍ୟାପଟପ୍‌ରେ', openShop: 'ଦୋକାନ ଖୋଲନ୍ତୁ', openTheShop: 'ଦୋକାନ ଖୋଲନ୍ତୁ', billing: 'ବିଲିଂ' },
+  hi: { webApp: webAppCopy.hi.label, openShop: 'दुकान खोलो', openTheShop: 'दुकान खोलो', billing: 'बिलिंग' },
+  bn: { webApp: webAppCopy.bn.label, openShop: 'দোকান খুলুন', openTheShop: 'দোকান খুলুন', billing: 'বিলিং' },
+  ta: { webApp: webAppCopy.ta.label, openShop: 'கடையைத் திற', openTheShop: 'கடையைத் திற', billing: 'பில்லிங்' },
+  te: { webApp: webAppCopy.te.label, openShop: 'దుకాణం తెరవండి', openTheShop: 'దుకాణం తెరవండి', billing: 'బిల్లింగ్' },
+  mr: { webApp: webAppCopy.mr.label, openShop: 'दुकान उघडा', openTheShop: 'दुकान उघडा', billing: 'बिलिंग' },
+  kn: { webApp: webAppCopy.kn.label, openShop: 'ಅಂಗಡಿ ತೆರೆಯಿರಿ', openTheShop: 'ಅಂಗಡಿ ತೆರೆಯಿರಿ', billing: 'ಬಿಲ್ಲಿಂಗ್' },
+  gu: { webApp: webAppCopy.gu.label, openShop: 'દુકાન ખોલો', openTheShop: 'દુકાન ખોલો', billing: 'બિલિંગ' },
+  ml: { webApp: webAppCopy.ml.label, openShop: 'കട തുറക്കൂ', openTheShop: 'കട തുറക്കൂ', billing: 'ബില്ലിംഗ്' },
+  pa: { webApp: webAppCopy.pa.label, openShop: 'ਦੁਕਾਨ ਖੋਲ੍ਹੋ', openTheShop: 'ਦੁਕਾਨ ਖੋਲ੍ਹੋ', billing: 'ਬਿਲਿੰਗ' },
+  or: { webApp: webAppCopy.or.label, openShop: 'ଦୋକାନ ଖୋଲନ୍ତୁ', openTheShop: 'ଦୋକାନ ଖୋଲନ୍ତୁ', billing: 'ବିଲିଂ' },
 };
 
 function surfaceNav(locale: Locale): SurfaceNav {
-  return SURFACE_NAV[locale] ?? { laptop: 'On a laptop', openShop: 'Open shop', openTheShop: 'Open the shop', billing: 'Billing' };
+  return SURFACE_NAV[locale] ?? { webApp: webAppCopy.en.label, openShop: 'Open shop', openTheShop: 'Open the shop', billing: 'Billing' };
 }
 
 type WebCopy = {
@@ -1534,15 +1534,15 @@ function applyWebCopy(html: string, locale: Locale) {
   const copy = WEB_COPY[locale];
   const surface = surfaceNav(locale);
   let out = html;
-  out = swap(out, '<li><a href="/billing-on-a-laptop">On a laptop</a></li>', `<li><a href="/billing-on-a-laptop">${surface.laptop}</a></li>`);
+  out = swap(out, '<li><a href="/#web">Web app</a></li>', `<li><a href="/#web">${surface.webApp}</a></li>`);
+  out = swap(
+    out,
+    '<a class="topic-link" href="#answers-group-1"><span class="topic-link-copy"><span class="topic-link-kicker">Web app</span><span class="topic-link-title">Web app questions</span></span></a>',
+    topicLink('#answers-group-1', surface.webApp, webAppCopy[locale].faqLink),
+  );
+  out = swap(out, '<div class="section-label">Web app</div>', `<div class="section-label">${surface.webApp}</div>`);
   if (locale !== 'en') {
-    const laptopCopy = getLaptopCopy(locale);
     const udhaarCopy = getUdhaarCopy(locale);
-    out = swap(
-      out,
-      '<a class="topic-link" href="/billing-on-a-laptop"><span class="topic-link-copy"><span class="topic-link-kicker">On a laptop</span><span class="topic-link-title">How kirana billing works on a laptop</span></span></a>',
-      topicLink(localizedPath(locale, 'laptop'), copy?.label ?? surface.laptop, laptopCopy.homeLink),
-    );
     out = swap(
       out,
       '<a class="topic-link" href="/udhaar"><span class="topic-link-copy"><span class="topic-link-kicker">Udhaar</span><span class="topic-link-title">Udhaar on the bill, not a separate khata</span></span></a>',
@@ -1560,7 +1560,6 @@ function applyWebCopy(html: string, locale: Locale) {
   out = swap(out, '<li><span class="icon">✕</span> Stock and billing only on the phone</li>', `<li><span class="icon">✕</span> ${copy?.without ?? 'Stock and billing only on the phone'}</li>`);
   out = swap(out, '<li><span class="icon">✓</span> The counter also runs in the browser, and billing is in the shop</li>', `<li><span class="icon">✓</span> ${copy?.with ?? 'The counter also runs in the browser, and billing is in the shop'}</li>`);
   if (!copy) return out;
-  out = swap(out, '<div class="section-label">On a laptop</div>', `<div class="section-label">${copy.label}</div>`);
   out = swap(out, '<h2 class="section-heading">The same shop, on a laptop.</h2>', `<h2 class="section-heading">${copy.heading}</h2>`);
   out = swap(out, '<p class="section-sub">Voice stays on the phone. The browser runs the counter, the stock, the people, and the plan.</p>', `<p class="section-sub">${copy.sub}</p>`);
   out = swap(out, '<h3>Sell without the rush of typing</h3>', `<h3>${copy.sell}</h3>`);
@@ -1585,11 +1584,11 @@ export function applyHomeSlots(html: string, locale: Locale) {
   out = swap(
     out,
     `        <li><a href="#features">Features</a></li>
-        <li><a href="/billing-on-a-laptop">On a laptop</a></li>
+        <li><a href="/#web">Web app</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/shop" class="nav-cta">Open shop</a></li>`,
     `        <li><a href="#features">${slots.navFeatures ?? 'Features'}</a></li>
-        <li><a href="/billing-on-a-laptop">${surfaceNav(locale).laptop}</a></li>
+        <li><a href="/#web">${surfaceNav(locale).webApp}</a></li>
         <li><a href="/pricing">${slots.navPricing ?? 'Pricing'}</a></li>
         <li><a href="/shop" class="nav-cta">${surfaceNav(locale).openShop}</a></li>`,
   );

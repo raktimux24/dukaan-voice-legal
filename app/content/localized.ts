@@ -1,6 +1,9 @@
-import { defaultLocale, type Locale, type PageKind, localizedPath, locales } from '../i18n';
+import { defaultLocale, type Locale, type PageKind, localizedPath, locales, webAppHref } from '../i18n';
 import { homeHtml, proofSectionHtml } from './home';
 import { getShopWorkflowsHtml } from './shopWorkflows';
+import { refineHomeSections } from './landingRefinement';
+import { completeLandingSections } from './landingCompletion';
+import { refineLandingOpening } from './landingOpening';
 import offerCorrections from './offerCorrections.json';
 import { productAnswers, productAnswersHtml } from './productAnswers';
 import { privacyHtml } from './privacy';
@@ -78,7 +81,7 @@ function localizeLinks(html: string, locale: Locale) {
     .replaceAll('href="/contact"', `href="${contact}"`)
     .replaceAll('href="/refund-policy"', `href="${refund}"`)
     .replaceAll('href="/" class="back"', `href="${home}" class="back"`)
-    .replaceAll('href="/billing-on-a-laptop"', `href="${localizedPath(locale, 'laptop')}"`)
+    .replaceAll('href="/#web"', `href="${webAppHref(locale)}"`)
     .replaceAll('href="/udhaar"', `href="${localizedPath(locale, 'udhaar')}"`);
 }
 
@@ -181,7 +184,7 @@ function adaptHome(html: string, locale: Locale) {
 
     .replace('</nav>', '</nav><main id="main-content">')
     .replace('<footer>', `${productAnswersHtml(locale)}<section class="guide-discovery"><div class="container"><a href="/guides/voice-billing-for-kirana" lang="en">How to use voice billing in your kirana store${locale === 'en' ? '' : ' (English guide)'} →</a></div></section></main><footer>`)
-    .replace(/(<section class="web-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${productAnswers(locale)[4].a}${after}`)
+    .replace(/(<section class="web-section"[\s\S]*?<p class="section-sub">)[\s\S]*?(<\/p>)/, (_match, before, after) => `${before}${offerCorrections[locale].laptopAnswer}${after}`)
     .replace(/<h4>/g, '<h2>').replace(/<\/h4>/g, '</h2>');
 
   acquisitionHtml = acquisitionHtml
@@ -235,7 +238,7 @@ function adaptHome(html: string, locale: Locale) {
       : 'ଏହି ୱେବସାଇଟ୍ ଓଡ଼ିଆରେ ପଢ଼ିପାରିବେ। ଆପ୍‌ରେ ଓଡ଼ିଆ ଭଏସ୍ ବିକଳ୍ପ ଏବେ ଉପଲବ୍ଧ ନାହିଁ। ହିନ୍ଦୀ, Hinglish କିମ୍ବା ଅନ୍ୟ ସମର୍ଥିତ ଭାଷା ବାଛନ୍ତୁ।';
     acquisitionHtml = acquisitionHtml.replace('<div class="hero-actions"', `<p class="language-support-note">${note}</p><div class="hero-actions"`);
   }
-  return acquisitionHtml.replace(
+  return refineLandingOpening(completeLandingSections(refineHomeSections(acquisitionHtml, locale), locale), locale).replace(
     '</ul>\n      <button class="mobile-menu-btn"',
     `</ul>\n      ${switcher}\n      <button class="mobile-menu-btn"`,
   );

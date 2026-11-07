@@ -1,4 +1,59 @@
 {
+  "en": {
+    "label": "Beyond the bill",
+    "title": "Bring your shop's work together",
+    "intro": "Start with the records you have, then manage the work around each sale: stock, suppliers, customer dues and the day's cash.",
+    "foot": "Features depend on your shop setup, role, connection and applicable Premium access. Review each action before confirming it.",
+    "open": "Open your shop",
+    "pricing": "See plans and pricing",
+    "cards": [
+      [
+        "Bring your existing lists",
+        "Import products, customers and suppliers from Excel or CSV. Review the mapped rows, then prepare your starting stock and balances for owner confirmation.",
+        "Customer imports and credit balances use Premium. Imports and opening balances are reviewed separately."
+      ],
+      [
+        "Keep your GST records in order",
+        "Set up your shop's registration and product tax details. For supported bills, review how GST is included or added, and keep records and exports for review.",
+        "Available features depend on registration and enabled capabilities. Exports do not file GST returns."
+      ],
+      [
+        "Know what you ordered and received",
+        "Build a buy list, prepare a purchase order and record deliveries as they arrive. Keep supplier invoices and payments as separate, linked steps.",
+        "Purchasing tools require the appropriate role and a connection; supplier invoice recording depends on the server configuration."
+      ],
+      [
+        "See what is still owed",
+        "Record credit sales and customer repayments, review outstanding balances and prepare a reminder when you need to follow up.",
+        "Udhaar is a Premium feature. You decide whether to share a reminder; sharing does not confirm delivery or payment."
+      ],
+      [
+        "Close the day with a clearer count",
+        "Record expenses and review opening cash, recorded receipts and payments. Compare expected closing cash with the cash you count.",
+        "The result depends on the movements recorded; cashbook access and day closing are role-controlled."
+      ],
+      [
+        "Quote first, bill when ready",
+        "Prepare an estimate with products, quantities and prices. After acceptance, bring eligible details into checkout and review the bill.",
+        "An estimate is not a tax invoice or payment. Conversion requires a connection and current-data checks."
+      ],
+      [
+        "Share a catalog beyond the counter",
+        "Choose products for a public catalog and manage supported customer orders after the owner publishes the store.",
+        "Online ordering needs configuration, a verified email sender and customer email verification. Staff confirm payments and fulfilment separately."
+      ],
+      [
+        "See what may need restocking",
+        "Set reorder levels and review low-stock or near-expiry items. Use available suggestions to prepare a buy list for your own review.",
+        "Suggestions depend on available records and are not guaranteed forecasts or automatic orders."
+      ],
+      [
+        "Work in the same shop",
+        "Invite your team and use owner, manager and helper roles to give people access suited to their work. Review recorded shop activity.",
+        "Available actions depend on the person's role and the shop's settings."
+      ]
+    ]
+  },
   "hi": {
     "label": "बिल के आगे",
     "title": "दुकान का काम एक जगह",

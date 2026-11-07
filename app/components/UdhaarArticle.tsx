@@ -1,14 +1,15 @@
+import webAppCopy from '../content/webAppCopy.json';
 import Link from 'next/link';
 import { AppDownloadLinks } from './SubscriptionChrome';
 import { JsonLd } from './JsonLd';
 import { getUdhaarCopy } from '../content/udhaarPage';
-import { localizedPath, type Locale } from '../i18n';
+import { localizedPath, webAppHref, type Locale } from '../i18n';
 import { faqPageSchema } from '../seo';
 
 export function UdhaarArticle({ locale }: { locale: Locale }) {
   const copy = getUdhaarCopy(locale);
   const pricingHref = localizedPath(locale, 'pricing');
-  const laptopHref = localizedPath(locale, 'laptop');
+  const webHref = webAppHref(locale);
 
   return (
     <main className="subscription-main">
@@ -54,7 +55,7 @@ export function UdhaarArticle({ locale }: { locale: Locale }) {
           ))}
         </ul>
         <p className="subscription-lead">
-          <Link href={laptopHref}>{copy.laptop}</Link>
+          <Link href={webHref}>{webAppCopy[locale].label}</Link>
         </p>
       </section>
       <section className="subscription-section">

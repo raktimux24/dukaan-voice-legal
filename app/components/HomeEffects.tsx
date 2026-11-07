@@ -22,9 +22,65 @@ export function HomeEffects() {
 
     const onMobileMenu = () => {
       nav?.classList.toggle('nav-open');
+      mobileMenuButton?.setAttribute('aria-expanded', String(nav?.classList.contains('nav-open') ?? false));
     };
 
+    const closeMobileMenu = () => {
+      nav?.classList.remove('nav-open');
+      mobileMenuButton?.setAttribute('aria-expanded', 'false');
+    };
+    const onNavLink = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest('.nav-links a')) closeMobileMenu();
+    };
+
+    mobileMenuButton?.setAttribute('aria-expanded', 'false');
     mobileMenuButton?.addEventListener('click', onMobileMenu);
+    nav?.addEventListener('click', onNavLink);
+
+    // The marketing preview changes sample views only, never shop data.
+    const previewLayoutCleanup: Array<() => void> = [];
+    const previewHandlers: Array<[HTMLButtonElement, string, EventListener]> = [];
+    document.querySelectorAll<HTMLElement>('[data-shop-preview]').forEach(preview => {
+      const tabs = [...preview.querySelectorAll<HTMLButtonElement>('[data-preview-tab]')];
+      const selectTab = (selected: HTMLButtonElement) => {
+        tabs.forEach(tab => {
+          const active = tab === selected;
+          tab.setAttribute('aria-selected', String(active));
+          tab.tabIndex = active ? 0 : -1;
+          const panel = document.getElementById(tab.getAttribute('aria-controls') ?? '');
+          if (panel) panel.hidden = !active;
+        });
+      };
+      preview.querySelectorAll<HTMLButtonElement>('[data-preview-select]').forEach(button => {
+        const click = () => {
+          const selected = tabs.find(tab => tab.dataset.previewTab === button.dataset.previewSelect);
+          if (selected) { selectTab(selected); selected.focus(); }
+        };
+        button.addEventListener('click', click);
+        previewHandlers.push([button, 'click', click]);
+      });
+      const layout = window.matchMedia('(max-width: 700px)');
+      const orientTabs = () => preview.querySelector('[role="tablist"]')?.setAttribute('aria-orientation', layout.matches ? 'horizontal' : 'vertical');
+      orientTabs();
+      layout.addEventListener('change', orientTabs);
+      previewLayoutCleanup.push(() => layout.removeEventListener('change', orientTabs));
+      tabs.forEach((tab, index) => {
+        const click = () => selectTab(tab);
+        const keydown: EventListener = event => {
+          const key = (event as KeyboardEvent).key;
+          const next = (key === 'ArrowRight' || key === 'ArrowDown') ? (index + 1) % tabs.length
+            : (key === 'ArrowLeft' || key === 'ArrowUp') ? (index - 1 + tabs.length) % tabs.length
+              : key === 'Home' ? 0 : key === 'End' ? tabs.length - 1 : -1;
+          if (next < 0) return;
+          event.preventDefault();
+          selectTab(tabs[next]);
+          tabs[next].focus();
+        };
+        tab.addEventListener('click', click);
+        tab.addEventListener('keydown', keydown);
+        previewHandlers.push([tab, 'click', click], [tab, 'keydown', keydown]);
+      });
+    });
 
     const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -46,15 +102,48 @@ export function HomeEffects() {
         const target = href ? document.querySelector(href) : null;
         if (target) {
           event.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          nav?.classList.remove('nav-open');
+          target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+          closeMobileMenu();
         }
       };
       a.addEventListener('click', handler);
       anchorHandlers.push([a, handler]);
     });
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const prefersReduced = motionPreference.matches;
+
+    // Decorative voice motion never uses a microphone. Pause when offscreen,
+    // when the tab is hidden, or when the reader requests reduced motion.
+    const motions = [...document.querySelectorAll<HTMLElement>('[data-voice-motion]')];
+    const motionHandlers: Array<[HTMLButtonElement, EventListener]> = [];
+    const updateMotion = () => motions.forEach(el => {
+      el.dataset.running = String(el.dataset.inView === 'true' && el.dataset.paused !== 'true' && !motionPreference.matches && !document.hidden);
+      const button = el.querySelector<HTMLButtonElement>('[data-motion-toggle]');
+      if (button) button.hidden = motionPreference.matches;
+    });
+    motions.forEach(el => {
+      const button = el.querySelector<HTMLButtonElement>('[data-motion-toggle]');
+      if (!button) return;
+      const toggle = () => {
+        const paused = el.dataset.paused !== 'true';
+        el.dataset.paused = String(paused);
+        const label = (paused ? button.dataset.playLabel : button.dataset.pauseLabel) ?? '';
+        button.setAttribute('aria-label', label);
+        button.title = label;
+        updateMotion();
+      };
+      button.addEventListener('click', toggle);
+      motionHandlers.push([button, toggle]);
+    });
+    const motionObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => { (entry.target as HTMLElement).dataset.inView = String(entry.isIntersecting); });
+      updateMotion();
+    }, { threshold: .2 });
+    motions.forEach(el => motionObserver.observe(el));
+    motionPreference.addEventListener('change', updateMotion);
+    document.addEventListener('visibilitychange', updateMotion);
+    updateMotion();
 
     const rotateWords = document.querySelectorAll('.hero-rotate-word');
     let current = 0;
@@ -98,8 +187,15 @@ export function HomeEffects() {
     return () => {
       window.removeEventListener('scroll', onScroll);
       mobileMenuButton?.removeEventListener('click', onMobileMenu);
+      nav?.removeEventListener('click', onNavLink);
+      previewLayoutCleanup.forEach(cleanup => cleanup());
+      previewHandlers.forEach(([button, event, handler]) => button.removeEventListener(event, handler));
       revealObserver.disconnect();
       counterObserver.disconnect();
+      motionObserver.disconnect();
+      motionHandlers.forEach(([button, handler]) => button.removeEventListener('click', handler));
+      motionPreference.removeEventListener('change', updateMotion);
+      document.removeEventListener('visibilitychange', updateMotion);
       anchorHandlers.forEach(([a, handler]) => a.removeEventListener('click', handler));
       if (rotateInterval) window.clearInterval(rotateInterval);
     };

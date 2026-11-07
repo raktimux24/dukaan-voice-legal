@@ -95,7 +95,7 @@ export default function VoiceBillingGuide() {
         <section className="subscription-section">
           <h2>When voice is not the right input</h2>
           <p>If the shop is noisy or a name is repeatedly misheard, use manual product selection or barcode scanning and check the quantity. If there is no internet connection, do not rely on voice processing. Avoid repeating a sale until you know whether the previous attempt completed.</p>
-          <p>On a laptop, use search or barcode scanning in the browser. The phone app supports voice billing with Premium access and internet; review recognized items before checkout. <Link href="/billing-on-a-laptop">See the phone and laptop workflow</Link>.</p>
+          <p>On a laptop, use search or barcode scanning in the browser. The phone app supports voice billing with Premium access and internet; review recognized items before checkout. <Link href="/#web">Explore the web app</Link>.</p>
         </section>
         <section className="subscription-section">
           <h2>Questions at the counter</h2>
