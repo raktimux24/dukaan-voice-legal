@@ -29,3 +29,20 @@ Final edit prompt, with `transparent_background: true`:
 ## Pricing-page reuse
 
 The pricing page uses the centre kirana-shop panel of `shop-workflows-transparent.webp` as decorative artwork. The GST receipt is an original inline SVG with no data or tax amounts; it is decorative, not a product screenshot. No new raster artwork was generated for the pricing page.
+
+## Login receipt sculpture
+
+`auth-receipt-sculpture.webp` is original decorative artwork generated with the built-in image-generation tool on 2026-11-07, converted from its 1536 × 1024 PNG to WebP at quality 85. It frames the login form with receipt-paper folds, ivory surfaces and saffron edges. It is not a screenshot or a depiction of product functionality. The intentionally dark background is part of this full-bleed artwork. CSS protects form contrast at narrow widths; its entrance runs once for 2.2 seconds and is disabled with reduced motion.
+
+Generation prompt:
+
+```text
+Use case: stylized-concept
+Asset type: Original atmospheric illustration for Samaan Bol's web app login background.
+Primary request: Create a sophisticated cinematic 3D paper sculpture evoking the continuous receipt roll at an Indian kirana shop. This is a background asset, not a UI mockup.
+Composition: Landscape 1536x1024. Two very large sculptural flowing paper forms framing the LEFT and RIGHT edges. Left form rises in a sweeping folded S-curve from the bottom-left edge to the upper-left corner. Right form is a narrower curl descending from upper-right, ending in a gently serrated receipt-paper edge. Keep the entire central 42 percent from top to bottom EMPTY and almost black, for a real login form to be added in code. Sculptures partially crop beyond the canvas sides. Asymmetric, restrained, gallery-like.
+Materials: warm ivory finely textured receipt paper, deep charcoal reverse sides, thin precise saffron-orange edges and some softly illuminated orange folds. Subtle embossed parallel ledger ruling only, no glyphs.
+Lighting: dramatic soft grazing studio light, physically realistic ambient occlusion, velvety graphite shadows, small saffron highlights. Beautiful dimensional folds, tactile detail. Premium editorial art direction.
+Palette: nearly black #09090B background, graphite #171719, warm ivory #E8DFD1, Samaan Bol saffron #FF6B00. Darkness must dominate. Edges of background fade to exact near-black so art integrates seamlessly.
+Constraints: No text, no letters, no numbers, no logo, no UI, no form, no icons, no people, no banknotes, no coins, no purple/blue neon, no glowing sci-fi circuitry, no glass bubbles, no lens flare. Crisp, original, understated.
+```

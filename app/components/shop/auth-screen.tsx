@@ -3,63 +3,32 @@
 import { useSignIn, useSignUp } from '@clerk/nextjs';
 import { cloneElement, isValidElement, useEffect, useId, useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { isLocale } from '../../i18n';
-import AUTH_VERIFICATION_LOCALES from '../../lib/shop/auth-verification-locales.json';
+import { AUTH_LANGUAGE_STORAGE_KEY, authCopy, authErrorMessage, resolveAuthLanguage, type AuthCopy as Copy, type AuthLanguage } from '../../lib/shop/auth-copy';
+import { SUPPORTED_LANGUAGES } from '../../lib/shop/languages';
 import { signInVerificationMethods, sendSignInCode, verifySignInCode, validSignInCode, type SignInMethod } from '../../lib/shop/sign-in-verification';
 
 type View = 'sign-in' | 'sign-up' | 'verify' | 'forgot' | 'reset' | 'reset-done' | 'verify-sign-in';
-type Copy = (key: string, fallback: string, vars?: Record<string, string | number>) => string;
-
-const SHOP_LANGS = ['hi', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml'] as const;
-
-function browserShopLanguage() {
-  if (typeof navigator === 'undefined') return 'en';
-  const code = navigator.language.toLowerCase();
-  if (code.startsWith('hi-latn')) return 'hinglish';
-  return SHOP_LANGS.find((lang) => code.startsWith(lang)) ?? 'en';
-}
-
-function useAuthCopy(): Copy {
-  const [dict, setDict] = useState<Record<string, string>>({});
-
+function useAuthLanguage() {
+  const [language, setLanguage] = useState<AuthLanguage>('en');
   useEffect(() => {
-    const lang = browserShopLanguage();
-    if (lang === 'en') return;
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
-    if (!base) return;
-    let cancelled = false;
-    fetch(`${base}/api/translations/${lang}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((payload: unknown) => {
-        if (cancelled || !payload || typeof payload !== 'object') return;
-        const record = payload as Record<string, unknown>;
-        const bag = record.translations && typeof record.translations === 'object' ? record.translations : record;
-        const next: Record<string, string> = {};
-        for (const [key, value] of Object.entries(bag as Record<string, unknown>)) {
-          if (typeof value === 'string') next[key] = value;
-        }
-        setDict(next);
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
+    let saved: string | null = null;
+    try { saved = localStorage.getItem(AUTH_LANGUAGE_STORAGE_KEY); } catch { /* Optional preference. */ }
+    setLanguage(resolveAuthLanguage({
+      requested: new URLSearchParams(window.location.search).get('lang'),
+      referrer: document.referrer,
+      origin: window.location.origin,
+      saved,
+      browser: navigator.language,
+    }));
   }, []);
-
-  return (key, fallback, vars) => {
-    const bundled = AUTH_VERIFICATION_LOCALES[browserShopLanguage() as keyof typeof AUTH_VERIFICATION_LOCALES] as Record<string, string>;
-    let text = dict[key] && dict[key] !== key ? dict[key] : bundled?.[key] || fallback;
-    if (vars) {
-      for (const [name, value] of Object.entries(vars)) {
-        const next = String(value);
-        text = text.replaceAll(`{{${name}}}`, next).replaceAll(`{${name}}`, next);
-      }
-    }
-    return text;
+  const changeLanguage = (next: AuthLanguage) => {
+    setLanguage(next);
+    try { localStorage.setItem(AUTH_LANGUAGE_STORAGE_KEY, next); } catch { /* Optional preference. */ }
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', next);
+    window.history.replaceState(window.history.state, '', url);
   };
-}
-
-function clerkMessage(error: { longMessage?: string; message?: string } | null | undefined, fallback: string) {
-  return error?.longMessage || error?.message || fallback;
+  return { language, changeLanguage };
 }
 
 function IconMail() {
@@ -139,14 +108,6 @@ function useMarketingHome() {
   return href;
 }
 
-function AuthMark() {
-  return (
-    <div className="auth-mark">
-      <img src="/logo1.svg" width={48} height={48} alt="" />
-    </div>
-  );
-}
-
 function AuthHeading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="auth-heading">
@@ -169,10 +130,10 @@ function Field({
   error?: string;
   aside?: ReactNode;
   trailing?: ReactNode;
-  children: ReactElement<{ id?: string }>;
+  children: ReactElement<{ id?: string; 'aria-invalid'?: boolean; 'aria-describedby'?: string }>;
 }) {
   const id = useId();
-  const control = isValidElement(children) ? cloneElement(children, { id }) : children;
+  const control = isValidElement(children) ? cloneElement(children, { id, 'aria-invalid': !!error, 'aria-describedby': error ? `${id}-error` : undefined }) : children;
   return (
     <div className={`auth-field${error ? ' is-error' : ''}`}>
       <span className="auth-label">
@@ -184,7 +145,7 @@ function Field({
         {control}
         {trailing}
       </span>
-      {error ? <span className="auth-error">{error}</span> : null}
+      {error ? <span className="auth-error" id={`${id}-error`}>{error}</span> : null}
     </div>
   );
 }
@@ -212,12 +173,12 @@ function SocialButtons({
   onApple: () => void;
 }) {
   const google = mode === 'sign-in' ? t('auth.sign_in.google', 'Sign in with Google') : t('auth.sign_up.google', 'Sign up with Google');
-  const apple = mode === 'sign-in' ? t('auth.sign_in.apple', 'Sign in with Apple') : 'Sign up with Apple';
+  const apple = mode === 'sign-in' ? t('auth.sign_in.apple', 'Sign in with Apple') : t('auth.sign_up.apple', 'Sign up with Apple');
   return (
     <>
       <div className="auth-divider"><span>{t('common.or', 'or')}</span></div>
       <button className="auth-social" type="button" onClick={onGoogle} disabled={busy}>
-        <span className="auth-g">G</span>
+        <span className="auth-g" aria-hidden="true">G</span>
         {google}
       </button>
       <button className="auth-social is-apple" type="button" onClick={onApple} disabled={busy}>
@@ -240,7 +201,9 @@ function FooterSwitch({ prompt, action, onClick }: { prompt: string; action: str
 }
 
 export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
-  const t = useAuthCopy();
+  const { language, changeLanguage } = useAuthLanguage();
+  const t = authCopy(language);
+  const clerkMessage = (error: Parameters<typeof authErrorMessage>[0], fallback: string) => authErrorMessage(error, fallback, language);
   const home = useMarketingHome();
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
@@ -427,12 +390,12 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
     setFormError('');
     const created = await signIn.create({ identifier: email.trim() });
     if (created.error) {
-      setFormError(clerkMessage(created.error, t('auth.forgot.toast_fail', 'Failed to send reset link')));
+      setFormError(clerkMessage(created.error, t('auth.forgot.toast_fail', 'Could not send the reset code. Try again.')));
       setBusy(false);
       return;
     }
     const sent = await signIn.resetPasswordEmailCode.sendCode();
-    if (sent.error) setFormError(clerkMessage(sent.error, t('auth.forgot.toast_fail', 'Failed to send reset link')));
+    if (sent.error) setFormError(clerkMessage(sent.error, t('auth.forgot.toast_fail', 'Could not send the reset code. Try again.')));
     else {
       setCode('');
       setPassword('');
@@ -479,18 +442,25 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
   const verificationDestination = verificationMethod === 'email_code' ? email : verificationFactor && 'safeIdentifier' in verificationFactor ? verificationFactor.safeIdentifier : '';
 
   return (
-    <div className="auth-screen">
-      <div className="auth-glow" aria-hidden="true" />
-      <a className="auth-home" href={home}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Samaan Bol
-      </a>
-      <div className="auth-panel">
+    <div className="auth-screen" lang={language === 'hinglish' ? 'hi-Latn' : language}>
+      <div className="auth-art" aria-hidden="true">
+        <img src="/illustrations/auth-receipt-sculpture.webp" alt="" width={1536} height={1024} fetchPriority="high" />
+      </div>
+      <header className="auth-header">
+        <a className="auth-brand" href={home} aria-label="Samaan Bol">
+          <img src="/logo1.svg" width={36} height={36} alt="" />
+          <span>Samaan<span>Bol</span></span>
+        </a>
+        <a className="auth-home" href={home}>
+          {t('auth.shell.back', 'Back to website')}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 17L17 7M7 7h10v10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+      </header>
+      <main className="auth-panel">
         {view === 'sign-in' ? (
-          <form onSubmit={(event) => void handleSignIn(event)}>
-            <AuthMark />
+          <form noValidate onSubmit={(event) => void handleSignIn(event)}>
             <AuthHeading title={t('auth.sign_in.title', 'Welcome back')} subtitle={t('auth.sign_in.subtitle', 'Sign in to your account')} />
             {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
             <div className="auth-fields">
@@ -536,8 +506,7 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
         ) : null}
 
         {view === 'verify-sign-in' ? (
-          <form onSubmit={(event) => void handleSignInVerify(event)}>
-            <AuthMark />
+          <form noValidate onSubmit={(event) => void handleSignInVerify(event)}>
             <AuthHeading title={t('auth.verify.title', 'Verify your sign-in')} subtitle={t(`auth.verify.help.${verificationMethod}`, 'Enter the code sent to {{destination}}.', { destination: verificationDestination })} />
             {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
             <div className="auth-fields">
@@ -553,8 +522,7 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
         ) : null}
 
         {view === 'sign-up' ? (
-          <form onSubmit={(event) => void handleSignUp(event)}>
-            <AuthMark />
+          <form noValidate onSubmit={(event) => void handleSignUp(event)}>
             <AuthHeading title={t('auth.sign_up.title', 'Create account')} subtitle={t('auth.sign_up.subtitle', 'Set up your shop in minutes')} />
             {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
             <div className="auth-fields">
@@ -579,42 +547,41 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
         ) : null}
 
         {view === 'verify' ? (
-          <form onSubmit={(event) => void handleVerify(event)}>
+          <form noValidate onSubmit={(event) => void handleVerify(event)}>
             <div className="auth-badge" aria-hidden="true"><IconLock /></div>
-            <AuthHeading title="Verify your email" subtitle={`We sent a verification code to ${email}`} />
+            <AuthHeading title={t('auth.signup_verify.title', 'Verify your email')} subtitle={t('auth.verify.help.email_code', 'Enter the code sent to {{destination}}.', { destination: email })} />
             {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
             <div className="auth-fields">
-              <Field label="Verification Code" icon={<IconLock />} error={errors.code}>
+              <Field label={t('auth.verify.code', 'Verification code')} icon={<IconLock />} error={errors.code}>
                 <input inputMode="numeric" autoComplete="one-time-code" placeholder={t('auth.common.code_placeholder', 'Enter 6-digit code')} value={code} onChange={(event) => { setCode(event.target.value); clear('code'); }} />
               </Field>
             </div>
-            <SaffronButton loading={busy} disabled={code.trim().length < 4}>{busy ? 'Verifying...' : 'Verify Email'}</SaffronButton>
+            <SaffronButton loading={busy} disabled={code.trim().length < 4}>{busy ? t('auth.signup_verify.loading', 'Verifying…') : t('auth.signup_verify.button', 'Verify email')}</SaffronButton>
             <FooterSwitch prompt={t('auth.common.wrong_email', 'Wrong email?')} action={t('auth.common.go_back', 'Go back')} onClick={() => setView('sign-up')} />
           </form>
         ) : null}
 
         {view === 'forgot' ? (
-          <form onSubmit={(event) => void handleForgot(event)}>
-            <AuthMark />
-            <AuthHeading title={t('auth.forgot.title', 'Reset Password')} subtitle={t('auth.forgot.subtitle', 'Enter your email to receive a reset link')} />
+          <form noValidate onSubmit={(event) => void handleForgot(event)}>
+            <AuthHeading title={t('auth.forgot.title', 'Reset Password')} subtitle={t('auth.forgot.subtitle', 'Enter your email to receive a reset code')} />
             {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
             <div className="auth-fields">
               <Field label={t('auth.forgot.email_label', 'Email')} icon={<IconMail />} error={errors.email}>
                 <input type="email" autoComplete="email" placeholder={t('auth.forgot.email_placeholder', 'you@example.com')} value={email} onChange={(event) => { setEmail(event.target.value); clear('email'); }} />
               </Field>
             </div>
-            <SaffronButton loading={busy}>{busy ? t('auth.forgot.button_loading', 'Sending...') : t('auth.forgot.button', 'Send Reset Link')}</SaffronButton>
+            <SaffronButton loading={busy}>{busy ? t('auth.forgot.button_loading', 'Sending...') : t('auth.forgot.button', 'Send reset code')}</SaffronButton>
             <FooterSwitch prompt={t('auth.forgot.remember', 'Remember your password?')} action={t('auth.sign_in_link', 'Sign In')} onClick={() => { setFormError(''); setView('sign-in'); }} />
           </form>
         ) : null}
 
         {view === 'reset' ? (
-          <form onSubmit={(event) => void handleReset(event)}>
+          <form noValidate onSubmit={(event) => void handleReset(event)}>
             <div className="auth-badge" aria-hidden="true"><IconLock /></div>
-            <AuthHeading title={t('auth.forgot.title', 'Reset Password')} subtitle={`Enter the code sent to ${email}`} />
+            <AuthHeading title={t('auth.forgot.title', 'Reset Password')} subtitle={t('auth.verify.help.email_code', 'Enter the code sent to {{destination}}.', { destination: email })} />
             {formError ? <p className="auth-banner" role="alert">{formError}</p> : null}
             <div className="auth-fields">
-              <Field label="Verification Code" icon={<IconLock />} error={errors.code}>
+              <Field label={t('auth.verify.code', 'Verification code')} icon={<IconLock />} error={errors.code}>
                 <input inputMode="numeric" autoComplete="one-time-code" placeholder={t('auth.common.code_placeholder', 'Enter 6-digit code')} value={code} onChange={(event) => { setCode(event.target.value); clear('code'); }} />
               </Field>
               <Field label={t('auth.reset.password_label', 'New Password')} icon={<IconLock />} error={errors.password}>
@@ -630,12 +597,25 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
         ) : null}
 
         {view === 'reset-done' ? (
-          <div className="auth-done">
+          <div className="auth-done" role="status">
             <h1>{t('auth.reset.success', 'Password reset successfully!')}</h1>
-            <p>Signing you in...</p>
+            <p>{t('auth.sign_in.button_loading', 'Signing In...')}</p>
           </div>
         ) : null}
-      </div>
+      </main>
+      <footer className="auth-footer">
+        <div className="auth-signature">
+          <span className="auth-footer-rule" aria-hidden="true" />
+          <p>{t('auth.shell.tagline', 'Your shop. All together.')}</p>
+        </div>
+        <label className="auth-language">
+          <span className="sr-only">{t('auth.language', 'Language')}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.4"/><ellipse cx="12" cy="12" rx="4" ry="9" stroke="currentColor" strokeWidth="1.4"/><path d="M3 12h18" stroke="currentColor" strokeWidth="1.4"/></svg>
+          <select value={language} disabled={busy} onChange={event => { changeLanguage(event.target.value as AuthLanguage); setFormError(''); setErrors({}); }}>
+            {SUPPORTED_LANGUAGES.map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
+          </select>
+        </label>
+      </footer>
     </div>
   );
 }
