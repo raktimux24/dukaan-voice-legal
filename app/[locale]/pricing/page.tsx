@@ -1,3 +1,5 @@
+import '../../styles/pricing.css';
+import { getPricingFaq, getPricingMetadataCopy } from '../../content/pricingPage';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { AmbientBackground } from '../../components/AmbientBackground';
@@ -6,10 +8,8 @@ import { LanguageSelectEffects } from '../../components/LanguageSelectEffects';
 import { SubscriptionFooter, SubscriptionNav } from '../../components/SubscriptionChrome';
 import { PricingClient } from '../../pricing/PricingClient';
 import { getLocale, isLocale, translatedLocales } from '../../i18n';
-import { localizedPageCopy } from '../../content/pageCopy';
 import { faqPageSchema, pageMetadata, pricingOfferSchema } from '../../seo';
 import { JsonLd } from '../../components/JsonLd';
-import { getSubscriptionStrings } from '../../content/subscriptionStrings';
 
 type LocaleParams = { params: Promise<{ locale: string }> };
 
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: LocaleParams): Promise<Metada
   if (!isLocale(locale) || locale === 'en') notFound();
 
   const resolved = getLocale(locale);
-  const copy = localizedPageCopy(resolved, 'pricing');
+  const copy = getPricingMetadataCopy(resolved);
 
   return pageMetadata({
     title: copy.title,
@@ -42,10 +42,10 @@ export default async function LocalizedPricingPage({ params }: LocaleParams) {
 
   return (
     <div className="subscription-shell">
-      <JsonLd data={[pricingOfferSchema, faqPageSchema(getSubscriptionStrings(locale).pricing.faq)]} />
+      <JsonLd data={[pricingOfferSchema, faqPageSchema(getPricingFaq(locale))]} />
       <AmbientBackground />
       <SubscriptionNav locale={locale} page="pricing" />
-      <main className="subscription-main">
+      <main id="main-content" className="subscription-main pricing-page">
         <PricingClient locale={locale} />
       </main>
       <SubscriptionFooter locale={locale} page="pricing" />

@@ -1,3 +1,4 @@
+import webAppCopy from './webAppCopy.json';
 import type { Locale } from '../i18n';
 import { getLocaleHomeSlots } from './localeHomeSlots';
 import { productAnswers } from './productAnswers';
@@ -6,7 +7,7 @@ import workflowLocales from './shopWorkflowsLocales.json';
 
 export type SubscriptionStrings = {
   brand: { tagline: string };
-  nav: { features: string; ai: string; pricing: string; account: string; download: string; laptop?: string; openShop?: string; billing?: string };
+  nav: { features: string; ai: string; pricing: string; account: string; download: string; webApp?: string; openShop?: string; billing?: string };
   footer: {
     product: string;
     company: string;
@@ -116,7 +117,7 @@ export type SubscriptionStrings = {
 
 const en: SubscriptionStrings = {
   brand: { tagline: 'For the kirana counter. You say what they took. The bill keeps up.' },
-  nav: { features: 'Features', ai: 'Evening hisaab', pricing: 'Pricing', account: 'Manage subscription', download: 'Download', laptop: 'On a laptop', openShop: 'Open shop', billing: 'Billing' },
+  nav: { features: 'Features', ai: 'Evening hisaab', pricing: 'Pricing', account: 'Manage subscription', download: 'Download', webApp: webAppCopy.en.label, openShop: 'Open shop', billing: 'Billing' },
   footer: {
     product: 'Product',
     company: 'Company',
@@ -1491,16 +1492,16 @@ export const subscriptionStrings: Record<Locale, SubscriptionStrings> = {
 };
 
 const navOverlay: Partial<Record<Locale, Partial<SubscriptionStrings['nav']>>> = {
-  hi: { features: "फ़ीचर्स", ai: "शाम का हिसाब", pricing: "कीमत", account: "सब्सक्रिप्शन मैनेज करें", download: "डाउनलोड", laptop: "लैपटॉप पर", openShop: "दुकान खोलो", billing: "बिलिंग" },
-  bn: { features: "ফিচার", ai: "সন্ধ্যের হিসাব", pricing: "দাম", account: "সাবস্ক্রিপশন ম্যানেজ করুন", download: "ডাউনলোড", laptop: "ল্যাপটপে", openShop: "দোকান খুলুন", billing: "বিলিং" },
-  ta: { features: "அம்சங்கள்", ai: "மாலை கணக்கு", pricing: "விலை", account: "சந்தாவை நிர்வகிக்கவும்", download: "பதிவிறக்கம்", laptop: "லேப்டாப்பில்", openShop: "கடையைத் திற", billing: "பில்லிங்" },
-  te: { features: "ఫీచర్లు", ai: "సాయంత్రం హిసాబ్", pricing: "ధర", account: "సబ్‌స్క్రిప్షన్ నిర్వహించండి", download: "డౌన్‌లోడ్", laptop: "ల్యాప్‌టాప్‌లో", openShop: "దుకాణం తెరవండి", billing: "బిల్లింగ్" },
-  mr: { features: "फीचर्स", ai: "संध्याकाळचा हिशोब", pricing: "किंमत", account: "सबस्क्रिप्शन व्यवस्थापित करा", download: "डाउनलोड", laptop: "लॅपटॉपवर", openShop: "दुकान उघडा", billing: "बिलिंग" },
-  kn: { features: "ವೈಶಿಷ್ಟ್ಯಗಳು", ai: "ಸಂಜೆಯ ಹಿಸಾಬ್", pricing: "ಬೆಲೆ", account: "ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ನಿರ್ವಹಿಸಿ", download: "ಡೌನ್‌ಲೋಡ್", laptop: "ಲ್ಯಾಪ್‌ಟಾಪ್‌ನಲ್ಲಿ", openShop: "ಅಂಗಡಿ ತೆರೆಯಿರಿ", billing: "ಬಿಲ್ಲಿಂಗ್" },
-  gu: { features: "ફીચર્સ", ai: "સાંજનું હિસાબ", pricing: "કિંમત", account: "સબ્સ્ક્રિપ્શન મેનેજ કરો", download: "ડાઉનલોડ", laptop: "લેપટોપ પર", openShop: "દુકાન ખોલો", billing: "બિલિંગ" },
-  ml: { features: "ഫീച്ചറുകൾ", ai: "വൈകുന്നേരത്തെ കണക്ക്", pricing: "വില", account: "സബ്‌സ്‌ക്രിപ്‌ഷൻ മാനേജ് ചെയ്യുക", download: "ഡൗൺലോഡ്", laptop: "ലാപ്‌ടോപ്പിൽ", openShop: "കട തുറക്കൂ", billing: "ബില്ലിംഗ്" },
-  pa: { features: "ਫੀਚਰ", ai: "ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ", pricing: "ਕੀਮਤ", account: "ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਮੈਨੇਜ ਕਰੋ", download: "ਡਾਊਨਲੋਡ", laptop: "ਲੈਪਟਾਪ ’ਤੇ", openShop: "ਦੁਕਾਨ ਖੋਲ੍ਹੋ", billing: "ਬਿਲਿੰਗ" },
-  or: { features: "ଫିଚର୍ସ", ai: "ସନ୍ଧ୍ୟା ହିସାବ", pricing: "ମୂଲ୍ୟ", account: "ସବ୍‌ସ୍କ୍ରିପ୍ସନ୍ ମ୍ୟାନେଜ୍ କରନ୍ତୁ", download: "ଡାଉନଲୋଡ୍", laptop: "ଲ୍ୟାପଟପ୍‌ରେ", openShop: "ଦୋକାନ ଖୋଲନ୍ତୁ", billing: "ବିଲିଂ" },
+  hi: { features: "फ़ीचर्स", ai: "शाम का हिसाब", pricing: "कीमत", account: "सब्सक्रिप्शन मैनेज करें", download: "डाउनलोड", openShop: "दुकान खोलो", billing: "बिलिंग" },
+  bn: { features: "ফিচার", ai: "সন্ধ্যের হিসাব", pricing: "দাম", account: "সাবস্ক্রিপশন ম্যানেজ করুন", download: "ডাউনলোড", openShop: "দোকান খুলুন", billing: "বিলিং" },
+  ta: { features: "அம்சங்கள்", ai: "மாலை கணக்கு", pricing: "விலை", account: "சந்தாவை நிர்வகிக்கவும்", download: "பதிவிறக்கம்", openShop: "கடையைத் திற", billing: "பில்லிங்" },
+  te: { features: "ఫీచర్లు", ai: "సాయంత్రం హిసాబ్", pricing: "ధర", account: "సబ్‌స్క్రిప్షన్ నిర్వహించండి", download: "డౌన్‌లోడ్", openShop: "దుకాణం తెరవండి", billing: "బిల్లింగ్" },
+  mr: { features: "फीचर्स", ai: "संध्याकाळचा हिशोब", pricing: "किंमत", account: "सबस्क्रिप्शन व्यवस्थापित करा", download: "डाउनलोड", openShop: "दुकान उघडा", billing: "बिलिंग" },
+  kn: { features: "ವೈಶಿಷ್ಟ್ಯಗಳು", ai: "ಸಂಜೆಯ ಹಿಸಾಬ್", pricing: "ಬೆಲೆ", account: "ಸಬ್‌ಸ್ಕ್ರಿಪ್ಷನ್ ನಿರ್ವಹಿಸಿ", download: "ಡೌನ್‌ಲೋಡ್", openShop: "ಅಂಗಡಿ ತೆರೆಯಿರಿ", billing: "ಬಿಲ್ಲಿಂಗ್" },
+  gu: { features: "ફીચર્સ", ai: "સાંજનું હિસાબ", pricing: "કિંમત", account: "સબ્સ્ક્રિપ્શન મેનેજ કરો", download: "ડાઉનલોડ", openShop: "દુકાન ખોલો", billing: "બિલિંગ" },
+  ml: { features: "ഫീച്ചറുകൾ", ai: "വൈകുന്നേരത്തെ കണക്ക്", pricing: "വില", account: "സബ്‌സ്‌ക്രിപ്‌ഷൻ മാനേജ് ചെയ്യുക", download: "ഡൗൺലോഡ്", openShop: "കട തുറക്കൂ", billing: "ബില്ലിംഗ്" },
+  pa: { features: "ਫੀਚਰ", ai: "ਸ਼ਾਮ ਦਾ ਹਿਸਾਬ", pricing: "ਕੀਮਤ", account: "ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਮੈਨੇਜ ਕਰੋ", download: "ਡਾਊਨਲੋਡ", openShop: "ਦੁਕਾਨ ਖੋਲ੍ਹੋ", billing: "ਬਿਲਿੰਗ" },
+  or: { features: "ଫିଚର୍ସ", ai: "ସନ୍ଧ୍ୟା ହିସାବ", pricing: "ମୂଲ୍ୟ", account: "ସବ୍‌ସ୍କ୍ରିପ୍ସନ୍ ମ୍ୟାନେଜ୍ କରନ୍ତୁ", download: "ଡାଉନଲୋଡ୍", openShop: "ଦୋକାନ ଖୋଲନ୍ତୁ", billing: "ବିଲିଂ" },
 };
 
 const premium4: Partial<Record<Locale, string>> = {
@@ -1724,11 +1725,11 @@ export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
   const base = subscriptionStrings[locale] ?? en;
   const homeSlots = getLocaleHomeSlots(locale);
   const nav = {
-    laptop: 'On a laptop',
     openShop: 'Open shop',
     billing: 'Billing',
     ...base.nav,
     ...navOverlay[locale],
+    webApp: webAppCopy[locale].label,
   };
   const day = shopDayPricing[locale];
   const rawPremiumFeatures = day?.premiumFeatures ?? [

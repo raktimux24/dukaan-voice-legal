@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      { source: '/billing-on-a-laptop', destination: '/#web', permanent: true },
+      { source: '/:locale(hi|bn|ta|te|mr|kn|gu|ml|pa|or)/billing-on-a-laptop', destination: '/:locale#web', permanent: true },
       { source: "/:locale(hi|bn|ta|te|mr|kn|gu|ml|pa|or)/refund-policy", destination: "/refund-policy", permanent: true },
       { source: '/index.html', destination: '/', permanent: true },
       { source: '/privacy-policy.html', destination: '/privacy-policy', permanent: true },
