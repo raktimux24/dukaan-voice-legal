@@ -6,6 +6,7 @@ import { defaultLocale, type Locale, localizedPath } from '../i18n';
 import { getLaptopCopy } from '../content/laptopPage';
 import { getSubscriptionStrings } from '../content/subscriptionStrings';
 import { getUdhaarCopy } from '../content/udhaarPage';
+import offerCorrections from '../content/offerCorrections.json';
 import { planCopy, type BillingPlan } from '../lib/subscriptions';
 
 export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
@@ -20,6 +21,7 @@ export function PricingClient({ locale = defaultLocale }: { locale?: Locale }) {
         <div>
           <h1>{t.pricing.heroTitle}</h1>
           <p className="subscription-lead">{t.pricing.heroLead}</p>
+          <p className="muted">{offerCorrections[locale].signIn}</p>
           <div className="topic-link-row">
             <Link className="topic-link" href={localizedPath(locale, 'laptop')}>
               <span className="topic-link-copy">

@@ -21,12 +21,29 @@ try {
   const { getLocalizedHtml } = require('./content/localized.js');
   const { getLaptopCopy } = require('./content/laptopPage.js');
   const { getSubscriptionStrings } = require('./content/subscriptionStrings.js');
+  const { getLocaleHomeSlots } = require('./content/localeHomeSlots.js');
+  const { getUdhaarCopy } = require('./content/udhaarPage.js');
+  const offerCopy = require('./content/offerCorrections.json');
+  const workflowCopy = require('./content/shopWorkflowsLocales.json');
   const { faqPageSchema, pageMetadata, softwareApplicationSchemaFor, pricingOfferSchema } = require('./seo.js');
   const sitemap = require('./sitemap.js').default();
   for (const { code, hreflang } of locales) {
     const answers = productAnswers(code);
     const html = getLocalizedHtml('home', code);
     assert.equal(answers.length, 7, `${code}: seven FAQ topics`);
+    const workflow = html.match(/<section class="shop-workflows"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(workflow, `${code}: expanded shop workflows rendered`);
+    assert.equal((workflow.match(/<article class="shop-workflow">/g) || []).length, 9, `${code}: all nine workflow cards`);
+    assert.ok(workflow.includes(`href="${localizedPath(code, 'pricing')}"`), `${code}: localized pricing CTA`);
+    if (code !== 'en') {
+      assert.equal(workflowCopy[code].cards.length, 9, `${code}: translated workflow coverage`);
+      for (const card of workflowCopy[code].cards) assert.ok(card.length === 3 && card.every(Boolean), `${code}: each workflow includes a heading, benefit and condition`);
+      const staleCta = getLocaleHomeSlots(code)?.ctaSub;
+      if (staleCta) assert.ok(!html.includes(staleCta), `${code}: old all-new-shops trial promise removed`);
+    }
+    assert.equal(answers[1].a, offerCopy[code].offer, `${code}: current-offer FAQ`);
+    assert.ok(getSubscriptionStrings(code).pricing.faq.some(item => item.a === answers[1].a), `${code}: pricing and homepage offer agree`);
+    assert.ok(getUdhaarCopy(code).premiumPoints.includes(offerCopy[code].closing), `${code}: udhaar trial wording uses current-offer guidance`);
     assert.equal(new Set(answers.map(x => x.q)).size, 7, `${code}: unique questions`);
     assert.equal((html.match(/id="questions"/g) || []).length, 1, `${code}: one visible FAQ`);
     const schema = faqPageSchema(answers);

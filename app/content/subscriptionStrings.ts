@@ -1,5 +1,8 @@
 import type { Locale } from '../i18n';
 import { getLocaleHomeSlots } from './localeHomeSlots';
+import { productAnswers } from './productAnswers';
+import offerCorrections from './offerCorrections.json';
+import workflowLocales from './shopWorkflowsLocales.json';
 
 export type SubscriptionStrings = {
   brand: { tagline: string };
@@ -165,7 +168,7 @@ const en: SubscriptionStrings = {
     premiumFeatures: [
       'Voice for the sale in 8 Indian languages + English',
       'Full sales reports and history',
-      'Udhaar list on customer names, reminders',
+      'Record udhaar, see outstanding balances and prepare reminders',
       'Warnings and reports from actual sales',
       'Multi-shop',
     ],
@@ -174,13 +177,13 @@ const en: SubscriptionStrings = {
       'Razorpay hosted checkout',
       'UPI Autopay supported',
       'Cancel anytime',
-      'New shops: 7-day Premium trial in the app, no card',
+      'Eligible new shops: 7-day Premium trial, no card',
     ],
     faqHeading: 'Questions before you subscribe',
     faq: [
       {
         q: 'What is the 7-day trial?',
-        a: 'New shop gets 7 days voice+Premium in app, no card. Refund is separate from first charge.',
+        a: 'An eligible new shop can get 7 days of Premium without a card. Trial eligibility is limited to one per owner; the refund window is separate and starts with the first charge.',
       },
       {
         q: 'What is UPI Autopay?',
@@ -205,7 +208,7 @@ const en: SubscriptionStrings = {
     loadingAccount: 'Loading account...',
     signedOutHeading: 'Sign in to manage your subscription',
     signedOutLead:
-      'Use the same account as the phone. This page is checkout, and the page the phone returns to after payment. Once you are in the shop, manage the plan from Billing. New shops get 7 days of Premium in the app, no card.',
+      'Use the same account as the phone. This page is checkout, and the page the phone returns to after payment. Once you are in the shop, manage the plan from Billing. Eligible new shops get 7 days of Premium, no card.',
     heading: 'Manage subscription',
     leadWithEmail: (email) =>
       `Checkout, invoices, and cancellation for ${email}. Inside the shop, the same plan lives under Billing.`,
@@ -1728,18 +1731,17 @@ export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
     ...navOverlay[locale],
   };
   const day = shopDayPricing[locale];
-  const premiumFeatures = day?.premiumFeatures ?? [
+  const rawPremiumFeatures = day?.premiumFeatures ?? [
     en.pricing.premiumFeatures[0],
     en.pricing.premiumFeatures[1],
     en.pricing.premiumFeatures[2],
     premium4[locale] ?? en.pricing.premiumFeatures[3],
     en.pricing.premiumFeatures[4],
   ];
-  const faq = day
-    ? [day.trialFaq, ...base.pricing.faq]
-    : locale === 'hi'
-      ? [hiTrialFaq, ...base.pricing.faq]
-      : base.pricing.faq;
+  const premiumFeatures = [...rawPremiumFeatures];
+  if (locale !== 'en') premiumFeatures[2] = `${workflowLocales[locale].cards[3][0]} — ${workflowLocales[locale].cards[3][2]}`;
+  const faq = locale === 'en' ? base.pricing.faq.slice(1) : base.pricing.faq;
+  const trustStrip = day ? day.trustStrip.filter((_, index) => index !== 3) : locale === 'en' ? base.pricing.trustStrip.filter((_, index) => index !== 3) : base.pricing.trustStrip;
 
   return {
     ...base,
@@ -1774,13 +1776,13 @@ export function getSubscriptionStrings(locale: Locale): SubscriptionStrings {
       freeFeatures: [browserLine[locale], ...(day?.freeFeatures ?? base.pricing.freeFeatures)],
       premiumFeatures,
       refundWindow: day?.refundWindow ?? base.pricing.refundWindow,
-      trustStrip: day?.trustStrip ?? base.pricing.trustStrip,
-      faq: [billingFaq[locale], ...faq],
+      trustStrip,
+      faq: [billingFaq[locale], productAnswers(locale)[1], ...faq],
     },
     account: {
       ...base.account,
       heading: nav.account,
-      signedOutLead: signedOutLead[locale] ?? base.account.signedOutLead,
+      signedOutLead: offerCorrections[locale].signIn,
     },
   };
 }

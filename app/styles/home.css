@@ -433,6 +433,7 @@ h1, h2, h3, h4 {
 
 .hero-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   align-items: center;
   margin-bottom: 56px;
@@ -502,6 +503,16 @@ h1, h2, h3, h4 {
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* Label the synthetic counter illustration for sighted visitors. */
+.illustration-note {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  color: #b8b8c0;
+  font-size: 12px;
 }
 
 /* Hero phone mockup */
@@ -951,6 +962,29 @@ section {
   font-size: 12px;
   margin-top: 4px;
 }
+
+/* Merchant workflows that surround the sale. */
+.shop-workflows { border-top: 1px solid var(--border-dark); }
+.shop-workflows-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 48px;
+}
+.shop-workflow {
+  padding: 28px;
+  border: 1px solid var(--border-dark);
+  border-radius: 16px;
+  background: var(--bg-card);
+}
+.shop-workflow-number { color: var(--saffron); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.shop-workflow h3 { margin: 14px 0 10px; font-size: 20px; line-height: 1.25; }
+.shop-workflow p { color: var(--text-secondary); font-size: 15px; line-height: 1.65; }
+.shop-workflow .shop-workflow-note { margin-top: 16px; color: #b8b8c0; font-size: 13px; }
+.shop-workflows-footnote { margin-top: 24px; color: #b8b8c0; font-size: 14px; line-height: 1.6; }
+.shop-workflows-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+@media (max-width: 900px) { .shop-workflows-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .shop-workflows-grid { grid-template-columns: 1fr; } }
 
 /* ── Features ─────────────────────────────────────── */
 .features {

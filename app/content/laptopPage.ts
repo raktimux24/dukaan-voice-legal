@@ -23,21 +23,21 @@ export type LaptopCopy = {
 const english: LaptopCopy = {
   title: 'Kirana billing on a laptop — Samaan Bol',
   description:
-    'Run the same kirana shop in the browser. Search, scan, and charge on a laptop. Voice billing stays on the phone. Cash, UPI QR, or udhaar.',
+    'Run the same kirana shop in the browser. Search, scan, and charge on a laptop. Use the phone app for voice billing, with Premium access and internet. Cash, UPI QR, or udhaar.',
   h1: 'Kirana billing on a laptop',
   lead:
-    'Samaan Bol is one shop on the phone and in the browser. On a laptop you search the item or scan a barcode, put the customer on the bill, and charge cash, a UPI QR, or udhaar. Voice billing stays on the phone.',
+    'Samaan Bol is one shop on the phone and in the browser. On a laptop you search the item or scan a barcode, put the customer on the bill, and charge cash, a UPI QR, or udhaar. Use the phone app for voice billing, with Premium access and internet.',
   stepsHeading: 'How a sale works on the laptop',
   steps: [
     'Open the shop in the browser and sign in with the same account as the phone.',
     'Search the item or scan the barcode, then set the quantity.',
     'Add the customer when the sale is udhaar, or when you want their name on the bill.',
-    'Charge cash, show the UPI QR, or record udhaar.',
+    'Record cash, show a configured UPI QR and confirm receipt, or record udhaar with Premium.',
     'Share the bill on WhatsApp or print it. Stock moves with that bill.',
   ],
-  phoneHeading: 'Voice stays on the phone',
+  phoneHeading: 'The phone and laptop together',
   phoneBody:
-    'You say the sale in Hindi, Hinglish, or another Indian language on the phone. The laptop does not take that voice. A sale spoken on the helper’s phone and a sale typed on the owner’s laptop land in the same hisaab.',
+    'You say the sale in Hindi, Hinglish, or another Indian language on the phone. Use search or barcode scanning in the browser. A sale spoken on the helper’s phone and a sale typed on the owner’s laptop land in the same hisaab.',
   laptopHeading: 'What the laptop is for',
   laptopPoints: [
     'A wider view of the bill, the stock, the customers, and the day.',
@@ -49,11 +49,11 @@ const english: LaptopCopy = {
   faq: [
     {
       q: 'Can I bill by voice on the laptop?',
-      a: 'No. Voice billing stays on the phone. The laptop is for search, scan, and charge on the same shop.',
+      a: 'The phone app supports voice billing with Premium and internet. On the laptop, you can search or scan items in the same shop.',
     },
     {
       q: 'Is the browser a different shop from the app?',
-      a: 'No. One account, one shop. A sale made on the phone shows on the laptop, and a sale made on the laptop shows on the phone.',
+      a: 'Use the same account and select the same shop on each device. Sales sync between the phone and browser when connected.',
     },
     {
       q: 'Does this file GST returns?',
