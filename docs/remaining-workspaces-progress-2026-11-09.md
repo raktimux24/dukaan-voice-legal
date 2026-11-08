@@ -13,7 +13,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/sales/refunds` | Native periods, summary, rows and bill navigation audited; settlement fallback restored | Sales-style metrics and settlement ledger | Ten languages at 320px; audit disclosure and settlement amounts checked |
 | `/shop/customers/[id]/statement` | Pending | Pending | Pending |
 | `/shop/customers/followups` | Pending | Pending | Pending |
-| `/shop/products/import` | Pending | Pending | Pending |
+| `/shop/products/import` | Shared workflow matches mobile; issue-first review and grouped mapping restored | Responsive upload/history, mapped columns and review | Ten languages × upload/mapping/review at 320px; skip/include checked |
 | `/shop/customers/import` | Pending | Pending | Pending |
 | `/shop/suppliers/import` | Pending | Pending | Pending |
 | `/shop/settings/opening-balances` | Pending | Pending | Pending |
@@ -51,3 +51,5 @@ Barcodes: mobile contract/client/workflow match. Added missing-only filter with 
 Cashbook: compared native view and expense form, retained unchanged shared contract/client/workflow. Ported expense/ledger presentation hooks, unsupported-service errors and return-to-list after expense save. Desktop form and 320px day/form checked in ten languages using existing translated keys. Unpaid synthetic expense saved with zero payment and full remaining balance. Cashbook regression tests, translation coverage and TypeScript passed. Live payments/reconciliation/export not executed.
 
 Refunds: native refunds.tsx comparison complete. Web retains search, custom dates and cursor navigation; reversed custom ranges now suppress queries. Both flat and nested settlement evidence display correctly. Sales regressions, TypeScript and translations pass. 320px ten-language check and synthetic audit disclosure verified; no real refund submitted.
+
+Product import: native import screen compared, with shared contract/client/workflow retained. Added issue-first review, all-row toggle, matched/optional field grouping and missing-name guidance. Existing safe confirmation, batch recovery and opening-session handoff retained. Native importUI translations copied for all ten languages. Browser checked 30 stage/language combinations at 320px and skip/include state with synthetic jobs; real uploads/writes not executed.

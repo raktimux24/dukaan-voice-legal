@@ -1,0 +1,7 @@
+'use client';
+import type {ReactNode} from 'react';
+export function ImportColumns<T extends string>({fields,mapping,render,t}:{fields:readonly T[];mapping:Partial<Record<T,number>>;render:(field:T)=>ReactNode;t:(key:string)=>string}){
+ const matched=fields.filter(f=>f==='name'||mapping[f]!==undefined),other=fields.filter(f=>f!=='name'&&mapping[f]===undefined);
+ return <section className="import-columns"><h3>{t('importUI.columns')}</h3><div className="import-mapping">{matched.map(render)}</div>{other.length?<details className="retail-details"><summary>{t('importUI.other_fields')} · {other.length}</summary><div className="import-mapping">{other.map(render)}</div></details>:null}{mapping['name' as T]===undefined?<p className="import-row-error" role="status">{t('importUI.match_name')}</p>:null}</section>;
+}
+export function ImportReviewFilters({errors,onlyIssues,onChange,t}:{errors:number;onlyIssues:boolean;onChange:(value:boolean)=>void;t:(key:string)=>string}){return <div className="import-review-filter"><div className="shop-seg" role="group" aria-label={t('imports.step_review')}><button type="button" aria-pressed={!onlyIssues} className={!onlyIssues?'is-active':''} onClick={()=>onChange(false)}>{t('importUI.all_rows')}</button><button type="button" aria-pressed={onlyIssues} className={onlyIssues?'is-active':''} disabled={!errors} onClick={()=>onChange(true)}>{t('imports.issues')} · {errors}</button></div>{errors?<p className="shop-hint">{t('importUI.resolve')}</p>:null}</div>}
