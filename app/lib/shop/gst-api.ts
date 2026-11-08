@@ -388,13 +388,10 @@ export function bindGstApi(
         `${base(s)}/inventory/tax-profiles/import/request-outcome`,
       );
     },
+    saleDebits: (s:string,id:string,before?:string) => get<{items:{id:string;number:string;grossAmount:string;remaining:string;balanceStatus:string}[];nextCursor:string|null}>(`${base(s)}/sales/${id}/debit-notes${before?'?before='+encodeURIComponent(before):''}`),
+    saleCredits: (s:string,id:string,before?:string) => get<{items:{id:string;number:string|null;grossAmount:string;creditReduction:string;moneyRefund:string;evidenceStatus:string}[];nextCursor:string|null}>(`${base(s)}/sales/${id}/manual-credits${before?'?before='+encodeURIComponent(before):''}`),
     returnCapacity: (s: string, id: string) =>
-      get<{
-        status: string;
-        unpaidCredit: string;
-        refundableMoney: string;
-        unassignedCollections: string;
-      }>(`${base(s)}/sales/${id}/return-settlement`),
+      get<import("./types").SaleReturnCapacity>(`${base(s)}/sales/${id}/return-settlement`),
     returnSale: (
       s: string,
       id: string,
@@ -403,6 +400,7 @@ export function bindGstApi(
         items: { saleItemId: string; quantity: number; restock?: boolean }[];
         reason: string;
         refundMethod?: "cash"|"upi"|"card"|"credit";
+        refundAmount?: number|null;
         settlement?: {
           creditReduction: number;
           moneyRefund: number;
@@ -501,6 +499,7 @@ export function bindGstApi(
       }>(
         `${base(s)}/customers/${id}/unassigned-collections${before ? "?before=" + encodeURIComponent(before) : ""}`,
       ),
+    customerNotes: (s:string,id:string,kind:'credits'|'debits',before?:string) => get<{items:{id:string;saleId:string;number:string|null;issuedAt:string;grossAmount:string;creditReduction?:string;moneyRefund?:string;remaining?:string;evidenceStatus?:string;balanceStatus?:string}[];nextCursor:string|null}>(`${base(s)}/customers/${id}/${kind==='credits'?'manual-credits':'debit-notes'}${before?'?before='+encodeURIComponent(before):''}`),
     creditInvoices: (s: string, id: string, before?: string) =>
       get<{
         items: {

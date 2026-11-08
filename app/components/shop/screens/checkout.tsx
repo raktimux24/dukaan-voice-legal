@@ -1,5 +1,7 @@
 'use client';
 import {ProductPhotos} from '../product-photos';
+import {checkoutMoney,checkoutPayment,checkoutDefault,checkoutUpiUri,type TenderMode} from '../../../lib/shop/checkout';
+import {CheckoutSuggestions, CheckoutCustomerHistory} from '../checkout-context';
 import {useCheckoutCredit,CheckoutCreditView} from '../../../lib/shop/credit/checkout';
 import {cashWebUi} from './cashbook';
 import {assertEstimateCart} from '../../../lib/shop/estimates/handoff';
@@ -19,7 +21,7 @@ import {cachedRspProductAt} from '../../../lib/shop/gst-core/gst-rsp-cache';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useBillingRouter as useRouter } from '../billing-shell';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { issueSale } from '../../../lib/shop/gst-issuance';
 import {releaseRejectedMixedCheckout} from '../../../lib/shop/checkout-rejection';
 import {permitsOfflineShopFallback} from '../../../lib/shop/offline-shop-context';
@@ -33,20 +35,16 @@ import { normalizeIndianMobile } from '../../../lib/shop/phone';
 import type { CreateSalePayload } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
-import { Button, Card, Field, Notice, PageHeader, PremiumLock, SectionHead, Spinner, cx, inputClass } from '../ui';
+import { Button, Card, Field, Notice, PremiumLock, Spinner, Glyph, cx, inputClass } from '../ui';
 import {LocalFiscalReceiptScreen} from './local-fiscal-receipt';
 import {checkoutCustomer} from '../../../lib/shop/checkout-customer';
 import {assertCartMrp,captureCartMrp,missingCartMrp,restoreCartMrp} from '../../../lib/shop/checkout-mrp';
 import { CustomerAttach } from '../customer-attach';
 
 const CHIPS = [10, 20, 50, 100, 200, 500, 2000];
-type TenderMode = 'cash' | 'upi' | 'card' | 'credit' | 'split';
+
 
 const MODE_LABELS: Record<TenderMode, string> = { cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Udhaar', split: 'Split' };
-
-function covers(tendered: number, amount: number) {
-  return roundPaise(tendered) + 0.01 >= roundPaise(amount);
-}
 
 export function CheckoutScreen() {
   const uiText = useUiText();
@@ -72,13 +70,17 @@ export function CheckoutScreen() {
     if(restored.lines.some((line,index)=>line!==cartApi.cart.lines[index]))cartApi.patch({lines:restored.lines});
   },[mrpSnapshot.data,cartApi,shop,missingMrp.length]);
   const productIds=cartApi.cart.lines.map(line=>line.productId);
-  const taxSnapshot=useQuery({queryKey:['checkout-tax-snapshot',shop?.id,userId,...productIds],enabled:!!shop?.id&&taxRequired&&productIds.length>0,networkMode:'always',queryFn:()=>api.getTaxSnapshot(shop!.id,productIds)});
-  const adoptedSnapshot=useRef<unknown>(null);
+  const taxSnapshot=useQuery({queryKey:['checkout-tax-snapshot',shop?.id,userId,...productIds],enabled:!!shop?.id&&!cartApi.pending&&taxRequired&&productIds.length>0,networkMode:'always',queryFn:()=>api.getTaxSnapshot(shop!.id,productIds)});
+  const adoptedSnapshot=useRef<unknown>(null),attemptedSnapshot=useRef<unknown>(null);
+  const [taxAdoptionError,setTaxAdoptionError]=useState<unknown>(null);
   useEffect(()=>{
-    if(!shop||!taxSnapshot.data||adoptedSnapshot.current===taxSnapshot.data)return;
+    if(!shop||cartApi.pending||!taxSnapshot.data||attemptedSnapshot.current===taxSnapshot.data)return;
+    attemptedSnapshot.current=taxSnapshot.data;
+    try {
     const attached=attachCatalogTaxSnapshot(cartApi.cart.lines.map(line=>({product:{id:line.productId,...line}})),taxSnapshot.data,shop.id);
     const lines=cartApi.cart.lines.map((line,index)=>({...line,gstConfig:line.rsp?null:attached[index].product.gstConfig,gstTaxSnapshot:attached[index].product.gstTaxSnapshot,gstRspSnapshot:attached[index].product.gstRspSnapshot}));
-    adoptedSnapshot.current=taxSnapshot.data;cartApi.patch({lines});
+    adoptedSnapshot.current=taxSnapshot.data;setTaxAdoptionError(null);cartApi.patch({lines});
+    }catch(error){setTaxAdoptionError(error);}
   },[taxSnapshot.data,cartApi,shop]);
   const [previewAt,setPreviewAt]=useState(()=>new Date().toISOString());
   const [previewNow,setPreviewNow]=useState(()=>Date.now());
@@ -87,6 +89,10 @@ export function CheckoutScreen() {
   useEffect(()=>{if(!roundingEnabled)return;const timer=setInterval(()=>{const now=Date.now();setPreviewNow(now);if(rounding.data&&!roundingSelectionCurrent(rounding.data,now))setPreviewAt(new Date(now).toISOString());},1000);return()=>clearInterval(timer);},[roundingEnabled,rounding.data]);
   const [mode, setMode] = useState<TenderMode | null>(null);
   const [cashTendered, setCashTendered] = useState('');
+  const [discountInput,setDiscountInput]=useState(()=>String(cartApi.cart.billDiscount||''));
+  const discountValue=discountInput.trim()?checkoutMoney(discountInput):0;
+  const discountValid=discountValue!==null;
+  useEffect(()=>setDiscountInput(String(cartApi.cart.billDiscount||'')),[shop?.id,userId]);
   const [upiRef, setUpiRef] = useState('');
   const [split, setSplit] = useState({ cash: '', upi: '', credit: '', tendered: '' });
   const [error, setError] = useState<unknown>(null);
@@ -120,13 +126,11 @@ export function CheckoutScreen() {
 
   useEffect(() => {
     if(commerceCheckout){if(mode!=='cash'&&mode!=='upi')setMode('cash');return;}
-    if (!shop || !userId || mode) return;
-    const last = localStorage.getItem(`samaan-last-method:${userId}:${shop.id}`) as TenderMode | null;
-    const fallback = settings.data?.defaultPaymentMethod ?? 'cash';
-    const known = last === 'cash' || last === 'upi' || last === 'card' || last === 'credit' || last === 'split';
-    const next = cartApi.cart.paymentHint ?? (known ? last : fallback);
-    setMode(next === 'card' && !settings.data?.cardEnabled ? 'cash' : next);
-  }, [mode, settings.data?.cardEnabled, settings.data?.defaultPaymentMethod, shop, userId,commerceCheckout]);
+    if (!shop || !userId || mode || !settings.data) return;
+    let last:string|null=null;
+    try {last=localStorage.getItem(`samaan-last-method:${userId}:${shop.id}`);} catch {/* Preferences are optional. */}
+    setMode(checkoutDefault(cartApi.cart.paymentHint,last,settings.data.defaultPaymentMethod ?? 'cash',!!settings.data.cardEnabled));
+  }, [mode, settings.data, shop, userId,commerceCheckout,cartApi.cart.paymentHint]);
 
   useEffect(() => {
     if (!offlineSaved) return;
@@ -138,9 +142,10 @@ export function CheckoutScreen() {
     return () => window.removeEventListener('online', retry);
   }, [offlineSaved]);
 
-  const gstContext:GstContext|null=settings.data?.gstSettings&&['regular','composition'].includes(settings.data.gstSettings.registration)?{settings:settings.data.gstSettings,priceMode:settings.data.gstSettings.priceMode,placeOfSupply:settings.data.gstSettings.stateCode,...cartApi.cart.buyer?{buyer:cartApi.cart.buyer}:{}}:null;
+  const gstContext:GstContext|null=settings.data?.gstSettings&&['regular','composition'].includes(settings.data.gstSettings.registration)?{settings:settings.data.gstSettings,priceMode:cartApi.cart.gstPriceMode??settings.data.gstSettings.priceMode,placeOfSupply:settings.data.gstSettings.stateCode,...cartApi.cart.buyer?{buyer:cartApi.cart.buyer}:{}}:null;
   let gstError:unknown=null;let totals;let roundOff=0;
   try{
+    if(taxAdoptionError&&taxRequired)throw taxAdoptionError;
     if(taxRequired){if(taxSnapshot.error||!taxSnapshot.data||adoptedSnapshot.current!==taxSnapshot.data)throw taxSnapshot.error??Error('Refreshing product tax details.');assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:cartApi.cart.lines},shop!.id,new Date().toISOString());}
     if(gstContext?.settings.registration==='regular')for(const line of cartApi.cart.lines){if(line.gstRspSnapshot?.profiles.length&&!line.rsp){let active=false;try{cachedRspProductAt(line.gstRspSnapshot,shop!.id,line.productId,new Date().toISOString());active=true;}catch{/* An inactive review does not enable RSP. */}if(active)throw Error('Review package details below before charging this product.');}}
     if(cartApi.cart.lines.some(line=>line.rsp)&&settings.data?.gstRspBillingAvailable!==true)throw Error('RSP billing is unavailable for this shop.');
@@ -157,37 +162,24 @@ export function CheckoutScreen() {
     if (shop && userId && cartApi.cart.lines.length === 0 && !cartApi.pending) router.replace('/shop/sell');
   }, [restoringReceipt, cartApi.cart.lines.length, cartApi.pending, router, shop, userId]);
 
-  const cashPortion = mode === 'cash' ? total : mode === 'split' ? Number(split.cash || 0) : 0;
-  const upiPortion = mode === 'upi' ? total : mode === 'split' ? Number(split.upi || 0) : 0;
-  const creditPortion = mode === 'credit' ? total : mode === 'split' ? Number(split.credit || 0) : 0;
-  const cardPortion = mode === 'card' ? total : 0;
-  const tendered = mode === 'split' ? Number(split.tendered || 0) : Number(cashTendered || 0);
-  const remainder = roundPaise(total - roundPaise(cashPortion) - roundPaise(upiPortion) - roundPaise(creditPortion) - roundPaise(cardPortion));
-  const cashShort = cashPortion > 0 && !covers(tendered, cashPortion);
+  const payment=checkoutPayment(total,mode,cashTendered,split);
+  const {cashPortion,upiPortion,creditPortion,cardPortion,tendered,remainder,cashShort}=payment;
   const hasCustomer = !!(cartApi.cart.customerId || cartApi.cart.customerName?.trim());
   const udhaarLocked = creditPortion > 0 && !premium;
-  const creditBlocked = creditPortion > 0 && premium && !hasCustomer;
-  const creditReview=useCheckoutCredit(api.credit,shop?.id??'',userId??'',cartApi.cart.customerId??null,cartApi.cart.customerPhone??null,hasCustomer,creditPortion);
+  const creditBlocked = creditPortion > 0 && !hasCustomer;
+  const creditReview=useCheckoutCredit(api.credit,shop?.id??'',userId??'',cartApi.cart.customerId??null,cartApi.cart.customerPhone??null,hasCustomer&&!cartApi.pending&&premium,creditPortion);
   const [estimateReviewed,setEstimateReviewed]=useState(false);
-  const canCharge = (!commerceCheckout||collectionReviewed) && cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !gstError && !!settings.data && (!gstContext||settings.data.gstAvailable===true&&settings.data.gstProtocol===2) && !!mode && !udhaarLocked && Math.abs(remainder) < 0.01 && !cashShort && !creditBlocked && cartApi.cart.lines.length > 0;
-
-  const upiText = useMemo(() => {
-    const vpa = settings.data?.upiVpa;
-    if (!vpa) return '';
-    const params = new URLSearchParams({
-      pa: vpa,
-      pn: settings.data?.upiPayeeName || shop?.name || 'Shop',
-      am: String(upiPortion || total),
-      cu: 'INR',
-    });
-    return `upi://pay?${params.toString()}`;
-  }, [settings.data?.upiPayeeName, settings.data?.upiVpa, shop?.name, total, upiPortion]);
-
+  const amountUnavailable=!!gstError||!settings.data||settings.isError||!!gstContext&&(settings.data.gstAvailable!==true||settings.data.gstProtocol!==2);
+  const zeroRounded=!amountUnavailable&&total===0&&roundOff<0;
+  const upiReady=!!(settings.data?.upiVpa||settings.data?.upiQrImage);
+  const upiBlocked=upiPortion>0&&!upiReady&&upiRef.trim().length<4;
+  const canCharge = perms.canSell && !cartApi.pending && discountValid && payment.valid && (total>0||zeroRounded) && (!commerceCheckout||collectionReviewed) && cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !amountUnavailable && !!mode && (mode!=='card'||!!settings.data?.cardEnabled) && !udhaarLocked && remainder===0 && !cashShort && !creditBlocked && !upiBlocked && cartApi.cart.lines.length>0;
+  const upiText=checkoutUpiUri(settings.data?.upiVpa,settings.data?.upiPayeeName||shop?.name||'Shop',upiPortion,!amountUnavailable&&payment.valid);
   if (!shop || !userId) return <Spinner label={uiText("Loading checkout")} />;
 
   const remember = (next: TenderMode) => {
     setMode(next);
-    localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, next);
+    try {localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, next);} catch {/* Preferences are optional. */}
   };
 
   const buildBody = (soldAt: string, customerClientId: string | null, retained?:CreateSalePayload): Omit<CreateSalePayload, 'clientId'> => {
@@ -229,55 +221,43 @@ export function CheckoutScreen() {
 
   const chargeInsideLease = async (fresh: boolean) => {
     if(charging.current)return;
-    const retained=readPending(userId,shop.id);
-    if(retained?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)){charging.current=true;setBusy(true);setError(null);try{const result=await issueSale(api,shop.id,retained.payload);wentToBill.current=true;router.replace(`/shop/sales/${result.sale.id}?recorded=again`);cartApi.clearCharged(retained.clientId,cartApi.cart)}catch(e){setError(new Error(t('credit.error.'+String((e as any)?.code??'credit_failed').replace(/^credit_/,''),t('credit.error.failed','The saved bill still needs confirmation.'))))}finally{charging.current=false;setBusy(false)}return;}
-    if(!canCharge)return;
-    if(creditPortion>0&&!premiumAt(entitlement)){setError(new Error(t('checkout.customer_list_premium','Saved customers and udhaar balances are part of Premium.')));return;}
-    const phone = cartApi.cart.customerPhone ? normalizeIndianMobile(cartApi.cart.customerPhone) : null;
-    if (phone === 'invalid') {
-      setError(new Error('Enter a valid Indian mobile number.'));
+    if(!perms.canSell)return;
+    let existing=readPending(userId,shop.id);
+    if(existing && await releaseRejectedMixedCheckout(shop.id,existing)) {
+      setError(new Error(t('checkoutweb.review_again','Review this bill again before confirming.')));
       return;
     }
-    let existing = fresh ? null : readPending(userId, shop.id);
-    if(existing){
-      charging.current=true;setBusy(true);
-      try{if(await releaseRejectedMixedCheckout(shop.id,existing))existing=null;}
-      catch(caught){setError(caught);return;}
-      finally{charging.current=false;setBusy(false);}
+    let payload:CreateSalePayload;
+    let submittedCart=cartApi.cart;
+    if(existing) {
+      // Retry the immutable request, including original payments, tax and customer.
+      // Current form values and refreshed settings must never rebuild a submitted bill.
+      payload=existing.payload;
+    } else {
+      if(!canCharge)return;
+      if(creditPortion>0&&!premiumAt(entitlement)){setError(new Error(t('checkout.customer_list_premium','Saved customers and udhaar balances are part of Premium.')));return;}
+      const phone=cartApi.cart.customerPhone?normalizeIndianMobile(cartApi.cart.customerPhone):null;
+      if(phone==='invalid'){setError(new Error(uiText('Enter a valid Indian mobile number.')));return;}
+      let customerClientId=cartApi.cart.customerClientId;
+      if(!cartApi.cart.customerId&&cartApi.cart.customerName?.trim()&&!customerClientId){customerClientId=crypto.randomUUID();cartApi.patch({customerClientId});submittedCart={...cartApi.cart,customerClientId};}
+      assertCartMrp(cartApi.cart,computeTotals(cartApi.cart,gstContext),gstContext);
+      const body=buildBody(new Date().toISOString(),customerClientId);
+      payload={...body,clientId:cartApi.cart.estimateSource?.saleClientId??crypto.randomUUID()};
     }
-    let customerClientId = cartApi.cart.customerClientId;
-    if (!cartApi.cart.customerId && cartApi.cart.customerName?.trim() && !customerClientId) {
-      customerClientId = crypto.randomUUID();
-      cartApi.patch({ customerClientId });
-    }
-    const soldAt = existing?.payload.soldAt ?? new Date().toISOString();
-    if(!existing)assertCartMrp(cartApi.cart,computeTotals(cartApi.cart,gstContext),gstContext);
-    const body = buildBody(soldAt, customerClientId, existing?.payload);
-    const fingerprint = saleFingerprint(body);
-    if (existing && existing.fingerprint !== fingerprint) {
-      setError(new Error('Another bill is being charged. Wait a moment, then retry that bill.'));
-      return;
-    }
-    const clientId = existing?.fingerprint === fingerprint ? existing.clientId : (cartApi.cart.estimateSource?.saleClientId??crypto.randomUUID());
-    const payload: CreateSalePayload = { ...body, clientId };
+    const clientId=payload.clientId;
     charging.current = true;
     setBusy(true);
     setError(null);
     try {
     if(payload.estimateSource&&!existing)assertEstimateCart(await api.estimates.get(shop.id,payload.estimateSource.estimateId),cartApi.cart);
-    writePending(userId, shop.id, {
-      clientId,
-      payload,
-      fingerprint,
-      startedAt: existing?.fingerprint === fingerprint ? existing.startedAt : Date.now(),
-    });
+    if(!existing)writePending(userId, shop.id, {clientId,payload,fingerprint:saleFingerprint((({clientId:_id,...body})=>body)(payload)),startedAt:Date.now()});
 
       const result = await issueSale(api,shop.id,payload);
       try {if (mode) localStorage.setItem(`samaan-last-method:${userId}:${shop.id}`, mode);} catch {/* A preference failure must not undo a verified bill. */}
       wentToBill.current = true;
       const recorded = result.deduplicated ? 'again' : 'new';
       router.replace(`/shop/sales/${result.sale.id}?recorded=${recorded}`);
-      cartApi.clearCharged(clientId,cartApi.cart);
+      cartApi.clearCharged(clientId,submittedCart);
     } catch (caught) {
       const offline = permitsOfflineShopFallback(caught);
       if (offline) {
@@ -288,7 +268,7 @@ export function CheckoutScreen() {
             await verifyLocalIssuedReceipt(row,scope);assertScope(scope);
             wentToBill.current=true;
             setLocalReceiptId(clientId);
-            cartApi.clearCharged(clientId,cartApi.cart);
+            cartApi.clearCharged(clientId,submittedCart);
             void queryClient.invalidateQueries({queryKey:['catalog',shop.id]});
             return;
           }
@@ -324,226 +304,115 @@ export function CheckoutScreen() {
   if(restoringReceipt)return <Spinner label={uiText('Loading checkout')}/>;
   const modes: TenderMode[] = cartApi.cart.estimateSource?.commerceOrderId?['cash','upi']:['cash', 'upi', ...(settings.data?.cardEnabled ? (['card'] as TenderMode[]) : []), 'credit', 'split'];
 
+  const tr=(key:string,fallback:string,values?:Record<string,string|number>)=>t('checkoutweb.'+key,fallback,values);
+  const locked=busy||!!cartApi.pending||!perms.canSell;
+  const reviewedLines=cartApi.pending?cartApi.pending.payload.items.map((item,index)=>({...item,key:String(index),name:item.name??t('bill.item','Item'),unit:item.unit??'',price:item.price??0,discount:item.discount??0,packSize:null,packLabel:null})):cartApi.cart.lines;
+  const displayTotal=cartApi.pending?cartApi.pending.payload.payments.reduce((sum,p)=>sum+p.amount,0):total;
+  const amountLabel=amountUnavailable&&!cartApi.pending?t('checkout.amount_unavailable','Unavailable'):formatINR(displayTotal);
+  const finalLabel=zeroRounded?t('checkout.no_payment_due','No payment due'):mode==='credit'?tr('record_credit','Record udhaar'):tr('confirm_payment','Confirm payment');
+  const blockedReason=amountUnavailable?tr('review_setup','Review billing details to see the amount due.'):
+    !discountValid||!payment.valid?t('checkout.valid_money','Enter a valid amount with up to two decimal places.'):
+    total<=0&&!zeroRounded?t('checkout.zero_total','Set a price before completing the bill.'):
+    udhaarLocked?tr('premium_credit','Udhaar needs Premium access.'):
+    creditBlocked?t('checkout.credit_needs_customer','Udhaar needs a customer on the bill.'):
+    upiBlocked?tr('upi_required','Add a UPI reference of at least 4 characters, or set up your shop’s QR.'):
+    remainder!==0?t(remainder>0?'checkout.split_remaining':'checkout.split_over','{{amount}}',{amount:formatINR(Math.abs(remainder))}):
+    cashShort?t('checkout.cash_short','Cash received must cover the amount due. Use Split or Udhaar for an unpaid balance.'):
+    creditPortion>0&&!creditReview.valid?tr('review_credit','Review the customer’s credit terms below.'):
+    cartApi.cart.estimateSource&&!estimateReviewed?t('estimates.checkout_review','Review the estimate before billing.'):
+    commerceCheckout&&!collectionReviewed?t('commerce.payment_help','Confirm collection before completing the bill.'):
+    cartApi.draft.state!=='saved'?t('counter.draft_'+cartApi.draft.state,''):'';
+  const methodIcons={cash:'wallet',upi:'qr',card:'card',credit:'user',split:'clipboard'} as const;
+  const applyDiscount=(value:string)=>{setDiscountInput(value);const amount=value.trim()?checkoutMoney(value):0;if(amount!==null)cartApi.patch({billDiscount:amount});};
+  const refreshBilling=()=>{void settings.refetch();if(taxRequired)void taxSnapshot.refetch();if(roundingEnabled)void rounding.refetch();if(missingMrp.length)void mrpSnapshot.refetch();};
   return (
-    <div className="shop-page">
-      <PageHeader
-        kicker="Counter"
-        title={t('checkout.title', 'Checkout')}
-        actions={<Button href="/shop/sell" tone="quiet" size="sm">{uiText("← Back to counter")}</Button>}
-      />
-      <ProductPhotos rows={(cartApi.pending?.payload.items??cartApi.cart.lines).map(item=>({productId:item.productId,name:item.name??t("bill.item","Item"),quantity:item.quantity,unit:item.unit??""}))} historical={false} title={t("pos.cart_title","Cart ({{n}})",{n:cartApi.cart.lines.length})}/>
-
-      <div className="pos">
-        <div className="pos-catalog">
-          <Notice error={gstError ?? error} />
-          {confirmOld ? (
-            <Card>
-              <p>{uiText("This bill was started too long ago. Charging it now creates a new bill only after you confirm.")}</p>
-              <div className="mt-3">
-                <Button href="/shop/settings/gst/recovery">{uiText("Review saved bill")}</Button>
+    <div className="shop-page checkout-workspace">
+      <header className="checkout-heading">
+        <div><Button href="/shop/sell" tone="quiet" size="sm">← {tr('back','Back to bill')}</Button><h1>{t('checkout.title','Checkout')}</h1></div>
+        <p>{tr('intro','Check the amount. Choose payment. Finish the bill.')}</p>
+      </header>
+      <Notice error={error}/>
+      {cartApi.pending?<div className="checkout-pending" role="status"><Glyph name="shield"/><div><strong>{tr('pending_title','This bill is waiting for confirmation')}</strong><p>{tr('pending_help','Its items and payment are saved. Check the same bill again before starting another.')}</p></div><Button href="/shop/settings/gst/recovery" tone="ghost">{t('counter.recovery','Saved requests & recovery')}</Button></div>:null}
+      {confirmOld?<Card><p>{uiText('This bill was started too long ago. Charging it now creates a new bill only after you confirm.')}</p><Button href="/shop/settings/gst/recovery">{uiText('Review saved bill')}</Button></Card>:null}
+      <div className="checkout-sheet">
+        <section className="checkout-amount" aria-label={t('checkout.amount_due','Amount due')}>
+          <div><p>{t('checkout.amount_due','Amount due')}</p><strong className="num" data-checkout-total>{amountLabel}</strong></div>
+          <div className="checkout-amount-meta"><Glyph name="receipt"/><span>{tr('item_count','Items on this bill · {{n}}',{n:reviewedLines.length})}</span>{gstContext&&!amountUnavailable?<small>{text(gstContext.settings.registration==='composition'?'Bill of supply':gstContext.priceMode==='inclusive'?'GST included':'GST added')}</small>:null}</div>
+        </section>
+        <details className="checkout-review">
+          <summary>{tr('review_bill','Review items & totals')}<span aria-hidden="true">＋</span></summary>
+          <div className="checkout-review-body">
+            {reviewedLines.map(line=><div className="checkout-review-line" key={line.key}><span><strong>{line.name}</strong><small>{formatQty(line.quantity,line.unit,{packSize:line.packSize,packLabel:line.packLabel})} × {formatINR(line.price)}</small></span><span className="num">{formatINR(Math.max(0,roundPaise(line.price*line.quantity-line.discount)))}</span></div>)}
+            <ProductPhotos rows={(cartApi.pending?.payload.items??cartApi.cart.lines).map(item=>({productId:item.productId,name:item.name??t('bill.item','Item'),quantity:item.quantity,unit:item.unit??''}))} historical={false}/>
+            {cartApi.pending?<div className="checkout-totals">{cartApi.pending.payload.payments.map((part,index)=><p key={index}><span>{t('pos.method.'+part.method,part.method==='credit'?'Udhaar':part.method)}</span><span>{formatINR(part.amount)}</span></p>)}</div>:null}
+            {!amountUnavailable&&!cartApi.pending?<div className="checkout-totals"><p><span>{t('bill.subtotal','Subtotal')}</span><span>{formatINR(totals.subtotal)}</span></p>{totals.discount>0?<p><span>{t('bill.discount','Discount')}</span><span>−{formatINR(totals.discount)}</span></p>:null}{totals.tax||totals.mixed?<p><span>{text('GST')}</span><span>{formatINR(totals.tax?.tax??Number(totals.mixed?.tax??0))}</span></p>:null}{roundingEnabled?<p><span>{text('Round off')}</span><span>{formatINR(roundOff)}</span></p>:null}<p><strong>{t('bill.total','Total')}</strong><strong>{amountLabel}</strong></p></div>:null}
+          </div>
+        </details>
+        {!cartApi.pending?<fieldset className="checkout-form" disabled={locked}>
+          <legend className="sr-only">{t('checkout.payment_method','Payment method')}</legend>
+          {amountUnavailable&&!cartApi.pending?<div className="checkout-setup" role="alert"><Notice error={gstError??settings.error}/><p>{tr('review_setup','Review billing details to see the amount due.')}</p><Button tone="ghost" onClick={refreshBilling}>{tr('refresh_billing','Refresh billing details')}</Button></div>:null}
+          {!amountUnavailable&&!zeroRounded&&!cartApi.pending?<>
+            <section className="checkout-payment">
+              <h2><span className="checkout-step">01</span>{tr('how_paying','How is the customer paying?')}</h2>
+              <div className="checkout-methods" role="group" aria-label={t('checkout.payment_method','Payment method')}>
+                {modes.map(item=><button key={item} type="button" aria-pressed={mode===item} onClick={()=>remember(item)} className={cx(mode===item&&'is-active')}><Glyph name={methodIcons[item]}/><span>{t('pos.method.'+item,MODE_LABELS[item])}</span><i aria-hidden="true">{mode===item?'✓':''}</i></button>)}
               </div>
-            </Card>
-          ) : null}
-
-          <RspCheckoutControls available={settings.data?.gstRspBillingAvailable===true} regular={gstContext?.settings.registration==='regular'}/>
-          <section>
-            <SectionHead title={t('checkout.payment_method', 'Payment')} />
-            <div className="shop-seg is-wrap" role="tablist" aria-label={t('checkout.payment_method', 'Payment method')}>
-              {modes.map((item) => (
-                <button key={item} type="button" role="tab" aria-selected={mode === item} className={cx(mode === item && 'is-active')} onClick={() => remember(item)}>
-                  {t(`pos.method.${item}`, MODE_LABELS[item])}
-                </button>
-              ))}
-            </div>
+              {mode==='split'?<div className="checkout-split"><div className="form-grid is-3">{(['cash','upi','credit'] as const).map(part=><Field key={part} label={t('pos.method.'+part,MODE_LABELS[part])}><div className="checkout-rest"><input className={inputClass} aria-label={t('pos.method.'+part,MODE_LABELS[part])} inputMode="decimal" placeholder="0.00" value={split[part]} onChange={e=>setSplit(current=>({...current,[part]:e.target.value}))}/><button type="button" disabled={!payment.valid||remainder<=0} onClick={()=>setSplit(current=>({...current,[part]:String(roundPaise((checkoutMoney(current[part])??0)+remainder))}))}>{t('checkout.rest','Rest')}</button></div></Field>)}</div><p role="status" className={cx('shop-hint',payment.valid&&remainder===0?'text-ok':'text-warn')}>{!payment.valid?t('checkout.valid_money','Enter a valid amount with up to two decimal places.'):remainder===0?t('checkout.split_ok','Fully assigned'):t(remainder>0?'checkout.split_remaining':'checkout.split_over','{{amount}}',{amount:formatINR(Math.abs(remainder))})}</p></div>:null}
+              {(mode==='cash'||mode==='split'&&cashPortion>0)?<div className="checkout-tender">
+                <div><Field label={t('checkout.cash_received','Cash received')} hint={tr('exact_hint','Leave blank for the exact amount.')}><div className="shop-input-wrap"><span className="shop-input-prefix">₹</span><input className="shop-field is-lg num" inputMode="decimal" placeholder={cashPortion.toFixed(2)} value={currentTendered} onChange={e=>setTendered(e.target.value)}/></div></Field><div className="tender-chips"><Button tone="ghost" size="sm" onClick={()=>setTendered(cashPortion.toFixed(2))}>{t('checkout.exact','Exact')}</Button>{CHIPS.filter(chip=>chip>=cashPortion).slice(0,4).map(chip=><Button key={chip} tone="ghost" size="sm" onClick={()=>setTendered(String(chip))}>{formatINR(chip)}</Button>)}</div></div>
+                <div className={cx('checkout-change',cashShort&&'is-short')} aria-live="polite"><span>{cashShort?tr('short','Still to receive'):t('checkout.change','Change to return')}</span><strong className="num">{payment.valid?formatINR(cashShort?roundPaise(cashPortion-tendered):payment.change):'—'}</strong><small>{tr('cash_due','Cash due: {{amount}}',{amount:formatINR(cashPortion)})}</small></div>
+              </div>:null}
+              {upiPortion>0&&payment.valid?<div className="checkout-upi">
+                {upiText?<UpiQr text={upiText} label={settings.data!.upiVpa!}/>:settings.data?.upiQrImage?<img src={settings.data.upiQrImage} alt={tr('qr_alt','Shop payment QR code')} width={180} height={180}/>:<div className="checkout-qr-empty"><Glyph name="qr"/><p>{tr('no_qr','No shop QR is set up.')}</p>{perms.canManageShop?<Link href="/shop/settings/payments">{t('checkout.setup_upi','Set up UPI')}</Link>:null}</div>}
+                <div><h3>{tr('upi_amount','Receive {{amount}} by UPI',{amount:formatINR(upiPortion)})}</h3><p className="shop-hint">{tr('upi_check','Check the payment in your UPI app before confirming this bill.')}</p>{!settings.data?.upiVpa&&settings.data?.upiQrImage?<p className="shop-hint">{tr('static_qr','Ask the customer to enter this amount when scanning.')}</p>:null}<Field label={t('checkout.upi_ref','UPI reference')} hint={upiReady?t('checkout.optional','Optional'):tr('upi_required','Add a UPI reference of at least 4 characters, or set up your shop’s QR.')}><input className={inputClass} value={upiRef} onChange={e=>setUpiRef(e.target.value)}/></Field></div>
+              </div>:null}
+              {mode==='card'?<div className="checkout-method-note"><Glyph name="card"/><p>{tr('card_help','Take {{amount}} on your card terminal, then confirm it here.',{amount:amountLabel})}</p></div>:null}
+              {mode==='credit'?<div className="checkout-method-note"><Glyph name="user"/><p>{tr('credit_help','This amount goes on the customer’s udhaar. No payment is collected now.')}</p></div>:null}
+            </section>
+          </>:null}
+          <section className="checkout-customer">
+            <div className="checkout-section-head"><h2><span className="checkout-step">02</span>{t('checkout.customer_title','Customer')}</h2><span>{creditPortion>0?tr('credit_required','Required for udhaar'):t('checkout.optional','Optional')}</span></div>
+            <CustomerAttach gst={!!gstContext} presentation="dialog" creditHistory buyerState={gstContext?.settings.stateCode} buyerDetailsRequired={!!gstContext&&(!!cartApi.cart.buyer?.gstin||total>=50000||!!gstError)}/>
+            {hasCustomer?<CheckoutCustomerHistory customerId={cartApi.cart.customerId}/>:null}
+            {creditBlocked?<p className="shop-hint text-warn">{t('checkout.credit_needs_customer','Udhaar needs a customer on the bill.')}</p>:null}
+            {udhaarLocked?<PremiumLock feature="udhaar"/>:<CheckoutCreditView w={creditReview} ui={cashWebUi} t={(k,v)=>t(k,k,v)}/>}
           </section>
-
+          <details className="checkout-adjustments" open={!discountValid||undefined}><summary>{tr('adjustments','Discount & bill note')}<span>{cartApi.cart.billDiscount?`−${formatINR(cartApi.cart.billDiscount)}`:'＋'}</span></summary><div className="form-grid is-2"><Field label={t('checkout.bill_discount','Bill discount')}><div className="shop-input-wrap"><span className="shop-input-prefix">₹</span><input className={inputClass} inputMode="decimal" value={discountInput} onChange={e=>applyDiscount(e.target.value)}/></div></Field><Field label={tr('note','Note on the bill')}><input className={inputClass} value={cartApi.cart.note} onChange={e=>cartApi.patch({note:e.target.value})}/></Field></div>{!discountValid?<p role="alert">{t('checkout.valid_money','Enter a valid amount with up to two decimal places.')}</p>:null}</details>
+          {gstContext?<details className="checkout-adjustments"><summary>{t('gst.tax_details','Tax details')}<span>{gstContext.settings.registration==='composition'?text('Bill of supply'):text(gstContext.priceMode==='inclusive'?'GST included':'GST added')}</span></summary><div className="checkout-tax-body">{gstContext.settings.registration==='regular'?<Field label={t('checkout.change_price_mode','Change price mode')} hint={t('checkout.price_mode_help',"Use the shop's price basis unless the prices entered for this bill use a different basis. Included: ₹100 stays ₹100. Added: ₹100 at 5% becomes ₹105.")}><select className={inputClass} value={gstContext.priceMode} onChange={e=>cartApi.patch({gstPriceMode:e.target.value as 'inclusive'|'exclusive'})}><option value="inclusive">{text('GST included')}</option><option value="exclusive">{text('GST added')}</option></select></Field>:<p>{t('gst.product_price_no_collection','No GST is collected on this bill.')}</p>}</div></details>:null}
+          <RspCheckoutControls available={settings.data?.gstRspBillingAvailable===true} regular={gstContext?.settings.registration==='regular'}/>
+          {cartApi.cart.lines.some(line=>line.rsp)&&cartApi.cart.billDiscount>0?<Card><Field label={text('Discount review reference')}><input className={inputClass} value={cartApi.cart.mixedDiscountReview?.evidenceReference??''} onChange={e=>cartApi.patch({mixedDiscountReview:e.target.value.trim()?{policy:'commercial_amount_proportional_v1',reviewed:true,evidenceReference:e.target.value}:undefined})}/></Field><p className="shop-hint">{text('The bill discount is shared between products in proportion to their selling value. Confirm the review reference before charging.')}</p></Card>:null}
           {cartApi.cart.estimateSource?<Card><h2>{t('estimates.origin','',{number:cartApi.cart.estimateSource.number})}</h2><p>{t('estimates.checkout_help','')}</p><label className="opening-check"><input type="checkbox" checked={estimateReviewed} onChange={e=>setEstimateReviewed(e.target.checked)}/>{t('estimates.checkout_review','')}</label><Button tone="ghost" href={'/shop/estimates?id='+cartApi.cart.estimateSource.estimateId}>{t('estimates.bill_source','')}</Button></Card>:null}
-          {commerceCheckout?<Card><label className="opening-check"><input type="checkbox" checked={collectionReviewed} onChange={e=>setCollectionReviewed(e.target.checked)}/>{t('commerce.confirm_collection','',{amount:total.toFixed(2)})}</label><p className="text-sm text-muted">{t('commerce.payment_help','')}</p></Card>:null}
-          <CounterStatus cart={cartApi}/>
-          {offlineSaved ? (
-            <Card>
-              <p>{uiText("Checkout saved on this browser. Server confirmation is pending.")}</p>
-              <div className="mt-3">
-                <Button onClick={() => void handleCharge(false)} disabled={busy}>{busy ? uiText('Sending…') : uiText('Retry saved checkout')}</Button>
-              </div>
-            </Card>
-          ) : null}
-
-          <CheckoutCreditView w={creditReview} ui={cashWebUi} t={(k,v)=>t(k,k,v)}/>
-          {cartApi.pending?.payload.payments.some(p=>p.method==='credit'&&p.amount>0)?<Button tone="ghost" disabled={busy} onClick={()=>void handleCharge(false)}>{t('credit.retry','Check / retry saved action')}</Button>:null}
-          {mode === 'credit' ? (
-            <Card className="grid gap-3">
-              <h3 className="shop-section-title">{t('pos.method.credit', 'Udhaar')}</h3>
-              {udhaarLocked ? <PremiumLock feature="udhaar" /> : (
-                <p className="party-meta">{hasCustomer ? t('checkout.customer_title', 'Customer') + ': ' + cartApi.cart.customerName : uiText('Add a customer. Udhaar needs a name on the bill.')}</p>
-              )}
-            </Card>
-          ) : null}
-
-          {mode === 'card' ? (
-            <Card>
-              <h3 className="shop-section-title">{t('pos.method.card', 'Card')}</h3>
-              <p className="party-meta">{uiText("Record")} {formatINR(total)} {uiText("as paid by card. The terminal is outside this page.")}</p>
-            </Card>
-          ) : null}
-
-          {mode === 'split' ? (
-            <Card className="grid gap-4">
-              <div className="form-grid is-3">
-                <Field label={t('pos.method.cash', 'Cash')}>
-                  <input className={inputClass} inputMode="decimal" value={split.cash} onChange={(event) => setSplit((current) => ({ ...current, cash: event.target.value }))} />
-                </Field>
-                <Field label={t('pos.method.upi', 'UPI')}>
-                  <input className={inputClass} inputMode="decimal" value={split.upi} onChange={(event) => setSplit((current) => ({ ...current, upi: event.target.value }))} />
-                </Field>
-                <Field label={t('pos.method.credit', 'Udhaar')}>
-                  <input className={inputClass} inputMode="decimal" value={split.credit} onChange={(event) => setSplit((current) => ({ ...current, credit: event.target.value }))} />
-                </Field>
-              </div>
-              <p className={cx('text-sm num', Math.abs(remainder) < 0.01 ? 'text-ok' : 'text-warn')}>
-                {Math.abs(remainder) < 0.01 ? 'Fully assigned.' : `Left to assign ${formatINR(remainder)}`}
-              </p>
-            </Card>
-          ) : null}
-
-          {mode === 'cash' || mode === 'split' ? (
-            <Card className="grid gap-4">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="shop-section-title">{t('pos.method.cash', 'Cash')}</h3>
-                <span className="num text-sm text-muted">{uiText("Due")} {formatINR(cashPortion)}</span>
-              </div>
-              <div className="tender-chips">
-                <Button tone="ghost" onClick={() => setTendered(String(cashPortion))}>{t('checkout.exact', 'Exact')}</Button>
-                {CHIPS.map((chip) => (
-                  <Button key={chip} tone="ghost" onClick={() => setTendered(String(roundPaise(Number(currentTendered || 0) + chip)))}>+{chip}</Button>
-                ))}
-              </div>
-              <div className="form-grid is-2 items-end">
-                <Field label={t('checkout.cash_received', 'Cash received')}>
-                  <input className="shop-field is-lg num" inputMode="decimal" value={currentTendered} onChange={(event) => setTendered(event.target.value)} autoFocus />
-                </Field>
-                <div className={cx('tender-change', cashShort && 'is-short')}>
-                  <span className="text-sm text-muted">{cashShort ? 'Still short' : 'Change to return'}</span>
-                  <strong className="num">{cashShort ? formatINR(roundPaise(cashPortion - tendered)) : formatINR(roundPaise(Math.max(0, tendered - cashPortion)))}</strong>
-                </div>
-              </div>
-            </Card>
-          ) : null}
-
-          {mode === 'upi' || mode === 'split' ? (
-            <Card className="grid gap-4">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="shop-section-title">{t('pos.method.upi', 'UPI')}</h3>
-                <span className="num text-sm text-muted">{uiText("Due")} {formatINR(upiPortion)}</span>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-start">
-                {settings.data?.upiVpa ? (
-                  <UpiQr text={upiText} label={settings.data.upiVpa} />
-                ) : settings.data?.upiQrImage ? (
-                  <img src={settings.data.upiQrImage} alt="Uploaded UPI QR" className="w-52 rounded-lg bg-white p-2" />
-                ) : (
-                  <p className="text-sm text-muted"> {uiText("No UPI QR is on file. The sale can still be recorded as UPI.")} {perms.canManageShop ? <Link className="ml-2 text-saffron" href="/shop/settings/payments">{t('checkout.setup_upi', 'Add UPI')}</Link> : null}
-                  </p>
-                )}
-                <Field label={t('checkout.upi_ref', 'UPI reference')} hint={`${t('checkout.optional', 'Optional')}. The last digits of the transaction id.`}>
-                  <input className={inputClass} value={upiRef} onChange={(event) => setUpiRef(event.target.value)} />
-                </Field>
-              </div>
-            </Card>
-          ) : null}
-
-          <Card className="grid gap-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className="shop-section-title">{t('checkout.customer_title', 'Customer')}</h3>
-              <span className="text-sm text-muted">{creditPortion > 0 ? t('checkout.upi_ref_required', 'Required for udhaar') : t('checkout.optional', 'Optional')}</span>
-            </div>
-            <CustomerAttach gst />
-            {creditBlocked ? <p className="text-sm text-danger">{t('checkout.credit_needs_customer', 'Udhaar needs a customer on the bill.')}</p> : null}
-            {udhaarLocked && mode === 'split' ? <PremiumLock feature="udhaar" /> : null}
-          </Card>
-
-          {cartApi.cart.lines.some(line=>line.rsp)&&cartApi.cart.billDiscount>0?<Card className="grid gap-3"><Field label={text('Discount review reference')}><input className={inputClass} value={cartApi.cart.mixedDiscountReview?.evidenceReference??''} onChange={e=>cartApi.patch({mixedDiscountReview:e.target.value.trim()?{policy:'commercial_amount_proportional_v1',reviewed:true,evidenceReference:e.target.value}:undefined})}/></Field><p className="text-sm text-muted">{text('The bill discount is shared between products in proportion to their selling value. Confirm the review reference before charging.')}</p></Card>:null}
-          <Card className="form-grid is-2">
-            <Field label={t('checkout.bill_discount', 'Bill discount')} hint={t('bill.discount', 'Applied to the whole bill.')}>
-              <div className="shop-input-wrap">
-                <span className="shop-input-prefix">₹</span>
-                <input className={cx(inputClass, 'num')} inputMode="decimal" value={cartApi.cart.billDiscount || ''} onChange={(event) => cartApi.patch({ billDiscount: Number(event.target.value || 0) })} />
-              </div>
-            </Field>
-            <Field label={t('checkout.note_placeholder', 'Note')}>
-              <input className={inputClass} value={cartApi.cart.note} onChange={(event) => cartApi.patch({ note: event.target.value })} placeholder={t('checkout.note_placeholder', 'Printed on the bill')} />
-            </Field>
-          </Card>
-        </div>
-
-        <aside className="bill shop-surface" aria-label={uiText("Bill summary")}>
-          <div className="bill-head">
-            <h2>{t('bill.bill', 'Bill')}</h2>
-            <span className="text-sm text-muted">{cartApi.cart.lines.length} {cartApi.cart.lines.length === 1 ? 'line' : 'lines'}</span>
-          </div>
-          <div className="bill-lines">
-            {cartApi.cart.lines.map((line) => (
-              <div key={line.key} className="bill-line">
-                <p className="bill-line-name">{line.name}</p>
-                <p className="bill-line-total num">{formatINR(line.price * line.quantity)}</p>
-                <p className="text-sm text-muted num" style={{ gridColumn: '1 / -1' }}>
-                  {formatQty(line.quantity, line.unit, { packSize: line.packSize, packLabel: line.packLabel })} × {formatINR(line.price)}
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="bill-foot">
-            <div className="bill-total-row">
-              <span>{t('bill.subtotal', 'Subtotal')}</span>
-              <span className="num">{formatINR(totals.subtotal)}</span>
-            </div>
-            {totals.tax?<div className="bill-total-row"><span>{text('GST')} · {text(gstContext?.priceMode==='inclusive'?'GST included':'GST added')}</span><span>{formatINR(totals.tax.tax)}</span></div>:null}
-            {totals.mixed?<div className="bill-total-row"><span>{text('GST')}</span><span>{formatINR(Number(totals.mixed.tax))}</span></div>:null}
-            {roundingEnabled&&!gstError?<div className="bill-total-row"><span>{text('Round off')}</span><span>{formatINR(roundOff)}</span></div>:null}
-            {totals.discount > 0 ? (
-              <div className="bill-total-row">
-                <span>{t('bill.discount', 'Discount')}</span>
-                <span className="num">−{formatINR(totals.discount)}</span>
-              </div>
-            ) : null}
-            {mode ? (
-              <div className="bill-total-row">
-                <span>{uiText("Paying by")}</span>
-                <span>{MODE_LABELS[mode]}</span>
-              </div>
-            ) : null}
-            <div className="bill-total-row is-grand">
-              <span>{t('bill.total', 'Total')}</span>
-              <strong className="num">{formatINR(total)}</strong>
-            </div>
-            <div className="bill-charge">
-              <Button size="lg" block disabled={!canCharge || busy} onClick={() => void handleCharge(false)}>
-                {busy ? 'Charging…' : `Charge ${formatINR(total)}`}
-              </Button>
-            </div>
-            <p className="text-center text-xs text-faint">{uiText("One bill per charge. A retry after a network drop reuses the same bill.")}</p>
-          </div>
-        </aside>
+          {commerceCheckout&&!amountUnavailable?<Card><label className="opening-check"><input type="checkbox" checked={collectionReviewed} onChange={e=>setCollectionReviewed(e.target.checked)}/>{t('commerce.confirm_collection','',{amount:total.toFixed(2)})}</label><p className="shop-hint">{t('commerce.payment_help','')}</p></Card>:null}
+          {!cartApi.pending?<CheckoutSuggestions cartApi={cartApi}/>:null}
+        </fieldset>:null}
+        <footer className="checkout-confirm">
+          <div><span>{cartApi.pending?tr('saved_bill','Saved bill'):t('checkout.amount_due','Amount due')}</span><strong className="num">{amountLabel}</strong></div>
+          <div><Button size="lg" block disabled={busy||!perms.canSell||(!cartApi.pending&&!canCharge)} onClick={()=>void handleCharge(false)}>{busy?tr('confirming','Confirming…'):cartApi.pending?tr('retry','Check saved bill'):finalLabel}<span aria-hidden="true"> →</span></Button><p role="status">{!cartApi.pending&&blockedReason?blockedReason:mode==='credit'&&!cartApi.pending?tr('credit_help','This amount goes on the customer’s udhaar. No payment is collected now.'):zeroRounded?t('checkout.no_payment_due','No payment due'):cartApi.pending?tr('pending_title','This bill is waiting for confirmation'):tr('confirm_help','Confirm only after you have checked the payment.')}</p></div>
+        </footer>
       </div>
+      <details className="checkout-recovery" open={cartApi.draft.state==='error'||!!cartApi.pending||undefined}><summary>{t('counter.recovery','Saved requests & recovery')}</summary><CounterStatus cart={cartApi}/></details>
     </div>
   );
+
 }
 
 function UpiQr({ text, label }: { text: string; label: string }) {
   const uiText = useUiText();
-  const [src, setSrc] = useState<string | null>(null);
+  const {t}=useShop();
+  const [qrImage,setQrImage]=useState<{text:string;src:string}|null>(null);
+  const src=qrImage?.text===text?qrImage.src:null;
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false;setQrImage(null);
     void import('qrcode').then((qr) => qr.toDataURL(text, { margin: 1, width: 200 })).then((url) => {
-      if (!cancelled) setSrc(url);
-    });
+      if (!cancelled) setQrImage({text,src:url});
+    }).catch(()=>{if(!cancelled)setQrImage({text,src:''});});
     return () => {
       cancelled = true;
     };
   }, [text]);
   return (
     <div>
-      {src ? <img src={src} alt={`UPI QR for ${label}`} width={200} height={200} className="rounded-lg bg-white p-2" /> : <p className="text-muted">{uiText("Preparing QR…")}</p>}
+      {src ? <img src={src} alt={uiText("UPI QR")} width={200} height={200} className="rounded-lg bg-white p-2" /> : <p className="text-muted">{src===null?uiText("Preparing QR…"):t('common.retry','Retry')}</p>}
       <p className="mt-2 text-center text-sm text-muted">{label}</p>
     </div>
   );

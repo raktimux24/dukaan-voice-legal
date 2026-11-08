@@ -1,25 +1,421 @@
-'use client';
-import {saleCollectionStatus,saleCollectionLabel} from '../../../lib/shop/sale-collection';
-import {useInfiniteQuery,useQueryClient} from '@tanstack/react-query';
-import Link from 'next/link';
-import {useState} from 'react';
-import {downloadText} from '../../../lib/shop/csv';
-import {formatINR} from '../../../lib/shop/money';
-import {useFiscalDate} from '../gst-ui';
-import {useShop} from '../context';
-import {CounterNotice,CounterFiltersView,useCounterFilters} from '../counter-filters';
-import {Button,Card,NoAccess,Notice,PageHeader,Pill,PremiumLock,Spinner,isPremiumError} from '../ui';
-export function SalesScreen(){
- const qc=useQueryClient();
- const {api,shop,userId,perms,premium,prefs,t}=useShop(),when=useFiscalDate(),{filters,params,href,change}=useCounterFilters('sales'),[error,setError]=useState<unknown>(null),tr=(k:string,v?:Record<string,string|number>)=>t('counter.'+k,'',v);
- const awaitingRange=filters.period==='custom'&&(!filters.from||!filters.to);
- const sales=useInfiniteQuery({queryKey:['sales',shop?.id,userId,params],enabled:!!shop&&perms.canSell&&(filters.period!=='custom'||!!filters.from&&!!filters.to),initialPageParam:null as string|null,queryFn:({pageParam})=>api.getSales(shop!.id,{...params,limit:50,cursor:pageParam??undefined}),getNextPageParam:last=>last.nextCursor??undefined});
- if(!shop)return <Spinner/>;if(!perms.canSell)return <Card><h2>{tr('access_denied')}</h2><p>{tr('sales_no_access')}</p></Card>;
- const rows=sales.data?.pages.flatMap(p=>p.sales)??[],first=sales.data?.pages[0];
- return <div className="shop-page retail-workspace"><PageHeader kicker={tr('counter')} title={t('sales.title','Sales')} description={first?tr('results',{n:first.total}):tr('discovery_help')} actions={<><Button href="/shop/estimates" tone="ghost">{t('estimates.mobile.title_short','Estimates')}</Button><Button href="/shop/settings/gst/recovery" tone="ghost">{tr('recovery')}</Button>{perms.canSeeReports?<Button href="/shop/sales/refunds" tone="ghost">{tr('refunds_title')}</Button>:null}{perms.canSeeReports?<Button tone="ghost" href={premium?undefined:'/shop/settings/subscription'} onClick={premium?()=>{setError(null);void api.salesCsv(shop.id,{...params,register:'1',language:prefs?.appLanguage??'en'}).then(csv=>downloadText('sales.csv',csv)).catch(setError)}:undefined}>{tr('export_register')}{!premium?' · Premium':''}</Button>:null}</>}/>
- <CounterFiltersView kind="sales" value={filters} onChange={change}/><CounterNotice error={error??(isPremiumError(sales.error)?null:sales.error)}/>{isPremiumError(error)||isPremiumError(sales.error)?<PremiumLock shopId={shop.id} feature="pos_reports"/>:null}
- {first?.limitedToDays?<p className="text-sm text-muted">{t('activity.free_limit_title','',{days:first.limitedToDays})}</p>:null}<p className="text-sm text-muted">{tr('snapshot_help')}</p>
- <div className="counter-register-actions"><Button tone="ghost" disabled={sales.isFetching} onClick={()=>{setError(null);void sales.refetch()}}>{tr('refresh')}</Button>{sales.isError?<Button tone="ghost" onClick={()=>void qc.resetQueries({queryKey:['sales',shop.id,userId,params]})}>{tr('reset_pages')}</Button>:null}</div>
- {awaitingRange?<p role="status">{tr('error.invalid_range')}</p>:null}{!awaitingRange&&sales.isPending?<Spinner label={t('common.loading','')}/>:null}<Card flush><div className="shop-list">{rows.map(sale=><Link key={sale.id} href={'/shop/sales/'+sale.id+'?returnTo='+encodeURIComponent(href)} className="shop-list-row"><div className="shop-list-main"><p className="shop-list-title">{sale.invoiceNumber??'#'+sale.saleNumber}{sale.customerName?' · '+sale.customerName:''}{sale.firstItem?<span className="text-muted"> · {sale.firstItem}{sale.itemCount>1?' +'+(sale.itemCount-1):''}</span>:null}</p><p className="shop-list-meta">{when(sale.soldAt)} · {sale.sellerName}</p>{sale.returnCount>0?<p className="shop-list-meta">{tr('returned',{n:sale.returnCount})}</p>:null}</div><div className="shop-list-right"><p className="num font-semibold">{formatINR(sale.total)}</p><Pill tone={sale.status==='voided'?'danger':['paid','settled'].includes(saleCollectionStatus(sale))?'ok':'warn'}>{t(saleCollectionLabel(saleCollectionStatus(sale)),'')}</Pill>{sale.status!=='voided'&&Number(sale.collection?.remainingCredit)>0?<p className="shop-list-meta">{t('collection.balance_due','',{amount:formatINR(Number(sale.collection?.remainingCredit))})}</p>:null}</div></Link>)}{sales.isSuccess&&!rows.length?<div className="shop-empty-next"><h2 className="shop-section-title">{t(filters.q.trim()||filters.status!=='all'||filters.desk!=='all'||filters.method!=='all'?'counter.no_bills':filters.period==='today'?'mobile.observations.no_sales_today':filters.period==='yesterday'?'mobile.observations.no_sales_yesterday':'counter.no_bills','')}</h2><p className="shop-section-sub">{t('mobile.observations.earlier_bills','')}</p><Button tone="ghost" onClick={()=>change({period:filters.period==='today'?'yesterday':'7d',from:'',to:'',q:'',status:'all',desk:'all',method:'all'})}>{t(filters.period==='today'?'mobile.observations.yesterday_bills':'mobile.observations.recent_bills','')}</Button></div>:null}</div></Card>
- {sales.hasNextPage?<Button tone="ghost" disabled={sales.isFetchingNextPage} onClick={()=>void sales.fetchNextPage()}>{sales.isFetchingNextPage?t('common.loading',''):tr('more')}</Button>:null}</div>;
+"use client";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import Link from "next/link";
+import { useState } from "react";
+import { useCart } from "../../../lib/shop/cart";
+import { downloadText } from "../../../lib/shop/csv";
+import { formatINR } from "../../../lib/shop/money";
+import { salesSummaryParams, salesRangeReady } from "../../../lib/shop/sales";
+import {
+  saleCollectionStatus,
+  saleCollectionLabel,
+} from "../../../lib/shop/sale-collection";
+import {
+  financialScope,
+  assertScope,
+  retainedRequests,
+} from "../../../lib/shop/gst-storage";
+import { useFiscalDate } from "../gst-ui";
+import { useShop } from "../context";
+import {
+  CounterNotice,
+  CounterFiltersView,
+  useCounterFilters,
+} from "../counter-filters";
+import {
+  Button,
+  Card,
+  PageHeader,
+  Pill,
+  PremiumLock,
+  Spinner,
+  isPremiumError,
+} from "../ui";
+
+export function SalesScreen() {
+  const qc = useQueryClient(),
+    { api, shop, userId, perms, premium, prefs, t, offline } = useShop(),
+    when = useFiscalDate();
+  const draft = useCart(userId, shop?.id ?? null);
+  const { filters, params, href, change } = useCounterFilters("sales");
+  const [error, setError] = useState<unknown>(null),
+    [exporting, setExporting] = useState(false);
+  const tr = (k: string, v?: Record<string, string | number>) =>
+      t("counter." + k, "", v),
+    ready = salesRangeReady(filters),
+    range = salesSummaryParams(filters);
+  const sales = useInfiniteQuery({
+    queryKey: ["sales", shop?.id, userId, params],
+    enabled: !!shop && perms.canSell && ready,
+    initialPageParam: null as string | null,
+    queryFn: ({ pageParam }) =>
+      api.getSales(shop!.id, {
+        ...params,
+        limit: 50,
+        cursor: pageParam ?? undefined,
+      }),
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+  const summary = useQuery({
+    queryKey: ["salesSummary", shop?.id, userId, range],
+    enabled: !!shop && perms.canSell && ready,
+    queryFn: () => api.getSalesSummary(shop!.id, range),
+  });
+  const journal = useQuery({
+    queryKey: ["counterJournal", userId, shop?.id],
+    enabled: !!shop && !!userId && perms.canSell,
+    networkMode: "always",
+    retry: false,
+    refetchInterval: 10000,
+    queryFn: async () => {
+      const scope = financialScope(shop!.id);
+      const rows = await retainedRequests(scope);
+      assertScope(scope);
+      return rows.filter(
+        (r) => r.state === "pending" && /\/sales(?:\/|$)/.test(r.path),
+      );
+    },
+  });
+  if (!shop) return <Spinner />;
+  if (!perms.canSell)
+    return (
+      <Card>
+        <h2>{tr("access_denied")}</h2>
+        <p>{tr("sales_no_access")}</p>
+      </Card>
+    );
+  const rows = sales.data?.pages.flatMap((p) => p.sales) ?? [],
+    first = sales.data?.pages[0];
+  const refresh = () => {
+    setError(null);
+    void sales.refetch();
+    void summary.refetch();
+    void journal.refetch();
+  };
+  const exportCsv = async () => {
+    setError(null);
+    setExporting(true);
+    try {
+      const scope = financialScope(shop.id);
+      const csv = await api.salesCsv(shop.id, {
+        ...params,
+        register: "1",
+        language: prefs?.appLanguage ?? "en",
+      });
+      api.assertSession();
+      assertScope(scope);
+      downloadText("sales.csv", csv);
+    } catch (e) {
+      setError(e);
+    } finally {
+      setExporting(false);
+    }
+  };
+  return (
+    <div className="shop-page sales-workspace">
+      <PageHeader
+        kicker={tr("counter")}
+        title={t("sales.title", "Sales")}
+        description={t(
+          "salesweb.intro",
+          "Find a bill. Follow a payment. Keep every sale in view.",
+        )}
+        actions={
+          <>
+            <Button
+              tone="ghost"
+              disabled={sales.isFetching || offline}
+              onClick={refresh}
+            >
+              {tr("refresh")}
+            </Button>
+            <Button href="/shop/sell">
+              {t("sale_complete.new_sale", "New sale")}{" "}
+              <span aria-hidden="true">＋</span>
+            </Button>
+          </>
+        }
+      />
+      <section
+        className="sales-period"
+        aria-label={t("salesweb.overview", "Period overview")}
+      >
+        <div className="sales-period-heading">
+          <h2>{t("salesweb.overview", "Period overview")}</h2>
+          <span>
+            {filters.period === "custom"
+              ? filters.from + " — " + filters.to
+              : tr("period_" + filters.period)}
+          </span>
+        </div>
+        {ready && summary.isSuccess && !summary.isError ? (
+          <>
+            <dl className="sales-metrics">
+              <div className="is-leading">
+                <dt>{t("sales.summary.revenue", "Net sales")}</dt>
+                <dd>{formatINR(summary.data.revenue)}</dd>
+              </div>
+              <div>
+                <dt>{t("sales.summary.bills", "Bills")}</dt>
+                <dd>{summary.data.bills}</dd>
+              </div>
+              <div>
+                <dt>
+                  {t(
+                    "reports.sales.avg_before_returns",
+                    "Average bill before returns",
+                  )}
+                </dt>
+                <dd>{formatINR(summary.data.avgBill)}</dd>
+              </div>
+              <div>
+                <dt>{t("sales.summary.returned_value", "Returned value")}</dt>
+                <dd>{formatINR(summary.data.returns ?? 0)}</dd>
+              </div>
+            </dl>
+            <p className="shop-hint">
+              {t("reports.sales.average_help", "")}{" "}
+              {t(
+                "salesweb.period_scope",
+                "Period totals include all bills, before list filters.",
+              )}
+            </p>
+          </>
+        ) : !ready ? (
+          <p className="shop-hint">{tr("error.invalid_range")}</p>
+        ) : summary.isPending ? (
+          <Spinner label={t("common.loading", "Loading")} />
+        ) : (
+          <p role="status" className="shop-hint">
+            {t(
+              "salesweb.summary_unavailable",
+              "Period totals could not be loaded. Your bill list is below.",
+            )}
+          </p>
+        )}
+      </section>
+      {draft.pending ? (
+        <div className="sales-recovery" role="status">
+          <p>{t("counter.pending_outcomes", "", { n: 1 })}</p>
+          <Button href="/shop/sell/checkout" tone="ghost">
+            {t("checkoutweb.retry", "Check saved bill")} →
+          </Button>
+        </div>
+      ) : null}
+      {(journal.data?.length ?? 0) > 0 || journal.isError ? (
+        <div className="sales-recovery" role="status">
+          <p>
+            {journal.isError
+              ? tr("recovery_storage_error")
+              : tr("pending_outcomes", { n: journal.data!.length })}
+          </p>
+          <Button href="/shop/settings/gst/recovery" tone="ghost" size="sm">
+            {tr("recovery")}
+          </Button>
+        </div>
+      ) : null}
+      <section className="sales-register">
+        <div className="sales-register-heading">
+          <div>
+            <h2>{t("salesweb.ledger", "Sales register")}</h2>
+            {first ? <p>{tr("results", { n: first.total })}</p> : null}
+          </div>
+          <details className="sales-tools">
+            <summary>
+              {t("salesweb.tools", "Register tools")}{" "}
+              <span aria-hidden="true">＋</span>
+            </summary>
+            <nav aria-label={t("salesweb.tools", "Register tools")}>
+              <Link href="/shop/estimates">
+                {t("estimates.mobile.title_short", "Estimates")}
+              </Link>
+              <Link href="/shop/settings/gst/recovery">{tr("recovery")}</Link>
+              {perms.canSeeReports ? (
+                <>
+                  <Link href="/shop/sales/refunds">{tr("refunds_title")}</Link>
+                  <Button
+                    tone="quiet"
+                    disabled={!ready || exporting || offline}
+                    href={!premium ? "/shop/settings/subscription" : undefined}
+                    onClick={() => void exportCsv()}
+                  >
+                    {exporting
+                      ? t("common.loading", "Loading")
+                      : tr("export_register")}
+                    {!premium ? " · Premium" : ""}
+                  </Button>
+                </>
+              ) : null}
+            </nav>
+          </details>
+        </div>
+        <CounterFiltersView kind="sales" value={filters} onChange={change} />
+        <CounterNotice
+          error={error ?? (isPremiumError(sales.error) ? null : sales.error)}
+        />
+        {isPremiumError(error) || isPremiumError(sales.error) ? (
+          <PremiumLock shopId={shop.id} feature="pos_reports" />
+        ) : null}
+        {first?.limitedToDays ? (
+          <p className="sales-limit">
+            {t("activity.free_limit_title", "", { days: first.limitedToDays })}{" "}
+            <Link href="/shop/settings/subscription">
+              {t("subscription.cta.manage", "Manage plan")}
+            </Link>
+          </p>
+        ) : null}
+        {!ready ? (
+          <p role="status">{tr("error.invalid_range")}</p>
+        ) : sales.isPending ? (
+          <Spinner label={t("common.loading", "Loading")} />
+        ) : null}
+        <div className="sales-ledger-head" aria-hidden="true">
+          <span>{t("bill.bill", "Bill")}</span>
+          <span>{t("sale_detail.payment_heading", "Payment")}</span>
+          <span>{t("bill.total", "Total")}</span>
+          <span />
+        </div>
+        <div className="sales-ledger">
+          {rows.map((sale) => (
+            <Link
+              key={sale.id}
+              href={
+                "/shop/sales/" +
+                sale.id +
+                "?returnTo=" +
+                encodeURIComponent(href)
+              }
+              className="sales-entry"
+            >
+              <span className="sales-entry-main">
+                <span className="sales-entry-title">
+                  <b>{sale.invoiceNumber ?? "#" + sale.saleNumber}</b>
+                  <span>
+                    {sale.customerName ||
+                      t("salesweb.walk_in", "Walk-in customer")}
+                  </span>
+                </span>
+                <span className="sales-entry-items">
+                  {sale.firstItem ?? t("bill.bill", "Bill")}
+                  {sale.itemCount > 1 ? " +" + (sale.itemCount - 1) : ""}
+                </span>
+                <span className="sales-entry-meta">
+                  {when(sale.soldAt)}
+                  {sale.sellerName ? " · " + sale.sellerName : ""}
+                </span>
+              </span>
+              <span className="sales-entry-payment">
+                <Pill
+                  tone={
+                    sale.status === "voided"
+                      ? "danger"
+                      : ["paid", "settled"].includes(saleCollectionStatus(sale))
+                        ? "ok"
+                        : "warn"
+                  }
+                >
+                  {t(saleCollectionLabel(saleCollectionStatus(sale)), "")}
+                </Pill>
+                <span>
+                  {sale.methods.map((m) => t("pos.method." + m, m)).join(" + ")}
+                </span>
+              </span>
+              <span className="sales-entry-amount">
+                <b className="num">{formatINR(sale.total)}</b>
+                {sale.returnCount > 0 ? (
+                  <span>{tr("returned", { n: sale.returnCount })}</span>
+                ) : null}
+                {sale.status !== "voided" &&
+                Number(sale.collection?.remainingCredit) > 0 ? (
+                  <span>
+                    {t("collection.balance_due", "", {
+                      amount: formatINR(
+                        Number(sale.collection?.remainingCredit),
+                      ),
+                    })}
+                  </span>
+                ) : null}
+              </span>
+              <span className="sales-entry-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </Link>
+          ))}
+        </div>
+        {sales.isSuccess && !rows.length ? (
+          <div className="shop-empty-next">
+            <span className="sales-empty-mark" aria-hidden="true">
+              ≡
+            </span>
+            <h2 className="shop-section-title">
+              {t(
+                filters.q.trim() ||
+                  filters.status !== "all" ||
+                  filters.desk !== "all" ||
+                  filters.method !== "all"
+                  ? "counter.no_bills"
+                  : filters.period === "today"
+                    ? "mobile.observations.no_sales_today"
+                    : filters.period === "yesterday"
+                      ? "mobile.observations.no_sales_yesterday"
+                      : "counter.no_bills",
+                "",
+              )}
+            </h2>
+            <p className="shop-section-sub">
+              {t("mobile.observations.earlier_bills", "")}
+            </p>
+            <Button
+              tone="ghost"
+              onClick={() =>
+                change({
+                  period: filters.period === "today" ? "yesterday" : "7d",
+                  from: "",
+                  to: "",
+                  q: "",
+                  status: "all",
+                  desk: "all",
+                  method: "all",
+                })
+              }
+            >
+              {t(
+                filters.period === "today"
+                  ? "mobile.observations.yesterday_bills"
+                  : "mobile.observations.recent_bills",
+                "",
+              )}
+            </Button>
+          </div>
+        ) : null}
+        <footer className="sales-register-footer">
+          <p>{tr("snapshot_help")}</p>
+          {sales.isError ? (
+            <Button
+              tone="ghost"
+              onClick={() =>
+                void qc.resetQueries({
+                  queryKey: ["sales", shop.id, userId, params],
+                })
+              }
+            >
+              {tr("reset_pages")}
+            </Button>
+          ) : sales.hasNextPage ? (
+            <Button
+              tone="ghost"
+              disabled={sales.isFetchingNextPage}
+              onClick={() => void sales.fetchNextPage()}
+            >
+              {sales.isFetchingNextPage ? t("common.loading", "") : tr("more")}
+            </Button>
+          ) : null}
+        </footer>
+      </section>
+    </div>
+  );
 }

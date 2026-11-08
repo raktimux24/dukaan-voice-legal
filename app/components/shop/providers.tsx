@@ -266,6 +266,13 @@ function ShopSession({ children }: { children: ReactNode }) {
     return translateUi(language, catalog.language === language ? catalog.entries : {}, key, fallback, vars);
   }, [catalog, prefs?.appLanguage]);
 
+  const signOutShop = useCallback(async () => {
+    clearBillingShell();
+    try { if (userId) clearOfflineShop(localStorage, userId); } catch { /* Storage is optional. */ }
+    try { await disconnectBrowserPush(api, pushSession(userId!)); } catch { /* Sign out even if push is unavailable. */ }
+    await signOut({ redirectUrl: '/' });
+  }, [api, userId, signOut]);
+
   const value: ShopContextValue = {
     userId: userId ?? null,
     photoSessionId: sessionId ?? null,
@@ -280,6 +287,7 @@ function ShopSession({ children }: { children: ReactNode }) {
     selectShop,
     prefs,
     savePrefs,
+    signOutShop,
     t,
     notice,
     setNotice,
@@ -329,7 +337,7 @@ function ShopSession({ children }: { children: ReactNode }) {
         data-text={prefs?.textSize || 'medium'}
         data-contrast={prefs?.highContrastMode ? 'high' : 'normal'}
       >
-        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => {clearBillingShell();try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void Promise.resolve().then(()=>disconnectBrowserPush(api,pushSession(userId!))).catch(()=>{}).finally(()=>signOut({ redirectUrl: '/' }));}}>
+        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => { void signOutShop().catch(() => {}); }}>
           {offline?<div className="shop-surface shop-card mb-4" role="status"><p>{t('shop.offline_notice','Using saved shop context for billing. Connect and refresh to manage the shop or view reports.')}</p><div className="shop-actions mt-3"><button type="button" className="text-saffron" onClick={()=>void refreshShops().catch(()=>{})}>{t('common.retry','Try again')}</button><Link className="text-saffron" href="/shop/settings/gst/recovery">{t('gst.rsp.saved_recovery','View saved requests')}</Link></div></div>:null}
           {children}
         </ShopChrome>

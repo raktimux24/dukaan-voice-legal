@@ -212,7 +212,7 @@ export function BrowserNotifications() {
     <Card className="grid gap-4">
       <div>
         <h2 className="shop-section-title">
-          {t("settings.section_notifications", "Notifications")}
+          {t("settingsweb.browser_title", "This browser")}
         </h2>
         <p className="shop-section-sub">
           {text("Daily recaps and shop updates on this browser.")}

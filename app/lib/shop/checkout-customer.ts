@@ -10,3 +10,11 @@ export function checkoutCustomer(selection:Selection,clientId:string|null,retain
  const customer={name,phone:selection.customerPhone??null};
  return selection.customerId?customer:{...customer,clientId:clientId??crypto.randomUUID()};
 }
+
+/** A saved billing identity wins over an imported contact, as on mobile. */
+export function checkoutBuyer(name:string,state:string,saved?:import('./gst-core/gst').Buyer,contact?:import('./party-imports/contract').PartyData):import('./gst-core/gst').Buyer|undefined {
+ if(saved)return structuredClone(saved);
+ if(!contact?.gstin?.trim()&&!contact?.address?.trim())return undefined;
+ const gstin=(contact.gstin??'').replace(/\s/g,'').toUpperCase();
+ return {name,gstin,address:contact.address?.trim()??'',stateCode:contact.stateCode?.trim()||(/^\d{2}/.test(gstin)?gstin.slice(0,2):state)};
+}

@@ -1,181 +1,107 @@
 'use client';
 
-import { useGstText as useUiText } from "../gst-ui";
+import {useEffect, useRef, useState} from 'react';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {useSearchParams} from 'next/navigation';
+import {useShop} from '../context';
+import {useShopDates} from '../use-shop-dates';
+import {VoiceSheet} from '../voice-sheet';
+import {Button, Field, NoAccess, Notice, PageHeader, Pill, Spinner, inputClass} from '../ui';
+import {canManageMember, canViewStaff, staffActivity, staffDirectory, staffInitials, staffInviteCode, staffInviteLink} from '../../../lib/shop/staff';
+import type {Member} from '../../../lib/shop/types';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { ApiError } from '../../../lib/shop/api';
-import { useShopDates } from '../use-shop-dates';
-import type { Role } from '../../../lib/shop/permissions';
-import { useShop } from '../context';
-import { Button, Card, NoAccess, Notice, PageHeader, Pill, Spinner } from '../ui';
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).slice(0, 2);
-  const letters = parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
-  return letters || '?';
-}
-
-function roleTone(role: Role): 'saffron' | 'ok' | 'neutral' {
-  if (role === 'OWNER') return 'saffron';
-  if (role === 'MANAGER') return 'ok';
-  return 'neutral';
-}
+type Confirm = {kind:'role'|'remove'|'tax'; member:Member; authorized?:boolean; eventId?:string|null; managerId?:string} | {kind:'rotate'};
 
 export function StaffScreen() {
-  const uiText = useUiText();
-  const { formatDay } = useShopDates();
-  const { api, shop, perms, refreshShops, userId, t } = useShop();
-  const queryClient = useQueryClient();
-  const members = useQuery({
-    queryKey: ['members', userId, shop?.id],
-    enabled: !!shop && perms.canManageStaff,
-    queryFn: () => api.getMembers(shop!.id),
-  });
-  const taxAuthorizations = useQuery({
-    queryKey: ['product-tax-authorizations', userId, shop?.id],
-    enabled: !!shop && perms.canManageStaff,
-    queryFn: () => api.getProductTaxAuthorizations(shop!.id),
-  });
-  const [authorizing, setAuthorizing] = useState<string | null>(null);
-  const [error, setError] = useState<unknown>(null);
-  const [pending, setPending] = useState(false);
-  if (!shop) return <Spinner />;
-  if (!perms.canManageStaff) return <NoAccess what={uiText("Only the owner can manage staff.")} />;
+  const {shop, userId, role} = useShop();
+  return <StaffWorkspace key={`${shop?.id}:${userId}:${role}`} />;
+}
 
-  const copy = async (value: string | null) => {
-    if (!value) return;
-    await navigator.clipboard.writeText(value);
-  };
+function StaffWorkspace() {
+  const {api, shop, userId, role, perms, offline, refreshShops, t} = useShop();
+  const {formatDay, formatWhen} = useShopDates();
+  const params = useSearchParams(), qc = useQueryClient();
+  const [query, setQuery] = useState(''), [filter, setFilter] = useState('ALL');
+  const [selectedId, setSelectedId] = useState<string|null>(params.get('member'));
+  const [invite, setInvite] = useState(false), [inviteRole, setInviteRole] = useState<'MANAGER'|'HELPER'>('HELPER');
+  const [confirm, setConfirm] = useState<Confirm|null>(null), [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>(null), [notice, setNotice] = useState<string|null>(null);
+  const lock = useRef(false);
+  useEffect(() => { window.scrollTo({top:0, behavior:'instant'}); }, [selectedId]);
+  const allowed = canViewStaff(role, offline), owner = perms.canManageStaff && !offline;
+  const members = useQuery({queryKey:['members',userId,shop?.id], enabled:!!shop&&allowed, queryFn:()=>api.getMembers(shop!.id)});
+  const tax = useQuery({queryKey:['product-tax-authorizations',userId,shop?.id],enabled:!!shop&&owner,queryFn:()=>api.getProductTaxAuthorizations(shop!.id)});
+  const text = (key:string, fallback:string, vars?:Record<string,string|number>) => t('staffweb.'+key,fallback,vars);
+  const roleName = (value:string) => text('role_'+value.toLowerCase(), value.charAt(0)+value.slice(1).toLowerCase());
+  const roleDescription = (value:string) => text('desc_'+value.toLowerCase(), value==='OWNER'?'Manage the team, shop settings and all shop work.':value==='MANAGER'?'Manage sales, stock and customers. View costs and reports.':'Sell and update stock. Costs and staff controls stay restricted.');
+  const nameOf = (m:Member) => m.user.fullName || m.user.email || text('member','Team member');
+  const activity = (m:Member) => {const a=staffActivity(m.lastActiveAt);return t(a.key,'—',a.n==null?undefined:{n:a.n});};
+  if (!shop) return <Spinner/>;
+  if (!allowed) return <NoAccess what={text(offline?'offline':'access',offline?'Reconnect to view your team.':'Staff is available to owners and managers.')}/>;
+  const rows=members.data??[], selected=rows.find(m=>m.id===selectedId), visible=staffDirectory(rows,query,filter);
+  const code=staffInviteCode(shop,role,inviteRole);
+  const entry=selected?tax.data?.managers.find(m=>m.memberId===selected.id):undefined;
 
-  return (
-    <div className="shop-page">
-      <PageHeader
-        back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
-        kicker={t('customers.title', 'People')}
-        title={t('modal.staff.title', 'Staff')}
-        description={uiText("Members of this shop, their roles, and the invite codes they join with.")}
-      />
-      <Notice error={error ?? members.error} />
-      <Card className="stack-form">
-        <div>
-          <h2 className="shop-section-title">{t('onboarding.invite.title', 'Invite codes')}</h2>
-          <p className="shop-section-sub">{t('onboarding.invite.manager_desc', 'Managers see cost and can edit the catalog.')} {t('onboarding.invite.helper_desc', 'Helpers can sell and remove stock.')}</p>
-        </div>
-        <div className="party-stats invite-pair">
-          <div className="party-stat">
-            <span>{t('role.manager', 'Manager')}</span>
-            <b className="invite-code">{shop.managerInviteCode ?? 'Hidden'}</b>
-          </div>
-          <div className="party-stat">
-            <span>{t('role.helper', 'Helper')}</span>
-            <b className="invite-code">{shop.helperInviteCode ?? 'Hidden'}</b>
-          </div>
-        </div>
-        <div className="shop-actions">
-          <Button tone="ghost" onClick={() => void copy(shop.managerInviteCode)}>{t('onboarding.invite.copy_link', 'Copy')} {t('role.manager', 'manager')}</Button>
-          <Button tone="ghost" onClick={() => void copy(shop.helperInviteCode)}>{t('onboarding.invite.copy_link', 'Copy')} {t('role.helper', 'helper')}</Button>
-          <Button
-            tone="ghost"
-            disabled={pending}
-            onClick={() => {
-              setPending(true);
-              void api.regenerateInvite(shop.id).then(() => refreshShops()).catch(setError).finally(() => setPending(false));
-            }}
-          > {uiText("New codes")} </Button>
-        </div>
-      </Card>
-      {members.isLoading ? <Spinner label={uiText("Loading staff")} /> : null}
-      <div className="party-grid">
-        {(members.data ?? []).map((member) => {
-          const name = member.user.fullName || member.user.email || 'Staff';
-          return (
-            <article key={member.id} className="party-card">
-              <div className="member-row">
-                <span className="avatar" aria-hidden="true">{initials(name)}</span>
-                <div>
-                  <p className="party-name">{name}</p>
-                  <p className="party-meta">{member.user.email}</p>
-                </div>
-                <Pill tone={roleTone(member.role)}>{t(`role.${member.role.toLowerCase()}`, member.role.toLowerCase())}</Pill>
-              </div>
-              <div className="party-stats">
-                <div className="party-stat"><span>{uiText("Joined")}</span><b>{formatDay(member.joinedAt)}</b></div>
-                <div className="party-stat"><span>{uiText("Last active")}</span><b>{formatDay(member.lastActiveAt)}</b></div>
-                <div className="party-stat"><span>{t('pos_settings.shop_phone', 'Phone')}</span><b>{member.user.phoneNumber || '—'}</b></div>
-              </div>
-              {member.role === 'MANAGER' ? (
-                <div className="mt-4 border-t border-line pt-4 grid gap-2">
-                  <h3 className="font-semibold">{t('gst.manager_authorization_title', 'Product tax confirmation permission')}</h3>
-                  <p className="party-meta">{t('gst.manager_authorization_hint', 'Authorize this manager to confirm product tax data for this shop. Grants, revocations and confirmations are recorded. Shop registration remains owner-only.')}</p>
-                  {taxAuthorizations.isLoading ? <Spinner /> : taxAuthorizations.isError ? <>
-                    <Notice error={taxAuthorizations.error} />
-                    <Button size="sm" tone="ghost" onClick={() => void taxAuthorizations.refetch()}>{t('common.retry', 'Try again')}</Button>
-                  </> : taxAuthorizations.data ? (() => {
-                    const entry = taxAuthorizations.data.managers.find(row => row.memberId === member.id);
-                    if (!entry) return <p role="status" className="party-meta">{t('gst.manager_authorization_unavailable', 'Tax confirmation permission could not be loaded or saved')}</p>;
-                    const authorized = !!entry.authorization?.authorized;
-                    return <>
-                      <p className="party-meta">{t(authorized ? 'gst.manager_authorized' : 'gst.manager_not_authorized', authorized ? 'Authorized to confirm product tax data' : 'Can edit products; cannot confirm new tax data')}</p>
-                      <Button size="sm" tone="ghost" disabled={authorizing !== null} onClick={() => {
-                        setAuthorizing(member.id); setError(null);
-                        void api.setProductTaxAuthorization(shop.id, {managerId: entry.managerId, authorized: !authorized, requestId: crypto.randomUUID(), expectedMemberId: member.id, expectedEventId: entry.authorization?.id ?? null})
-                          .then(async () => { await taxAuthorizations.refetch(); queryClient.invalidateQueries({queryKey: ['product-tax']}); })
-                          .catch(async caught => { setError(caught); await taxAuthorizations.refetch(); })
-                          .finally(() => setAuthorizing(null));
-                      }}>{t(authorized ? 'gst.manager_revoke' : 'gst.manager_authorize', authorized ? 'Revoke tax confirmation' : 'Authorize tax confirmation')}</Button>
-                    </>;
-                  })() : null}
-                </div>
-              ) : null}
-              {member.role !== 'OWNER' ? (
-                <div className="shop-actions">
-                  <Button
-                    size="sm"
-                    tone="ghost"
-                    onClick={() => void api.updateMemberRole(shop.id, member.id, member.role === 'MANAGER' ? 'HELPER' : 'MANAGER').then(() => Promise.all([queryClient.invalidateQueries({ queryKey: ['members'] }), queryClient.invalidateQueries({ queryKey: ['product-tax-authorizations', userId, shop.id] })])).catch(setError)}
-                  >
-                    {t('modal.staff.make_role', 'Make {{role}}', { role: t(`role.${member.role === 'MANAGER' ? 'helper' : 'manager'}`, member.role === 'MANAGER' ? 'helper' : 'manager') })}
-                  </Button>
-                  <Button
-                    size="sm"
-                    tone="danger"
-                    onClick={() => {
-                      if (!window.confirm(t('modal.staff.remove_message','Remove {{name}} from the shop? They can rejoin with a new invite.',{name}))) return;
-                      void api.removeMember(shop.id, member.id).then(() => Promise.all([queryClient.invalidateQueries({ queryKey: ['members'] }), queryClient.invalidateQueries({ queryKey: ['product-tax-authorizations', userId, shop.id] })])).catch(setError);
-                    }}
-                  >
-                    {t('common.remove', 'Remove')}
-                  </Button>
-                </div>
-              ) : null}
-            </article>
-          );
-        })}
-      </div>
-      <Card className="danger-zone stack-form">
-        <h2 className="shop-section-title">{t('modal.shop_settings.delete_shop', 'Delete shop')}</h2>
-        <p className="shop-section-sub">{uiText("The subscription is cancelled first. If that fails, the shop stays.")}</p>
-        <div className="shop-actions">
-          <Button
-            tone="danger"
-            disabled={pending}
-            onClick={() => {
-              if (!window.confirm(`${shop.name}\n\n${t('modal.shop_settings.delete_message','Are you sure you want to permanently delete this shop and all its data? This cannot be undone.')}`)) return;
-              setPending(true);
-              void api.deleteShop(shop.id).then(() => {
-                if (userId) localStorage.removeItem(`samaan-active-shop:${userId}`);
-                window.location.assign('/shop');
-              }).catch((caught: unknown) => {
-                setError(caught instanceof ApiError ? caught : caught);
-                setPending(false);
-              });
-            }}
-          >
-            {t('modal.shop_settings.delete_shop', 'Delete shop')}
-          </Button>
-        </div>
-      </Card>
-    </div>
-  );
+  async function refresh() {await Promise.all([members.refetch(),...(owner?[tax.refetch()]:[])]);}
+  function request(next:Confirm) {if(lock.current)return;setError(null);setNotice(null);setConfirm(next);}
+  async function apply() {
+    if (!confirm || !owner || offline || lock.current) return;
+    lock.current=true;setBusy(true);setError(null);setNotice(null);
+    try {
+      api.assertSession();
+      if (confirm.kind==='rotate') {
+        await api.regenerateInvite(shop!.id,inviteRole);
+        api.assertSession();await refreshShops();
+      } else {
+        const current=rows.find(m=>m.id===confirm.member.id);
+        if (!current || current.role!==confirm.member.role || !canManageMember(role,current,offline)) throw Error(text('changed','This member changed. Refresh the team before trying again.'));
+        if (confirm.kind==='role') await api.updateMemberRole(shop!.id,current.id,current.role==='MANAGER'?'HELPER':'MANAGER');
+        if (confirm.kind==='remove') await api.removeMember(shop!.id,current.id);
+        if (confirm.kind==='tax') await api.setProductTaxAuthorization(shop!.id,{managerId:confirm.managerId!,authorized:!!confirm.authorized,requestId:crypto.randomUUID(),expectedMemberId:current.id,expectedEventId:confirm.eventId??null});
+        api.assertSession();
+        if (confirm.kind==='remove') setSelectedId(null);
+      }
+      await Promise.all([qc.invalidateQueries({queryKey:['members',userId,shop!.id]}),qc.invalidateQueries({queryKey:['product-tax-authorizations',userId,shop!.id]}),qc.invalidateQueries({queryKey:['product-tax']})]);
+      setConfirm(null);setNotice(text('saved','Team settings updated.'));
+    } catch (caught) {setError(caught);await refresh();}
+    finally {lock.current=false;setBusy(false);}
+  }
+  async function copyInvite(link:boolean) {
+    if (!code) return;
+    try {await navigator.clipboard.writeText(link?staffInviteLink(code):code);setNotice(text('copied','Invite copied.'));setError(null);} catch {setError(Error(text('copy_failed','Copy failed. Select and copy the code shown above.')));}
+  }
+  async function shareInvite() {
+    if (!code) return;
+    const message=text('share_message','Join {{shop}} as {{role}}. Enter code {{code}} in Samaan Bol, or open {{url}}',{shop:shop!.name,role:roleName(inviteRole),code,url:staffInviteLink(code)});
+    try {if(navigator.share)await navigator.share({text:message});else {await navigator.clipboard.writeText(message);setNotice(text('copied','Invite copied.'));}} catch(e) {if((e as Error).name!=='AbortError')setError(Error(text('copy_failed','Copy failed. Select and copy the code shown above.')));}
+  }
+  const closeInvite=()=>{if(!busy){setConfirm(null);setInvite(false);}};
+  const roleTarget=confirm&&confirm.kind==='role'?(confirm.member.role==='MANAGER'?'HELPER':'MANAGER'):null;
+  const confirmationTitle=confirm?.kind==='rotate'?text('rotate','Replace invite code'):confirm?.kind==='remove'?text('remove','Remove from shop'):confirm?.kind==='tax'?text('tax_title','Product tax confirmation'):text('change_role','Change role');
+  const confirmationBody=confirm?.kind==='rotate'?text('rotate_hint','The previous {{role}} code will stop working. Existing team members keep their access.',{role:roleName(inviteRole)}):confirm?.kind==='remove'?text('remove_hint','Remove {{name}} from this shop? They lose access but their past records remain.',{name:nameOf(confirm.member)}):confirm?.kind==='tax'?text(confirm.authorized?'tax_grant_confirm':'tax_revoke_confirm',confirm.authorized?'Allow {{name}} to confirm product tax data? Shop GST registration stays owner-only.':'Stop {{name}} from confirming new product tax data? Existing confirmations remain recorded.',{name:nameOf(confirm.member)}):confirm?.kind==='role'?text('role_confirm','Change {{name}} to {{role}}?',{name:nameOf(confirm.member),role:roleName(roleTarget!)}):'';
+
+  const confirmPanel=confirm?<div className="staff-confirm" role="region" aria-label={confirmationTitle}><h3>{confirmationTitle}</h3><p>{confirmationBody}</p>{roleTarget?<p>{roleDescription(roleTarget)}{roleTarget==='HELPER'?' '+text('demote_hint','Any product tax confirmation permission is revoked with this change.'):''}</p>:null}<div className="shop-actions"><Button tone={confirm.kind==='remove'?'danger':'primary'} disabled={busy} onClick={()=>void apply()}>{busy?t('common.loading','Loading…'):text('confirm','Confirm change')}</Button><Button tone="ghost" disabled={busy} onClick={()=>{setConfirm(null);setError(null);}}>{t('common.cancel','Cancel')}</Button></div></div>:null;
+
+  return <div className="shop-page staff-workspace">
+    <PageHeader back={{href:'/shop/settings',label:t('settings.title','Settings')}} kicker={text('people','People')} title={selected?nameOf(selected):text('title','Staff')} description={selected?undefined:text('intro','One shop. A team with the right access.')} actions={<><Button tone="ghost" disabled={busy} onClick={()=>void refresh()}>{t('common.refresh','Refresh')}</Button><Button disabled={busy||!!confirm} onClick={()=>{setError(null);setNotice(null);setInvite(true);}}>{text('invite','Invite teammate')} +</Button></>}/>
+    {!invite?<><Notice error={error??members.error}/>{notice?<p className="shop-notice" role="status">{notice}</p>:null}</>:null}
+    {members.isLoading?<Spinner/>:null}
+    {selectedId&&!selected&&members.isSuccess?<div className="buy-empty"><h2>{text('missing','Member not found')}</h2><Button tone="quiet" onClick={()=>{setSelectedId(null);setConfirm(null);}}>{text('back','Back to team')}</Button></div>:null}
+    {selected?<>
+      <Button className="staff-back" tone="quiet" disabled={busy} onClick={()=>{setSelectedId(null);setConfirm(null);setError(null);}}>← {text('back','Back to team')}</Button>
+      <div className="staff-profile"><span className="staff-avatar" aria-hidden="true">{staffInitials(nameOf(selected))}</span><div><Pill tone={selected.role==='OWNER'?'saffron':'neutral'}>{roleName(selected.role)}</Pill>{selected.userId===userId?<small className="staff-self">{text('you','You')}</small>:null}<p>{selected.user.email||'—'}</p></div></div>
+      <dl className="staff-facts"><div><dt>{text('joined','Joined')}</dt><dd>{formatDay(selected.joinedAt)}</dd></div><div><dt>{text('activity','App activity')}</dt><dd>{activity(selected)}</dd><small>{formatWhen(selected.lastActiveAt)}</small></div>{selected.user.phoneNumber?<div><dt>{text('phone','Phone')}</dt><dd>{selected.user.phoneNumber}</dd></div>:null}</dl>
+      <section className="staff-permissions"><div><h2>{text('access_title','Role & access')}</h2><p>{roleDescription(selected.role)}</p>{!owner?<p>{text('owner_controls','Only the owner can change roles and permissions.')}</p>:null}</div>{canManageMember(role,selected,offline)?<Button tone="ghost" disabled={busy||!!confirm} onClick={()=>request({kind:'role',member:selected})}>{text('change_role','Change role')}</Button>:null}</section>
+      {selected.role==='MANAGER'&&owner?<section className="staff-tax"><h2>{text('tax_title','Product tax confirmation')}</h2><p>{text('tax_hint','Separate permission to confirm product tax data. Shop GST registration remains owner-only. Changes are recorded.')}</p>{tax.isLoading?<Spinner/>:tax.isError?<><Notice error={tax.error}/><Button tone="ghost" onClick={()=>void tax.refetch()}>{t('common.retry','Retry')}</Button></>:entry?<><Pill tone={entry.authorization?.authorized?'ok':'neutral'}>{text(entry.authorization?.authorized?'authorized':'not_authorized',entry.authorization?.authorized?'Authorized':'Not authorized')}</Pill><div className="shop-actions"><Button tone="ghost" disabled={busy||tax.isFetching||!!confirm} onClick={()=>request({kind:'tax',member:selected,authorized:!entry.authorization?.authorized,eventId:entry.authorization?.id??null,managerId:entry.managerId})}>{text(entry.authorization?.authorized?'revoke':'authorize',entry.authorization?.authorized?'Revoke permission':'Authorize confirmation')}</Button></div>{entry.authorization?<details className="staff-record"><summary>{text('record','Permission record')}</summary><p>{formatWhen(entry.authorization.createdAt)}</p><code>{entry.authorization.id}</code></details>:null}</>:<p>{text('tax_unavailable','Permission details are unavailable. Refresh before making changes.')}</p>}</section>:null}
+      {confirm&&confirm.kind!=='rotate'?<VoiceSheet title={confirmationTitle} closeLabel={t('common.cancel','Cancel')} onClose={()=>{if(!busy){setConfirm(null);setError(null);}}}><Notice error={error}/>{confirmPanel}</VoiceSheet>:null}
+      {canManageMember(role,selected,offline)?<section className="staff-remove"><div><h2>{text('remove','Remove from shop')}</h2><p>{text('remove_short','Remove access to this shop. Past records are kept.')}</p></div><Button tone="danger" disabled={busy||!!confirm} onClick={()=>request({kind:'remove',member:selected})}>{text('remove','Remove from shop')}</Button></section>:null}
+    </>:!selectedId?<>
+      <div className="staff-overview">{['OWNER','MANAGER','HELPER'].map(r=><div key={r}><small>{roleName(r)}</small><strong>{members.isSuccess?rows.filter(m=>m.role===r).length:'—'}</strong></div>)}</div>
+      <div className="staff-tools"><Field label={text('search','Search name or email')}><input type="search" className={inputClass} value={query} onChange={e=>setQuery(e.target.value)}/></Field><Field label={text('role','Role')}><select className={inputClass} value={filter} onChange={e=>setFilter(e.target.value)}>{['ALL','OWNER','MANAGER','HELPER'].map(r=><option key={r} value={r}>{r==='ALL'?text('all','All roles'):roleName(r)}</option>)}</select></Field></div>
+      <div className="staff-directory">{visible.map(member=><button className="staff-row" key={member.id} onClick={()=>{setSelectedId(member.id);setNotice(null);setError(null);}}><span className="staff-avatar" aria-hidden="true">{staffInitials(nameOf(member))}</span><div className="staff-person"><h2>{nameOf(member)}{member.userId===userId?<small>{text('you','You')}</small>:null}</h2><p>{member.user.email||'—'}</p></div><span className="staff-row-role">{roleName(member.role)}</span><span className="staff-activity"><small>{text('activity','App activity')}</small>{activity(member)}</span><span aria-hidden="true">↗</span></button>)}</div>
+      {members.isSuccess&&!visible.length?<div className="buy-empty"><h2>{text('empty','No matching team members')}</h2><p>{text('empty_hint','Try a different name or role, or invite a teammate.')}</p></div>:null}
+      {!owner?<p className="shop-hint">{text('manager_hint','You can view the team and invite Helpers. The owner manages roles and permissions.')}</p>:null}
+    </>:null}
+    {invite?<VoiceSheet title={text('invite','Invite teammate')} closeLabel={t('common.close','Close')} onClose={closeInvite}><div className="staff-invite"><p>{text('invite_hint','Choose the access your teammate needs, then share their invite.')}</p><Field label={text('role','Role')}><select className={inputClass} value={inviteRole} disabled={busy||!!confirm} onChange={e=>{setInviteRole(e.target.value as 'MANAGER'|'HELPER');setNotice(null);setError(null);}}>{(owner?['HELPER','MANAGER']:['HELPER']).map(r=><option value={r} key={r}>{roleName(r)}</option>)}</select></Field><p>{roleDescription(inviteRole)}</p><div className="staff-code"><small>{text('invite_code','Invite code')}</small><strong>{code||'—'}</strong></div>{!code?<p>{text('code_unavailable','Invite code unavailable. Refresh the shop and try again.')}</p>:null}<div className="shop-actions"><Button disabled={!code||busy||!!confirm} onClick={()=>void shareInvite()}>{text('share','Share invite')}</Button><Button tone="ghost" disabled={!code||busy||!!confirm} onClick={()=>void copyInvite(false)}>{text('copy_code','Copy code')}</Button><Button tone="quiet" disabled={!code||busy||!!confirm} onClick={()=>void copyInvite(true)}>{text('copy_link','Copy app link')}</Button></div><p className="shop-hint">{text('link_hint','The link opens the phone app. You can also enter the code when joining a shop.')}</p><Notice error={error}/>{notice?<p role="status" className="shop-notice">{notice}</p>:null}{owner?<div className="staff-rotate"><Button tone="quiet" disabled={busy||!!confirm} onClick={()=>request({kind:'rotate'})}>{text('rotate','Replace invite code')}</Button>{confirm?.kind==='rotate'?confirmPanel:null}</div>:null}</div></VoiceSheet>:null}
+  </div>;
 }
