@@ -17,10 +17,10 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/customers/import` | Shared workflow and native party screen audited | Grouped mapping, issue-first review and upload history | Ten languages × three stages at 320px |
 | `/shop/suppliers/import` | Shared workflow and native party screen audited | Grouped mapping, issue-first review and upload history | Ten languages × three stages at 320px |
 | `/shop/settings/opening-balances` | New native guided view ported; shared workflow aligned | Setup choices, records, status hierarchy and confirmation footer | Ten languages × hub/editor at 320px; synthetic setup transition checked |
-| `/shop/settings/gst` | Pending | Pending | Pending |
+| `/shop/settings/gst` | Native health reviewed; provider-history counts and affected bills restored | Two-column navigation and review metrics | Ten languages at 320px; affected-record links checked |
 | `/shop/settings/gst/checks` | Pending | Pending | Pending |
-| `/shop/settings/gst/devices` | Pending | Pending | Pending |
-| `/shop/settings/gst/numbers` | Pending | Pending | Pending |
+| `/shop/settings/gst/devices` | Native installation panel reviewed; identity, refresh and explicit revocation confirmation restored | Expandable records and focused confirmation dialog | Ten languages at 320px; empty-reason guard and cancellation checked |
+| `/shop/settings/gst/numbers` | Native allocation register reviewed; support identity, document links and position ranges restored | Mobile ledger rows and desktop table | Ten languages at 320px with expanded records |
 | `/shop/settings/gst/recovery` | Pending | Pending | Pending |
 | `/shop/settings/gst/recovery/[requestId]` | Pending | Pending | Pending |
 | `/shop/settings/gst/exports` | Pending | Pending | Pending |
@@ -65,3 +65,5 @@ Follow-ups: native view and shared workflow compared. Existing snooze, history, 
 Credit statements: shared contract/workflow/client/statement source matches mobile; native view compared. Reversed date range disables snapshot creation, verified with keyboard input. Existing PDF/CSV export retained; new live exports not generated. Translation and TypeScript checks pass.
 
 Opening balances: ported current portable native view and optional skip callback into the web host. Existing staged review, owner confirmation, retained-request recovery and supplier settlement controls preserved. Ten-language mobile hub/editor checks and TypeScript, financial regression and translations pass. No balances applied or payments recorded.
+
+GST overview/installations/numbers: native health, devices and allocation screens compared with server response. Added provider-history evidence to review counts, affected-document links, installation support references, current-browser recognition and explicit reason/confirmation before revocation. Unconfirmed ranges preserve gaps. Expanded fixture records fit all ten languages at 320px; cancellation leaves device active. No real revocations or allocation writes. TypeScript and translation checks pass.
