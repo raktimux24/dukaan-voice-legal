@@ -24,7 +24,7 @@
     "test:sell": "node --test tests/sell-workspace.test.cjs",
     "test:checkout": "node --test tests/checkout-workspace.test.cjs",
     "test:sales": "node --test tests/sales-workspace.test.cjs tests/gst-document-lines.test.cjs",
-    "test:products": "node --test tests/products-workspace.test.cjs",
+    "test:products": "node --test tests/products-workspace.test.cjs tests/product-form-localization.test.cjs",
     "test:buy-list": "node --test tests/buy-list-workspace.test.cjs",
     "test:suppliers": "node --test tests/suppliers-workspace.test.cjs",
     "test:customers": "node --test tests/customers-workspace.test.cjs",

@@ -122,18 +122,20 @@ export function Field({
   hint,
   children,
   className,
+  localized = false,
 }: {
   label: string;
   hint?: ReactNode;
   children: ReactNode;
   className?: string;
+  localized?: boolean;
 }) {
   const display = useOptionalUiText();
   return (
     <label className={cx('block', className)}>
-      <span className="shop-label">{display(label)}</span>
+      <span className="shop-label">{localized ? label : display(label)}</span>
       {children}
-      {hint ? <span className="shop-hint block">{display(hint)}</span> : null}
+      {hint ? <span className="shop-hint block">{localized ? hint : display(hint)}</span> : null}
     </label>
   );
 }

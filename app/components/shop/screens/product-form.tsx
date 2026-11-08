@@ -20,7 +20,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, l2ItemType, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
-import { UNITS, formatQty } from '../../../lib/shop/units';
+import { UNITS, formatQty, unitLabel } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { SupplierField } from '../supplier-field';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, cx, inputClass } from '../ui';
@@ -160,6 +160,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   if (productId && !item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
   if (!form) return <Spinner />;
 
+  const displayUnit = unitLabel(form.unit, t);
   const subs = l2ForL1(form.category);
   const set = (partial: Partial<Draft>) => setDraft({ ...form, ...partial });
   const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp||generateBarcode||media.dirty;
@@ -264,7 +265,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   };
 
   const money = (value: string, onChange: (next: string) => void, label: string, hint?: string) => (
-    <Field label={label} hint={hint}>
+    <Field localized label={label} hint={hint}>
       <div className="shop-input-wrap">
         <span className="shop-input-prefix">₹</span>
         <input aria-label={label} className={cx(inputClass, 'num')} inputMode="decimal" value={value} onChange={(event) => onChange(event.target.value)} placeholder="0.00" />
@@ -303,16 +304,16 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               <h2 className="shop-section-title">{t('modal.product_detail.section_details', 'Details')}</h2>
             </div>
             <div className="form-grid">
-              <Field label={t('modal.add_product.name_label', 'Name')}>
+              <Field localized label={t('modal.add_product.name_label', 'Name')}>
                 <input className="shop-field is-lg" value={form.name} onChange={(event) => set({ name: event.target.value })} required placeholder={t('modal.add_product.name_placeholder', 'e.g. Tata Salt 1 kg')} />
               </Field>
               <div className="form-grid is-2">
-                <Field label={t('modal.add_product.category_label', 'Category')}>
+                <Field localized label={t('modal.add_product.category_label', 'Category')}>
                   <select className={inputClass} value={form.category} onChange={(event) => set({ category: event.target.value, subcategory: l2ForL1(event.target.value)[0]?.code ?? '', trackStock: l2ItemType(event.target.value, l2ForL1(event.target.value)[0]?.code) !== 'service' })}>
                     {l1.map((row) => <option key={row.code} value={row.code}>{labeledL1(row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
-                <Field label={t('modal.add_product.subcategory_label', 'Sub-category')}>
+                <Field localized label={t('modal.add_product.subcategory_label', 'Sub-category')}>
                   <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value, trackStock: l2ItemType(form.category, event.target.value) !== 'service' })} required>
                     <option value="">{t("modal.add_product.subcategory_placeholder", "Choose a sub-category")}</option>
                     {subs.map((row) => <option key={row.code} value={row.code}>{labeledL2(form.category, row.code, (key) => t(key, key))}</option>)}
@@ -322,13 +323,13 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               {!productId&&!form.barcode.trim()?<label className="import-confirm"><input type="checkbox" checked={generateBarcode} onChange={e=>setGenerateBarcode(e.target.checked)}/><span>{t('barcodes.generate_on_save','No barcode? Generate one when saving')}</span></label>:null}
               {item?.product.barcode?<Button tone="ghost" href={'/shop/products/barcodes?productId='+productId}>{t('barcodes.manage','Manage barcode')}</Button>:null}
               <div className="form-grid is-2">
-                <Field label={t('modal.add_product.barcode_label', 'Barcode')} hint={t('modal.add_product.barcode_placeholder', 'Scan or enter barcode')}>
+                <Field localized label={t('modal.add_product.barcode_label', 'Barcode')} hint={t('modal.add_product.barcode_placeholder', 'Scan or enter barcode')}>
                   <input ref={barcodeRef} aria-label={t('modal.add_product.barcode_label','Barcode')} className={cx(inputClass, 'num')} value={form.barcode} onChange={(event) => set({ barcode: event.target.value })} readOnly={!!item?.product.barcode} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();}}}/>
                   {!item?.product.barcode?<button type="button" className="shop-btn shop-btn-quiet" disabled={pending} aria-expanded={cameraOn} onClick={()=>setCameraOn(v=>!v)}>{t('sellweb.camera','Camera')}</button>:null}
                 </Field>
-                <Field label={t('modal.add_product.unit_label', 'Unit')}>
+                <Field localized label={t('modal.add_product.unit_label', 'Unit')}>
                   <select className={inputClass} value={form.unit} onChange={(event) => set({ unit: event.target.value })}>
-                    {UNITS.map((unit) => <option key={unit} value={unit}>{t(unit === 'packet' ? 'unit_picker.pack' : unit === 'L' ? 'unit_picker.liter' : unit === 'mL' ? 'unit_picker.ml' : `unit_picker.${unit}`, unit)}</option>)}
+                    {UNITS.map((unit) => <option key={unit} value={unit}>{unitLabel(unit, t)}</option>)}
                   </select>
                 </Field>
               </div>
@@ -357,7 +358,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               <h2 className="shop-section-title">{t('productform.stock', 'Stock')}</h2>
               <p className="shop-section-sub">{productId ? t('modal.add_product.edit_note', 'Add or edit batches from the product page.') : t('modal.add_product.section_initial_batch', 'Opening stock creates the first batch.')}</p>
             </div>
-            {form.trackStock?<Field label={t('modal.add_product.depletion_order_label','Sell stock by')} hint={t('modal.add_product.depletion_order_hint','Which batch goes out first when you sell this product')}>
+            {form.trackStock?<Field localized label={t('modal.add_product.depletion_order_label','Sell stock by')} hint={t('modal.add_product.depletion_order_hint','Which batch goes out first when you sell this product')}>
               <select className={inputClass} value={form.depletionOrder} onChange={e=>set({depletionOrder:e.target.value as 'expiry'|'fifo'})}>
                 <option value="expiry">{t('modal.add_product.depletion_order_expiry','Soonest expiry')}</option>
                 <option value="fifo">{t('modal.add_product.depletion_order_fifo','Oldest stock')}</option>
@@ -371,24 +372,24 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 </span>
                 <input type="checkbox" className="shop-field" checked={form.trackStock} onChange={(event) => set({ trackStock: event.target.checked })} />
               </label>
-              {form.trackStock ? <Field label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: form.unit })}>
+              {form.trackStock ? <Field localized label={t('modal.add_product.min_stock_label', 'Low-stock alert at')} hint={t('modal.product_detail.detail_min_stock', 'Alerts when on-hand falls to this many {{unit}}.', { unit: displayUnit })}>
                 <input className={cx(inputClass, 'num')} inputMode="numeric" value={form.minStockLevel} onChange={(event) => set({ minStockLevel: event.target.value })} />
               </Field> : null}
             </div>
             {!productId && form.trackStock ? (
               <div className="form-grid is-2">
-                <Field label={t('modal.add_product.quantity_label', 'Opening stock')}>
+                <Field localized label={t('modal.add_product.quantity_label', 'Opening stock')}>
                   <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.initialStock} onChange={(event) => set({ initialStock: event.target.value })} />
                 </Field>
                 {!hideCost ? <SupplierField value={form.supplier} onChange={(supplier) => set({ supplier })} /> : null}
-                <Field label={t('modal.add_product.batch_number_label', 'Batch number')}>
+                <Field localized label={t('modal.add_product.batch_number_label', 'Batch number')}>
                   <input className={inputClass} value={form.batchNumber} onChange={(event) => set({ batchNumber: event.target.value })} />
                 </Field>
                 <div className="form-grid is-2">
-                  <Field label={t('modal.add_product.purchase_date_label', 'Purchased on')}>
+                  <Field localized label={t('modal.add_product.purchase_date_label', 'Purchased on')}>
                     <input className={inputClass} type="date" value={form.purchaseDate} onChange={(event) => set({ purchaseDate: event.target.value })} />
                   </Field>
-                  <Field label={t('modal.add_product.expiry_date_label', 'Expires on')}>
+                  <Field localized label={t('modal.add_product.expiry_date_label', 'Expires on')}>
                     <input className={inputClass} type="date" value={form.expiryDate} onChange={(event) => set({ expiryDate: event.target.value })} />
                   </Field>
                 </div>
@@ -400,19 +401,19 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
             <details className="form-details" open={!!(form.shortCode || form.packSize || form.packLabel)}>
               <summary>{t('modal.add_product.short_code_label', 'Short code')} · {t('modal.add_product.packs_label', 'Buy in packs')}</summary>
               <div className="form-grid is-3">
-                <Field label={t('modal.add_product.short_code_label', 'Short code')} hint={t('modal.add_product.short_code_placeholder', 'Type this at the counter to add the product.')}>
+                <Field localized label={t('modal.add_product.short_code_label', 'Short code')} hint={t('modal.add_product.short_code_placeholder', 'Type this at the counter to add the product.')}>
                   <input className={inputClass} value={form.shortCode} onChange={(event) => set({ shortCode: event.target.value })} placeholder={t('modal.add_product.short_code_placeholder', 'e.g. TS1')} />
                 </Field>
-                <Field label={t('modal.add_product.pack_size', '{{unit}} per pack', { unit: form.unit })} hint={t('modal.add_product.packs_hint', 'How many {{unit}} make one pack.', { unit: form.unit })}>
+                <Field localized label={t('modal.add_product.pack_size', '{{unit}} per pack', { unit: displayUnit })} hint={t('modal.add_product.packs_hint', 'How many {{unit}} make one pack.', { unit: displayUnit })}>
                   <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.packSize} onChange={(event) => {const packSize=event.target.value;set({packSize,...(Number(packSize)>0&&Number(form.packPrice)>0?{purchasePrice:String(Math.round(Number(form.packPrice)/Number(packSize)*100)/100)}:{})});}} />
                 </Field>
-                <Field label={t('modal.add_product.pack_name', 'Pack label')}>
+                <Field localized label={t('modal.add_product.pack_name', 'Pack label')}>
                   <input className={inputClass} value={form.packLabel} onChange={(event) => set({ packLabel: event.target.value })} placeholder={t('modal.add_product.pack_name_placeholder', 'e.g. case, strip')} />
                 </Field>
               </div>
               {!hideCost?<div className="product-form-pack-price">
-                {money(form.packPrice,packPrice=>set({packPrice,...(Number(form.packSize)>0&&Number(packPrice)>0?{purchasePrice:String(Math.round(Number(packPrice)/Number(form.packSize)*100)/100)}:{})}),t('modal.add_product.pack_price','Price per {{label}}',{label:form.packLabel||t('modal.add_product.pack_default_label','pack')}),t('modal.add_product.packs_hint','Stock and prices stay per {{unit}}.',{unit:form.unit}))}
-                {Number(form.packSize)>0&&Number(form.packPrice)>0?<p className="shop-hint">{t('modal.add_product.pack_per_unit','{{price}} per {{unit}}',{price:formatINR(Math.round(Number(form.packPrice)/Number(form.packSize)*100)/100),unit:form.unit})}</p>:null}
+                {money(form.packPrice,packPrice=>set({packPrice,...(Number(form.packSize)>0&&Number(packPrice)>0?{purchasePrice:String(Math.round(Number(packPrice)/Number(form.packSize)*100)/100)}:{})}),t('modal.add_product.pack_price','Price per {{label}}',{label:form.packLabel||t('modal.add_product.pack_default_label','pack')}),t('modal.add_product.packs_hint','Stock and prices stay per {{unit}}.',{unit:displayUnit}))}
+                {Number(form.packSize)>0&&Number(form.packPrice)>0?<p className="shop-hint">{t('modal.add_product.pack_per_unit','{{price}} per {{unit}}',{price:formatINR(Math.round(Number(form.packPrice)/Number(form.packSize)*100)/100),unit:displayUnit})}</p>:null}
               </div>:null}
             </details>
           </Card>
@@ -426,16 +427,16 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
             <p className="form-summary-name">{form.name.trim() || t('modal.add_product.title', 'New product')}</p>
             <div className="grid gap-2">
               <p className="form-summary-row"><span>{t('modal.add_product.category_label', 'Category')}</span><b>{labeledL1(form.category, (key) => t(key, key))}{form.subcategory ? ` · ${labeledL2(form.category, form.subcategory, (key) => t(key, key))}` : ''}</b></p>
-              <p className="form-summary-row"><span>{t('modal.add_product.selling_price_label', 'Sells at')}</span><b className="num">{selling == null ? t('pos.set_price', 'Price at counter') : `${formatINR(selling)} / ${form.unit}`}</b></p>
-              {form.mrp !== '' ? <p className="form-summary-row"><span>{t('modal.product_detail.detail_mrp', 'MRP')}</span><b className="num">{formatINR(Number(form.mrp))}</b></p> : null}
+              <p className="form-summary-row"><span>{t('modal.add_product.selling_price_label', 'Sells at')}</span><b className="num">{selling == null ? t('pos.set_price', 'Price at counter') : `${formatINR(selling)} / ${displayUnit}`}</b></p>
+              {form.mrp !== '' ? <p className="form-summary-row"><span>{t('productform.mrp', 'MRP')}</span><b className="num">{formatINR(Number(form.mrp))}</b></p> : null}
               {!productId ? (
-                <p className="form-summary-row"><span>{t('modal.add_product.quantity_label', 'Opening stock')}</span><b className="num">{form.trackStock ? formatQty(opening, form.unit) : t('pos.no_stock_tracking', 'Not tracked')}</b></p>
+                <p className="form-summary-row"><span>{t('modal.add_product.quantity_label', 'Opening stock')}</span><b className="num">{form.trackStock ? formatQty(opening, form.unit, { unitLabel: unit => unitLabel(unit, t) }) : t('pos.no_stock_tracking', 'Not tracked')}</b></p>
               ) : null}
               {form.barcode.trim() ? <p className="form-summary-row"><span>{t('modal.add_product.barcode_label', 'Barcode')}</span><b className="num">{form.barcode.trim()}</b></p> : null}
             </div>
             {!hideCost && marginPct != null ? (
               <div className={cx('form-margin', marginPct < 0 && 'is-negative')}>
-                {t('modal.add_product.margin_line', '{{pct}}% margin · {{margin}} per {{unit}}', { pct: marginPct.toFixed(1), margin: formatINR(netSelling! - cost!), unit: form.unit })}
+                {t('modal.add_product.margin_line', '{{pct}}% margin · {{margin}} per {{unit}}', { pct: marginPct.toFixed(1), margin: formatINR(netSelling! - cost!), unit: displayUnit })}
               </div>
             ) : null}
             </>:null}
