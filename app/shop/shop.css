@@ -4463,3 +4463,6 @@ button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04
 @media(max-width:600px){.gst-export-toolbar,.gst-report-command{grid-template-columns:minmax(0,1fr)}.gst-export-workspace .gst-mobile-records td:last-child{display:flex;flex-wrap:wrap}.gst-export-workspace .gst-mobile-records td:last-child>details{width:100%}.gst-turnover-workspace fieldset{min-width:0}}
 
 .gst-workspace .shop-surface,.gst-workspace .stack-form,.gst-workspace fieldset{min-width:0}.gst-workspace .shop-pill{white-space:normal;overflow-wrap:anywhere;max-width:100%}
+
+.gst-product-columns{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}.gst-product-columns>div{min-width:0}.gst-product-editor{border-top:2px solid #ff9857}.gst-product-workspace .gst-choice{border-radius:0;border-width:0 0 1px;background:none;padding:18px 0;gap:12px;align-items:center}.gst-product-workspace .gst-choice>span{min-width:0;flex:1}.gst-product-workspace .gst-choice b{overflow-wrap:anywhere}.gst-product-workspace .gst-choice a{font-size:13px;color:#ff9857}.gst-product-workspace .gst-choice small{display:block;margin-top:8px}.gst-product-workspace .shop-surface{overflow-wrap:anywhere}
+@media(max-width:1000px){.gst-product-columns{grid-template-columns:minmax(0,1fr)}}

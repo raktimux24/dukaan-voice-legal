@@ -28,8 +28,8 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/settings/gst/turnover` | Native evidence workflow compared; financial-year selector restored | Grouped evidence form and retained amount summary | Ten languages at 320px; year switch and disabled-save guard checked |
 | `/shop/settings/gst/providers` | Native provider jobs reviewed; subject reference and uncertain-state guidance restored | Status-led records and support disclosure | Ten languages at 320px |
 | `/shop/settings/gst/rounding` | Native review compared; end date, retained-policy reuse, IST dates and manager read access restored | Grouped policy form and distinct preview | Ten languages at 320px; retained dates and manager permissions checked |
-| `/shop/products/gst` | Pending | Pending | Pending |
-| `/shop/products/[id]/gst` | Pending | Pending | Pending |
+| `/shop/products/gst` | Native catalogue compared; manager confirmation authorization and offline guards restored | Product ledger, selection and grouped tax editor | Ten languages at 320px; selection and unauthorized-manager guard checked |
+| `/shop/products/[id]/gst` | Native history/scheduling compared; support identity and separate cancellation reasons restored | Status-led history and schedule disclosure | Ten languages at 320px; empty-reason guard checked |
 | `/shop/products/[id]/gst/rsp` | Pending | Pending | Pending |
 | `/shop/adjustments/[id]` | Pending | Pending | Pending |
 | `/shop/estimates` | Pending | Pending | Pending |
@@ -75,3 +75,5 @@ Saved receipt: original content/hash verification preserved. Synthetic ordinary 
 Providers/rounding: native source reviewed; subject references and uncertain-result guidance shown. Rounding dates retain IST calendar dates, end date must follow start, changes clear confirmation, and previews clear when input/version changes. Owner mutation and offline guards retained, managers may view/preview. Financial regression, translation checks and TypeScript passed. No provider call or rounding policy recorded.
 
 GST reports/periods/turnover: native screens and server history filters compared. All-kind history omits the kind parameter as required by the API. Financial regression, translation coverage and TypeScript pass. Synthetic responsive checks cover all ten languages; no new report, period close/reopen or turnover record submitted.
+
+Product GST catalogue/history: native authorization, history and scheduling compared; API enforces authorization independently. Existing immutable invoice profiles, fresh-history guard and retained requests preserved. Ten-language responsive fixture checks and TypeScript pass. No tax profile applied, imported or cancelled.

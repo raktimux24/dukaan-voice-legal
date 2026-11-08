@@ -64,6 +64,7 @@ export function TaxHistoryRows({ rows, capture, action }: {
         {row.draft ? <p className="shop-hint">{label('gst.product_confirmation_requires_authorization')}</p> : null}
         <p className="shop-hint">{label('gst.tax_history_recorded', {date: date(row.recordedAt)})}</p>
         {row.effectiveAt && Date.parse(row.effectiveAt) !== Date.parse(row.recordedAt) ? <p className="shop-hint">{label('gst.tax_history_effective', {date: date(row.effectiveAt)})}</p> : null}
+        <p className="gst-reference">{row.id}</p>
         {row.confirmation ? <p className="shop-hint">{label('gst.tax_confirmation_evidence', {
           actor: row.confirmation.actorName?.trim() || label('gst.confirmation_name_unavailable'),
           owner: row.confirmation.ownerName?.trim() || label('gst.confirmation_name_unavailable'),
