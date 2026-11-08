@@ -2182,7 +2182,8 @@
     "brandweb.reload_title": "Replace this draft with saved settings?",
     "brandweb.reload_help": "Your unsaved edits will be replaced by the latest saved profile. This does not undo a save that already reached the server.",
     "brandweb.payment_error": "Payment details could not be refreshed. Retry before enabling them on bills.",
-    "brief.title": "Daily brief"
+    "brief.title": "Daily brief",
+    "voiceweb.offline": "Connect to the internet to use voice."
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -4368,7 +4369,8 @@
     "brandweb.reload_title": "इस ड्राफ्ट की जगह सहेजी हुई सेटिंग्स लाएँ?",
     "brandweb.reload_help": "आपके बिना सहेजे बदलावों की जगह नवीनतम सहेजी हुई प्रोफ़ाइल आएगी। सर्वर पर पहले से सहेजे बदलाव वापस नहीं होंगे।",
     "brandweb.payment_error": "भुगतान की जानकारी रिफ्रेश नहीं हुई। इसे बिलों पर दिखाने से पहले फिर कोशिश करें।",
-    "brief.title": "दिन का सारांश"
+    "brief.title": "दिन का सारांश",
+    "voiceweb.offline": "वॉइस इस्तेमाल करने के लिए इंटरनेट से जुड़ें।"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -6553,7 +6555,8 @@
     "brandweb.reload_title": "Is draft ki jagah saved settings laayein?",
     "brandweb.reload_help": "Aapke unsaved edits latest saved profile se replace honge. Server par pehle se save hue changes undo nahi honge.",
     "brandweb.payment_error": "Payment details refresh nahi hui. Bills par dikhane se pehle retry karein.",
-    "brief.title": "Din ka summary"
+    "brief.title": "Din ka summary",
+    "voiceweb.offline": "Voice use karne ke liye internet se connect karein."
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -8738,7 +8741,8 @@
     "brandweb.reload_title": "এই খসড়ার বদলে সেভ করা সেটিংস আনবেন?",
     "brandweb.reload_help": "সেভ না করা পরিবর্তনের বদলে সর্বশেষ সেভ করা প্রোফাইল আসবে। সার্ভারে ইতিমধ্যে সেভ হওয়া পরিবর্তন বাতিল হবে না।",
     "brandweb.payment_error": "পেমেন্টের তথ্য রিফ্রেশ করা যায়নি। বিলে দেখানোর আগে আবার চেষ্টা করুন।",
-    "brief.title": "দিনের সারাংশ"
+    "brief.title": "দিনের সারাংশ",
+    "voiceweb.offline": "ভয়েস ব্যবহার করতে ইন্টারনেটে সংযোগ করুন।"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -10923,7 +10927,8 @@
     "brandweb.reload_title": "இந்த வரைவிற்குப் பதிலாகச் சேமித்த அமைப்புகளை ஏற்றவா?",
     "brandweb.reload_help": "சேமிக்காத மாற்றங்களுக்குப் பதிலாக சமீபத்தில் சேமித்த சுயவிவரம் ஏற்றப்படும். சேவையகத்தில் ஏற்கனவே சேமித்த மாற்றங்கள் ரத்தாகாது.",
     "brandweb.payment_error": "கட்டண விவரங்களைப் புதுப்பிக்க முடியவில்லை. பில்களில் காட்டுவதற்கு முன் மீண்டும் முயற்சிக்கவும்.",
-    "brief.title": "தினசரி சுருக்கம்"
+    "brief.title": "தினசரி சுருக்கம்",
+    "voiceweb.offline": "குரலைப் பயன்படுத்த இணையத்துடன் இணையுங்கள்."
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -13108,7 +13113,8 @@
     "brandweb.reload_title": "ఈ డ్రాఫ్ట్ స్థానంలో సేవ్ చేసిన సెట్టింగ్‌లు తీసుకురావాలా?",
     "brandweb.reload_help": "సేవ్ చేయని మార్పుల స్థానంలో తాజా సేవ్ చేసిన ప్రొఫైల్ వస్తుంది. సర్వర్‌లో ఇప్పటికే సేవ్ అయిన మార్పులు రద్దు కావు.",
     "brandweb.payment_error": "చెల్లింపు వివరాలను రిఫ్రెష్ చేయలేకపోయాము. బిల్లుల్లో చూపించే ముందు మళ్లీ ప్రయత్నించండి.",
-    "brief.title": "రోజువారీ సారాంశం"
+    "brief.title": "రోజువారీ సారాంశం",
+    "voiceweb.offline": "వాయిస్ ఉపయోగించడానికి ఇంటర్నెట్‌కు కనెక్ట్ అవ్వండి."
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -15293,7 +15299,8 @@
     "brandweb.reload_title": "या मसुद्याऐवजी जतन केलेली सेटिंग्ज आणायची?",
     "brandweb.reload_help": "जतन न केलेल्या बदलांऐवजी नवीनतम जतन केलेले प्रोफाइल येईल. सर्व्हरवर आधीच जतन झालेले बदल रद्द होणार नाहीत.",
     "brandweb.payment_error": "पेमेंटची माहिती रिफ्रेश करता आली नाही. बिलांवर दाखवण्यापूर्वी पुन्हा प्रयत्न करा.",
-    "brief.title": "दिवसाचा सारांश"
+    "brief.title": "दिवसाचा सारांश",
+    "voiceweb.offline": "आवाज वापरण्यासाठी इंटरनेटशी कनेक्ट करा."
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -17478,7 +17485,8 @@
     "brandweb.reload_title": "ಈ ಕರಡಿನ ಬದಲು ಉಳಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತರಬೇಕೇ?",
     "brandweb.reload_help": "ಉಳಿಸದ ತಿದ್ದುಪಡಿಗಳ ಬದಲು ಇತ್ತೀಚೆಗೆ ಉಳಿಸಿದ ಪ್ರೊಫೈಲ್ ಬರುತ್ತದೆ. ಸರ್ವರ್‌ನಲ್ಲಿ ಈಗಾಗಲೇ ಉಳಿಸಿದ ಬದಲಾವಣೆಗಳು ರದ್ದಾಗುವುದಿಲ್ಲ.",
     "brandweb.payment_error": "ಪಾವತಿ ವಿವರಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಬಿಲ್‌ಗಳಲ್ಲಿ ತೋರಿಸುವ ಮೊದಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
-    "brief.title": "ದಿನದ ಸಾರಾಂಶ"
+    "brief.title": "ದಿನದ ಸಾರಾಂಶ",
+    "voiceweb.offline": "ಧ್ವನಿ ಬಳಸಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ."
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -19663,7 +19671,8 @@
     "brandweb.reload_title": "આ ડ્રાફ્ટના બદલે સાચવેલી સેટિંગ્સ લાવવી છે?",
     "brandweb.reload_help": "સાચવ્યા વિનાના ફેરફારોની જગ્યાએ તાજેતરમાં સાચવેલી પ્રોફાઇલ આવશે. સર્વર પર પહેલેથી સાચવેલા ફેરફારો પાછા નહીં ખેંચાય.",
     "brandweb.payment_error": "ચુકવણીની વિગતો રિફ્રેશ થઈ શકી નથી. બિલમાં બતાવતા પહેલાં ફરી પ્રયાસ કરો.",
-    "brief.title": "દિવસનો સારાંશ"
+    "brief.title": "દિવસનો સારાંશ",
+    "voiceweb.offline": "અવાજનો ઉપયોગ કરવા ઇન્ટરનેટ સાથે જોડાઓ."
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -21848,6 +21857,7 @@
     "brandweb.reload_title": "ഈ ഡ്രാഫ്റ്റിനു പകരം സേവ് ചെയ്ത ക്രമീകരണങ്ങൾ കൊണ്ടുവരണോ?",
     "brandweb.reload_help": "സേവ് ചെയ്യാത്ത മാറ്റങ്ങൾക്കു പകരം ഏറ്റവും പുതിയ സേവ് ചെയ്ത പ്രൊഫൈൽ വരും. സർവറിൽ ഇതിനകം സേവ് ചെയ്ത മാറ്റങ്ങൾ റദ്ദാകില്ല.",
     "brandweb.payment_error": "പേയ്‌മെന്റ് വിവരങ്ങൾ പുതുക്കാനായില്ല. ബില്ലുകളിൽ കാണിക്കുന്നതിന് മുമ്പ് വീണ്ടും ശ്രമിക്കുക.",
-    "brief.title": "ദിവസ സംഗ്രഹം"
+    "brief.title": "ദിവസ സംഗ്രഹം",
+    "voiceweb.offline": "വോയ്‌സ് ഉപയോഗിക്കാൻ ഇന്റർനെറ്റുമായി ബന്ധിപ്പിക്കുക."
   }
 }

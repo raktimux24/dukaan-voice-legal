@@ -8,7 +8,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/products/barcodes` | Shared workflow matches mobile; generate/replace/download retained | Search, missing-code filter, label records | Ten languages at 320px; filter, selection, generation confirmation checked |
 | `/shop/alerts` | Audited; bulk/prediction buy-list actions restored | Implemented | Ten languages at 320px; filters and add action checked |
 | `/shop/brief` | Audited; history, stock, regeneration and Free audio restored | Implemented | 10-language 320px check; desktop visual and refresh verified |
-| `/shop/voice` | Pending | Pending | Pending |
+| `/shop/voice` | Native review audited; price calculation, removal reason and offline guards restored | Recording states, staged review, responsive dialog | Ten languages at 320px; synthetic capture/review and quantity changes checked |
 | `/shop/cashbook` | Shared mutations match mobile; expense entry and ledger presentation restored | Amount-first expense form, ledger rows, expense list/details | Ten languages at 320px for day and form; synthetic unpaid save verified |
 | `/shop/sales/refunds` | Native periods, summary, rows and bill navigation audited; settlement fallback restored | Sales-style metrics and settlement ledger | Ten languages at 320px; audit disclosure and settlement amounts checked |
 | `/shop/customers/[id]/statement` | Pending | Pending | Pending |
@@ -57,3 +57,5 @@ Product import: native import screen compared, with shared contract/client/workf
 Customer/supplier imports share one implementation. Native party import reviewed; customer Premium and supplier access conditions, balances, staging and confirmation retained. Both routes tested in all ten languages at 320px in upload, mapping and review stages using synthetic jobs. TypeScript and translation coverage passed.
 
 Onboarding: compared native create/join flows and server create fields. Added owner name and preferred language, localized shop type/subtype, normalized Indian phone validation, GST name/address prefill, explicit join confirmation after owned-link parsing and QR capture reuse. Duplicate submission protected. Corrected translated GST select overflow; final ten-language 320px pass. Parser tests, TypeScript and translation checks pass. No shop created/joined, camera permission or physical QR scan executed.
+
+Voice: native voice-feedback compared. Sale checkout and uncertain stock-outcome protections retained. Synthetic capture/review, animated recording indicator and edited quantity calculation checked; ten languages fit 320px. GST/voice regression tests, translations and TypeScript pass. No real microphone, STT/TTS or inventory mutation tested.
