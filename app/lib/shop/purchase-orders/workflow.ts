@@ -77,7 +77,7 @@ export function usePurchaseOrders(
     );
   };
   const open = async (id: string) => {
-    if (busy) return;
+    if (busy || mutex.current || !allowed || !ready) return;
     setBusy(true);
     setError("");
     try {

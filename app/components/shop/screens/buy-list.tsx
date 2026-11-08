@@ -316,7 +316,9 @@ function BuyWorkspace() {
                           tone="ghost"
                           href={
                             "/shop/purchase-orders?buyListItemId=" +
-                            encodeURIComponent(item.id)
+                            encodeURIComponent(item.id) +
+                            "&buyListName=" +
+                            encodeURIComponent(item.itemName)
                           }
                         >
                           {t("po.order_item", "Order")}

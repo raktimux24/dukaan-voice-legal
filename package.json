@@ -11,7 +11,7 @@
     "test:gst": "node scripts/test-gst.mjs",
     "check:gst-core": "node scripts/check-gst-core.mjs",
     "test:translations": "node scripts/test-translations.mjs",
-    "check:release": "next typegen && npm run test:gst && npm run test:translations && npm run test:billing && npm run test:billing-workspace && npm run test:cashbook && npm run test:deletion && npm run test:followups && npm run test:auth && npm run test:home && npm run test:sell && npm run test:checkout && npm run test:sales && npm run test:products && npm run test:buy-list && npm run test:suppliers && npm run test:customers && npm run test:staff && npm run test:reports && npm run test:activity && npm run test:settings && npm run test:photo-session && tsc --noEmit",
+    "check:release": "next typegen && npm run test:gst && npm run test:translations && npm run test:billing && npm run test:billing-workspace && npm run test:cashbook && npm run test:deletion && npm run test:followups && npm run test:auth && npm run test:home && npm run test:sell && npm run test:checkout && npm run test:sales && npm run test:products && npm run test:buy-list && npm run test:suppliers && npm run test:customers && npm run test:staff && npm run test:reports && npm run test:activity && npm run test:settings && npm run test:photo-session && npm run test:purchase-orders && tsc --noEmit",
     "build:verified": "npm run check:release && npm run build",
     "test:seo": "node scripts/test-public-seo.mjs",
     "test:billing": "node scripts/test-mobile-account.cjs",
@@ -32,7 +32,8 @@
     "test:reports": "node --test tests/reports-workspace.test.cjs",
     "test:activity": "node --test tests/activity-workspace.test.cjs",
     "test:settings": "node --test tests/settings-workspace.test.cjs",
-    "test:billing-workspace": "node --test tests/billing-workspace.test.cjs tests/billing-interactions.test.cjs"
+    "test:billing-workspace": "node --test tests/billing-workspace.test.cjs tests/billing-interactions.test.cjs",
+    "test:purchase-orders": "node --test tests/purchase-orders-workspace.test.cjs"
   },
   "repository": {
     "type": "git",
