@@ -4396,3 +4396,26 @@ a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); ba
 @keyframes voice-pulse{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
 @media(max-width:600px){.shop-voice-sheet:has(.voice-stages){inset:auto 0 0;transform:none;width:100%;max-height:94dvh;border-radius:16px 16px 0 0}.voice-stages>span{flex-direction:column;align-items:flex-start;overflow-wrap:anywhere}.shop-voice-scroll:has(.voice-stages){padding:20px 16px max(24px,env(safe-area-inset-bottom))}.voice-review-line .form-grid{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.is-recording .voice-wave i{animation:none}}
+
+/* Customer credit: readable amounts and a deliberate review step. */
+.followup-command { display:grid;grid-template-columns:minmax(150px,1fr) minmax(200px,2fr) auto;gap:16px;align-items:end }
+.followup-ledger { border-top:1px solid var(--color-line,#303038); }
+.followup-row { display:grid;grid-template-columns:minmax(180px,1.2fr) minmax(260px,1.5fr);gap:20px;padding:24px 0;border-bottom:1px solid var(--color-line,#303038);align-items:start }
+.followup-row h2 { font-size:18px;font-weight:600;margin-bottom:8px }
+.followup-row dl { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px }
+.followup-row dt { color:var(--color-muted,#aaaab3);font-size:12px;margin-bottom:8px }
+.followup-row dd { font-size:20px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere }
+.followup-row > button { justify-self:start;grid-column:1/-1 }
+.credit-date-range { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px }
+.credit-workspace iframe { max-width:none }
+.followup-workspace .opening-stack,.credit-workspace .opening-stack { min-width:0 }
+@media(max-width:600px) {
+ .followup-command,.followup-row,.credit-date-range { grid-template-columns:minmax(0,1fr) }
+ .followup-row dl { gap:10px }
+ .followup-row dd { font-size:16px }
+ .followup-row > button { width:100% }
+}
+.followup-workspace .retail-section-tabs,.credit-workspace .retail-section-tabs { display:flex;width:100%;max-width:none;align-self:stretch;background:none;border:0;border-bottom:1px solid var(--color-line,#303038);padding:0;gap:24px;border-radius:0 }
+.followup-workspace .retail-section-tabs button,.credit-workspace .retail-section-tabs button { flex:0 1 auto;min-width:0;padding:14px 0;border-radius:0;background:none;box-shadow:none;border-bottom:2px solid transparent }
+.followup-workspace .retail-section-tabs button.is-active,.credit-workspace .retail-section-tabs button.is-active { color:#ff9857;background:none;border-bottom-color:#ff6b00 }
+@media(max-width:600px){.followup-workspace .retail-section-tabs,.credit-workspace .retail-section-tabs{gap:16px}.credit-workspace .retail-section-tabs button{flex:1}}
