@@ -4419,3 +4419,33 @@ a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); ba
 .followup-workspace .retail-section-tabs button,.credit-workspace .retail-section-tabs button { flex:0 1 auto;min-width:0;padding:14px 0;border-radius:0;background:none;box-shadow:none;border-bottom:2px solid transparent }
 .followup-workspace .retail-section-tabs button.is-active,.credit-workspace .retail-section-tabs button.is-active { color:#ff9857;background:none;border-bottom-color:#ff6b00 }
 @media(max-width:600px){.followup-workspace .retail-section-tabs,.credit-workspace .retail-section-tabs{gap:16px}.credit-workspace .retail-section-tabs button{flex:1}}
+/* Opening balances: setup choices, records and a distinct confirmation footer. */
+.opening-workspace { max-width:1120px;gap:24px }
+.opening-section { border-top:1px solid var(--color-line,#303038);padding-top:24px;min-width:0 }
+.opening-section h2 { font-size:20px;font-weight:600;margin:0 0 16px }
+.opening-section-content { display:grid;gap:16px;min-width:0 }
+.opening-banner { border-left:2px solid #ff9857;padding:16px 20px;background:rgba(255,152,87,.04);display:grid;gap:12px }
+.opening-banner.tone-danger { border-color:#f87171 }.opening-banner.tone-success{border-color:#34d399}
+.opening-record { display:flex;align-items:center;gap:20px;justify-content:space-between;width:100%;padding:20px;text-align:left;border:1px solid var(--color-line,#303038);border-radius:8px;background:rgba(255,255,255,.025);min-width:0 }
+button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04) }
+.opening-row-main { display:flex;gap:14px;min-width:0 }.opening-row-main p{margin-top:6px;line-height:1.6}.opening-row-main strong{font-size:16px}.opening-record.is-emphasized{border-left:2px solid #ff6b00}
+.opening-stat { display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--color-line,#303038) }.opening-stat.is-total strong{font-size:28px;color:#ff9857}
+.opening-badge { font-size:12px;padding:4px 9px;border:1px solid var(--color-line,#303038);border-radius:4px;overflow-wrap:anywhere }
+.opening-options { display:flex;flex-wrap:wrap;gap:12px }.opening-options button { padding:12px 16px;border:1px solid var(--color-line,#303038);border-radius:6px;text-align:left;flex:1;min-width:120px }.opening-options small{display:block;margin-top:6px;color:var(--color-muted,#aaa)}.opening-options [aria-pressed=true]{border-color:#ff6b00;background:rgba(255,107,0,.08)}
+.opening-workspace-footer { position:sticky;bottom:0;background:var(--color-shop,#101015);padding:16px 0;border-top:1px solid var(--color-line,#303038);z-index:2;display:flex;justify-content:space-between;gap:16px }.opening-workspace-footer>div{display:flex;gap:12px;flex-wrap:wrap}
+@media(max-width:600px){.opening-workspace-footer{position:static;flex-direction:column}.opening-workspace-footer>div{display:grid;grid-template-columns:minmax(0,1fr)}.opening-record{padding:16px;gap:12px;flex-wrap:wrap}.opening-stat{flex-wrap:wrap}.opening-options button{min-width:0;flex-basis:100%}}
+/* GST workspaces share the same ledger hierarchy as sales and purchasing. */
+.gst-workspace { max-width:1240px;gap:24px;min-width:0 }
+.gst-workspace .gst-navigation { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px }
+.gst-workspace .shop-list-row { padding:24px 0;border-radius:0;background:none;border:0;border-bottom:1px solid var(--color-line,#303038);gap:20px }
+.gst-workspace .gst-section { border-radius:6px;background:rgba(255,255,255,.015) }
+.gst-workspace .gst-section>summary { padding:20px;min-height:64px }.gst-workspace .gst-section-body{padding:20px}
+.gst-reference { overflow-wrap:anywhere;font-size:12px;color:var(--color-muted,#aaa);font-family:monospace }
+.gst-record-metrics { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px }
+.gst-record-metrics>div { display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--color-line,#303038);padding:12px 0 }.gst-record-metrics dt{color:var(--color-muted,#aaa)}.gst-record-metrics dd{font-variant-numeric:tabular-nums;font-size:20px}
+@media(max-width:600px){
+ .gst-workspace .gst-navigation,.gst-record-metrics{grid-template-columns:minmax(0,1fr)}
+ .gst-mobile-records,.gst-mobile-records tbody,.gst-mobile-records tr,.gst-mobile-records td{display:block;width:100%;min-width:0}
+ .gst-mobile-records thead{display:none}.gst-mobile-records tr{padding:12px 0;border-bottom:1px solid var(--color-line,#303038)}
+ .gst-mobile-records td{display:flex;justify-content:space-between;gap:12px;border:0;padding:8px 0;white-space:normal;overflow-wrap:anywhere}.gst-mobile-records td:before{content:attr(data-label);color:var(--color-muted,#aaa);font-size:12px;flex-shrink:0}
+}

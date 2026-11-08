@@ -387,7 +387,7 @@ export function useOpenings(
       setMessage("opening.payment_saved");
       await refresh();
     });
-  const skip = () =>
+  const skip = (onSkipped?: () => void) =>
     run(async () => {
       locked();
       await connected();
@@ -395,6 +395,8 @@ export function useOpenings(
       guard();
       setMessage("opening.skipped");
       await refresh();
+      guard();
+      onSkipped?.();
     });
   const edit = () => {
     if (pending || busy) return;

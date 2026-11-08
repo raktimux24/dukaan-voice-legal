@@ -16,7 +16,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/products/import` | Shared workflow matches mobile; issue-first review and grouped mapping restored | Responsive upload/history, mapped columns and review | Ten languages × upload/mapping/review at 320px; skip/include checked |
 | `/shop/customers/import` | Shared workflow and native party screen audited | Grouped mapping, issue-first review and upload history | Ten languages × three stages at 320px |
 | `/shop/suppliers/import` | Shared workflow and native party screen audited | Grouped mapping, issue-first review and upload history | Ten languages × three stages at 320px |
-| `/shop/settings/opening-balances` | Pending | Pending | Pending |
+| `/shop/settings/opening-balances` | New native guided view ported; shared workflow aligned | Setup choices, records, status hierarchy and confirmation footer | Ten languages × hub/editor at 320px; synthetic setup transition checked |
 | `/shop/settings/gst` | Pending | Pending | Pending |
 | `/shop/settings/gst/checks` | Pending | Pending | Pending |
 | `/shop/settings/gst/devices` | Pending | Pending | Pending |
@@ -63,3 +63,5 @@ Voice: native voice-feedback compared. Sale checkout and uncertain stock-outcome
 Follow-ups: native view and shared workflow compared. Existing snooze, history, reviewed channel launch and explicit contact recording retained. Responsive queue and settings checked with synthetic data; deselection disables reminder preparation. No messages sent or real contact records changed. Follow-up regression, TypeScript and translation checks pass.
 
 Credit statements: shared contract/workflow/client/statement source matches mobile; native view compared. Reversed date range disables snapshot creation, verified with keyboard input. Existing PDF/CSV export retained; new live exports not generated. Translation and TypeScript checks pass.
+
+Opening balances: ported current portable native view and optional skip callback into the web host. Existing staged review, owner confirmation, retained-request recovery and supplier settlement controls preserved. Ten-language mobile hub/editor checks and TypeScript, financial regression and translations pass. No balances applied or payments recorded.

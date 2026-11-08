@@ -10,7 +10,6 @@ import {
 } from "./contract";
 import type { useCashbook } from "./workflow";
 export type CashUi = OpeningUi & {
-  Link?: ComponentType<{label:string;onPress:()=>void;disabled?:boolean}>;
   Select: ComponentType<{
     label: string;
     value: string;
