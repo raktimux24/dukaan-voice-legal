@@ -258,7 +258,7 @@ export function GstChecksScreen() {
   }[view];
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-check-workspace">
         <PageHeader
           title={text("GST record checks")}
           back={{ href: base, label: text("GST records") }}
@@ -267,7 +267,7 @@ export function GstChecksScreen() {
           )}
         />
         <Notice error={q.error} />
-        <Card>
+        <Card className="gst-check-summary">
           <h2 className="shop-section-title">{text(status)}</h2>
           <p className="shop-hint">
             {last
@@ -356,14 +356,14 @@ export function GstChecksScreen() {
             </p>
           </Card>
         ) : null}
-        {issues.map((issue) => {
+        <div className="gst-issue-grid">{issues.map((issue) => {
           const message = issue.kind === "closedPeriodChanged" ? [t("gst.monitor.kind.closedPeriodChanged", "Closed reporting period has new records"),t("gst.period_changed", "Records changed after closing. Reopen and review updated reports."),"periods"] : messages[issue.kind] ?? [
             "Saved records need review",
             "Keep the original records and ask support to investigate.",
             "recovery",
           ];
           return (
-            <Card key={issue.id}>
+            <Card key={issue.id} className="gst-issue-record">
               <Pill tone={issue.severity === "critical" ? "danger" : "warn"}>
                 {text("Needs review")}
               </Pill>
@@ -421,7 +421,7 @@ export function GstChecksScreen() {
             </Card>
           );
         })}
-        {report?.issueTruncated && issueLimit < 10000 ? (
+        </div>{report?.issueTruncated && issueLimit < 10000 ? (
           <Button
             tone="ghost"
             disabled={q.isFetching || action.busy || offline}
@@ -621,11 +621,11 @@ export function GstDevicesScreen({
   );
 }
 export function GstRecoveryScreen() {
-  const { api, shop, userId, offline } = useShop(),
+  const { api, shop, userId, offline, perms, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
-  const [closureReason, setClosureReason] = useState(""),
+  const [closureReasons,setClosureReasons]=useState<Record<string,string>>({}),[section,setSection]=useState("bills"),
     settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
     q = useGstQuery(
       ["recovery"],
@@ -639,11 +639,12 @@ export function GstRecoveryScreen() {
       true,
       "always",
     );
+  const rows=(q.data??[]).filter(row=>row.path.endsWith('/sales')?section==='bills'||!perms.canSeeCost:perms.canSeeCost&&section==='requests');
   async function retry(row: RetainedRequest) {
     await recoverFinancialRequest(api, shop!.id, row);
   }
   return (
-    <div className="shop-page">
+    <div className="shop-page gst-workspace gst-recovery-workspace">
       <PageHeader
         title={text("Device bill recovery")}
         back={{ href: base, label: text("GST records") }}
@@ -652,8 +653,9 @@ export function GstRecoveryScreen() {
         )}
       />
       {action.notice}
-      <ReadState query={q} empty={!q.data?.length}>
-        {q.data?.map((row) => (
+      {perms.canSeeCost?<div className="gst-workspace-tabs" role="group">{['bills','requests'].map(key=><button key={key} aria-pressed={section===key} onClick={()=>setSection(key)}>{key==='bills'?t('sales.summary.bills','Bills'):t('recordsUI.requests','Requests')}</button>)}</div>:null}
+      <ReadState query={q} empty={!rows.length}>
+        {rows.map((row) => (
           <Section
             key={row.id}
             title={text(
@@ -664,7 +666,7 @@ export function GstRecoveryScreen() {
             summary={`${text(row.state === "confirmed" ? "Confirmed" : row.state === "closed" ? "Closed without recording" : "Needs recovery")} · ${date(row.createdAt)}`}
           >
             <Notice error={row.error ? Error(row.error) : null} />
-            <p className="shop-hint">
+            <p className="gst-reference">
               {text("Original request")} {row.id}
             </p>
             {hasLocalIssuedReceipt(row) ? (
@@ -696,21 +698,21 @@ export function GstRecoveryScreen() {
                 </p>
                 <TextField
                   label={text("Reason")}
-                  value={closureReason}
-                  onChange={setClosureReason}
+                  value={closureReasons[row.id]??""}
+                  onChange={value=>setClosureReasons(old=>({...old,[row.id]:value}))}
                 />
                 <Button
                   tone="danger"
-                  disabled={action.busy || !closureReason.trim()}
+                  disabled={action.busy || offline || !(closureReasons[row.id]??"").trim()}
                   onClick={() =>
                     void action.run(async () => {
                       await closeUnrecordedPurchase(
                         api,
                         shop!.id,
                         row,
-                        closureReason,
+                        closureReasons[row.id]??"",
                       );
-                      setClosureReason("");
+                      setClosureReasons(old=>({...old,[row.id]:""}));
                       await q.refetch();
                     })
                   }

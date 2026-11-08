@@ -4449,3 +4449,9 @@ button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04
  .gst-mobile-records thead{display:none}.gst-mobile-records tr{padding:12px 0;border-bottom:1px solid var(--color-line,#303038)}
  .gst-mobile-records td{display:flex;justify-content:space-between;gap:12px;border:0;padding:8px 0;white-space:normal;overflow-wrap:anywhere}.gst-mobile-records td:before{content:attr(data-label);color:var(--color-muted,#aaa);font-size:12px;flex-shrink:0}
 }
+.gst-check-summary { border-top:2px solid #ff9857;padding:28px;display:grid;gap:14px }
+.gst-issue-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px }.gst-issue-record{display:grid;gap:16px;align-content:start}.gst-issue-record>button{justify-self:start}
+.gst-workspace-tabs { display:flex;gap:24px;border-bottom:1px solid var(--color-line,#303038) }.gst-workspace-tabs button{padding:14px 0;border-bottom:2px solid transparent;min-height:48px}.gst-workspace-tabs [aria-pressed=true]{border-color:#ff6b00;color:#ff9857}
+.local-receipt-workspace { max-width:1000px }.local-receipt-status{display:grid;gap:16px;border-top:2px solid #ff9857}.local-receipt-workspace .receipt{width:100%;max-width:720px;margin-inline:auto}.local-receipt-workspace .receipt-lines li>div{min-width:0}.local-receipt-workspace .receipt-lines b{white-space:nowrap}
+@media(max-width:700px){.gst-issue-grid{grid-template-columns:minmax(0,1fr)}.gst-check-summary{padding:20px}.local-receipt-workspace .receipt{padding:20px 16px}.local-receipt-workspace .receipt-lines li{gap:12px;flex-wrap:wrap}.local-receipt-workspace .receipt-lines li>b{margin-left:auto}}
+.gst-workspace .shop-actions { min-width:0;flex-wrap:wrap }.gst-workspace .shop-btn{max-width:100%;white-space:normal;overflow-wrap:anywhere;min-width:0}
