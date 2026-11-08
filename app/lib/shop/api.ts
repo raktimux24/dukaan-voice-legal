@@ -555,9 +555,9 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send<{ logs: AuditLogEntry[]; total: number; hasMore: boolean; limitedToDays?: number | null }>(
         `/api/shops/${shopId}/audit-log${queryString({ filter, limit: 50, offset })}`,
       ),
-    getAllAudit: async (shopId: string) => {
+    getAllAudit: async (shopId: string, filter = 'all') => {
       return collectPages(async offset => {
-        const page = await send<{logs: AuditLogEntry[]; hasMore: boolean}>(`/api/shops/${shopId}/audit-log${queryString({filter: 'all', limit: 100, offset})}`);
+        const page = await send<{logs: AuditLogEntry[]; hasMore: boolean}>(`/api/shops/${shopId}/audit-log${queryString({filter, limit: 100, offset})}`);
         return {rows: page.logs ?? [], hasMore: page.hasMore};
       });
     },
@@ -584,21 +584,26 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       return res;
     },
 
-    getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' = 'home') =>
+    getUdhaarRisk: (shopId:string) => send<{profiles:import('./types').UdhaarRiskProfile[]}>(`/api/shops/${shopId}/nudges/udhaar-risk`),
+    getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' | 'buy_list' | 'customer' = 'home') =>
       send<{ nudges: Nudge[]; premium: boolean }>(`/api/shops/${shopId}/nudges?surface=${surface}`),
     getBrief: (shopId: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief`),
-    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed') =>
-      send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface: 'home' }) }),
+    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed', surface:'home'|'product'|'checkout'|'buy_list'|'customer'='home') =>
+      send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface }) }),
     actNudge: (shopId: string, id: string, body: Record<string, unknown> = {}) =>
-      send(`/api/shops/${shopId}/nudges/${id}/act`, { method: 'POST', body: JSON.stringify(body) }),
-    postDemand: (shopId: string, term: string) =>
-      send(`/api/shops/${shopId}/nudges/demand`, { method: 'POST', body: JSON.stringify({ term, source: 'search' }) }),
+      send<{ ok: boolean; already?: boolean; message?: string; phone?: string | null }>(`/api/shops/${shopId}/nudges/${id}/act`, { method: 'POST', body: JSON.stringify(body) }),
+    getDemandTerms: (shopId: string) =>
+      send<{ terms: import('./home').DemandTerm[] }>(`/api/shops/${shopId}/nudges/demand?days=7`),
+    postDemand: (shopId: string, term: string, source: 'search'|'manual' = 'search') =>
+      send(`/api/shops/${shopId}/nudges/demand`, { method: 'POST', body: JSON.stringify({ term, source }) }),
+
+    deleteDemandTerm: (shopId:string, term:string) => send(`/api/shops/${shopId}/nudges/demand?term=${encodeURIComponent(term)}`, {method:'DELETE'}),
 
     getAlerts: (shopId: string) => send<UnifiedAlerts>(`/api/shops/${shopId}/predictions/alerts`),
     getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string; productId?: string | null; productName?: string | null }[] }>(`/api/shops/${shopId}/predictions`),
     dismissPrediction: (shopId: string, id: string) => send(`/api/shops/${shopId}/predictions/${id}/dismiss`, { method: 'PATCH' }),
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
-    getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
+    getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalStockValue?: number; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
 
     getEntitlement: (shopId: string) => {
       const load=()=>send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`);

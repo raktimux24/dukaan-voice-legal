@@ -6,21 +6,19 @@ import { useShop } from '../context';
 import { PageHeader, Spinner } from '../ui';
 
 export function SubscriptionScreen() {
-  const { shop, t, prefs } = useShop();
+  const { shop, userId, role, t, prefs, offline, signOutShop } = useShop();
   if (!shop) return <Spinner />;
-  const locale = getLocale(prefs?.appLanguage === 'hinglish' ? 'hi' : prefs?.appLanguage ?? 'en');
-
+  const language = prefs?.appLanguage ?? 'en';
+  const locale = getLocale(language === 'hinglish' ? 'hi' : language);
   return (
-    <div className="shop-page">
-      <PageHeader
-        back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
-        kicker={t('subscription.section_title', 'Billing')}
-        title={t('subscription.section_title', 'Subscription')}
-        description={t('subscription.web_only_message', 'Plans, payment method, and invoices for this shop. Checkout still runs through Razorpay.')}
-      />
-      <div className="shop-billing">
-        <AccountDashboard locale={locale} lockedShopId={shop.id} embedded />
-      </div>
+    <div className="shop-page billing-workspace">
+      <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
+        kicker={shop.name} title={t('billingweb.heading', 'Billing')}
+        description={t('billingweb.intro', 'Plan, payments and invoices for this shop.')} />
+      {offline ? <p role="status">{t('settingsweb.offline', 'Reconnect to change settings or download records.')}</p> :
+        <div className="shop-billing">
+          <AccountDashboard key={`${userId}:${shop.id}:${role}`} locale={locale} language={language} translate={t} onSignOut={signOutShop} lockedShopId={shop.id} embedded />
+        </div>}
     </div>
   );
 }

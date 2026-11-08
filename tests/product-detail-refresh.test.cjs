@@ -19,6 +19,7 @@ Module._load=function(request,parent,isMain){
  if(file.endsWith('/shop/gst-ui'))return {useGstText:()=>value=>value};
  if(file.endsWith('/shop/ui'))return ui;
  if(file.endsWith('/shop/use-shop-dates'))return {useShopDates:()=>({formatDay:()=>'',formatWhen:()=>''})};
+ if(file.endsWith('/shop/product-image'))return {ProductImage:()=>null};
  if(file.endsWith('/shop/product-gallery'))return {ProductGallery:()=>React.createElement('div',{'data-gallery':true})};
  if(file.endsWith('/shop/product-barcode'))return {ProductBarcodeCard:()=>null};
  if(file.endsWith('/shop/product-tax-history'))return {ProductTaxHistory:()=>null};

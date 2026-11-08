@@ -28,6 +28,7 @@ export function Button({
   href,
   className,
   title,
+  'aria-label': ariaLabel,
 }: {
   children: ReactNode;
   type?: 'button' | 'submit';
@@ -39,6 +40,7 @@ export function Button({
   href?: string;
   className?: string;
   title?: string;
+  'aria-label'?: string;
 }) {
   const classes = cx(
     'shop-btn',
@@ -53,7 +55,7 @@ export function Button({
   );
   if (href) return <Link className={classes} href={href} title={title}>{children}</Link>;
   return (
-    <button className={classes} type={type} onClick={onClick} disabled={disabled} title={title}>
+    <button aria-label={ariaLabel} className={classes} type={type} onClick={onClick} disabled={disabled} title={title}>
       {children}
     </button>
   );
@@ -161,12 +163,17 @@ export function Kbd({ children }: { children: ReactNode }) {
 }
 
 export type GlyphName =
-  | 'store' | 'qr' | 'staff' | 'card' | 'wallet' | 'shield' | 'receipt' | 'clipboard'
+  | 'search' | 'scan' | 'barcode' | 'mic' | 'alert' | 'store' | 'qr' | 'staff' | 'card' | 'wallet' | 'shield' | 'receipt' | 'clipboard'
   | 'bag' | 'landmark' | 'users' | 'truck' | 'package' | 'download' | 'phone' | 'pin' | 'user' | 'languages';
 
 export function Glyph({ name }: { name: GlyphName }) {
   const svg = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, viewBox: '0 0 24 24', 'aria-hidden': true as const };
   const paths: Record<GlyphName, ReactNode> = {
+    search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></>,
+    scan: <><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M3 12h18M8 8v8M12 8v8M16 8v8"/></>,
+    barcode: <><path d="M4 5v14M7 5v14M11 5v14M13 5v14M17 5v14M20 5v14"/></>,
+    mic: <><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M6 10v2a6 6 0 0 0 12 0v-2M12 18v3M9 21h6"/></>,
+    alert: <><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5M12 17h.01"/></>,
     store: <><path d="M3 10 5 4h14l2 6" /><path d="M4 10h16v9H4z" /><path d="M9 19v-5h6v5" /></>,
     qr: <><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><path d="M14 14h2v2h-2zM18 14h2v6h-6v-2h4z" /></>,
     staff: <><circle cx="9" cy="8" r="3" /><path d="M3 19a6 6 0 0 1 12 0" /><circle cx="17" cy="9" r="2.2" /><path d="M16 19a4.5 4.5 0 0 1 5-4" /></>,

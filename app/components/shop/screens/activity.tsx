@@ -1,141 +1,428 @@
-'use client';
+"use client";
 
-import {productPhotoActivity} from "../../../lib/shop/product-images/activity";
-import {ProductImageById} from "../product-image";
-import { useGstText as useUiText } from "../gst-ui";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { ProductImageById } from "../product-image";
+import { useShop } from "../context";
+import { Button, NoAccess, Notice, PageHeader, Spinner } from "../ui";
+import { downloadText } from "../../../lib/shop/csv";
+import { formatTime, formatDay, formatWhen } from "../../../lib/shop/money";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
+import {
+  ACTIVITY_FILTERS,
+  activityFilter,
+  activityGroups,
+  activityDay,
+  activityDescription,
+  activitySource,
+  activityLabel,
+  activityTarget,
+  activityCsv,
+  nextActivityPage,
+  uniqueActivity,
+  normalizedActivityAction,
+  type ActivityFilter,
+} from "../../../lib/shop/activity";
+import type { AuditLogEntry } from "../../../lib/shop/types";
 
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { auditCsv, downloadText } from '../../../lib/shop/csv';
-import { useShopDates } from '../use-shop-dates';
-import type { AuditLogEntry } from '../../../lib/shop/types';
-import { useShop } from '../context';
-import { Button, Chip, Notice, PageHeader, Spinner } from '../ui';
-
-function activityFilterLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
-  if (id === 'all') return t('activity.filter_all', fallback);
-  if (id === 'sales') return t('activity.filter_sales', fallback);
-  if (id === 'stock') return t('activity.filter_stock', fallback);
-  if (id === 'today') return t('activity.filter_today', fallback);
-  return fallback;
-}
-
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'sales', label: 'Sales' },
-  { id: 'stock', label: 'Stock' },
-  { id: 'today', label: 'Today' },
-] as const;
-
-const ACTION_KEYS: Record<string, [string, string]> = {
-  cashbook:['cashbook.title','Expenses & cashbook'],
-  estimate:['estimates.title','Quotations / estimates'],
-  product_images_updated:['product_images.title','Product photos'],
-  product_bulk_edit:['bulk.title','Bulk product editing'],
-  barcode_generated:['barcodes.title','Product barcodes'],
-  barcode_replaced:['barcodes.title','Product barcodes'],
-  party_import:['imports.source','File import'],
-  purchase_order:['po.title','Purchase orders'],
-  inventory_import:['imports.source','File import'],
-  sale: ['activity.filter_sales', 'Sale'],
-  sale_created: ['activity.filter_sales', 'Sale'],
-  sale_void: ['sales.status_filter.voided', 'Sale voided'],
-  sale_voided: ['sales.status_filter.voided', 'Sale voided'],
-  sale_returned: ['sale_detail.returns', 'Sale returned'],
-  sale_return: ['sale_detail.returns', 'Sale returned'],
-  stock_adjusted: ['reports.stock.units_adjusted', 'Stock adjusted'],
-};
-
-function dayLabel(iso: string, t: (key: string, fallback: string) => string, language: string | undefined) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return t('brief.earlier', 'Earlier');
-  const today = new Date();
-  const same = (left: Date, right: Date) =>
-    left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate();
-  if (same(date, today)) return t('common.time_today', 'Today');
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (same(date, yesterday)) return t('common.time_yesterday', 'Yesterday');
-  const locale = language && language !== 'hinglish' ? `${language}-IN` : 'en-IN';
-  return date.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function tone(action: string) {
-  if (action.includes('void') || action.includes('return') || action.includes('deleted') || action.includes('removed')) return 'is-danger';
-  if (action.startsWith('sale')) return 'is-sale';
-  if (action.startsWith('stock') || action.startsWith('batch') || action.startsWith('product')) return 'is-stock';
-  return '';
-}
-
-function groups(logs: AuditLogEntry[], t: (key: string, fallback: string) => string, language: string | undefined) {
-  const days: { label: string; logs: AuditLogEntry[] }[] = [];
-  for (const log of logs) {
-    const label = dayLabel(log.createdAt, t, language);
-    const last = days[days.length - 1];
-    if (last?.label === label) last.logs.push(log);
-    else days.push({ label, logs: [log] });
-  }
-  return days;
-}
-
-export function ActivityScreen() {
-  const uiText = useUiText();
-  const { formatTime } = useShopDates();
-  const { api, shop, prefs, t } = useShop();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('all');
-  const [error, setError] = useState<unknown>(null);
-  const logs = useQuery({
-    queryKey: ['audit', shop?.id, filter],
-    enabled: !!shop,
-    queryFn: () => api.getAudit(shop!.id, filter),
-  });
-
-  if (!shop) return <Spinner />;
-  const days = groups(logs.data?.logs ?? [], t, prefs?.appLanguage);
-
+function ActivityMark({ log }: { log: AuditLogEntry }) {
+  const productId =
+    typeof log.payload?.productId === "string" ? log.payload.productId : null;
+  if (productId)
+    return (
+      <ProductImageById
+        productId={productId}
+        name={String(log.payload?.productName ?? "")}
+        size={42}
+      />
+    );
+  const action = normalizedActivityAction(log.actionType);
+  const paths: Record<string, string> = {
+    add: "M12 5v14M5 12h14",
+    remove: "M5 12h14",
+    sale: "M6 3h12v18l-3-2-3 2-3-2-3 2V3m3 5h6m-6 4h6",
+    sale_void: "M5 5l14 14M19 5L5 19",
+    sale_return: "M7 7h8a5 5 0 0 1 0 10h-4M7 7l4-4M7 7l4 4",
+    adjustment: "M4 8h16M8 4v8M4 17h16M16 13v8",
+    member_removed:
+      "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8m8 5h5",
+    member_role_changed: "M4 8h16m-4-4 4 4-4 4M20 16H4m4-4-4 4 4 4",
+  };
   return (
-    <div className="shop-page">
+    <span
+      className={
+        "activity-mark is-" +
+        (action.startsWith("sale")
+          ? "sale"
+          : action === "add"
+            ? "add"
+            : ["remove", "adjustment", "member_removed"].includes(action)
+              ? "change"
+              : "record")
+      }
+      aria-hidden="true"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d={paths[action] ?? "M3 12h4l3-7 4 14 3-7h4"} />
+      </svg>
+    </span>
+  );
+}
+export function ActivityScreen() {
+  const { shop, userId, perms, premium, offline, prefs } = useShop();
+  return (
+    <ActivityWorkspace
+      key={`${shop?.id}:${userId}:${perms.role}:${premium}:${offline}:${prefs?.appLanguage}`}
+    />
+  );
+}
+function ActivityWorkspace() {
+  const { api, shop, userId, perms, prefs, premium, t, offline } = useShop(),
+    params = useSearchParams();
+  const text = (key: string, vars?: Record<string, string | number>) =>
+    t(key, EN_FALLBACK[key] ?? "", vars);
+  const [filter, setFilter] = useState<ActivityFilter>(() =>
+      activityFilter(params.get("filter")),
+    ),
+    [error, setError] = useState<unknown>(null),
+    [exporting, setExporting] = useState(false),
+    [exported, setExported] = useState<string | null>(null);
+  const alive = useRef(true),
+    exportLock = useRef(false);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  const enabled = !!shop && !!perms.role && !offline;
+  const logs = useInfiniteQuery({
+    queryKey: ["activity", shop?.id, userId, perms.role, premium, filter],
+    enabled,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => api.getAudit(shop!.id, filter, pageParam),
+    getNextPageParam: (last, _pages, lastOffset) =>
+      nextActivityPage(last, lastOffset),
+    staleTime: 0,
+  });
+  const rows = uniqueActivity(logs.data?.pages ?? []),
+    days = activityGroups(rows),
+    limited = logs.data?.pages[0]?.limitedToDays,
+    total = logs.data?.pages[0]?.total;
+  const filterName = text("activity.filter_" + filter);
+  const today = activityDay(new Date().toISOString()),
+    yesterday = activityDay(new Date(Date.now() - 86400000).toISOString());
+  const dayName = (day: string) =>
+    day === today
+      ? text("common.time_today")
+      : day === yesterday
+        ? text("common.time_yesterday")
+        : day === "unknown"
+          ? t("activityweb.date_unknown", "Date unavailable")
+          : formatDay(day + "T12:00:00+05:30", prefs?.appLanguage);
+  const exportCsv = async () => {
+    if (!enabled || !shop || exportLock.current) return;
+    exportLock.current = true;
+    setExporting(true);
+    setExported(null);
+    setError(null);
+    const requestedFilter = filter,
+      requestedLabel = filterName;
+    try {
+      api.assertSession();
+      const all = await api.getAllAudit(shop.id, requestedFilter);
+      api.assertSession();
+      if (alive.current) {
+        downloadText(
+          `activity-${requestedFilter}.csv`,
+          activityCsv(
+            uniqueActivity([{ logs: all, total: all.length, hasMore: false }]),
+            text,
+            prefs?.appLanguage,
+          ),
+        );
+        setExported(
+          t(
+            "activityweb.export_ready",
+            "Downloaded {{n}} available entries · {{filter}}",
+            { n: all.length, filter: requestedLabel },
+          ),
+        );
+      }
+    } catch (e) {
+      if (alive.current) setError(e);
+    } finally {
+      if (alive.current) {
+        exportLock.current = false;
+        setExporting(false);
+      }
+    }
+  };
+  if (!shop) return <Spinner />;
+  if (offline)
+    return (
+      <div className="shop-page activity-workspace">
+        <div className="activity-empty" role="status">
+          <h2>{text("activity.title")}</h2>
+          <p>
+            {t("activityweb.offline", "Reconnect to view the latest activity.")}
+          </p>
+        </div>
+      </div>
+    );
+  if (!perms.role)
+    return (
+      <NoAccess
+        what={t("activityweb.access", "Join a shop to view its activity.")}
+      />
+    );
+  return (
+    <div className="shop-page activity-workspace">
       <PageHeader
-        kicker={t('reports.title', 'Insights')}
-        title={t('activity.title', 'Activity')}
-        description={uiText("Every stock change, sale, void, and staff change in this shop.")}
+        kicker={t("activityweb.journal", "Shop journal")}
+        title={text("activity.title")}
+        description={t(
+          "activityweb.intro",
+          "Follow the work behind each sale, stock change and update.",
+        )}
         actions={
-          <Button
-            tone="ghost"
-            onClick={() => {
-              setError(null);
-              void api.getAllAudit(shop.id).then((rows) => downloadText(`activity-${shop.name}.csv`, auditCsv(rows, prefs?.appLanguage))).catch(setError);
-            }}
-          >
-            {t('reports.sales.export_csv', 'Export CSV')}
-          </Button>
+          <>
+            <Button
+              tone="ghost"
+              disabled={logs.isFetching}
+              onClick={() => void logs.refetch()}
+            >
+              {t("common.refresh", "Refresh")}
+            </Button>
+            <Button
+              tone="ghost"
+              disabled={
+                exporting || logs.isLoading || !logs.data || logs.isError
+              }
+              onClick={() => void exportCsv()}
+            >
+              {exporting
+                ? text("common.loading")
+                : t("activityweb.export", "Export CSV")}{" "}
+              ↓
+            </Button>
+          </>
         }
       />
-      <div className="pos-chips">
-        {FILTERS.map((item) => <Chip key={item.id} active={filter === item.id} onClick={() => setFilter(item.id)}>{activityFilterLabel(item.id, item.label, t)}</Chip>)}
+      <div className="activity-controls">
+        <div
+          className="activity-filters"
+          aria-label={t("activityweb.filter_label", "Filter activity")}
+        >
+          {ACTIVITY_FILTERS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={filter === id}
+              onClick={() => {
+                setFilter(id);
+                setError(null);
+                setExported(null);
+              }}
+            >
+              {text("activity.filter_" + id)}
+            </button>
+          ))}
+        </div>
+        <span className="activity-zone">
+          {t("activityweb.india_time", "Times shown in IST")}
+        </span>
       </div>
-      <Notice error={error ?? logs.error} />
-      {logs.data?.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: logs.data.limitedToDays })}</p> : null}
-      {logs.isLoading ? <Spinner label={uiText("Loading activity")} /> : null}
-      {!logs.isLoading && days.length === 0 ? <p className="shop-list-empty">{t('activity.empty_title', 'Nothing recorded for this filter.')}</p> : null}
-      {days.map((day) => (
-        <section key={day.label}>
-          <h2 className="timeline-day">{day.label}</h2>
-          <ol className="timeline">
-            {day.logs.map((log) => (
-              <li key={log.id} className={`timeline-item ${tone(log.actionType)}`}>
-                <div>
-                  {typeof log.payload?.productId==='string'?<ProductImageById productId={log.payload.productId} name={String(log.payload.productName??'')} size={36}/>:null}
-                  <p className="timeline-title">{log.inputMethod==='import'?t('imports.source','File import'):log.actionType==='collection_followup'?t('followups.event.'+String(log.payload?.kind??'prepared'),''):log.actionType==='cashbook'?t('cashbook.event.'+String(log.payload?.operation??'expense'),''):log.actionType==='estimate'?t('estimates.event.'+String(log.payload?.operation??'create'),'')+' · '+String(log.payload?.number??''):log.actionType==='purchase_order'?t('po.event.'+String(log.payload?.operation??'create'),'')+' · '+String(log.payload?.number??''):log.actionType.startsWith('opening_')?t('activity.'+log.actionType, ''):log.actionType==='document_branding_updated'?t('documents.title','Branding & formats'):ACTION_KEYS[log.actionType] ? t(ACTION_KEYS[log.actionType][0], ACTION_KEYS[log.actionType][1]) : log.actionType.replaceAll('_', ' ')}</p>
-                  <p className="timeline-meta">{log.actionType==='product_images_updated'?productPhotoActivity(log.payload,(key,vars)=>t(key,key,vars)):log.actionType==='collection_followup'?t('followups.event.'+String(log.payload?.kind??'prepared'),''):log.actionType==='cashbook'?t('cashbook.event.'+String(log.payload?.operation??'expense'),''):log.actionType==='estimate'?t('estimates.event.'+String(log.payload?.operation??'create'),'')+' · '+String(log.payload?.number??''):log.actionType==='purchase_order'?t('po.event.'+String(log.payload?.operation??'create'),'')+' · '+String(log.payload?.number??''):log.actionType.startsWith('opening_')?t('activity.'+log.actionType, ''):log.actionType==='document_branding_updated'?t('documents.activity','',{layout:t('documents.'+String(log.payload?.layout??'receipt'),'')}):(['inventory_import','party_import'].includes(log.actionType)||log.inputMethod==='import'&&!!log.payload?.importId)?t('imports.activity','Imported {{name}} (row {{row}})',{name:String(log.payload?.productName??log.payload?.partyName??(log.payload?.identity as {name?:string}|undefined)?.name??''),row:Number(log.payload?.sourceRow??0)}):log.actionType==='product_bulk_edit'?t('bulk.activity','Bulk edited {{name}} · batch {{batch}}',{name:String(log.payload?.productName??''),batch:Number(log.payload?.batch??1)}):['barcode_generated','barcode_replaced'].includes(log.actionType)?t(log.actionType==='barcode_generated'?'barcodes.activity_generated':'barcodes.activity_replaced',log.description??'',{name:String(log.payload?.productName??'')}):log.description}</p>
-                  <p className="timeline-meta">{log.userName} · {log.inputMethod==='import'?t('imports.source','File import'):log.inputMethod==='manual'?t('activity.filter_manual','Manual'):log.inputMethod==='voice'?t('activity.filter_voice','Voice'):log.inputMethod}</p>
-                </div>
-                <time className="timeline-when" dateTime={log.createdAt}>{formatTime(log.createdAt)}</time>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))}
+      <div className="activity-status">
+        <p aria-live="polite">
+          {total == null
+            ? "—"
+            : t("activityweb.count", "{{shown}} of {{total}} entries", {
+                shown: rows.length,
+                total,
+              })}
+        </p>
+        <p>
+          {t(
+            "activityweb.export_scope",
+            "CSV includes all available entries for this filter.",
+          )}
+        </p>
+      </div>
+      {limited ? (
+        <div className="activity-limit">
+          <span>
+            <strong>
+              {t(
+                "activity.free_limit_title",
+                "Showing the last {{days}} days.",
+                { days: limited },
+              )}
+            </strong>
+            <small>{text("activity.free_limit_body")}</small>
+          </span>
+          <Button href="/shop/settings/subscription" tone="quiet">
+            {t("activityweb.plans", "View plans")} ↗
+          </Button>
+        </div>
+      ) : null}
+      <Notice error={error} />
+      {exported ? (
+        <p className="activity-export-status" role="status">
+          {exported}
+        </p>
+      ) : null}
+      {logs.isLoading ? (
+        <Spinner label={t("activityweb.loading", "Loading activity")} />
+      ) : null}
+      {logs.isError && !logs.isFetchNextPageError ? (
+        <div>
+          <Notice error={logs.error} />
+          <Button tone="ghost" onClick={() => void logs.refetch()}>
+            {text("common.retry")}
+          </Button>
+        </div>
+      ) : null}
+      {logs.isSuccess && !rows.length ? (
+        <div className="activity-empty">
+          <span aria-hidden="true">↺</span>
+          <h2>{t("activityweb.empty", "No activity in this view")}</h2>
+          <p>
+            {t(
+              "activityweb.empty_hint",
+              "Try another filter, or refresh after your shop records a change.",
+            )}
+          </p>
+          {filter !== "all" ? (
+            <Button tone="quiet" onClick={() => setFilter("all")}>
+              {t("activityweb.show_all", "Show all activity")} →
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+      {(!logs.isError || logs.isFetchNextPageError) &&
+        days.map((day) => (
+          <section className="activity-day" key={day.day}>
+            <div className="activity-day-heading">
+              <h2>{dayName(day.day)}</h2>
+              <span>{day.logs.length}</span>
+            </div>
+            <ol className="activity-journal">
+              {day.logs.map((log) => {
+                const target = activityTarget(log, perms.canSeeReports),
+                  description =
+                    activityDescription(log, text, prefs?.appLanguage) ||
+                    t("activityweb.recorded", "Activity recorded"),
+                  who =
+                    log.userName && log.userName !== "Unknown"
+                      ? log.userName
+                      : t("activityweb.unknown_user", "Unknown user");
+                return (
+                  <li key={log.id} className="activity-entry">
+                    <div className="activity-entry-mark">
+                      <ActivityMark log={log} />
+                    </div>
+                    <div className="activity-entry-content">
+                      <div className="activity-entry-heading">
+                        <span className="activity-event-type">
+                          {activityLabel(log.actionType, text)}
+                        </span>
+                        <time
+                          dateTime={log.createdAt}
+                          title={formatWhen(log.createdAt, prefs?.appLanguage)}
+                        >
+                          {formatTime(log.createdAt, prefs?.appLanguage)}
+                        </time>
+                      </div>
+                      <h3>{description}</h3>
+                      <div className="activity-entry-foot">
+                        <div className="activity-attribution">
+                          <span>{who}</span>
+                          <span
+                            className={
+                              "activity-source " +
+                              (log.inputMethod === "voice" ? "is-voice" : "")
+                            }
+                          >
+                            {log.inputMethod === "voice" ? (
+                              <span aria-hidden="true">◖</span>
+                            ) : null}
+                            {activitySource(log.inputMethod, text)}
+                          </span>
+                        </div>
+                        {target ? (
+                          <Link
+                            className="activity-record-link"
+                            href={target.href}
+                          >
+                            {text(target.label)}{" "}
+                            <span aria-hidden="true">↗</span>
+                          </Link>
+                        ) : null}
+                      </div>
+                      <details className="activity-entry-details">
+                        <summary>
+                          {t("activityweb.details", "Entry details")}
+                        </summary>
+                        <dl>
+                          <div>
+                            <dt>{t("activityweb.date", "Recorded at")}</dt>
+                            <dd>
+                              {formatWhen(log.createdAt, prefs?.appLanguage)} ·{" "}
+                              {t(
+                                "activityweb.india_time",
+                                "Times shown in IST",
+                              )}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>{t("activityweb.event_id", "Entry ID")}</dt>
+                            <dd>{log.id}</dd>
+                          </div>
+                        </dl>
+                      </details>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ))}
+      {logs.isFetchNextPageError ? <Notice error={logs.error} /> : null}
+      {logs.hasNextPage ? (
+        <div className="activity-load">
+          <Button
+            tone="ghost"
+            disabled={logs.isFetching}
+            onClick={() => void logs.fetchNextPage()}
+          >
+            {logs.isFetchingNextPage
+              ? text("common.loading")
+              : logs.isFetchNextPageError
+                ? text("common.retry")
+                : t("activityweb.more", "Load more activity")}{" "}
+            ↓
+          </Button>
+        </div>
+      ) : logs.isSuccess && rows.length ? (
+        <p className="activity-end">
+          {t(
+            "activityweb.end",
+            "You have reached the end of the available activity.",
+          )}
+        </p>
+      ) : null}
     </div>
   );
 }

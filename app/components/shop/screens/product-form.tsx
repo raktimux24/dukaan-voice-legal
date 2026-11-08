@@ -105,8 +105,11 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     const first = l1[0];
     const sub = first ? l2ForL1(first.code)[0]?.code ?? '' : '';
     if (!productId) {
-      return blank(first?.code ?? 'staples', sub, {
+      const category = params.get('category');
+      const initialCategory = l1.some(c=>c.code===category) ? category! : first?.code ?? 'staples';
+      return blank(initialCategory, initialCategory === first?.code ? sub : l2ForL1(initialCategory)[0]?.code ?? '', {
         name: params.get('name') ?? '',
+        unit: UNITS.some(u=>u===params.get('unit')) ? params.get('unit')! : 'piece',
         barcode: params.get('barcode') ?? '',
         initialStock: params.get('qty') ?? '0',
       });

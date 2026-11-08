@@ -21,14 +21,17 @@ for (const [key, value] of Object.entries(english)) {
 export function translateUi(language: string, dictionary: Record<string, string>, key: string, fallback: string, vars?: Record<string, string | number>) {
   const catalogs = [retail[language] ?? {}, web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [currentEnglishGst] : []), dictionary];
   const webKey = 'web.gst.' + fallback.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-  const candidates = [webKey, key, ...(keysByText.get(fallback) ?? [])];
+  // New dashboard copy has explicit translations; older text aliases can have
+  // different meaning (for example "Recent bills" used to resolve to "Sales").
+  const explicitHomeCopy = key.startsWith('billingweb.') || key.startsWith('settingsweb.') || key.startsWith('activityweb.') || key.startsWith('activity.') || key.startsWith('homeweb.') || key.startsWith('sellweb.') || key.startsWith('checkoutweb.') || key.startsWith('salesweb.') || key.startsWith('reports.') || key.startsWith('sales.summary.') || key.startsWith('reportweb.') || key.startsWith('staffweb.') || key.startsWith('customerweb.') || key.startsWith('customers.') || key.startsWith('supplierweb.') || key.startsWith('suppliers.') || key.startsWith('directoryUI.') || key.startsWith('buyweb.') || key.startsWith('buy_list.') || key.startsWith('modal.buy_list_item.') || key.startsWith('nudge.') || key.startsWith('recordsUI.') || key.startsWith('productsweb.') || key.startsWith('products.') || key.startsWith('modal.product_detail.') || key.startsWith('modal.add_batch.') || key.startsWith('stockUI.') || key.startsWith('adjust.') || key.startsWith('sale_detail.') || key.startsWith('sale_return.') || key.startsWith('home.search_');
+  const candidates = explicitHomeCopy ? [key, webKey, ...(keysByText.get(fallback) ?? [])] : [webKey, key, ...(keysByText.get(fallback) ?? [])];
   let text = fallback;
   outer: for (const candidate of candidates) {
     for (const catalog of catalogs) {
       const value = catalog[candidate];
       const tokens = value?.match(/\{\{?(\w+)\}?\}/g) ?? [];
       const complete = tokens.every(token => vars && token.replace(/[{}]/g, '') in vars);
-      if (value && complete && value !== candidate && (language === 'en' || value !== english[candidate] || retail[language]?.[candidate] === value)) {
+      if (value && complete && value !== candidate && (language === 'en' || value !== english[candidate] || retail[language]?.[candidate] === value || (explicitHomeCopy && candidate === key && web[language]?.[candidate] === value))) {
         text = value;
         break outer;
       }

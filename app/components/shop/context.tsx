@@ -19,6 +19,7 @@ export type ShopContextValue = {
   refreshShops: () => Promise<void>;
   selectShop: (shopId: string) => void;
   prefs: UserPreferences | null;
+  signOutShop: () => Promise<void>;
   savePrefs: (partial: Partial<UserPreferences>) => Promise<void>;
   t: (key: string, fallback: string, vars?: Record<string, string | number>) => string;
   notice: string | null;

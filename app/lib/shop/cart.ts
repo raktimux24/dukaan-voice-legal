@@ -38,6 +38,7 @@ export type Cart = {
   paymentHint?: 'cash' | 'upi' | 'credit';
   mixedDiscountReview?:import("./types").CreateSalePayload["mixedDiscountReview"];
   buyer?:Buyer;
+  gstPriceMode?: 'inclusive' | 'exclusive';
   lines: CartLine[];
   billDiscount: number;
   note: string;

@@ -16,14 +16,14 @@ import {specialReturnPreview,verifiedReturnDocuments} from "../../lib/shop/gst-r
 import { returnTax } from "../../lib/shop/gst-core/gst";
 import type { Sale } from "../../lib/shop/types";
 import { formatINR } from "../../lib/shop/money";
-export function GstSaleAdjustments({ sale }: { sale: Sale }) {
+export function GstSaleAdjustments({ sale, onDone }: { sale: Sale; onDone?:()=>Promise<void> }) {
   const { api, shop, perms } = useShop(),
     text = useGstText(),
     action = useGstAction();
   const [kind, setKind] = useState("return"),
     [quantities, setQuantities] = useState<Record<string, string>>({}),
     [prices, setPrices] = useState<Record<string, string>>({}),
-    [restock, setRestock] = useState(false),
+    [restock, setRestock] = useState<Record<string,boolean>>({}),
     [reason, setReason] = useState(""),
     [credit, setCredit] = useState("0"),
     [method, setMethod] = useState("cash"),
@@ -80,6 +80,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
     if (retained.current) {
       await retained.current();
       retained.current = null;
+      await onDone?.();
       return;
     }
     if (
@@ -127,7 +128,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
         items: items.map((i) => ({
           saleItemId: i.id,
           quantity: Number(quantities[i.id]),
-          restock,
+          restock: !!i.productId && restock[i.id] !== false,
         })),
         reason,
         settlement: {
@@ -163,6 +164,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
     setQuantities({});
     setRequestId(crypto.randomUUID());
     setPreview(null);
+    await onDone?.();
   }
   if (!perms.canVoidOrReturn) return null;
   return (
@@ -218,6 +220,7 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
                 reset();
               }}
             />
+            {kind === "return" && item.productId ? <Check label={text("Return these goods to stock")} checked={restock[item.id]!==false} onChange={value=>{setRestock(current=>({...current,[item.id]:value}));reset();}}/> : null}
             {kind !== "return" ? (
               <TextField
                 label={text("Value correction per unit (₹)")}
@@ -233,14 +236,6 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
         ))}
         {kind === "return" ? (
           <>
-            <Check
-              label={text("Return these goods to stock")}
-              checked={restock}
-              onChange={(v) => {
-                setRestock(v);
-                reset();
-              }}
-            />
             <p>
               {text("Return total")}:{" "}
               {Number.isFinite(returnTotal) ? formatINR(returnTotal) : "—"}
@@ -334,6 +329,8 @@ export function GstSaleAdjustments({ sale }: { sale: Sale }) {
               !reason.trim() ||
               !items.length ||
               sale.gstIntegrity !== "verified" ||
+              !!sale.returnPlanningError ||
+              sale.items.some(i=>{const value=quantities[i.id]?.trim()??'';return value!==''&&(!/^\d+(?:\.\d{1,3})?$/.test(value)||Number(value)>Math.round((i.quantity-i.returnedQuantity)*1000)/1000||!!i.rspSnapshot&&!Number.isInteger(Number(value)))}) ||
               (kind === "return" &&
                 (!Number.isFinite(returnTotal) ||
                   returnTotal < 0 ||

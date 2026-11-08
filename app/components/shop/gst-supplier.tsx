@@ -24,12 +24,14 @@ export function SupplierEditor({
   initial,
   onSaved,
   legacyName,
+  onCancel,
 }: {
   initial?: GstSupplier;
   onSaved: (v: GstSupplier) => void;
   legacyName?: string;
+  onCancel?: () => void;
 }) {
-  const { api, shop } = useShop(),
+  const { api, shop, offline } = useShop(),
     text = useGstText(),
     action = useGstAction(),
     cache = useQueryClient();
@@ -45,7 +47,7 @@ export function SupplierEditor({
   const retained = useRef<{ clientId: string; identity: Buyer } | null>(null);
   return (
     <Card>
-      <fieldset disabled={action.busy || !!retained.current}>
+      <fieldset disabled={offline || action.busy || !!retained.current}>
         <BuyerFields
           value={identity}
           onChange={(v) =>
@@ -71,8 +73,9 @@ export function SupplierEditor({
         </p>
       ) : null}
       {action.notice}
+      {onCancel ? <Button tone="ghost" disabled={action.busy || !!retained.current} onClick={()=>{if(canonicalJson(identity)===canonicalJson(initial?.identity??{...emptyBuyer(),name:legacyName??"",...(legacyName?{inventorySupplierName:legacyName}:{})}) || window.confirm(text("Discard changes?")))onCancel();}}>{text("Cancel")}</Button> : null}
       <Button
-        disabled={action.busy}
+        disabled={offline || action.busy}
         onClick={() =>
           void action.run(async () => {
             if (!identity.name.trim())
