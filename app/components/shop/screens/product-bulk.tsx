@@ -31,6 +31,8 @@ export function ProductBulkScreen() {
   const [confirmed, setConfirmed] = useState(false),
     [limit, setLimit] = useState(40);
   const initialized = useRef("");
+  const reviewPanel=useRef<HTMLDivElement>(null);
+  useEffect(()=>{if(w.job?.state==='review'){reviewPanel.current?.focus();reviewPanel.current?.scrollIntoView({block:'start'});}},[w.job?.version,w.job?.state]);
   useEffect(() => {
     setConfirmed(false);
     setLimit(40);
@@ -109,7 +111,7 @@ export function ProductBulkScreen() {
           label: translate("products.title", "Products"),
         }}
       />
-      <Card className="stack-form">
+      <details className="bulk-guidance"><summary>{t("bulk.protected")}</summary>
         <p className="shop-hint">{t("bulk.protected")}</p>
         <p className="shop-hint">{t("bulk.cart_help")}</p>
         <p className="shop-hint">
@@ -118,7 +120,9 @@ export function ProductBulkScreen() {
         <Button tone="ghost" href="/shop/products/gst">
           {t("bulk.gst_link")}
         </Button>
-      </Card>
+      </details>
+      <nav className="workspace-progress" aria-label={t('bulk.title')}>{['bulk.choose','bulk.review','bulk.apply'].map((key,i)=><span key={key} aria-current={i===(job?.state==='applied'?2:job?.state==='review'?1:0)?'step':undefined}><b>{i+1}</b>{t(key)}</span>)}</nav>
+      {!job&&!w.meta.isFetching&&perms.canEditProducts?<Card><p>{t('bulk.help')}</p><Button href="/shop/products">{translate('products.title','Products')} ↗</Button></Card>:null}
       {!perms.canEditProducts ? (
         <Card>
           <p>{t("bulk.error.not_allowed")}</p>
@@ -187,7 +191,7 @@ export function ProductBulkScreen() {
                     "depletionOrder",
                   ] as const
                 ).map((f) => (
-                  <section key={f} className="border-t border-white/10 pt-4">
+                  <section key={f} className="bulk-field-choice">
                     <label className="import-confirm">
                       <input
                         type="checkbox"
@@ -350,7 +354,7 @@ export function ProductBulkScreen() {
                 </Button>
               </Card>
               {job.rows.length ? (
-                <Card className="stack-form">
+                <div ref={reviewPanel} tabIndex={-1} className="bulk-review-panel"><Card className="stack-form">
                   <h2 className="shop-section-title">{t("bulk.review")}</h2>
                   <p>{t("bulk.counts", counts)}</p>
                   {job.rows.slice(0, limit).map((row) => (
@@ -429,12 +433,11 @@ export function ProductBulkScreen() {
                       </Button>
                     </>
                   ) : null}
-                </Card>
+                </Card></div>
               ) : null}
             </>
           ) : null}
-          <Card className="stack-form">
-            <h2 className="shop-section-title">{t("bulk.history")}</h2>
+          <details className="bulk-history"><summary>{t("bulk.history")}</summary><Card className="stack-form">
             {w.meta.data?.jobs.length ? (
               w.meta.data.jobs.map((j) => (
                 <Button
@@ -449,7 +452,7 @@ export function ProductBulkScreen() {
             ) : (
               <p className="shop-hint">{t("bulk.no_history")}</p>
             )}
-          </Card>
+          </Card></details>
         </>
       )}
     </div>

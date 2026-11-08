@@ -4,7 +4,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 
 | Route | Parity | Design | Mobile/languages |
 |---|---|---|---|
-| `/shop/products/bulk` | Pending | Pending | Pending |
+| `/shop/products/bulk` | Shared workflow matches mobile; controls audited | Step sequence, focused review, history disclosure | Ten languages at 320px; synthetic review, confirmation and apply passed |
 | `/shop/products/barcodes` | Pending | Pending | Pending |
 | `/shop/alerts` | Audited; bulk/prediction buy-list actions restored | Implemented | Ten languages at 320px; filters and add action checked |
 | `/shop/brief` | Audited; history, stock, regeneration and Free audio restored | Implemented | 10-language 320px check; desktop visual and refresh verified |
@@ -36,12 +36,12 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/online-store` | Pending | Pending | Pending |
 | `/shop/onboarding` | Pending | Pending | Pending |
 
-## Started
-
-Daily brief: compared mobile daily-brief.tsx with web brief.tsx. Added missing history presentation using existing translations, corrected action cache invalidation, added retry for failed loads, and began summary/action/archive hierarchy. This is incomplete: audio entitlement, stock evidence, regenerate, action navigation and native parity still need review, followed by browser checks.
+## Verification notes
 
 Adjacent review: /store/[storeId], /store/[storeId]/p/[itemId], /store/[storeId]/orders/[orderId], /subscription/return and /delete-account remain pending.
 
 Daily brief verification: TypeScript, Home action regression tests and translation coverage passed. Actual component fixture at 320px in ten languages had no page overflow. Free audio control and regeneration verified with synthetic responses; live TTS not invoked. Uses existing HomeNudge confirmation, dismissal and message review. Corrected inaccurate translated Daily brief titles.
 
 Alerts: stock/expiry/prediction flows compared to mobile low-stock-alerts. Added actionable-prediction and bulk buy-list actions, All-view predictions, localized quantities/expiry, in-flight guards, explicit fetch errors and retry. All ten languages fit 320px after filter wrapping; desktop filter and synthetic add-all checked. Live prediction generation and real buy-list writes not performed.
+
+Bulk editor: shared contract/client/workflow match mobile. Existing dedicated-field protections, stale-review and uncertain-outcome recovery retained. Existing localized strings reused. TypeScript and translation coverage pass; synthetic price review requires confirmation and focuses the review before apply. Real bulk changes not made.
