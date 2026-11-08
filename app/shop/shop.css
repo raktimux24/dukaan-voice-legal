@@ -4461,3 +4461,5 @@ button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04
 .gst-export-toolbar,.gst-report-command { display:grid;grid-template-columns:minmax(200px,360px) auto;gap:20px;align-items:end }.gst-report-command fieldset{min-width:0}.gst-export-toolbar>.shop-btn,.gst-report-command>.shop-btn{justify-self:start}
 .gst-export-prepare { display:grid;gap:24px }.gst-turnover-summary{border-top:2px solid #ff9857}.gst-turnover-summary>p:first-child{font-size:24px;font-weight:600}.gst-period-workspace .gst-row,.gst-turnover-workspace .gst-row {flex-wrap:wrap;gap:16px;padding-block:20px}
 @media(max-width:600px){.gst-export-toolbar,.gst-report-command{grid-template-columns:minmax(0,1fr)}.gst-export-workspace .gst-mobile-records td:last-child{display:flex;flex-wrap:wrap}.gst-export-workspace .gst-mobile-records td:last-child>details{width:100%}.gst-turnover-workspace fieldset{min-width:0}}
+
+.gst-workspace .shop-surface,.gst-workspace .stack-form,.gst-workspace fieldset{min-width:0}.gst-workspace .shop-pill{white-space:normal;overflow-wrap:anywhere;max-width:100%}

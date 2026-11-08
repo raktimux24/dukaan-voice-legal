@@ -272,7 +272,7 @@ export function bindGstApi(
       }>(`${base(s)}/purchases/${id}/cost-preview?decision=${decision}`),
     history: (s: string, kind: string, before?: string) =>
       get<{ items: GstReport[]; nextCursor: string | null }>(
-        `${base(s)}/gst-exports?${new URLSearchParams({ kind, ...(before ? { before } : {}) })}`,
+        `${base(s)}/gst-exports?${new URLSearchParams({ ...(kind && kind !== "all" ? { kind } : {}), ...(before ? { before } : {}) })}`,
       ),
     report: (s: string, id: string) =>
       get<string>(`${base(s)}/gst-exports/${id}`),

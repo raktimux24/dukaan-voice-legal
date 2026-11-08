@@ -23,9 +23,9 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/settings/gst/numbers` | Native allocation register reviewed; support identity, document links and position ranges restored | Mobile ledger rows and desktop table | Ten languages at 320px with expanded records |
 | `/shop/settings/gst/recovery` | Native recovery compared; cost-role separation and per-request closure reasons restored | Bills/request tabs and expandable evidence | Ten languages at 320px; synthetic retained bill and tab switch checked |
 | `/shop/settings/gst/recovery/[requestId]` | Original receipt verification and recovery retained; units localized | Saved-state summary and responsive receipt | Ten languages at 320px with verified synthetic ordinary receipt |
-| `/shop/settings/gst/exports` | Pending | Pending | Pending |
-| `/shop/settings/gst/periods` | Pending | Pending | Pending |
-| `/shop/settings/gst/turnover` | Pending | Pending | Pending |
+| `/shop/settings/gst/exports` | Native history/prepare controls compared; all-kind history and offline guard restored | History/prepare navigation and mobile report ledger | Ten languages at 320px in history and prepare |
+| `/shop/settings/gst/periods` | Native summaries, close/reopen and retained request checks compared | Month command bar and review summaries | Ten languages at 320px; Tamil overflow corrected |
+| `/shop/settings/gst/turnover` | Native evidence workflow compared; financial-year selector restored | Grouped evidence form and retained amount summary | Ten languages at 320px; year switch and disabled-save guard checked |
 | `/shop/settings/gst/providers` | Native provider jobs reviewed; subject reference and uncertain-state guidance restored | Status-led records and support disclosure | Ten languages at 320px |
 | `/shop/settings/gst/rounding` | Native review compared; end date, retained-policy reuse, IST dates and manager read access restored | Grouped policy form and distinct preview | Ten languages at 320px; retained dates and manager permissions checked |
 | `/shop/products/gst` | Pending | Pending | Pending |
@@ -73,3 +73,5 @@ GST checks/recovery: native monitor/recovery source reviewed. Web retains scoped
 Saved receipt: original content/hash verification preserved. Synthetic ordinary receipt generated through production builder and verified through actual screen; amount and original timestamp retained. Existing fiscal document renderer reused. No server recovery, print or fiscal issuance performed.
 
 Providers/rounding: native source reviewed; subject references and uncertain-result guidance shown. Rounding dates retain IST calendar dates, end date must follow start, changes clear confirmation, and previews clear when input/version changes. Owner mutation and offline guards retained, managers may view/preview. Financial regression, translation checks and TypeScript passed. No provider call or rounding policy recorded.
+
+GST reports/periods/turnover: native screens and server history filters compared. All-kind history omits the kind parameter as required by the API. Financial regression, translation coverage and TypeScript pass. Synthetic responsive checks cover all ten languages; no new report, period close/reopen or turnover record submitted.

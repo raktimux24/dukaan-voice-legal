@@ -47,7 +47,7 @@ import type {
 const base = "/shop/settings/gst";
 export function GstExportsScreen() {
   const selection = useSearchParams();
-  const { api, shop } = useShop(),
+  const { api, shop, offline, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     period = usePeriod(
@@ -56,8 +56,9 @@ export function GstExportsScreen() {
         : undefined,
     );
   const params = useSearchParams();
+  const [tab,setTab]=useState(params.get("kind")?"prepare":"history"),[historyKind,setHistoryKind]=useState("all");
   const [kind, setKind] = useState(
-      params.get("kind") === "purchases" ? "purchases" : "sales",
+      ["sales", "purchases", "numbering"].includes(params.get("kind") ?? "") ? params.get("kind")! : "sales",
     ),
     [saved, setSaved] = useState<GstReport | null>(null),
     [preparing, setPreparing] = useState(false);
@@ -67,8 +68,8 @@ export function GstExportsScreen() {
     exclusiveThrough: string;
   } | null>(null);
   const action = useGstAction(),
-    q = useGstPages(["exports", kind], (cursor) =>
-      api.gst.history(shop!.id, kind, cursor),
+    q = useGstPages(["exports", historyKind], (cursor) =>
+      api.gst.history(shop!.id, historyKind, cursor),
     );
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
   async function runPreparation(credit = false) {
@@ -152,7 +153,7 @@ export function GstExportsScreen() {
   }
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-export-workspace">
         <PageHeader
           title={text("GST export history")}
           back={{ href: base, label: text("GST records") }}
@@ -160,7 +161,8 @@ export function GstExportsScreen() {
             "Prepare a register for a period or reopen its exact saved file. Reports are for filing elsewhere.",
           )}
         />
-        <Card className="stack-form">
+        <div className="gst-workspace-tabs" role="group">{['history','prepare'].map(key=><button key={key} disabled={action.busy||!!pending.current} aria-pressed={tab===key} onClick={()=>setTab(key)}>{t('recordsUI.'+key,key)}</button>)}</div>
+        {tab==='prepare'?<Card className="stack-form gst-export-prepare">
           <div className="form-grid is-2">
             <SelectField
               label={text("Register")}
@@ -192,7 +194,7 @@ export function GstExportsScreen() {
           </fieldset>
           <Button
             disabled={
-              action.busy ||
+              offline || action.busy ||
               (!pending.current && kind !== "numbering" && !period.range)
             }
             onClick={() => void runPreparation()}
@@ -207,6 +209,7 @@ export function GstExportsScreen() {
           </Button>
           {action.notice}
         </Card>
+        :null}
         {saved ? (
           <Card>
             <Pill tone="ok">{text("Report saved")}</Pill>
@@ -243,16 +246,17 @@ export function GstExportsScreen() {
           </p>
           <Button
             tone="ghost"
-            disabled={action.busy || (!pending.current && !period.range)}
+            disabled={offline || action.busy || (!pending.current && !period.range)}
             onClick={() => void runPreparation(true)}
           >
             {text("Save credit-note report")}
           </Button>
         </Section>
+        {tab==='history'?<><div className="gst-export-toolbar"><SelectField label={text('Register')} value={historyKind} onChange={setHistoryKind} options={[["all",t('common.all','All')],["sales",text('Sales')],["purchases",text('Purchases')],["numbering",text('Invoice numbers')]]}/><Button tone="ghost" disabled={q.isFetching} onClick={()=>void q.refetch()}>{text('Refresh report')}</Button></div>
         <h2 className="shop-section-title">{text("Saved reports")}</h2>
         <ReadState query={q} empty={!rows.length}>
           <div className="gst-table-wrap">
-            <table className="gst-table">
+            <table className="gst-table gst-mobile-records">
               <thead>
                 <tr>
                   <th>{text("Created")}</th>
@@ -264,14 +268,14 @@ export function GstExportsScreen() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td>{date(row.createdAt)}</td>
-                    <td>
+                    <td data-label={text("Created")}>{date(row.createdAt)}</td>
+                    <td data-label={text("Period")}>
                       {date(row.periodFrom)} —{" "}
                       {date(
                         new Date(Date.parse(row.periodTo) - 1).toISOString(),
                       )}
                     </td>
-                    <td>
+                    <td data-label={text("Register")}>
                       {text(
                         row.kind === "sales"
                           ? "Sales"
@@ -280,7 +284,7 @@ export function GstExportsScreen() {
                             : "Invoice numbers",
                       )}
                     </td>
-                    <td>
+                    <td data-label={text("File")}>
                       <Button
                         tone="quiet"
                         disabled={action.busy}
@@ -296,7 +300,7 @@ export function GstExportsScreen() {
             </table>
           </div>
         </ReadState>
-        <More query={q} />
+        <More query={q} /></>:null}
       </div>
     </GstAccess>
   );
@@ -395,7 +399,7 @@ function ReviewRequestState({
   );
 }
 export function GstPeriodsScreen() {
-  const { api, shop, role, userId, t: translate } = useShop(),
+  const { api, shop, role, userId, offline, t: translate } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
   const t = (key: string, params?: Record<string, string | number>) =>
@@ -423,7 +427,7 @@ export function GstPeriodsScreen() {
   const action = useGstAction(),
     period = q.data;
   const blocked =
-    !journal.isSuccess || !!journal.error || !!journal.data?.length;
+    offline || !journal.isSuccess || !!journal.error || !!journal.data?.length;
   const source = JSON.stringify([
     userId,
     shop?.id,
@@ -481,13 +485,13 @@ export function GstPeriodsScreen() {
   }
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-period-workspace">
         <PageHeader
           title={text("GST period review")}
           back={{ href: base + "/exports", label: text("GST export history") }}
           description={t("gst.period_notice")}
         />
-        <fieldset disabled={action.busy || !!journal.data?.length}>
+        <div className="gst-report-command"><fieldset disabled={action.busy || !!journal.data?.length}>
           <TextField
             label={text("Month")}
             type="month"
@@ -507,7 +511,7 @@ export function GstPeriodsScreen() {
         >
           {t("gst.health_refresh")}
         </Button>
-        {valid ? (
+        </div>{valid ? (
           <>
             <ReviewRequestState
               journal={journal}
@@ -708,7 +712,7 @@ export function GstPeriodsScreen() {
   );
 }
 export function GstTurnoverScreen() {
-  const { api, shop, role, userId, t: translate } = useShop(),
+  const { api, shop, role, userId, offline, t: translate } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
   const t = (key: string, params?: Record<string, string | number>) =>
@@ -768,7 +772,7 @@ export function GstTurnoverScreen() {
   }
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-turnover-workspace">
         <PageHeader
           title={text("Business turnover review")}
           back={{ href: base + "/exports", label: text("GST export history") }}
@@ -776,12 +780,8 @@ export function GstTurnoverScreen() {
             "Record reviewed business-wide turnover evidence. This shop’s sales alone do not establish business turnover.",
           )}
         />
-        <fieldset disabled={action.busy || !!journal.data?.length}>
-          <TextField
-            label={text("Financial year")}
-            value={year}
-            onChange={setYear}
-          />
+        <div className="gst-report-command"><fieldset disabled={action.busy || !!journal.data?.length}>
+          <SelectField label={text('Financial year')} value={year} onChange={setYear} options={[...new Set([year,...Array.from({length:8},(_,i)=>{const y=Number(reportReviewDefaults().year.slice(0,4))-i;return y+'-'+String((y+1)%100).padStart(2,'0')})])].map(y=>[y,y] as const)}/>
         </fieldset>
         <Button
           tone="quiet"
@@ -795,7 +795,7 @@ export function GstTurnoverScreen() {
         >
           {t("gst.health_refresh")}
         </Button>
-        {valid ? (
+        </div>{valid ? (
           <>
             <ReviewRequestState
               journal={journal}
@@ -804,7 +804,7 @@ export function GstTurnoverScreen() {
             />
             {action.notice}
             <ReadState query={q}>
-              <Card className="stack-form">
+              <Card className="stack-form gst-turnover-summary">
                 <p>
                   {text("Last reviewed amount")}:{" "}
                   {q.data?.current ? `₹${q.data.current.amount}` : "—"}
@@ -827,7 +827,7 @@ export function GstTurnoverScreen() {
                 <Card className="stack-form">
                   <fieldset
                     disabled={action.busy || blocked}
-                    className="stack-form"
+                    className="form-grid is-2"
                   >
                     <TextField
                       label={text("Business-wide turnover (₹)")}
