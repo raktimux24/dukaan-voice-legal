@@ -13,6 +13,7 @@ import { verifyDocument } from "../../lib/shop/gst-document";
 import { documentView } from "../../lib/shop/gst-document-view";
 import { documentHtml, printDocument } from "../../lib/shop/gst-print";
 import { saveFile } from "../../lib/shop/gst-storage";
+import { GstDocumentLines } from "./gst-document-lines";
 import { formatINR } from "../../lib/shop/money";
 export function GstDocuments({ saleId }: { saleId: string }) {
  const {api,shop,perms}=useShop(),text=useGstText(),date=useFiscalDate();
@@ -37,7 +38,7 @@ export function FiscalDocumentArticle({doc,view,local=false,payments}:{doc:Fisca
    {view.context.buyer?<div className="gst-row"><b>{view.context.buyer.name}</b><span>{view.context.buyer.gstin}</span><p>{address(view.context.buyer,view.context.documentRenderVersion)}</p></div>:null}
    {doc.originalNumber?<p>{text('Original invoice')}: {doc.originalNumber}</p>:null}
    {view.reason?<p>{text('Reason')}: {view.reason}</p>:null}
-   <div className="gst-table-wrap"><table className="gst-table"><thead><tr><th>{text('Product')}</th><th>{text('Quantity')}</th><th>{text('HSN / SAC')}</th><th>{text('Before GST')}</th><th>{text('Taxable value')}</th><th>{text('GST')}</th><th>{text('Total')}</th></tr></thead><tbody>{view.lines.map((line,index)=><tr key={index}><td>{line.name}</td><td>{line.quantity} {line.unit}</td><td>{line.classification}<br/>{line.rate}</td><td>{formatINR(line.net)}{line.discount>0?<p>{text('Discount')}: {formatINR(line.discount)}</p>:null}</td><td>{formatINR(line.taxable)}</td><td>{formatINR(line.tax)}{Object.entries(line.components).filter(([,v])=>v>0).map(([k,v])=><p key={k}>{k} {formatINR(v)}</p>)}</td><td>{formatINR(line.total)}</td></tr>)}</tbody></table></div>
+   <GstDocumentLines lines={view.lines} text={text}/>
    <div className="gst-price-preview"><span>{text('Before GST')}<b>{formatINR(view.net)}</b></span><span>{text('GST reporting taxable value')}<b>{formatINR(view.taxable)}</b></span><span>GST<b>{formatINR(view.tax)}</b></span>{Object.entries(view.components).filter(([,v])=>v>0).map(([k,v])=><span key={k}>{k}<b>{formatINR(v)}</b></span>)}{view.roundOff!==0?<span>{text('Round-off')}<b>{formatINR(view.roundOff)}</b></span>:null}<span>{text('Total')}<b>{formatINR(view.total)}</b></span>{view.creditReduction!==undefined?<span>{text('Unpaid credit reduced')}<b>{formatINR(view.creditReduction)}</b></span>:null}{view.moneyRefund!==undefined?<span>{text('Money refund')}<b>{formatINR(view.moneyRefund)}</b></span>:null}</div>
    {view.context.settings.registration==='composition'?<p>{text('Composition taxable person, not eligible to collect tax on supplies')}</p>:<p>{text('Reverse charge: No (local forward-charge supply)')}</p>}
    <p className="shop-hint">{text('Authorised signatory')} __________________</p><p className="shop-hint">{text('The app does not digitally sign GST documents. Sign a printed copy when required.')}</p>

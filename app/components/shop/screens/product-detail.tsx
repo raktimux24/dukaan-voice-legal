@@ -354,7 +354,7 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
                   "Selling price",
                 )}
               </small>
-              <strong>
+              <strong className={product.sellingPrice == null ? undefined : "product-summary-price"}>
                 {product.sellingPrice == null
                   ? t("home.unpriced", "Unpriced")
                   : formatINR(product.sellingPrice)}
