@@ -351,7 +351,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
     },
-    createShop: (input: { name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
+    createShop: (input: { ownerName?: string; name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
       send<{ shop: ShopRecord }>('/api/shops', { method: 'POST', body: JSON.stringify(input) }),
     getShop: (shopId: string) => send<{ shop: ShopRecord; role: string }>(`/api/shops/${shopId}`),
     updateShop: (shopId: string, input: Record<string, unknown>) =>

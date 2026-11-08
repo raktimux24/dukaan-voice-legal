@@ -34,7 +34,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/adjustments/[id]` | Pending | Pending | Pending |
 | `/shop/estimates` | Pending | Pending | Pending |
 | `/shop/online-store` | Pending | Pending | Pending |
-| `/shop/onboarding` | Pending | Pending | Pending |
+| `/shop/onboarding` | Owner name, language, phone validation, invite-link/QR support restored | Two-stage responsive create/join workspace | Ten languages × join/details/GST at 320px; phone and invite parsing verified |
 
 ## Verification notes
 
@@ -55,3 +55,5 @@ Refunds: native refunds.tsx comparison complete. Web retains search, custom date
 Product import: native import screen compared, with shared contract/client/workflow retained. Added issue-first review, all-row toggle, matched/optional field grouping and missing-name guidance. Existing safe confirmation, batch recovery and opening-session handoff retained. Native importUI translations copied for all ten languages. Browser checked 30 stage/language combinations at 320px and skip/include state with synthetic jobs; real uploads/writes not executed.
 
 Customer/supplier imports share one implementation. Native party import reviewed; customer Premium and supplier access conditions, balances, staging and confirmation retained. Both routes tested in all ten languages at 320px in upload, mapping and review stages using synthetic jobs. TypeScript and translation coverage passed.
+
+Onboarding: compared native create/join flows and server create fields. Added owner name and preferred language, localized shop type/subtype, normalized Indian phone validation, GST name/address prefill, explicit join confirmation after owned-link parsing and QR capture reuse. Duplicate submission protected. Corrected translated GST select overflow; final ten-language 320px pass. Parser tests, TypeScript and translation checks pass. No shop created/joined, camera permission or physical QR scan executed.
