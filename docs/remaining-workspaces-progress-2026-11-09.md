@@ -11,7 +11,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/voice` | Native review audited; price calculation, removal reason and offline guards restored | Recording states, staged review, responsive dialog | Ten languages at 320px; synthetic capture/review and quantity changes checked |
 | `/shop/cashbook` | Shared mutations match mobile; expense entry and ledger presentation restored | Amount-first expense form, ledger rows, expense list/details | Ten languages at 320px for day and form; synthetic unpaid save verified |
 | `/shop/sales/refunds` | Native periods, summary, rows and bill navigation audited; settlement fallback restored | Sales-style metrics and settlement ledger | Ten languages at 320px; audit disclosure and settlement amounts checked |
-| `/shop/customers/[id]/statement` | Pending | Pending | Pending |
+| `/shop/customers/[id]/statement` | Native/shared credit controls audited; export safeguards retained | Section navigation, paired dates, stable scroll and snapshot pagination reset | Ten languages at 320px; bills section and reversed dates checked |
 | `/shop/customers/followups` | Shared workflow matches mobile; selection/contact safeguards retained | Aligned balance ledger, search/filter command bar, section navigation | Ten languages at 320px; settings and selection guard checked |
 | `/shop/products/import` | Shared workflow matches mobile; issue-first review and grouped mapping restored | Responsive upload/history, mapped columns and review | Ten languages × upload/mapping/review at 320px; skip/include checked |
 | `/shop/customers/import` | Shared workflow and native party screen audited | Grouped mapping, issue-first review and upload history | Ten languages × three stages at 320px |
@@ -61,3 +61,5 @@ Onboarding: compared native create/join flows and server create fields. Added ow
 Voice: native voice-feedback compared. Sale checkout and uncertain stock-outcome protections retained. Synthetic capture/review, animated recording indicator and edited quantity calculation checked; ten languages fit 320px. GST/voice regression tests, translations and TypeScript pass. No real microphone, STT/TTS or inventory mutation tested.
 
 Follow-ups: native view and shared workflow compared. Existing snooze, history, reviewed channel launch and explicit contact recording retained. Responsive queue and settings checked with synthetic data; deselection disables reminder preparation. No messages sent or real contact records changed. Follow-up regression, TypeScript and translation checks pass.
+
+Credit statements: shared contract/workflow/client/statement source matches mobile; native view compared. Reversed date range disables snapshot creation, verified with keyboard input. Existing PDF/CSV export retained; new live exports not generated. Translation and TypeScript checks pass.
