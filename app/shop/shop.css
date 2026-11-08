@@ -3899,3 +3899,36 @@ a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); ba
  .billing-dashboard .billing-plan-actions { margin-top: 0; }
 }
 .billing-dashboard .billing-summary { min-width: 0; }
+
+/* Narrow product summaries use the full width for values, not the photo gutter. */
+.product-summary-metrics { grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); }
+.product-summary-price { white-space:nowrap; overflow-wrap:normal!important; }
+@media (max-width:640px) {
+  .product-summary-content { display:contents; }
+  .product-status-line { flex-wrap:wrap; min-width:0; align-self:center; overflow-wrap:anywhere; }
+  .product-summary-metrics { grid-column:1/-1; grid-template-columns:minmax(0,1fr); gap:16px; }
+  .product-summary-metrics>div { border-bottom:1px solid var(--border); padding-bottom:14px; }
+  .product-summary-metrics strong { font-size:26px; }
+  .product-summary-content .shop-actions { grid-column:1/-1; margin:0; }
+}
+
+/* The verified values have a readable mobile view; desktop and print retain the table. */
+.gst-mobile-lines { display:none; }
+@media screen and (max-width:640px) {
+  .gst-document-table { display:none; }
+  .gst-mobile-lines { display:grid; gap:24px; list-style:none; padding:0; margin:24px 0; }
+  .gst-mobile-lines li { min-width:0; border-top:1px solid var(--border); padding-top:18px; }
+  .gst-mobile-lines h3 { font-size:16px; font-weight:600; line-height:1.5; overflow-wrap:anywhere; margin:0 0 16px; }
+  .gst-mobile-lines dl { display:grid; gap:12px; margin:0; }
+  .gst-mobile-lines dl>div { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 16px; }
+  .gst-mobile-lines dt { flex:1 1 100px; color:var(--muted); font-size:13px; overflow-wrap:anywhere; }
+  .gst-mobile-lines dd { margin:0; max-width:100%; font-size:14px; font-variant-numeric:tabular-nums; overflow-wrap:normal; }
+  .gst-mobile-lines dd span { display:block; color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
+  .gst-mobile-tax { padding-inline-start:12px; }
+  .gst-mobile-total { border-top:1px solid var(--border); padding-top:12px; }
+  .gst-mobile-total dt,.gst-mobile-total dd { color:var(--text); font-weight:600; }
+  .gst-document { min-width:0; overflow-wrap:anywhere; }
+  .gst-document .gst-price-preview { grid-template-columns:minmax(0,1fr); }
+  .gst-document .gst-price-preview>span { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:4px 16px; }
+  .gst-document .gst-price-preview b { overflow-wrap:normal; }
+}
