@@ -30,7 +30,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/settings/gst/rounding` | Native review compared; end date, retained-policy reuse, IST dates and manager read access restored | Grouped policy form and distinct preview | Ten languages at 320px; retained dates and manager permissions checked |
 | `/shop/products/gst` | Native catalogue compared; manager confirmation authorization and offline guards restored | Product ledger, selection and grouped tax editor | Ten languages at 320px; selection and unauthorized-manager guard checked |
 | `/shop/products/[id]/gst` | Native history/scheduling compared; support identity and separate cancellation reasons restored | Status-led history and schedule disclosure | Ten languages at 320px; empty-reason guard checked |
-| `/shop/products/[id]/gst/rsp` | Pending | Pending | Pending |
+| `/shop/products/[id]/gst/rsp` | Native review/preview compared; refresh, IST date restoration and stale-preview reset restored | Responsive evidence form and retained review summary | Ten languages at 320px; unreviewed save disabled |
 | `/shop/adjustments/[id]` | Pending | Pending | Pending |
 | `/shop/estimates` | Pending | Pending | Pending |
 | `/shop/online-store` | Pending | Pending | Pending |
@@ -77,3 +77,5 @@ Providers/rounding: native source reviewed; subject references and uncertain-res
 GST reports/periods/turnover: native screens and server history filters compared. All-kind history omits the kind parameter as required by the API. Financial regression, translation coverage and TypeScript pass. Synthetic responsive checks cover all ten languages; no new report, period close/reopen or turnover record submitted.
 
 Product GST catalogue/history: native authorization, history and scheduling compared; API enforces authorization independently. Existing immutable invoice profiles, fresh-history guard and retained requests preserved. Ten-language responsive fixture checks and TypeScript pass. No tax profile applied, imported or cancelled.
+
+RSP review: existing receipt verification, feature gate and review-only notices preserved. TypeScript and responsive fixture checks pass. No RSP profile or preview submitted to the server; this does not establish enabled RSP billing.
