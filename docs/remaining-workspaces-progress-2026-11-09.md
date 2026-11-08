@@ -26,8 +26,8 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/settings/gst/exports` | Pending | Pending | Pending |
 | `/shop/settings/gst/periods` | Pending | Pending | Pending |
 | `/shop/settings/gst/turnover` | Pending | Pending | Pending |
-| `/shop/settings/gst/providers` | Pending | Pending | Pending |
-| `/shop/settings/gst/rounding` | Pending | Pending | Pending |
+| `/shop/settings/gst/providers` | Native provider jobs reviewed; subject reference and uncertain-state guidance restored | Status-led records and support disclosure | Ten languages at 320px |
+| `/shop/settings/gst/rounding` | Native review compared; end date, retained-policy reuse, IST dates and manager read access restored | Grouped policy form and distinct preview | Ten languages at 320px; retained dates and manager permissions checked |
 | `/shop/products/gst` | Pending | Pending | Pending |
 | `/shop/products/[id]/gst` | Pending | Pending | Pending |
 | `/shop/products/[id]/gst/rsp` | Pending | Pending | Pending |
@@ -71,3 +71,5 @@ GST overview/installations/numbers: native health, devices and allocation screen
 GST checks/recovery: native monitor/recovery source reviewed. Web retains scoped original requests and uncertain-outcome protections; helper visibility is limited to sales while management can review other financial requests. Closure reasons no longer leak between rows and offline closure is blocked. Tamil button overflow fixed and rechecked. Financial regression and TypeScript pass. No original requests replayed or closed.
 
 Saved receipt: original content/hash verification preserved. Synthetic ordinary receipt generated through production builder and verified through actual screen; amount and original timestamp retained. Existing fiscal document renderer reused. No server recovery, print or fiscal issuance performed.
+
+Providers/rounding: native source reviewed; subject references and uncertain-result guidance shown. Rounding dates retain IST calendar dates, end date must follow start, changes clear confirmation, and previews clear when input/version changes. Owner mutation and offline guards retained, managers may view/preview. Financial regression, translation checks and TypeScript passed. No provider call or rounding policy recorded.

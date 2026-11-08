@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useShop } from "../context";
-import { Card, Button, PageHeader, Notice } from "../ui";
+import { Card, Button, PageHeader, Notice, Pill } from "../ui";
 import {
   TextField,
   SelectField,
@@ -35,7 +35,7 @@ import {
 } from "../../../lib/shop/gst-storage";
 const base = "/shop/settings/gst";
 export function GstProvidersScreen() {
-  const { api, shop } = useShop(),
+  const { api, shop, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
   type Job = {
@@ -47,6 +47,7 @@ export function GstProvidersScreen() {
     createdAt: string;
     updatedAt: string;
     remoteId: string | null;
+    subjectReference?: string;
   };
   const q = useGstPages(["provider-jobs"], (before) =>
     api.gst.get<{ items: Job[]; nextCursor: string | null }>(
@@ -67,7 +68,7 @@ export function GstProvidersScreen() {
   };
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-provider-workspace">
         <PageHeader
           title={text("GST provider status")}
           back={{ href: base, label: text("GST records") }}
@@ -79,17 +80,15 @@ export function GstProvidersScreen() {
           {q.data?.pages
             .flatMap((p) => p.items)
             .map((job) => (
-              <Card key={job.id}>
+              <article key={job.id} className="gst-provider-record">
                 <h2>{text(labels[job.kind] ?? "Provider request")}</h2>
-                <p>
-                  {text(labels[job.state] ?? "Needs review")} · {job.provider}
-                </p>
+                <Pill tone={job.state==='uncertain'?'warn':job.state==='rejected'?'danger':job.state==='succeeded'?'ok':'neutral'}>{text(labels[job.state] ?? 'Needs review')}</Pill><p>{job.subjectReference}</p><p className="shop-hint">{job.provider}</p>{job.state==='uncertain'?<p className="shop-hint">{t('gst.provider.uncertain_help','The recorded outcome needs confirmation before another request.')}</p>:null}
                 <p>{date(job.updatedAt)}</p>
                 <Section title={text("Support reference")}>
-                  <p>{job.id}</p>
-                  <p>{job.remoteId}</p>
+                  <p className="gst-reference">{job.id}</p>
+                  <p className="gst-reference">{job.remoteId}</p>
                 </Section>
-              </Card>
+              </article>
             ))}
         </ReadState>
         <More query={q} />
@@ -101,7 +100,7 @@ export function GstProvidersScreen() {
   );
 }
 export function GstRoundingScreen() {
-  const { api, shop, userId } = useShop(),
+  const { api, shop, userId, role, offline, t } = useShop(),
     text = useGstText(),
     action = useGstAction();
   const path = `/api/shops/${shop?.id}/pos-settings/rounding-review`;
@@ -114,12 +113,14 @@ export function GstRoundingScreen() {
     !!settings.data?.gstPayableRoundingReviewsAvailable,
   );
   const [mode, setMode] = useState("none"),
-    [effective, setEffective] = useState(new Date().toISOString().slice(0, 10)),
+    [effective, setEffective] = useState(new Date(Date.now()+19800000).toISOString().slice(0,10)),
+    [until,setUntil]=useState(''),
     [evidence, setEvidence] = useState(""),
     [reason, setReason] = useState(""),
     [checked, setChecked] = useState(false),
     [before, setBefore] = useState("100.50"),
     [preview, setPreview] = useState<string | null>(null);
+  useEffect(()=>setPreview(null),[before,q.data?.review?.version]);
   const pending = useRef<RoundingReviewRequest | null>(null);
   const [restoring, setRestoring] = useState(true);
   const [restoreError, setRestoreError] = useState<Error | null>(null);
@@ -134,7 +135,8 @@ export function GstRoundingScreen() {
         if (input) {
           pending.current = input;
           setMode(input.policy.mode);
-          setEffective(input.policy.effectiveFrom.slice(0, 10));
+          setEffective(new Date(Date.parse(input.policy.effectiveFrom)+19800000).toISOString().slice(0,10));
+          setUntil(input.policy.effectiveUntil?new Date(Date.parse(input.policy.effectiveUntil)+19800000).toISOString().slice(0,10):"");
           setEvidence(input.policy.evidenceReference);
           setReason(input.reason);
           setChecked(true);
@@ -152,6 +154,7 @@ export function GstRoundingScreen() {
     };
   }, [userId, shop?.id]);
   async function save() {
+    if(role!=="OWNER"||offline||!q.isSuccess||q.error)return;
     const active = financialScope(shop!.id),
       key = `rounding-review:${active.actorId}:${active.shopId}`;
     const input = pending.current ??
@@ -162,7 +165,7 @@ export function GstRoundingScreen() {
           shopId: shop!.id,
           mode: mode as "none" | "nearest_rupee",
           effectiveFrom: new Date(effective + "T00:00:00+05:30").toISOString(),
-          effectiveUntil: null,
+          effectiveUntil: until?new Date(until+"T00:00:00+05:30").toISOString():null,
           reviewed: true as const,
           evidenceReference: evidence,
         },
@@ -193,8 +196,8 @@ export function GstRoundingScreen() {
     await q.refetch();
   }
   return (
-    <GstAccess owner>
-      <div className="shop-page">
+    <GstAccess>
+      <div className="shop-page gst-workspace gst-rounding-workspace">
         <PageHeader
           title={text("Payable rounding review")}
           back={{ href: base, label: text("GST records") }}
@@ -202,6 +205,7 @@ export function GstRoundingScreen() {
             "Review and preview a rounding policy. Saving a review does not enable rounded billing.",
           )}
         />
+        <Button tone="ghost" disabled={q.isFetching||settings.isFetching||action.busy} onClick={()=>{void settings.refetch();if(settings.data?.gstPayableRoundingReviewsAvailable)void q.refetch()}}>{t('gst.rounding.refresh','Refresh review')}</Button>
         <ReadState query={settings}>
           {settings.data?.gstPayableRoundingReviewsAvailable ? (
             <>
@@ -215,13 +219,13 @@ export function GstRoundingScreen() {
                         : "No rounding",
                     )}
                   </p>
-                  <p>{q.data?.review?.policy.evidenceReference}</p>
+                  <p>{q.data?.review?.policy.evidenceReference}</p>{q.data?.review?<><p className="gst-reference">{q.data.review.version}</p><Button tone="quiet" disabled={role!=='OWNER'||offline||restoring||!!restoreError||action.busy||!!pending.current} onClick={()=>{const p=q.data!.review!.policy;setMode(p.mode);setEffective(new Date(Date.parse(p.effectiveFrom)+19800000).toISOString().slice(0,10));setUntil(p.effectiveUntil?new Date(Date.parse(p.effectiveUntil)+19800000).toISOString().slice(0,10):'');setEvidence(p.evidenceReference);setReason('');setChecked(false)}}>{t('gst.rounding.use_latest','Use retained policy for a new review')}</Button></>:null}
                 </Card>
               </ReadState>
-              <Card>
-                <fieldset
+              <Card className="gst-rounding-form">
+                <fieldset className="form-grid is-2"
                   disabled={
-                    restoring ||
+                    role!=='OWNER'||offline||!q.isSuccess||!!q.error||restoring ||
                     !!restoreError ||
                     action.busy ||
                     !!pending.current
@@ -230,7 +234,7 @@ export function GstRoundingScreen() {
                   <SelectField
                     label={text("Rounding")}
                     value={mode}
-                    onChange={setMode}
+                    onChange={v=>{setMode(v);setChecked(false)}}
                     options={[
                       ["none", text("No rounding")],
                       ["nearest_rupee", text("Nearest rupee")],
@@ -240,17 +244,18 @@ export function GstRoundingScreen() {
                     label={text("Effective date")}
                     type="date"
                     value={effective}
-                    onChange={setEffective}
+                    onChange={v=>{setEffective(v);setChecked(false)}}
                   />
+                  <TextField label={t('gst.rounding.until','Effective until (optional, exclusive)')} type="date" value={until} onChange={v=>{setUntil(v);setChecked(false)}}/>
                   <TextField
                     label={text("Evidence reference")}
                     value={evidence}
-                    onChange={setEvidence}
+                    onChange={v=>{setEvidence(v);setChecked(false)}}
                   />
                   <TextField
                     label={text("Reason")}
                     value={reason}
-                    onChange={setReason}
+                    onChange={v=>{setReason(v);setChecked(false)}}
                   />
                   <Check
                     label={text("I have reviewed this policy.")}
@@ -262,14 +267,14 @@ export function GstRoundingScreen() {
                 {action.notice}
                 <Button
                   disabled={
-                    restoring ||
+                    role!=='OWNER'||offline||!q.isSuccess||!!q.error||restoring ||
                     !!restoreError ||
                     action.busy ||
                     (!pending.current &&
                       (!checked ||
                         !evidence.trim() ||
                         !reason.trim() ||
-                        !effective))
+                        !effective || (!!until&&until<=effective)))
                   }
                   onClick={() => void action.run(save)}
                 >
@@ -281,7 +286,7 @@ export function GstRoundingScreen() {
                 </Button>
               </Card>
               {q.data?.review ? (
-                <Card>
+                <Card className="gst-rounding-preview">
                   <TextField
                     label={text("Amount before rounding")}
                     type="number"
@@ -289,7 +294,7 @@ export function GstRoundingScreen() {
                     onChange={setBefore}
                   />
                   <Button
-                    disabled={action.busy || !/^\d+(\.\d{1,2})?$/.test(before)}
+                    disabled={offline||!!pending.current||action.busy || !/^\d+(\.\d{1,2})?$/.test(before)}
                     onClick={() =>
                       void action.run(async () => {
                         const issuedAt = new Date().toISOString(),
