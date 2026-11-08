@@ -22,7 +22,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/settings/gst/devices` | Native installation panel reviewed; identity, refresh and explicit revocation confirmation restored | Expandable records and focused confirmation dialog | Ten languages at 320px; empty-reason guard and cancellation checked |
 | `/shop/settings/gst/numbers` | Native allocation register reviewed; support identity, document links and position ranges restored | Mobile ledger rows and desktop table | Ten languages at 320px with expanded records |
 | `/shop/settings/gst/recovery` | Native recovery compared; cost-role separation and per-request closure reasons restored | Bills/request tabs and expandable evidence | Ten languages at 320px; synthetic retained bill and tab switch checked |
-| `/shop/settings/gst/recovery/[requestId]` | Pending | Pending | Pending |
+| `/shop/settings/gst/recovery/[requestId]` | Original receipt verification and recovery retained; units localized | Saved-state summary and responsive receipt | Ten languages at 320px with verified synthetic ordinary receipt |
 | `/shop/settings/gst/exports` | Pending | Pending | Pending |
 | `/shop/settings/gst/periods` | Pending | Pending | Pending |
 | `/shop/settings/gst/turnover` | Pending | Pending | Pending |
@@ -69,3 +69,5 @@ Opening balances: ported current portable native view and optional skip callback
 GST overview/installations/numbers: native health, devices and allocation screens compared with server response. Added provider-history evidence to review counts, affected-document links, installation support references, current-browser recognition and explicit reason/confirmation before revocation. Unconfirmed ranges preserve gaps. Expanded fixture records fit all ten languages at 320px; cancellation leaves device active. No real revocations or allocation writes. TypeScript and translation checks pass.
 
 GST checks/recovery: native monitor/recovery source reviewed. Web retains scoped original requests and uncertain-outcome protections; helper visibility is limited to sales while management can review other financial requests. Closure reasons no longer leak between rows and offline closure is blocked. Tamil button overflow fixed and rechecked. Financial regression and TypeScript pass. No original requests replayed or closed.
+
+Saved receipt: original content/hash verification preserved. Synthetic ordinary receipt generated through production builder and verified through actual screen; amount and original timestamp retained. Existing fiscal document renderer reused. No server recovery, print or fiscal issuance performed.

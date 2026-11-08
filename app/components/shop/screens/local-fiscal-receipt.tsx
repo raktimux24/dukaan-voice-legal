@@ -7,7 +7,7 @@ import {FiscalDocumentArticle} from '../gst-documents';
 import {financialScope,retainedRequests,assertScope} from '../../../lib/shop/gst-storage';
 import {verifyLocalIssuedReceipt,type LocalOrdinaryReceipt} from '../../../lib/shop/local-issued-receipt';
 import {formatINR} from '../../../lib/shop/money';
-import {formatQty} from '../../../lib/shop/units';
+import {formatQty,unitLabel} from '../../../lib/shop/units';
 import {useShopDates} from '../use-shop-dates';
 import {documentView} from '../../../lib/shop/gst-document-view';
 import {recoverFinancialRequest} from '../../../lib/shop/gst-recovery';
@@ -22,12 +22,12 @@ export function LocalFiscalReceiptScreen({requestId}:{requestId:string}) {
   return {row,receipt,view:receipt.kind==='fiscal'?documentView(receipt.receipt.document):null};
  },true,'always');
  const saved=q.data,confirmed=saved?.row.state==='confirmed'?(saved.row.result as Sale|undefined):undefined;
- return <div className="shop-page">
+ return <div className="shop-page gst-workspace local-receipt-workspace">
   <PageHeader title={text('Saved bill')} back={{href:'/shop/settings/gst/recovery',label:text('Device bill recovery')}}/>
   {action.notice}
   <ReadState query={q} empty={!saved}>
    {saved?<>
-    <Card>
+    <Card className="local-receipt-status">
      <p className="shop-section-title">{text(confirmed?'Confirmed':'Saved locally · awaiting synchronization')}</p>
      {!confirmed&&saved.receipt.kind==='fiscal'?<p className="shop-hint">{text('This bill keeps its original number and issue time. Server confirmation is pending.')}</p>:null}
      <div className="shop-actions">
@@ -42,7 +42,7 @@ export function LocalFiscalReceiptScreen({requestId}:{requestId:string}) {
 }
 
 function OrdinaryReceipt({receipt,pending}:{receipt:LocalOrdinaryReceipt;pending:boolean}){
- const {shop}=useShop(),text=useGstText(),{formatWhen}=useShopDates();
+ const {shop,t}=useShop(),text=useGstText(),{formatWhen}=useShopDates();
  return <>
  <div className="shop-actions no-print"><Button onClick={()=>window.print()}>{text('PDF')}</Button></div>
  <article className="receipt">
@@ -50,7 +50,7 @@ function OrdinaryReceipt({receipt,pending}:{receipt:LocalOrdinaryReceipt;pending
   <p className="receipt-status">{text(pending?'Saved locally · awaiting synchronization':'Confirmed')}</p>
   <p className="receipt-meta">{`S-${receipt.requestId.replace(/-/g,'').slice(-4).toUpperCase()}`}</p>
   {receipt.customer?.name?<p className="receipt-customer">{receipt.customer.name}</p>:null}
-  <ul className="receipt-lines">{receipt.items.map((item,index)=><li key={index}><div><p>{item.name}</p><p className="receipt-qty">{formatQty(item.quantity,item.unit??'')} × {formatINR(item.price)}</p></div><b>{formatINR(Math.max(0,Math.round((item.quantity*(item.price??0)-(item.discount??0))*100)/100))}</b></li>)}</ul>
+  <ul className="receipt-lines">{receipt.items.map((item,index)=><li key={index}><div><p>{item.name}</p><p className="receipt-qty">{formatQty(item.quantity,item.unit??'',{unitLabel:u=>unitLabel(u,t)})} × {formatINR(item.price)}</p></div><b>{formatINR(Math.max(0,Math.round((item.quantity*(item.price??0)-(item.discount??0))*100)/100))}</b></li>)}</ul>
   <dl className="receipt-totals"><div><dt>{text('Subtotal')}</dt><dd>{formatINR(receipt.subtotal)}</dd></div><div><dt>{text('Discount')}</dt><dd>{formatINR(receipt.discount)}</dd></div><div className="is-total"><dt>{text('Total')}</dt><dd>{formatINR(receipt.total)}</dd></div></dl>
   {receipt.payments.map((p,index)=><p key={index}>{text(({cash:'Cash',upi:'UPI',card:'Card',credit:'Udhaar'} as Record<string,string>)[p.method])} · {formatINR(p.amount)}</p>)}
   {receipt.note?<p>{receipt.note}</p>:null}
