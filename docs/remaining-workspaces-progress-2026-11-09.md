@@ -10,7 +10,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/brief` | Audited; history, stock, regeneration and Free audio restored | Implemented | 10-language 320px check; desktop visual and refresh verified |
 | `/shop/voice` | Pending | Pending | Pending |
 | `/shop/cashbook` | Shared mutations match mobile; expense entry and ledger presentation restored | Amount-first expense form, ledger rows, expense list/details | Ten languages at 320px for day and form; synthetic unpaid save verified |
-| `/shop/sales/refunds` | Pending | Pending | Pending |
+| `/shop/sales/refunds` | Native periods, summary, rows and bill navigation audited; settlement fallback restored | Sales-style metrics and settlement ledger | Ten languages at 320px; audit disclosure and settlement amounts checked |
 | `/shop/customers/[id]/statement` | Pending | Pending | Pending |
 | `/shop/customers/followups` | Pending | Pending | Pending |
 | `/shop/products/import` | Pending | Pending | Pending |
@@ -49,3 +49,5 @@ Bulk editor: shared contract/client/workflow match mobile. Existing dedicated-fi
 Barcodes: mobile contract/client/workflow match. Added missing-only filter with scope reset, compact label records and responsive command bar. Synthetic generation retained existing code and cleared missing selection; real code generation and physical printing not performed. Existing ten-language strings reused.
 
 Cashbook: compared native view and expense form, retained unchanged shared contract/client/workflow. Ported expense/ledger presentation hooks, unsupported-service errors and return-to-list after expense save. Desktop form and 320px day/form checked in ten languages using existing translated keys. Unpaid synthetic expense saved with zero payment and full remaining balance. Cashbook regression tests, translation coverage and TypeScript passed. Live payments/reconciliation/export not executed.
+
+Refunds: native refunds.tsx comparison complete. Web retains search, custom dates and cursor navigation; reversed custom ranges now suppress queries. Both flat and nested settlement evidence display correctly. Sales regressions, TypeScript and translations pass. 320px ten-language check and synthetic audit disclosure verified; no real refund submitted.
