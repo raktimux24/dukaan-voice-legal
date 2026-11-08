@@ -140,8 +140,8 @@ export function Field({
 
 export const inputClass = 'shop-field';
 
-export function Card({ children, className, tight, flush }: { children: ReactNode; className?: string; tight?: boolean; flush?: boolean }) {
-  return <section className={cx('shop-surface shop-card', tight && 'is-tight', flush && 'is-flush', className)}>{children}</section>;
+export function Card({ children, className, tight, flush, id }: { id?: string; children: ReactNode; className?: string; tight?: boolean; flush?: boolean }) {
+  return <section id={id} className={cx('shop-surface shop-card', tight && 'is-tight', flush && 'is-flush', className)}>{children}</section>;
 }
 
 export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'ok' | 'warn' | 'danger' | 'saffron' }) {

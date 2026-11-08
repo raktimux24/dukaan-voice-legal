@@ -1,4 +1,5 @@
 'use client';
+import {CounterCamera} from '../counter-scanner';
 import {ProductImageEditor,useProductImageEditor} from '../product-image-editor';
 import {useProductSaveRecovery} from '../use-product-save-recovery';
 import {useProductPhotoLeave} from '../use-product-photo-leave';
@@ -35,6 +36,8 @@ type Draft = {
   mrp: string;
   purchasePrice: string;
   trackStock: boolean;
+  depletionOrder: "expiry" | "fifo";
+  packPrice: string;
   shortCode: string;
   packSize: string;
   packLabel: string;
@@ -57,6 +60,8 @@ function blank(category: string, subcategory: string, extra?: Partial<Draft>): D
     mrp: '',
     purchasePrice: '',
     trackStock: l2ItemType(category, subcategory) !== "service",
+    depletionOrder: "expiry",
+    packPrice: "",
     shortCode: '',
     packSize: '',
     packLabel: '',
@@ -99,6 +104,10 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const createdResult=useRef<Awaited<ReturnType<typeof api.addProduct>>|null>(null);
   useEffect(()=>{createdResult.current=null;setUncertainSave(false);},[saveIntent.identity]);
   const [generateBarcode,setGenerateBarcode]=useState(false);
+  const [cameraOn,setCameraOn]=useState(false);
+  const barcodeRef=useRef<HTMLInputElement>(null);
+  const formRef=useRef<HTMLFormElement>(null);
+  const closeCamera=()=>{setCameraOn(false);barcodeRef.current?.focus();};
   const [draft, setDraft] = useState<Draft | null>(null);
   const initial = useMemo(() => {
     if (!shop) return null;
@@ -124,6 +133,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       mrp: item.product.mrp == null ? '' : String(item.product.mrp),
       purchasePrice: item.product.purchasePrice == null ? '' : String(item.product.purchasePrice),
       trackStock: item.product.trackStock !== false,
+      depletionOrder: item.product.depletionOrder === "fifo" ? "fifo" : "expiry",
       shortCode: item.product.shortCode ?? '',
       packSize: item.product.packSize == null ? '' : String(item.product.packSize),
       packLabel: item.product.packLabel ?? '',
@@ -138,7 +148,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     if(!(UNITS as readonly string[]).includes(fields.unit))throw Error('product_image_recovery_unavailable');
     const restored=blank(fields.category??'',fields.subcategory??'');
     for(const key of Object.keys(restored) as (keyof Draft)[])if(key!=='trackStock'&&typeof fields[key]==='string')(restored as unknown as Record<string,string>)[key]=fields[key];
-    restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(restoredTaxWasEdited(fields.gstEdited,tax,item?.product.gstConfig??null)?tax:undefined);
+    restored.depletionOrder=fields.depletionOrder==='fifo'?'fifo':'expiry';restored.trackStock=bool('trackStock');setDraft(restored);setBuyingDiscount(fields.purchaseDiscount??'');setAutoMrp(bool('autoMrp'));setGenerateBarcode(bool('generateBarcode'));setGstDraft(restoredTaxWasEdited(fields.gstEdited,tax,item?.product.gstConfig??null)?tax:undefined);
   });
   const leaveGuard=useProductPhotoLeave({dirty:media.dirty||preparingPhoto||uncertainSave,busy:pending,current:saveIntent.current,flush:async()=>{await media.editor?.flushRecovery();},message:t('product_images.leave_title','Leave this form?')+'\n\n'+(uncertainSave?t('product_images.save_pending','The previous save is still unconfirmed.')+'\n\n':'')+t('product_images.leave_hint','Your saved product will not change. Photo changes stay in a draft on this device. Unfinished photos may need to be selected again.'),onError:()=>setError(Error(t('opening.error.storage','The draft could not be saved on this device.')))});
   useEffect(()=>{leaveGuard.reset();},[saveIntent.identity]);
@@ -146,12 +156,13 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   if (!shop) return <Spinner />;
   if (!perms.canEditProducts) return <NoAccess what={uiText("Only an owner or manager can add or edit products.")} />;
   if (productId && existing.isLoading) return <Spinner label={uiText("Loading product")} />;
+  if (productId && existing.error) return <div className="shop-page"><Notice error={existing.error}/><Button onClick={()=>void existing.refetch()}>{t("common.retry", "Try again")}</Button></div>;
   if (productId && !item) return <Card><p>{uiText("That product was not found.")}</p></Card>;
   if (!form) return <Spinner />;
 
   const subs = l2ForL1(form.category);
   const set = (partial: Partial<Draft>) => setDraft({ ...form, ...partial });
-  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp||media.dirty;
+  const dirty = (initial ? JSON.stringify(form) !== JSON.stringify(initial) : true)||gstDraft!==undefined||buyingDiscount!==''||autoMrp||generateBarcode||media.dirty;
   const selling = form.sellingPrice === '' ? null : Number(form.sellingPrice);
   const gstConfig=gstDraft===undefined?item?.product.gstConfig??null:gstDraft;
   const priceBreakdown=productPriceBreakdown(form.sellingPrice,gstConfig,pos.data?.gstSettings);
@@ -164,8 +175,12 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const handleSubmit = async (addAnother = false) => {
     if(pending||!saveIntent.ready||saveIntent.error||(!uncertainSave&&!editorFields.ready))return;
     if(!uncertainSave){
+    if (!form.name.trim()) { setError(Error(t('modal.add_product.alert_name_required','A name is required.'))); return; }
+    if ([form.sellingPrice,form.mrp,form.initialStock,form.packSize,form.packPrice].some(v=>v!=null&&v!==''&&(!/^\d+(\.\d+)?$/.test(v)||!Number.isFinite(Number(v))||Number(v)<0)) || (form.packSize!==''&&Number(form.packSize)<=0)) {
+      setError(Error(t('productform.invalid_numbers','Enter valid, non-negative prices and quantities. Pack size must be greater than zero.'))); return;
+    }
     if (!isAllowedL2(shop.category, shop.subtype, form.category, form.subcategory)) {
-      setError(new Error('That category is not available for this shop.'));
+      setError(new Error(t('productform.invalid_category','Choose a category available for this shop.')));
       return;
     }
     if(!hideCost && form.purchasePrice!=='' && cost===null){setError(Error(text('Enter a valid buying price and a discount between 0 and 100%.')));return;}
@@ -187,6 +202,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       ...productFormTaxPatch(!productId,gstDraft!==undefined,gstConfig),
       mrp: autoMrp&&priceBreakdown?priceBreakdown.gross:form.mrp === '' ? null : Number(form.mrp),
       trackStock: form.trackStock,
+      depletionOrder: form.trackStock ? (form.depletionOrder === "fifo" ? "fifo" : "expiry") : "expiry",
       shortCode: form.shortCode.trim() || null,
       packSize: form.packSize === '' ? null : Number(form.packSize),
       packLabel: form.packLabel.trim() || null,
@@ -251,14 +267,15 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     <Field label={label} hint={hint}>
       <div className="shop-input-wrap">
         <span className="shop-input-prefix">₹</span>
-        <input className={cx(inputClass, 'num')} inputMode="decimal" value={value} onChange={(event) => onChange(event.target.value)} placeholder="0.00" />
+        <input aria-label={label} className={cx(inputClass, 'num')} inputMode="decimal" value={value} onChange={(event) => onChange(event.target.value)} placeholder="0.00" />
       </div>
     </Field>
   );
 
   return (
     <form
-      className="shop-page"
+      ref={formRef}
+      className="shop-page product-form-workspace"
       onSubmit={(event) => {
         event.preventDefault();
         void handleSubmit();
@@ -267,7 +284,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       <PageHeader
         kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
-        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : uiText('Name, category, and a price are enough to start selling.')}
+        description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : t('productform.intro','Start with the product. Set its price and stock before saving.')}
         actions={<Button onClick={()=>void leaveGuard.leave(()=>{if(onCancel)onCancel();else router.push(productId?`/shop/products/${productId}`:'/shop/products');})} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
       {(error as {code?:string}|null)?.code==='product_image_conflict'?<p role="alert" className="shop-notice">{t('product_images.conflict','Photos changed on another device. Reload and review before saving.')}</p>:error&&(error as {code?:string}).code?.startsWith('barcode_')?<p role="alert">{t(barcodeErrorKey(error),barcodeErrorKey(error))}</p>:<Notice error={error} />}
@@ -275,17 +292,19 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       {uncertainSave?<p role="alert">{t("product_images.save_pending","The previous save is still unconfirmed. Retry it to finish before editing further.")}</p>:null}
       {saveIntent.pending?<p>{String(saveIntent.pending.name??'')}</p>:null}
       {saveIntent.error||editorFields.error?<p role="alert">{t('opening.error.storage',"The saved request could not be verified. Keep this device's data and check recovery before continuing.")}</p>:null}
+      <nav className="product-form-index" aria-label={t('productform.sections','Product form sections')}>
+        {[['identity',t('modal.product_detail.section_details','Details')],['pricing',text('Prices & GST')],['stock',t('productform.stock','Stock')],['photos',t('product_images.title','Product photos')]].map(([id,label],index)=><a key={id} href={'#product-form-'+id}><span aria-hidden="true">0{index+1}</span>{label}</a>)}
+      </nav>
       <div className="form-layout">
         <fieldset className="form-stack" style={{border:0,padding:0,margin:0,minWidth:0}} disabled={uncertainSave||!saveIntent.ready} inert={uncertainSave||!saveIntent.ready}>
-          <Card><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto} onReset={()=>setError((current:unknown)=>(current as {code?:string}|null)?.code==='product_image_conflict'?null:current)}/></Card>
-          <Card className="grid gap-5">
+
+          <Card className="product-form-section" id="product-form-identity">
             <div>
-              <h2 className="shop-section-title">{t('products.title', 'Product')}</h2>
-              <p className="shop-section-sub">{t('modal.product_detail.section_details', 'What it is and how it is counted.')}</p>
+              <h2 className="shop-section-title">{t('modal.product_detail.section_details', 'Details')}</h2>
             </div>
             <div className="form-grid">
               <Field label={t('modal.add_product.name_label', 'Name')}>
-                <input className="shop-field is-lg" value={form.name} onChange={(event) => set({ name: event.target.value })} required autoFocus={!productId} placeholder={t('modal.add_product.name_placeholder', 'e.g. Tata Salt 1 kg')} />
+                <input className="shop-field is-lg" value={form.name} onChange={(event) => set({ name: event.target.value })} required placeholder={t('modal.add_product.name_placeholder', 'e.g. Tata Salt 1 kg')} />
               </Field>
               <div className="form-grid is-2">
                 <Field label={t('modal.add_product.category_label', 'Category')}>
@@ -295,6 +314,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 </Field>
                 <Field label={t('modal.add_product.subcategory_label', 'Sub-category')}>
                   <select className={inputClass} value={form.subcategory} onChange={(event) => set({ subcategory: event.target.value, trackStock: l2ItemType(form.category, event.target.value) !== 'service' })} required>
+                    <option value="">{t("modal.add_product.subcategory_placeholder", "Choose a sub-category")}</option>
                     {subs.map((row) => <option key={row.code} value={row.code}>{labeledL2(form.category, row.code, (key) => t(key, key))}</option>)}
                   </select>
                 </Field>
@@ -303,7 +323,8 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               {item?.product.barcode?<Button tone="ghost" href={'/shop/products/barcodes?productId='+productId}>{t('barcodes.manage','Manage barcode')}</Button>:null}
               <div className="form-grid is-2">
                 <Field label={t('modal.add_product.barcode_label', 'Barcode')} hint={t('modal.add_product.barcode_placeholder', 'Scan or enter barcode')}>
-                  <input className={cx(inputClass, 'num')} value={form.barcode} onChange={(event) => set({ barcode: event.target.value })} readOnly={!!item?.product.barcode} />
+                  <input ref={barcodeRef} aria-label={t('modal.add_product.barcode_label','Barcode')} className={cx(inputClass, 'num')} value={form.barcode} onChange={(event) => set({ barcode: event.target.value })} readOnly={!!item?.product.barcode} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();}}}/>
+                  {!item?.product.barcode?<button type="button" className="shop-btn shop-btn-quiet" disabled={pending} aria-expanded={cameraOn} onClick={()=>setCameraOn(v=>!v)}>{t('sellweb.camera','Camera')}</button>:null}
                 </Field>
                 <Field label={t('modal.add_product.unit_label', 'Unit')}>
                   <select className={inputClass} value={form.unit} onChange={(event) => set({ unit: event.target.value })}>
@@ -312,9 +333,10 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
                 </Field>
               </div>
             </div>
+            {cameraOn?<CounterCamera onCode={barcode=>{set({barcode});closeCamera();}} onClose={closeCamera}/>:null}
           </Card>
 
-          <Card className="grid gap-5">
+          <Card className="product-form-section" id="product-form-pricing">
             <h2 className="shop-section-title">{text('Prices & GST')}</h2>
             {!hideCost?<div className="form-grid is-2">
               {money(form.purchasePrice,next=>set({purchasePrice:next}),text('Buying price'),text('Your cost before the buying discount.'))}
@@ -323,18 +345,24 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
             </div>:null}
             {money(form.sellingPrice,next=>set({sellingPrice:next}),text('Selling price'),pos.data?.gstSettings?.registration === 'regular' ? text('GST is calculated on this selling price after discounts.') : undefined)}
             <Notice error={pos.error}/>
-            <p className="shop-hint">{text(EN_FALLBACK[!pos.data?.gstSettings || pos.data.gstSettings.registration === 'unknown' ? 'gst.product_price_unknown' : pos.data.gstSettings.registration !== 'regular' ? 'gst.product_price_no_collection' : pos.data.gstSettings.priceMode === 'exclusive' ? 'gst.product_price_exclusive' : 'gst.product_price_inclusive'])}</p>
+            <p className="shop-hint">{t(!pos.data?.gstSettings || pos.data.gstSettings.registration === 'unknown' ? 'gst.product_price_unknown' : pos.data.gstSettings.registration !== 'regular' ? 'gst.product_price_no_collection' : pos.data.gstSettings.priceMode === 'exclusive' ? 'gst.product_price_exclusive' : 'gst.product_price_inclusive', EN_FALLBACK[!pos.data?.gstSettings || pos.data.gstSettings.registration === 'unknown' ? 'gst.product_price_unknown' : pos.data.gstSettings.registration !== 'regular' ? 'gst.product_price_no_collection' : pos.data.gstSettings.priceMode === 'exclusive' ? 'gst.product_price_exclusive' : 'gst.product_price_inclusive'])}</p>
             <TaxFields value={gstConfig} onChange={setGstDraft}/>
             {priceBreakdown?<div className="gst-price-preview"><span>{text('Before GST')} <b>{formatINR(priceBreakdown.net)}</b></span><span>{text('GST')} <b>{formatINR(priceBreakdown.tax)}</b></span><span>{text('Customer pays')} <b>{formatINR(priceBreakdown.gross)}</b></span></div>:<p className="shop-hint">{text('Set up shop GST and confirm the product tax details to see the GST calculation.')}</p>}
             <Check label={text('Calculate MRP from selling price and GST')} checked={autoMrp} onChange={setAutoMrp}/>
-            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),text('MRP'),text(EN_FALLBACK['gst.mrp_help']))}
+            {autoMrp?<p>{text('Calculated MRP')}: {priceBreakdown?formatINR(priceBreakdown.gross):'—'}</p>:money(form.mrp,next=>set({mrp:next}),t('productform.mrp','MRP'),t('gst.mrp_help',EN_FALLBACK['gst.mrp_help']))}
           </Card>
 
-          <Card className="grid gap-5">
+          <Card className="product-form-section" id="product-form-stock">
             <div>
-              <h2 className="shop-section-title">{t('reports.stock.on_hand', 'Stock')}</h2>
+              <h2 className="shop-section-title">{t('productform.stock', 'Stock')}</h2>
               <p className="shop-section-sub">{productId ? t('modal.add_product.edit_note', 'Add or edit batches from the product page.') : t('modal.add_product.section_initial_batch', 'Opening stock creates the first batch.')}</p>
             </div>
+            {form.trackStock?<Field label={t('modal.add_product.depletion_order_label','Sell stock by')} hint={t('modal.add_product.depletion_order_hint','Which batch goes out first when you sell this product')}>
+              <select className={inputClass} value={form.depletionOrder} onChange={e=>set({depletionOrder:e.target.value as 'expiry'|'fifo'})}>
+                <option value="expiry">{t('modal.add_product.depletion_order_expiry','Soonest expiry')}</option>
+                <option value="fifo">{t('modal.add_product.depletion_order_fifo','Oldest stock')}</option>
+              </select>
+            </Field>:null}
             <div className="form-grid is-2">
               <label className="shop-toggle">
                 <span>
@@ -368,28 +396,33 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
             ) : null}
           </Card>
 
-          <Card>
+          <Card className="product-form-section">
             <details className="form-details" open={!!(form.shortCode || form.packSize || form.packLabel)}>
-              <summary>{t('modal.add_product.short_code_label', 'Short code')} · {t('modal.add_product.pack_name', 'Pack size')}</summary>
+              <summary>{t('modal.add_product.short_code_label', 'Short code')} · {t('modal.add_product.packs_label', 'Buy in packs')}</summary>
               <div className="form-grid is-3">
                 <Field label={t('modal.add_product.short_code_label', 'Short code')} hint={t('modal.add_product.short_code_placeholder', 'Type this at the counter to add the product.')}>
                   <input className={inputClass} value={form.shortCode} onChange={(event) => set({ shortCode: event.target.value })} placeholder={t('modal.add_product.short_code_placeholder', 'e.g. TS1')} />
                 </Field>
                 <Field label={t('modal.add_product.pack_size', '{{unit}} per pack', { unit: form.unit })} hint={t('modal.add_product.packs_hint', 'How many {{unit}} make one pack.', { unit: form.unit })}>
-                  <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.packSize} onChange={(event) => set({ packSize: event.target.value })} />
+                  <input className={cx(inputClass, 'num')} inputMode="decimal" value={form.packSize} onChange={(event) => {const packSize=event.target.value;set({packSize,...(Number(packSize)>0&&Number(form.packPrice)>0?{purchasePrice:String(Math.round(Number(form.packPrice)/Number(packSize)*100)/100)}:{})});}} />
                 </Field>
                 <Field label={t('modal.add_product.pack_name', 'Pack label')}>
                   <input className={inputClass} value={form.packLabel} onChange={(event) => set({ packLabel: event.target.value })} placeholder={t('modal.add_product.pack_name_placeholder', 'e.g. case, strip')} />
                 </Field>
               </div>
+              {!hideCost?<div className="product-form-pack-price">
+                {money(form.packPrice,packPrice=>set({packPrice,...(Number(form.packSize)>0&&Number(packPrice)>0?{purchasePrice:String(Math.round(Number(packPrice)/Number(form.packSize)*100)/100)}:{})}),t('modal.add_product.pack_price','Price per {{label}}',{label:form.packLabel||t('modal.add_product.pack_default_label','pack')}),t('modal.add_product.packs_hint','Stock and prices stay per {{unit}}.',{unit:form.unit}))}
+                {Number(form.packSize)>0&&Number(form.packPrice)>0?<p className="shop-hint">{t('modal.add_product.pack_per_unit','{{price}} per {{unit}}',{price:formatINR(Math.round(Number(form.packPrice)/Number(form.packSize)*100)/100),unit:form.unit})}</p>:null}
+              </div>:null}
             </details>
           </Card>
+          <Card className="product-form-section" id="product-form-photos"><ProductImageEditor media={media} name={form.name} disabled={pending||uncertainSave} onBusyChange={setPreparingPhoto} onReset={()=>setError((current:unknown)=>(current as {code?:string}|null)?.code==='product_image_conflict'?null:current)}/></Card>
         </fieldset>
 
         <aside className="form-aside">
           <Card className="form-summary">
             {!uncertainSave?<>
-            <p className="shop-kicker">{productId ? t('common.saving', 'Saving changes to') : t('modal.add_product.title', 'Adding')}</p>
+            <p className="shop-kicker">{t('productform.review','Product overview')}</p>
             <p className="form-summary-name">{form.name.trim() || t('modal.add_product.title', 'New product')}</p>
             <div className="grid gap-2">
               <p className="form-summary-row"><span>{t('modal.add_product.category_label', 'Category')}</span><b>{labeledL1(form.category, (key) => t(key, key))}{form.subcategory ? ` · ${labeledL2(form.category, form.subcategory, (key) => t(key, key))}` : ''}</b></p>
@@ -406,16 +439,18 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
               </div>
             ) : null}
             </>:null}
-            <div className="grid gap-2">
-              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : uncertainSave?t('product_images.retry','Retry'):productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
-              {!productId && !onCreated ? (
-                <Button tone="ghost" block disabled={!canSave} onClick={() => void handleSubmit(true)}>{uiText("Save and add another")}</Button>
-              ) : null}
-            </div>
-            {!uncertainSave&&!form.name.trim() ? <p className="text-center text-xs text-faint">{t('modal.add_product.alert_name_required', 'A name is required.')}</p> : null}
           </Card>
         </aside>
       </div>
+      <footer className="product-form-footer">
+            <div className="product-form-save-buttons">
+              <Button type="submit" size="lg" block disabled={!canSave}>{pending ? t('common.saving', 'Saving…') : uncertainSave?t('product_images.retry','Retry'):productId ? t('modal.add_product.button_update', 'Save changes') : t('modal.add_product.button_save', 'Save product')}</Button>
+              {!productId && !onCreated ? (
+                <Button tone="ghost" block disabled={!canSave} onClick={() => {if(formRef.current?.reportValidity())void handleSubmit(true);}}>{uiText("Save and add another")}</Button>
+              ) : null}
+            </div>
+            {!uncertainSave&&(!form.name.trim()||!form.subcategory) ? <p className="text-center text-xs text-muted">{!form.name.trim()?t('modal.add_product.alert_name_required', 'A name is required.'):t('modal.add_product.subcategory_placeholder','Choose a sub-category')}</p> : null}
+      </footer>
     </form>
   );
 }

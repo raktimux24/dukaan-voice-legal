@@ -26,9 +26,8 @@ export function useProductImageEditor(product?:string,reset=0,slot=product??'new
  return {editor,state,dirty:editor?.dirty()??false,busy:!!state?.selectionPending||(state?.items.some(i=>i.status!=='ready')??false),clearRecovery:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');await active.editor.clearRecovery();},manifest:async()=>{const active=ref.current;if(active?.key!==key||active.api!==api)throw Error('auth_session_changed');return active.editor.manifest();}};
 }
 export function ProductImageEditor({media,name,disabled=false,onBusyChange,onReset}:{media:ReturnType<typeof useProductImageEditor>;name:string;disabled?:boolean;onBusyChange?:(busy:boolean)=>void;onReset?:()=>void}){
- const {t}=useShop(),input=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
+ const {t}=useShop(),input=useRef<HTMLInputElement>(null),cameraInput=useRef<HTMLInputElement>(null),[preparing,setPreparing]=useState(false),[error,setError]=useState(false),replace=useRef<string|null>(null),{state,editor}=media;
  useEffect(()=>{onBusyChange?.(preparing);return()=>onBusyChange?.(false);},[preparing,onBusyChange]);
- useEffect(()=>{const element=input.current;if(!element||!editor)return;const cancel=()=>void editor.endSelection().catch(()=>setError(true));element.addEventListener('cancel',cancel);return()=>element.removeEventListener('cancel',cancel);},[editor]);
  const section=useRef<HTMLElement>(null),cards=useRef(new Map<string,HTMLDivElement>()),[resetFocus,setResetFocus]=useState(0);
  const focusTarget=(target:HTMLElement|null|undefined)=>{target?.focus({preventScroll:true});target?.scrollIntoView({block:'center',inline:'nearest'});};
  const focusCard=(id:string)=>focusTarget(cards.current.get(id));
@@ -37,7 +36,13 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange,onRes
  const remove=(id:string)=>{const index=state?.items.findIndex(item=>item.clientId===id)??-1,next=state?.items[index+1]??state?.items[index-1];if(next)focusCard(next.clientId);else focusTarget(section.current?.querySelector<HTMLButtonElement>('.product-photo-choose'));editor?.remove(id);};
  const text=(key:string)=>t('product_images.'+key,'product_images.'+key);
  const reset=async()=>{if(!editor)return;setPreparing(true);setError(false);try{await editor.reset();onReset?.();}catch{setError(true);}finally{setPreparing(false);setResetFocus(n=>n+1);}};
- const choose=async(id?:string)=>{if(!editor)return;replace.current=id??null;setError(false);try{await editor.beginSelection();if(input.current){input.current.value='';input.current.multiple=!id;input.current.click();}}catch{setError(true);}};
+ const choose=async(id?:string,camera=false)=>{if(!editor)return;replace.current=id??null;setError(false);try{await editor.beginSelection();const picker=camera?cameraInput.current:input.current;if(picker){picker.value='';picker.multiple=!camera&&!id;picker.click();}}catch{setError(true);}};
+ useEffect(()=>{
+  const pickers=[input.current,cameraInput.current];
+  const cancelSelection=()=>{void editor?.endSelection().catch(()=>setError(true));};
+  pickers.forEach(picker=>picker?.addEventListener('cancel',cancelSelection));
+  return()=>pickers.forEach(picker=>picker?.removeEventListener('cancel',cancelSelection));
+ },[editor]);
  const add=async(files:File[])=>{if(!editor||disabled||preparing)return;setPreparing(true);setError(false);
   try{await editor.beginSelection();const count=replace.current?1:5-(state?.items.length??0);if(files.length>count)throw Error('product_image_count');for(const file of files){const photo=await prepareProductPhoto(file);if(replace.current){editor.remove(replace.current);replace.current=null;}void editor.add(photo).catch(()=>setError(true));}}
   catch{setError(true);}finally{await editor.endSelection().catch(()=>setError(true));setPreparing(false);}
@@ -61,8 +66,10 @@ export function ProductImageEditor({media,name,disabled=false,onBusyChange,onRes
     <Button tone="ghost" disabled={disabled||preparing} onClick={()=>choose(item.clientId)}>{text('replace')}</Button><Button tone="ghost" disabled={disabled||preparing} onClick={()=>remove(item.clientId)}>{text('remove')}</Button>
    </>:null}
   </div>)}</div>
+  <input ref={cameraInput} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>void add([...(e.target.files??[])])}/>
   <input ref={input} hidden type="file" multiple={!replace.current} accept="image/jpeg,image/png,image/webp" onChange={e=>void add([...(e.target.files??[])])}/>
   {state?.available&&state.canEdit?<Button className="product-photo-choose" tone="ghost" disabled={disabled||preparing||state.items.length>=5} onClick={()=>choose()}>{text('library')}</Button>:null}
+  {state?.available&&state.canEdit?<Button tone="ghost" disabled={disabled||preparing||state.items.length>=5} onClick={()=>choose(undefined,true)}>{text('camera')}</Button>:null}
   {state?.available&&state.canEdit&&media.dirty?<Button tone="ghost" disabled={disabled||preparing||state.items.some(i=>i.status==='uploading')} onClick={()=>void reset()}>{text('reset')}</Button>:null}
   {error?<p role="alert">{text('error')}</p>:null}
  </section>;
