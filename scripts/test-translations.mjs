@@ -111,3 +111,22 @@ for (const language of ['en', ...languages]) {
   }
   assert.equal(translateUi(language, dictionary, 'home.search_placeholder', web.en['home.search_placeholder']), web[language]['home.search_placeholder']);
 }
+
+// Product form translations must win over old server copy, including English-like
+// Hinglish labels. Stored units stay stable while display labels are localized.
+const {unitLabel, formatQty, UNITS}=loadTs('app/lib/shop/units.ts');
+assert.deepEqual(UNITS,['kg','g','L','mL','piece','packet','dozen','crate']);
+for (const language of ['en', ...languages]) {
+  const dictionary=JSON.parse(fs.readFileSync(`app/lib/shop/locales/${language}.json`,'utf8'));
+  const t=(key,fallback,vars)=>translateUi(language,{...dictionary,[key]:'outdated server label'},key,fallback,vars);
+  for(const [key,english] of Object.entries(web.en).filter(([key])=>key.startsWith('unit_picker.')||key.startsWith('gst.product_price_')||key.startsWith('productform.')||key.startsWith('modal.add_product.'))){
+    const vars=Object.fromEntries([...english.matchAll(/\{\{(\w+)\}\}/g)].map(m=>[m[1],'2']));
+    assert.equal(t(key,english,vars),web[language][key].replace(/\{\{\w+\}\}/g,'2'),`${language}: authoritative product copy ${key}`);
+  }
+  for(const [unit,symbol] of [['kg','kg'],['g','g'],['L','L'],['mL','mL']])assert.ok(unitLabel(unit,t).endsWith(`(${symbol})`),`${language}: unambiguous unit ${unit}`);
+  assert.equal(formatQty(0.25,'kg',{unitLabel:u=>unitLabel(u,t)}),`250 ${unitLabel('g',t)}`);
+  assert.equal(formatQty(1500,'mL',{unitLabel:u=>unitLabel(u,t)}),`1.5 ${unitLabel('L',t)}`);
+  assert.equal(formatQty(2,'piece',{unitLabel:u=>unitLabel(u,t)}),`2 ${unitLabel('piece',t)}`);
+  if(language==='hinglish')for(const [key,value] of Object.entries(web.hinglish).filter(([key])=>key.startsWith('modal.add_product.')||key.startsWith('unit_picker.')))assert.doesNotMatch(value,/[\u0900-\u097f]/,key);
+}
+assert.equal(formatQty(0.25,'kg'),'250 g','existing quantity callers keep their original behavior');
