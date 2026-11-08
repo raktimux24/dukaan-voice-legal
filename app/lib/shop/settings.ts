@@ -54,20 +54,20 @@ export function settingsLinks(
 ): SettingsLink[] {
   if (offline) return [];
   return [
+    {
+      href: "/shop/settings/shop",
+      icon: "store",
+      key: "settingsweb.shop_profile",
+      fallback: "Shop profile",
+    },
+    {
+      href: "/shop/settings/payments",
+      icon: "qr",
+      key: "settings.payments_bills",
+      fallback: "Payments & bills",
+    },
     ...(p.canManageShop
       ? ([
-          {
-            href: "/shop/settings/shop",
-            icon: "store",
-            key: "settingsweb.shop_profile",
-            fallback: "Shop profile",
-          },
-          {
-            href: "/shop/settings/payments",
-            icon: "qr",
-            key: "settings.payments_bills",
-            fallback: "Payments & bills",
-          },
           {
             href: "/shop/settings/subscription",
             icon: "card",

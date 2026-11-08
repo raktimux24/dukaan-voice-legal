@@ -1,3 +1,4 @@
+import {sameBranding} from './editor';
 import {publishBrandingPos} from './pos-cache';
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,8 @@ export function useBranding(
     queryFn: () => api.get(shopId),
     retry: false,
     networkMode: "always",
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
   });
   useEffect(() => {
     if (!dirty && meta.data) {
@@ -45,7 +48,7 @@ export function useBranding(
     [scope],
   );
   const run = async <T>(work: () => Promise<T>, done: (v: T) => void | Promise<void>) => {
-    if (running.current || current.current!==scope) return;
+    if (!allowed || running.current || current.current!==scope) return;
     running.current = true;
     setBusy(true);
     setError(null);
@@ -60,13 +63,14 @@ export function useBranding(
     }
   };
   const edit = (value: Partial<BrandingDraft>) => {
-    if (busy || pending) return;
+    if (!allowed || busy || pending) return;
     setDraft((d) => ({ ...d, ...value }));
     setDirty(true);
     setSaved("");
     setPreview(null);
   };
   const save = () => {
+    if (!allowed || running.current || current.current !== scope || !meta.data || meta.error || meta.isFetching) return;
     const request = pending ?? {
       clientId: id(),
       expectedVersion: meta.data?.current?.id ?? null,
@@ -92,6 +96,7 @@ export function useBranding(
   };
   return {
     meta,
+    dirty: !sameBranding(draft, meta.data?.current?.draft ?? defaultBranding(language)),
     draft,
     images,
     busy,

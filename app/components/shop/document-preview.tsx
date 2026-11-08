@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useId } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toPng } from "html-to-image";
 import { PDFDocument } from "pdf-lib";
+import { fitDocumentScale } from '../../lib/shop/documents/preview-sizing';
 import { documentHtml } from "../../lib/shop/documents/render";
 import { documentFontCss } from "../../lib/shop/documents/fonts";
 import { verifyDocumentPresentation } from "../../lib/shop/documents/integrity";
@@ -65,6 +66,7 @@ export function DocumentPreview({
     tr = (k: string, v?: Record<string, string | number>) => t(k, k, v),
     frame = useRef<HTMLIFrameElement>(null),
     container = useRef<HTMLDivElement>(null),
+    paperViewport = useRef<HTMLDivElement>(null),
     scope = shop?.id + ":" + userId,
     current = useRef(scope);
   current.current = scope;
@@ -76,8 +78,7 @@ export function DocumentPreview({
     [busy, setBusy] = useState(false),
     [scale, setScale] = useState(1),
     [retry, setRetry] = useState(0),
-    [expanded, setExpanded] = useState(false),
-    [viewportWidth, setViewportWidth] = useState(0);
+    [expanded, setExpanded] = useState(false);
   const panel = useRef<HTMLDivElement>(null), headingId = useId();
   const compact = !!issued;
   useEffect(() => {
@@ -85,19 +86,17 @@ export function DocumentPreview({
     const previous = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const resize = () => setViewportWidth(window.innerWidth);
-    resize();window.addEventListener("resize", resize);
     panel.current?.querySelector<HTMLButtonElement>("button")?.focus();
-    return () => { document.body.style.overflow = overflow; window.removeEventListener("resize", resize); const trigger=container.current?.querySelector<HTMLElement>(".document-open-full") ?? (previous?.isConnected?previous:null);trigger?.focus(); };
+    return () => { document.body.style.overflow = overflow; const trigger=container.current?.querySelector<HTMLElement>(".document-open-full") ?? (previous?.isConnected?previous:null);trigger?.focus(); };
   }, [expanded]);
   const paper = documentPaper(context.payload.config.layout);
   useEffect(() => {
     const observer = new ResizeObserver((rows) =>
-      setScale(Math.min(1, rows[0].contentRect.width / paper.width)),
+      setScale(fitDocumentScale(rows[0].contentRect.width,paper.width,paper.height,compact&&!expanded)),
     );
-    if (container.current) observer.observe(container.current);
+    if (paperViewport.current) observer.observe(paperViewport.current);
     return () => observer.disconnect();
-  }, [paper.width]);
+  }, [paper.width,paper.height,html,compact,expanded]);
   useEffect(() => {
     let active = true;
     setHtml("");
@@ -242,7 +241,7 @@ export function DocumentPreview({
     } catch(e){setError(e)}finally{setBusy(false)}
   };
 
-  const paperScale = expanded ? Math.min(1, Math.max(200,viewportWidth-80)/paper.width) : compact ? Math.min(scale,210/paper.height) : scale;
+  const paperScale = scale;
   const pageControls = pages > 1 ? <div className="flex flex-wrap items-center justify-between gap-2">
     <Button tone="ghost" disabled={busy||page===0} onClick={()=>setPage(p=>p-1)}>{tr("documents.previous")}</Button>
     <p aria-live="polite" className="text-sm">{tr("documents.page_label",{page:page+1,pages})}</p>
@@ -271,7 +270,7 @@ export function DocumentPreview({
         }
       }}>
         <div className="document-paper-heading"><h2 id={headingId} className="shop-section-title">{tr("mobile.observations.print_preview")}</h2>{expanded?<Button tone="ghost" onClick={()=>setExpanded(false)}>{tr("common.close")}</Button>:null}</div>
-        <div className="document-paper-scroll"><div style={{height:paper.height*paperScale,width:paper.width*paperScale,overflow:"hidden",maxWidth:"100%",margin:"0 auto"}}>
+        <div className="document-paper-scroll" ref={paperViewport}><div style={{height:paper.height*paperScale,width:paper.width*paperScale,overflow:"hidden",maxWidth:"100%",margin:"0 auto"}}>
           <iframe ref={frame} title={tr("documents.preview_title")} tabIndex={-1} srcDoc={html} sandbox="allow-scripts allow-same-origin allow-modals" onLoad={()=>void ready()} style={{width:paper.width,height:paper.height,border:0,transform:`scale(${paperScale})`,transformOrigin:"top left",background:"white"}}/>
         </div></div>
         {pageControls}

@@ -1,108 +1,90 @@
 'use client';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-import { useState } from 'react';
-import {DeletionControl} from '../deletion-control';
-import { CATALOG, remapShopCategory, remapShopSubtype, shopType } from '../../../lib/shop/catalog';
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { DeletionControl } from '../deletion-control';
+import { ProfilePreferences } from '../profile-preferences';
+import { CATALOG, labeledShop, labeledSubtype, shopType } from '../../../lib/shop/catalog';
+import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
+import { profileDraft, profileChanges, type ProfileDraft } from '../../../lib/shop/profile/form';
 import { useShop } from '../context';
-import { Button, Card, Field, Glyph, GroupLabel, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
+import { Button, Field, Glyph, Notice, PageHeader, Spinner } from '../ui';
 
 export function ShopSettingsScreen() {
-  const uiText = useUiText();
-  const { shop, perms } = useShop();
-  if (!shop) return <Spinner />;
-  if (!perms.canManageShop) return <NoAccess what={uiText("Only the owner can change the shop.")} />;
-  return <ShopSettingsForm key={shop.id} />;
+  const { shop, userId } = useShop();
+  if (!shop) return <Spinner/>;
+  return <ShopProfile key={`${userId}:${shop.id}`}/>;
 }
-
-function ShopSettingsForm() {
-  const uiText = useUiText();
-  const { api, shop, refreshShops, role, prefs, t } = useShop();
-  const [error, setError] = useState<unknown>(null);
-  const [pending, setPending] = useState(false);
-  const [name, setName] = useState(shop?.name ?? '');
-  const [category, setCategory] = useState(remapShopCategory(shop?.category));
-  const [subtype, setSubtype] = useState(remapShopSubtype(shop?.category, shop?.subtype));
-  const [phone, setPhone] = useState(shop?.phone ?? '');
-  const [address, setAddress] = useState(shop?.address ?? '');
-  const [city, setCity] = useState(shop?.city ?? '');
-  if (!shop) return <Spinner />;
-  const subtypes = shopType(category).subtypes;
-  const savedType = shopType(shop.category);
-  const savedSubtype = savedType.subtypes.find((item) => item.code === remapShopSubtype(shop.category, shop.subtype))?.label;
-  const languages: Record<string, string> = { en: 'English', hi: 'हिन्दी', hinglish: 'Hinglish', bn: 'বাংলা', ta: 'தமிழ்', te: 'తెలుగు', mr: 'मराठी', kn: 'ಕನ್ನಡ', gu: 'ગુજરાતી', ml: 'മലയാളം' };
+function ShopProfile() {
+  const { api, shop, userId, refreshShops, role, perms, shops, selectShop, offline, t } = useShop();
+  const cache = useQueryClient(), queryKey = ['shop-profile', userId, shop!.id];
+  const fresh = useQuery({ queryKey, queryFn: () => api.getShop(shop!.id), enabled: !offline, refetchOnWindowFocus: false });
+  const current = fresh.data?.shop ?? shop!;
+  const [draft, setDraft] = useState<ProfileDraft | null>(null), [baseline, setBaseline] = useState(current);
+  const [pending, setPending] = useState(false), [error, setError] = useState<unknown>(null), [saved, setSaved] = useState(false), [leaving, setLeaving] = useState(false);
+  const editButton = useRef<HTMLButtonElement>(null), nameInput = useRef<HTMLInputElement>(null);
+  const editing = !!draft;
+  useEffect(() => {
+    if (!editing) return;
+    const frame = requestAnimationFrame(() => {
+      nameInput.current?.focus();
+      if (window.innerWidth <= 600) nameInput.current?.scrollIntoView({ block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [editing]);
+  const labels = {
+    name: t('modal.shop_settings.name_label', 'Shop name'), ownerName: t('profileweb.owner', 'Owner name'),
+    phone: t('modal.shop_settings.phone_label', 'Phone'), address: t('modal.shop_settings.address_label', 'Address'), city: t('modal.shop_settings.city_label', 'City'),
+  };
+  const catalogText = (key: string) => t(key, EN_FALLBACK[key] ?? key);
+  const canEdit = perms.canManageShop && !offline;
+  const changes = draft ? profileChanges(baseline, draft) : null;
+  const dirty = !!draft && JSON.stringify(draft) !== JSON.stringify(profileDraft(baseline));
+  const validation = changes?.error ? { name: t('profileweb.name_required', 'Enter a shop name.'), ownerName: t('profileweb.owner_required', 'Enter an owner name of up to 120 characters.'), phone: t('validation.phone_invalid', 'Enter a valid 10-digit mobile number') }[changes.error] : '';
+  function edit() { setBaseline(current); setDraft(profileDraft(current)); setError(null); setSaved(false); }
+  function cancel() { setDraft(null); setError(null); requestAnimationFrame(() => editButton.current?.focus()); }
+  async function save() {
+    if (!draft || !changes || changes.error || !canEdit || pending || !Object.keys(changes.patch).length) return;
+    setPending(true); setError(null);
+    try {
+      const result = await api.updateShop(current.id, changes.patch);
+      cache.setQueryData(queryKey, { shop: result.shop, role });
+      setDraft(null); setSaved(true);
+      await refreshShops();
+      requestAnimationFrame(() => editButton.current?.focus());
+    } catch (err) { setError(err); } finally { setPending(false); }
+  }
   const blank = t('shopux.not_added', 'Not added');
-  const unchanged = name === shop.name && category === remapShopCategory(shop.category) && subtype === remapShopSubtype(shop.category, shop.subtype) && phone === (shop.phone ?? '') && address === (shop.address ?? '') && city === (shop.city ?? '');
-
-  return (
-    <div className="shop-page">
-    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settings.shop_settings', 'Shop profile')} description={t('shopux.profile_hint', 'These details are printed on bills and shown to staff.')} />
-    <Card>
-      <div className="shop-profile-hero">
-        <span className="shop-avatar" aria-hidden="true">{shop.name.trim().charAt(0).toUpperCase() || 'S'}</span>
-        <div>
-          <h2>{shop.name}</h2>
-          <p>{savedType.label}{savedSubtype ? ` · ${savedSubtype}` : ''}</p>
-        </div>
-      </div>
-      <div className="shop-facts">
-        <div className="shop-fact"><small><Glyph name="phone" />{t('modal.shop_settings.phone_label', 'Phone')}</small><b>{shop.phone || blank}</b></div>
-        <div className="shop-fact"><small><Glyph name="pin" />{t('modal.shop_settings.city_label', 'City')}</small><b>{[shop.address, shop.city].filter(Boolean).join(', ') || blank}</b></div>
-        <div className="shop-fact"><small><Glyph name="user" />{t('shopux.role', 'Role')}</small><b>{role ? t(`role.${role.toLowerCase()}`, role) : blank}</b></div>
-        <div className="shop-fact"><small><Glyph name="languages" />{t('settings.app_language', 'App language')}</small><b>{languages[prefs?.appLanguage ?? 'en'] ?? prefs?.appLanguage ?? 'English'}</b></div>
-      </div>
-    </Card>
-    <GroupLabel title={t('shopux.edit_shop', 'Edit shop details')} />
-    <Card className="max-w-2xl">
-      <form
-        className="grid gap-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (!name.trim()) {
-            setError(new Error('Shop name cannot be empty.'));
-            return;
-          }
-          setPending(true);
-          setError(null);
-          void api.updateShop(shop.id, {
-            name: name.trim(),
-            category,
-            subtype: remapShopSubtype(category, subtype),
-            phone: phone.trim(),
-            address: address.trim(),
-            city: city.trim(),
-          }).then(() => refreshShops()).catch(setError).finally(() => setPending(false));
-        }}
-      >
-        <Notice error={error} />
-        <Field label={t('modal.shop_settings.name_label', 'Shop name')}><input className="shop-field is-lg" value={name} onChange={(event) => setName(event.target.value)} required placeholder={t('modal.shop_settings.name_placeholder', 'Enter shop name')} /></Field>
-        <div className="form-grid is-2">
-          <Field label={t('onboarding.create.category_label', 'Type')}>
-            <select className={inputClass} value={category} onChange={(event) => { setCategory(event.target.value); setSubtype(shopType(event.target.value).subtypes[0]?.code ?? ''); }}>
-              {CATALOG.shopTypes.map((type) => <option key={type.code} value={type.code}>{type.label}</option>)}
-            </select>
-          </Field>
-          <Field label={t('onboarding.create.subtype_label', 'Subtype')}>
-            <select className={inputClass} value={subtype} onChange={(event) => setSubtype(event.target.value)}>
-              {subtypes.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
-            </select>
-          </Field>
-        </div>
-        <Field label={t('modal.shop_settings.phone_label', 'Phone')}><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" placeholder={t('modal.shop_settings.phone_placeholder', '10-digit mobile number')} /></Field>
-        <div className="form-grid is-2">
-          <Field label={t('modal.shop_settings.address_label', 'Address')}><input className={inputClass} value={address} onChange={(event) => setAddress(event.target.value)} placeholder={t('modal.shop_settings.address_placeholder', 'Shop street, area, landmark')} /></Field>
-          <Field label={t('modal.shop_settings.city_label', 'City')}><input className={inputClass} value={city} onChange={(event) => setCity(event.target.value)} placeholder={t('modal.shop_settings.city_placeholder', 'e.g. Kanpur')} /></Field>
-        </div>
-        <div className="shop-actions">
-          <Button type="submit" disabled={pending || unchanged || !name.trim()}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save changes')}</Button>
-        </div>
-      </form>
-    </Card>
-    <Card className="max-w-2xl border-danger/20">
-      <h2 className="shop-section-title">{t('modal.shop_settings.delete_shop','Delete shop')}</h2>
-      <DeletionControl key={shop.id} kind="shop" t={(key) => t(key,key)} removeRecords={() => api.deleteShop(shop.id)} onDeleted={() => window.location.assign('/shop')} />
-    </Card>
+  return <div className="shop-page profile-workspace">
+    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settingsweb.shop_profile', 'Shop profile')} description={t('profileweb.intro', 'Your business details and everyday inventory preferences.')}
+      actions={!draft && canEdit ? <button ref={editButton} type="button" className="shop-btn shop-btn-primary" onClick={edit}>{t('common.edit', 'Edit')}</button> : undefined}/>
+    <Notice error={error}/>
+    {fresh.error && <div className="profile-refresh-warning"><Notice error={fresh.error}/><Button tone="ghost" disabled={offline || fresh.isFetching || !!draft} onClick={() => void fresh.refetch()}>{t('common.retry', 'Try again')}</Button></div>}
+    {saved && <p role="status" className="profile-saved">{t('modal.shop_settings.toast_updated', 'Shop updated')}</p>}
+    <div className="profile-layout">
+      <section className="profile-record" aria-labelledby="profile-record-title">
+        <div className="profile-identity"><span className="profile-emblem"><Glyph name="store"/></span><div><h2 id="profile-record-title">{current.name}</h2><p>{labeledShop(current.category, catalogText)} · {labeledSubtype(current.category, current.subtype, catalogText)}</p></div><span className="shop-pill">{role ? t(`role.${role.toLowerCase()}`, role) : ''}</span></div>
+        {draft ? <form className="profile-form" onSubmit={e => { e.preventDefault(); void save(); }}>
+          <fieldset disabled={pending || !canEdit}>
+            <div className="profile-form-grid">
+              {(['name', 'ownerName', 'phone', 'address', 'city'] as const).map(key => <Field localized key={key} label={labels[key]} className={key === 'address' ? 'profile-span' : ''}>
+                <input ref={key === 'name' ? nameInput : undefined} className="shop-field" value={draft[key]} onChange={e => setDraft({ ...draft, [key]: e.target.value })} type={key === 'phone' ? 'tel' : 'text'} maxLength={key === 'ownerName' ? 120 : key === 'address' ? 300 : key === 'city' ? 80 : undefined} autoComplete={key === 'name' ? 'organization' : key === 'phone' ? 'tel' : key === 'address' ? 'street-address' : key === 'city' ? 'address-level2' : 'off'} aria-invalid={changes?.error === key} aria-describedby={changes?.error === key ? 'profile-validation' : undefined}/>
+              </Field>)}
+              <Field localized label={t('profileweb.business_type', 'Business type')}><select className="shop-field" value={draft.category} onChange={e => setDraft({ ...draft, category: e.target.value, subtype: shopType(e.target.value).subtypes[0]?.code ?? '' })}>{CATALOG.shopTypes.map(type => <option key={type.code} value={type.code}>{labeledShop(type.code, catalogText)}</option>)}</select></Field>
+              <Field localized label={t('profileweb.shop_format', 'Shop format')}><select className="shop-field" value={draft.subtype} onChange={e => setDraft({ ...draft, subtype: e.target.value })}>{shopType(draft.category).subtypes.map(item => <option key={item.code} value={item.code}>{labeledSubtype(draft.category, item.code, catalogText)}</option>)}</select></Field>
+            </div>
+          </fieldset>
+          {validation && <p id="profile-validation" role="alert" className="profile-validation">{validation}</p>}
+          <div className="profile-savebar"><span className="shop-hint">{dirty ? t('profileweb.unsaved', 'Unsaved changes') : t('profileweb.edit_hint', 'Edit the details, then save.')}</span><div className="shop-actions"><Button tone="ghost" disabled={pending} onClick={cancel}>{t('common.cancel', 'Cancel')}</Button><Button type="submit" disabled={pending || !canEdit || !!changes?.error || !Object.keys(changes?.patch ?? {}).length}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save changes')}</Button></div></div>
+        </form> : <><dl className="profile-facts">{(['ownerName', 'phone', 'address', 'city'] as const).map(key => <div key={key}><dt>{labels[key]}</dt><dd>{current[key] || blank}</dd></div>)}</dl>{!canEdit && <p className="shop-hint">{t('profileweb.readonly', 'Only the owner can edit these details while online.')}</p>}</>}
+      </section>
+      <ProfilePreferences/>
     </div>
-  );
+    <section className="profile-support">
+      <Field localized label={t('modal.shop_settings.switch_shop', 'Switch shop')} hint={draft ? t('profileweb.finish_edit', 'Save or cancel your edits before switching shops.') : undefined}><select className="shop-field" value={shop!.id} disabled={!!draft || pending || offline || shops.length < 2} onChange={e => selectShop(e.target.value)}>{shops.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select></Field>
+      <details><summary>{t('profileweb.support', 'Support details')}</summary><dl><dt>{t('profileweb.shop_id', 'Shop ID')}</dt><dd>{current.id}</dd></dl></details>
+    </section>
+    <details className="profile-danger"><summary>{role === 'OWNER' ? t('modal.shop_settings.delete_shop', 'Delete shop') : t('modal.shop_settings.leave_shop', 'Leave shop')}</summary><div>
+      {role === 'OWNER' ? <fieldset disabled={offline || pending || !!draft}><DeletionControl key={current.id} kind="shop" t={key => t(key, EN_FALLBACK[key] ?? key)} removeRecords={() => api.deleteShop(current.id)} onDeleted={() => window.location.assign('/shop')}/></fieldset> : <><p>{t('modal.shop_settings.leave_message', 'You will lose access to this shop’s inventory and data. You can rejoin later with an invite code.')}</p>{leaving ? <div className="shop-actions"><Button tone="ghost" disabled={pending} onClick={() => setLeaving(false)}>{t('common.cancel', 'Cancel')}</Button><Button tone="danger" disabled={offline || pending} onClick={() => { setPending(true); setError(null); void api.leaveShop(current.id).then(() => window.location.assign('/shop')).catch(setError).finally(() => setPending(false)); }}>{t('modal.shop_settings.leave_confirm', 'Leave')}</Button></div> : <Button tone="danger" disabled={offline || pending} onClick={() => setLeaving(true)}>{t('modal.shop_settings.leave_shop', 'Leave shop')}</Button>}</>}
+    </div></details>
+  </div>;
 }

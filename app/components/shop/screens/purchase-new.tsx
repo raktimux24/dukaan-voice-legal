@@ -1,4 +1,6 @@
 "use client";
+import {purchaseAccess} from "../../../lib/shop/purchases/presentation";
+import {unitLabel} from "../../../lib/shop/units";
 import {ProductSelect} from "../product-select";
 import {ProductImageById} from "../product-image";
 import { eligiblePurchaseReceipts } from "../../../lib/shop/gst-core/purchase-batch-link";
@@ -46,16 +48,20 @@ import type {
 import { formatINR } from "../../../lib/shop/money";
 type Line = PurchaseDraftLine;
 export function PurchaseNewScreen() {
-  const { api, shop, perms, t:poText } = useShop(),
+  const {shop,userId} = useShop();
+  return <PurchaseNewContent key={`${userId}:${shop?.id}`} />;
+}
+function PurchaseNewContent() {
+  const { api, shop, perms, offline, t:poText } = useShop(),
     text = useGstText(),
     router = useRouter(),
     action = useGstAction();
   const poParams=useSearchParams(),poOrderId=poParams.get('poOrderId'),poReceiptId=poParams.get('poReceiptId');
   const requestedSupplierId = poParams.get("supplierId") ?? "";
-  const poSource=useGstQuery(['poInvoiceSource',poOrderId,poReceiptId],()=>api.purchaseOrders.invoice(shop!.id,poOrderId!,poReceiptId!),!!poOrderId&&!!poReceiptId);
+  const poSource=useGstQuery(['poInvoiceSource',poOrderId,poReceiptId],()=>api.purchaseOrders.invoice(shop!.id,poOrderId!,poReceiptId!),perms.canSeeCost&&!!poOrderId&&!!poReceiptId);
   const requestedSupplier = useGstQuery(["purchase-supplier", requestedSupplierId],
-    () => api.gst.supplier(shop!.id, requestedSupplierId), !!requestedSupplierId);
-  const pos = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
+    () => api.gst.supplier(shop!.id, requestedSupplierId), perms.canSeeCost&&!!requestedSupplierId);
+  const pos = useGstQuery(["settings"], () => api.getPosSettings(shop!.id), perms.canSeeCost),
     catalog = useGstQuery(
       ["purchase-products"],
       () => api.getAllInventory(shop!.id),
@@ -207,10 +213,11 @@ export function PurchaseNewScreen() {
   };
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page invoice-workspace invoice-compose">
         <PageHeader
+          kicker={poText("poweb.kicker","Purchasing")}
           title={text("Record supplier invoice")}
-          back={step > 1 ? { href: "/shop/settings", label: text("Back"), onClick: () => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); } } : { href: "/shop/settings", label: text("Settings") }}
+          back={step > 1 ? { href: "/shop/settings", label: text("Back"), onClick: () => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); } } : { href: "/shop/purchases", label: text("Recorded invoices") }}
           description={text(
             "Choose a supplier, enter the original invoice and confirm how each product affects stock.",
           )}
@@ -250,7 +257,7 @@ export function PurchaseNewScreen() {
             />
           </Card>
         ) : null}
-        <fieldset disabled={action.busy || !!retained.current || addingProduct}>
+        <fieldset disabled={offline || !purchaseAccess(pos.data,!!pos.error).writable || action.busy || !!retained.current || addingProduct}>
           {step === 1 ? <Section
             title={"1 · " + text("Choose supplier")}
             summary={supplier?.identity.name}
@@ -423,7 +430,7 @@ export function PurchaseNewScreen() {
                 <div className="mb-3 flex items-center gap-3"><ProductImageById productId={line.productId} name={line.name} size={48}/><strong>{line.name}</strong></div>
                 <div className="form-grid is-2">
                   <TextField
-                    label={text("Quantity")}
+                    label={`${text("Quantity")} · ${unitLabel(catalog.data?.find(row=>row.productId===line.productId)?.unit ?? "piece",poText)}`}
                     type="number"
                     disabled={!!poReceiptId}
                     value={String(line.quantity)}
@@ -554,8 +561,8 @@ export function PurchaseNewScreen() {
             />
           </Card></> : null}
         </fieldset>
-        <div className="shop-actions">
-        {step < 3 ? <Button onClick={() => {
+        <div className="shop-actions invoice-compose-footer">
+        {step < 3 ? <Button disabled={offline || !purchaseAccess(pos.data,!!pos.error).writable || action.busy || !!retained.current} onClick={() => {
           if (step === 1 && !supplier) { setStepNote(poText("shopux.supplier_need", "Choose a supplier before continuing.")); return; }
           if (step === 2 && (!invoiceNumber.trim() || !invoiceDate || !declared.trim())) { setStepNote(poText("shopux.invoice_need", "Enter the invoice number, date and total before continuing.")); return; }
           setStepNote("");
@@ -564,7 +571,7 @@ export function PurchaseNewScreen() {
           disabled={
             action.busy ||
             addingProduct ||
-            pos.data?.gstPurchasesAvailable !== true ||
+            !purchaseAccess(pos.data,!!pos.error).writable || offline ||
             !supplier ||
             (!retained.current &&
               (!declared.trim() || !ordinarySupply || !reviewed || !totals))

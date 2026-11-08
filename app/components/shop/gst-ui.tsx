@@ -29,14 +29,16 @@ export function Section({
   summary,
   children,
   open = false,
+  onToggle,
 }: {
   title: string;
   summary?: string;
   children: ReactNode;
   open?: boolean;
+  onToggle?: (open: boolean) => void;
 }) {
   return (
-    <details className="gst-section" open={open || undefined}>
+    <details className="gst-section" open={open || undefined} onToggle={onToggle ? event => onToggle(event.currentTarget.open) : undefined}>
       <summary>
         <span>
           {title}
