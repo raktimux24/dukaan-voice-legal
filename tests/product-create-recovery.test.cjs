@@ -11,7 +11,7 @@ function handler(context){
  const code=ts.transpileModule('module.exports='+found.getText(source),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,module={exports:{}};
  vm.runInNewContext(code,{...context,module});return module.exports;
 }
-async function fixture({caller='catalogue',loseResponse=true,loseLink=false,failStorage=false}={}){
+async function fixture({caller='catalogue',loseResponse=true,loseLink=false,failStorage=false,formPatch={},editing=false}={}){
  let raw=null,pending=null,linkLost=false,reset=false;
  const owner={actor:'qa-owner',session:'qa-session',shop:'qa-shop'},slot=caller;
  const storage={get:async()=>raw,set:async value=>{if(failStorage)throw Error('disk full');raw=value;},clear:async()=>{raw=null;}},journal=createProductSaveRecovery(storage);
@@ -21,8 +21,9 @@ async function fixture({caller='catalogue',loseResponse=true,loseLink=false,fail
   succeeded:async()=>{if(pending)await journal.remove(owner,slot,pending.productRequestId,()=>true);pending=null;},failed:async()=>{},
  };
  const form={name:'Synthetic no-photo rice',category:'staples',subcategory:'rice',unit:'kg',barcode:'',minStockLevel:'0',sellingPrice:'80',mrp:'90',purchasePrice:'50',trackStock:true,shortCode:'',packSize:'',packLabel:'',initialStock:'4',supplier:'QA Supplier',expiryDate:'2027-01-01',purchaseDate:'2026-11-04',batchNumber:'QA-BATCH'};
- const context={pending:false,saveIntent,editorFields:{ready:true},isAllowedL2:()=>true,shop:{id:owner.shop,category:'kirana',subtype:null},form,hideCost:false,cost:50,autoMrp:false,priceBreakdown:{gross:80},gstConfig:null,gstDraft:undefined,productFormTaxPatch,text:s=>s,t:key=>key,onCreated:caller==='embedded'?async id=>parents.push(id):null,params:{get:key=>key==='buyListItemId'&&caller==='buy-list'?'qa-demand':null},productId:null,item:null,setPending:()=>{},setError:error=>{if(error)errors.push(error);},media:{busy:false,manifest:async()=>undefined,clearRecovery:async()=>{}},preparingPhoto:false,generateBarcode:false,createdResult,
-  api:{addProduct:async(shop,body)=>{attempts.push(JSON.parse(JSON.stringify(body)));const id=body.productRequestId??randomUUID();if(!products.has(id))products.set(id,{product:{id:randomUUID(),name:body.name}});if(loseResponse&&attempts.length===1)throw Object.assign(Error('response lost after commit'),{status:503});return products.get(id);},updateBuyList:async(shop,id,body)=>{links.push(JSON.parse(JSON.stringify({id,...body})));if(loseLink&&!linkLost){linkLost=true;throw Object.assign(Error('link response lost'),{status:503});}}},
+ Object.assign(form,formPatch);
+ const context={pending:false,saveIntent,editorFields:{ready:true},isAllowedL2:()=>true,shop:{id:owner.shop,category:'kirana',subtype:null},form,hideCost:false,cost:50,autoMrp:false,priceBreakdown:{gross:80},gstConfig:null,gstDraft:undefined,productFormTaxPatch,text:s=>s,t:key=>key,onCreated:caller==='embedded'?async id=>parents.push(id):null,params:{get:key=>key==='buyListItemId'&&caller==='buy-list'?'qa-demand':null},productId:editing?'existing-product':null,item:null,setPending:()=>{},setError:error=>{if(error)errors.push(error);},media:{busy:false,manifest:async()=>undefined,clearRecovery:async()=>{}},preparingPhoto:false,generateBarcode:false,createdResult,
+  api:{updateProduct:async(shop,id,body)=>{attempts.push(JSON.parse(JSON.stringify(body)));},addProduct:async(shop,body)=>{attempts.push(JSON.parse(JSON.stringify(body)));const id=body.productRequestId??randomUUID();if(!products.has(id))products.set(id,{product:{id:randomUUID(),name:body.name}});if(loseResponse&&attempts.length===1)throw Object.assign(Error('response lost after commit'),{status:503});return products.get(id);},updateBuyList:async(shop,id,body)=>{links.push(JSON.parse(JSON.stringify({id,...body})));if(loseLink&&!linkLost){linkLost=true;throw Object.assign(Error('link response lost'),{status:503});}}},
   queryClient:{invalidateQueries:async()=>{}},leaveGuard:{allow:()=>{},reset:()=>{}},setNotice:()=>{},setUncertainSave:()=>{},setPhotoReset:()=>{},setGenerateBarcode:()=>{},setDraft:()=>{reset=true;},blank:()=>({}),setGstDraft:()=>{},setBuyingDiscount:()=>{},setAutoMrp:()=>{},window:{scrollTo:()=>{}},router:{push:path=>navigation.push(path)},
  };
  return {attempts,products,links,navigation,parents,errors,retained:()=>raw,reset:()=>reset,
@@ -43,4 +44,15 @@ test('actual web buy-list completion retries its parent step without a second cr
 
 test('actual web no-photo create never sends before its recovery record is durable',async()=>{
  const f=await fixture({failStorage:true});await f.save();assert.equal(f.attempts.length,0);assert.equal(f.products.size,0);assert.equal(f.navigation.length,0);assert.equal(f.errors.length,1);
+});
+
+for(const editing of [false,true])test(`actual web ${editing?'edit':'create'} carries batch depletion choice without editing stock on update`,async()=>{
+ const f=await fixture({editing,loseResponse:false,formPatch:{depletionOrder:'fifo'}});await f.save();assert.equal(f.errors.length,0);assert.equal(f.attempts[0].depletionOrder,'fifo');
+ if(editing)assert.equal('initialStock' in f.attempts[0],false);else assert.equal(f.attempts[0].initialStock,4);
+});
+test('untracked service resets depletion and does not create opening stock',async()=>{
+ const f=await fixture({loseResponse:false,formPatch:{trackStock:false,depletionOrder:'fifo',initialStock:'50'}});await f.save();assert.equal(f.attempts[0].depletionOrder,'expiry');assert.equal(f.attempts[0].initialStock,0);
+});
+for(const formPatch of [{sellingPrice:'-1'},{initialStock:'NaN'},{packSize:'0'},{mrp:'Infinity'},{sellingPrice:'5oops'}])test('invalid numeric product data never reaches the API: '+JSON.stringify(formPatch),async()=>{
+ const f=await fixture({loseResponse:false,formPatch});await f.save();assert.equal(f.attempts.length,0);assert.equal(f.errors.length,1);
 });
