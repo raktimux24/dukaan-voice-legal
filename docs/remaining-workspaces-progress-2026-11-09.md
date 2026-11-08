@@ -9,7 +9,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/alerts` | Audited; bulk/prediction buy-list actions restored | Implemented | Ten languages at 320px; filters and add action checked |
 | `/shop/brief` | Audited; history, stock, regeneration and Free audio restored | Implemented | 10-language 320px check; desktop visual and refresh verified |
 | `/shop/voice` | Pending | Pending | Pending |
-| `/shop/cashbook` | Pending | Pending | Pending |
+| `/shop/cashbook` | Shared mutations match mobile; expense entry and ledger presentation restored | Amount-first expense form, ledger rows, expense list/details | Ten languages at 320px for day and form; synthetic unpaid save verified |
 | `/shop/sales/refunds` | Pending | Pending | Pending |
 | `/shop/customers/[id]/statement` | Pending | Pending | Pending |
 | `/shop/customers/followups` | Pending | Pending | Pending |
@@ -47,3 +47,5 @@ Alerts: stock/expiry/prediction flows compared to mobile low-stock-alerts. Added
 Bulk editor: shared contract/client/workflow match mobile. Existing dedicated-field protections, stale-review and uncertain-outcome recovery retained. Existing localized strings reused. TypeScript and translation coverage pass; synthetic price review requires confirmation and focuses the review before apply. Real bulk changes not made.
 
 Barcodes: mobile contract/client/workflow match. Added missing-only filter with scope reset, compact label records and responsive command bar. Synthetic generation retained existing code and cleared missing selection; real code generation and physical printing not performed. Existing ten-language strings reused.
+
+Cashbook: compared native view and expense form, retained unchanged shared contract/client/workflow. Ported expense/ledger presentation hooks, unsupported-service errors and return-to-list after expense save. Desktop form and 320px day/form checked in ten languages using existing translated keys. Unpaid synthetic expense saved with zero payment and full remaining balance. Cashbook regression tests, translation coverage and TypeScript passed. Live payments/reconciliation/export not executed.
