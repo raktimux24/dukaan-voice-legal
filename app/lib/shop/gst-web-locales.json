@@ -2181,7 +2181,8 @@
     "brandweb.image_source": "Choose an image from Photos or Files in your device’s picker. Uploads are added to your draft; save to use them on new bills.",
     "brandweb.reload_title": "Replace this draft with saved settings?",
     "brandweb.reload_help": "Your unsaved edits will be replaced by the latest saved profile. This does not undo a save that already reached the server.",
-    "brandweb.payment_error": "Payment details could not be refreshed. Retry before enabling them on bills."
+    "brandweb.payment_error": "Payment details could not be refreshed. Retry before enabling them on bills.",
+    "brief.title": "Daily brief"
   },
   "hi": {
     "web.gst.choose_state": "राज्य चुनें",
@@ -4366,7 +4367,8 @@
     "brandweb.image_source": "अपने डिवाइस के चयनकर्ता में फ़ोटो या फ़ाइलों से चित्र चुनें। अपलोड किए चित्र ड्राफ्ट में जुड़ेंगे; नए बिलों पर उपयोग करने के लिए सहेजें।",
     "brandweb.reload_title": "इस ड्राफ्ट की जगह सहेजी हुई सेटिंग्स लाएँ?",
     "brandweb.reload_help": "आपके बिना सहेजे बदलावों की जगह नवीनतम सहेजी हुई प्रोफ़ाइल आएगी। सर्वर पर पहले से सहेजे बदलाव वापस नहीं होंगे।",
-    "brandweb.payment_error": "भुगतान की जानकारी रिफ्रेश नहीं हुई। इसे बिलों पर दिखाने से पहले फिर कोशिश करें।"
+    "brandweb.payment_error": "भुगतान की जानकारी रिफ्रेश नहीं हुई। इसे बिलों पर दिखाने से पहले फिर कोशिश करें।",
+    "brief.title": "दिन का सारांश"
   },
   "hinglish": {
     "web.gst.choose_state": "State chunein",
@@ -6550,7 +6552,8 @@
     "brandweb.image_source": "Apne device ke picker mein Photos ya Files se image chunein. Upload draft mein judta hai; naye bills par use karne ke liye save karein.",
     "brandweb.reload_title": "Is draft ki jagah saved settings laayein?",
     "brandweb.reload_help": "Aapke unsaved edits latest saved profile se replace honge. Server par pehle se save hue changes undo nahi honge.",
-    "brandweb.payment_error": "Payment details refresh nahi hui. Bills par dikhane se pehle retry karein."
+    "brandweb.payment_error": "Payment details refresh nahi hui. Bills par dikhane se pehle retry karein.",
+    "brief.title": "Din ka summary"
   },
   "bn": {
     "web.gst.choose_state": "রাজ্য নির্বাচন করুন",
@@ -8734,7 +8737,8 @@
     "brandweb.image_source": "ডিভাইসের পিকার থেকে Photos বা Files-এর ছবি বাছুন। আপলোড খসড়ায় যোগ হবে; নতুন বিলে ব্যবহার করতে সেভ করুন।",
     "brandweb.reload_title": "এই খসড়ার বদলে সেভ করা সেটিংস আনবেন?",
     "brandweb.reload_help": "সেভ না করা পরিবর্তনের বদলে সর্বশেষ সেভ করা প্রোফাইল আসবে। সার্ভারে ইতিমধ্যে সেভ হওয়া পরিবর্তন বাতিল হবে না।",
-    "brandweb.payment_error": "পেমেন্টের তথ্য রিফ্রেশ করা যায়নি। বিলে দেখানোর আগে আবার চেষ্টা করুন।"
+    "brandweb.payment_error": "পেমেন্টের তথ্য রিফ্রেশ করা যায়নি। বিলে দেখানোর আগে আবার চেষ্টা করুন।",
+    "brief.title": "দিনের সারাংশ"
   },
   "ta": {
     "web.gst.choose_state": "மாநிலத்தை தேர்வு செய்யவும்",
@@ -10918,7 +10922,8 @@
     "brandweb.image_source": "உங்கள் சாதனத் தேர்வியில் Photos அல்லது Files இலிருந்து படத்தைத் தேர்ந்தெடுக்கவும். பதிவேற்றம் வரைவில் சேரும்; புதிய பில்களில் பயன்படுத்தச் சேமிக்கவும்.",
     "brandweb.reload_title": "இந்த வரைவிற்குப் பதிலாகச் சேமித்த அமைப்புகளை ஏற்றவா?",
     "brandweb.reload_help": "சேமிக்காத மாற்றங்களுக்குப் பதிலாக சமீபத்தில் சேமித்த சுயவிவரம் ஏற்றப்படும். சேவையகத்தில் ஏற்கனவே சேமித்த மாற்றங்கள் ரத்தாகாது.",
-    "brandweb.payment_error": "கட்டண விவரங்களைப் புதுப்பிக்க முடியவில்லை. பில்களில் காட்டுவதற்கு முன் மீண்டும் முயற்சிக்கவும்."
+    "brandweb.payment_error": "கட்டண விவரங்களைப் புதுப்பிக்க முடியவில்லை. பில்களில் காட்டுவதற்கு முன் மீண்டும் முயற்சிக்கவும்.",
+    "brief.title": "தினசரி சுருக்கம்"
   },
   "te": {
     "web.gst.choose_state": "రాష్ట్రాన్ని ఎంచుకోండి",
@@ -13102,7 +13107,8 @@
     "brandweb.image_source": "మీ పరికరం పికర్‌లో Photos లేదా Files నుంచి చిత్రం ఎంచుకోండి. అప్‌లోడ్ డ్రాఫ్ట్‌కు చేరుతుంది; కొత్త బిల్లుల్లో వాడటానికి సేవ్ చేయండి.",
     "brandweb.reload_title": "ఈ డ్రాఫ్ట్ స్థానంలో సేవ్ చేసిన సెట్టింగ్‌లు తీసుకురావాలా?",
     "brandweb.reload_help": "సేవ్ చేయని మార్పుల స్థానంలో తాజా సేవ్ చేసిన ప్రొఫైల్ వస్తుంది. సర్వర్‌లో ఇప్పటికే సేవ్ అయిన మార్పులు రద్దు కావు.",
-    "brandweb.payment_error": "చెల్లింపు వివరాలను రిఫ్రెష్ చేయలేకపోయాము. బిల్లుల్లో చూపించే ముందు మళ్లీ ప్రయత్నించండి."
+    "brandweb.payment_error": "చెల్లింపు వివరాలను రిఫ్రెష్ చేయలేకపోయాము. బిల్లుల్లో చూపించే ముందు మళ్లీ ప్రయత్నించండి.",
+    "brief.title": "రోజువారీ సారాంశం"
   },
   "mr": {
     "web.gst.choose_state": "राज्य निवडा",
@@ -15286,7 +15292,8 @@
     "brandweb.image_source": "तुमच्या डिव्हाइसच्या पिकरमध्ये Photos किंवा Files मधून चित्र निवडा. अपलोड मसुद्यात जोडले जाते; नवीन बिलांवर वापरण्यासाठी जतन करा.",
     "brandweb.reload_title": "या मसुद्याऐवजी जतन केलेली सेटिंग्ज आणायची?",
     "brandweb.reload_help": "जतन न केलेल्या बदलांऐवजी नवीनतम जतन केलेले प्रोफाइल येईल. सर्व्हरवर आधीच जतन झालेले बदल रद्द होणार नाहीत.",
-    "brandweb.payment_error": "पेमेंटची माहिती रिफ्रेश करता आली नाही. बिलांवर दाखवण्यापूर्वी पुन्हा प्रयत्न करा."
+    "brandweb.payment_error": "पेमेंटची माहिती रिफ्रेश करता आली नाही. बिलांवर दाखवण्यापूर्वी पुन्हा प्रयत्न करा.",
+    "brief.title": "दिवसाचा सारांश"
   },
   "kn": {
     "web.gst.choose_state": "ರಾಜ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -17470,7 +17477,8 @@
     "brandweb.image_source": "ನಿಮ್ಮ ಸಾಧನದ ಆಯ್ಕೆ ಸಾಧನದಲ್ಲಿ Photos ಅಥವಾ Files ನಿಂದ ಚಿತ್ರ ಆಯ್ಕೆ ಮಾಡಿ. ಅಪ್‌ಲೋಡ್ ಕರಡಿಗೆ ಸೇರುತ್ತದೆ; ಹೊಸ ಬಿಲ್‌ಗಳಲ್ಲಿ ಬಳಸಲು ಉಳಿಸಿ.",
     "brandweb.reload_title": "ಈ ಕರಡಿನ ಬದಲು ಉಳಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತರಬೇಕೇ?",
     "brandweb.reload_help": "ಉಳಿಸದ ತಿದ್ದುಪಡಿಗಳ ಬದಲು ಇತ್ತೀಚೆಗೆ ಉಳಿಸಿದ ಪ್ರೊಫೈಲ್ ಬರುತ್ತದೆ. ಸರ್ವರ್‌ನಲ್ಲಿ ಈಗಾಗಲೇ ಉಳಿಸಿದ ಬದಲಾವಣೆಗಳು ರದ್ದಾಗುವುದಿಲ್ಲ.",
-    "brandweb.payment_error": "ಪಾವತಿ ವಿವರಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಬಿಲ್‌ಗಳಲ್ಲಿ ತೋರಿಸುವ ಮೊದಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
+    "brandweb.payment_error": "ಪಾವತಿ ವಿವರಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಲು ಆಗಲಿಲ್ಲ. ಬಿಲ್‌ಗಳಲ್ಲಿ ತೋರಿಸುವ ಮೊದಲು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "brief.title": "ದಿನದ ಸಾರಾಂಶ"
   },
   "gu": {
     "web.gst.choose_state": "રાજ્ય પસંદ કરો",
@@ -19654,7 +19662,8 @@
     "brandweb.image_source": "તમારા ઉપકરણના પિકરમાં Photos અથવા Files માંથી ચિત્ર પસંદ કરો. અપલોડ ડ્રાફ્ટમાં ઉમેરાશે; નવા બિલમાં વાપરવા સાચવો.",
     "brandweb.reload_title": "આ ડ્રાફ્ટના બદલે સાચવેલી સેટિંગ્સ લાવવી છે?",
     "brandweb.reload_help": "સાચવ્યા વિનાના ફેરફારોની જગ્યાએ તાજેતરમાં સાચવેલી પ્રોફાઇલ આવશે. સર્વર પર પહેલેથી સાચવેલા ફેરફારો પાછા નહીં ખેંચાય.",
-    "brandweb.payment_error": "ચુકવણીની વિગતો રિફ્રેશ થઈ શકી નથી. બિલમાં બતાવતા પહેલાં ફરી પ્રયાસ કરો."
+    "brandweb.payment_error": "ચુકવણીની વિગતો રિફ્રેશ થઈ શકી નથી. બિલમાં બતાવતા પહેલાં ફરી પ્રયાસ કરો.",
+    "brief.title": "દિવસનો સારાંશ"
   },
   "ml": {
     "web.gst.choose_state": "സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
@@ -21838,6 +21847,7 @@
     "brandweb.image_source": "ഉപകരണത്തിലെ പിക്കറിൽ Photos അല്ലെങ്കിൽ Files ൽനിന്ന് ചിത്രം തിരഞ്ഞെടുക്കുക. അപ്‌ലോഡ് ഡ്രാഫ്റ്റിൽ ചേരും; പുതിയ ബില്ലുകളിൽ ഉപയോഗിക്കാൻ സേവ് ചെയ്യുക.",
     "brandweb.reload_title": "ഈ ഡ്രാഫ്റ്റിനു പകരം സേവ് ചെയ്ത ക്രമീകരണങ്ങൾ കൊണ്ടുവരണോ?",
     "brandweb.reload_help": "സേവ് ചെയ്യാത്ത മാറ്റങ്ങൾക്കു പകരം ഏറ്റവും പുതിയ സേവ് ചെയ്ത പ്രൊഫൈൽ വരും. സർവറിൽ ഇതിനകം സേവ് ചെയ്ത മാറ്റങ്ങൾ റദ്ദാകില്ല.",
-    "brandweb.payment_error": "പേയ്‌മെന്റ് വിവരങ്ങൾ പുതുക്കാനായില്ല. ബില്ലുകളിൽ കാണിക്കുന്നതിന് മുമ്പ് വീണ്ടും ശ്രമിക്കുക."
+    "brandweb.payment_error": "പേയ്‌മെന്റ് വിവരങ്ങൾ പുതുക്കാനായില്ല. ബില്ലുകളിൽ കാണിക്കുന്നതിന് മുമ്പ് വീണ്ടും ശ്രമിക്കുക.",
+    "brief.title": "ദിവസ സംഗ്രഹം"
   }
 }

@@ -4351,3 +4351,15 @@ a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); ba
 }
 
 .branding-savebar.is-clean { position: static; }
+
+/* Daily brief: a clear day summary, actionable rows and a quieter archive. */
+.brief-workspace { max-width: 1040px; }
+.brief-workspace .brief-day { border-radius: 0; border-top: 2px solid var(--saffron, #ff6b00); padding: clamp(20px, 3vw, 32px); }
+.brief-day > p:first-child { font-size: clamp(20px, 2vw, 28px); line-height: 1.45; }
+.brief-workspace .brief-action { border-radius: 0; background: transparent; border-width: 0 0 1px; padding: 24px 0; }
+.brief-history { margin-top: 32px; border-top: 1px solid var(--border, #303038); padding-top: 24px; }
+.brief-history h2 { font-size: 20px; margin-bottom: 16px; }
+.brief-history article { padding: 16px 0; border-bottom: 1px solid var(--border, #303038); }
+.brief-history h3 { font-size: 16px; margin-bottom: 8px; }
+.brief-history p { color: var(--text-muted, #aaaab3); line-height: 1.7; overflow-wrap: anywhere; }
+@media(max-width: 600px) { .brief-workspace .brief-day { padding: 20px 16px; } .brief-action .shop-btn { min-height: 44px; } }

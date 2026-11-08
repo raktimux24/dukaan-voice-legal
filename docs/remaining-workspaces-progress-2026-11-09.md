@@ -1,0 +1,45 @@
+# Remaining workspace redesign — implementation tracker
+
+User scope: all 31 remaining shop routes, plus adjacent public storefront and utility consistency review. Do not mark a route complete from shared CSS or translation coverage alone. Each needs mobile-source comparison, implementation and responsive interaction verification. No deployment requested in this iteration.
+
+| Route | Parity | Design | Mobile/languages |
+|---|---|---|---|
+| `/shop/products/bulk` | Pending | Pending | Pending |
+| `/shop/products/barcodes` | Pending | Pending | Pending |
+| `/shop/alerts` | Pending | Pending | Pending |
+| `/shop/brief` | Audited; history, stock, regeneration and Free audio restored | Implemented | 10-language 320px check; desktop visual and refresh verified |
+| `/shop/voice` | Pending | Pending | Pending |
+| `/shop/cashbook` | Pending | Pending | Pending |
+| `/shop/sales/refunds` | Pending | Pending | Pending |
+| `/shop/customers/[id]/statement` | Pending | Pending | Pending |
+| `/shop/customers/followups` | Pending | Pending | Pending |
+| `/shop/products/import` | Pending | Pending | Pending |
+| `/shop/customers/import` | Pending | Pending | Pending |
+| `/shop/suppliers/import` | Pending | Pending | Pending |
+| `/shop/settings/opening-balances` | Pending | Pending | Pending |
+| `/shop/settings/gst` | Pending | Pending | Pending |
+| `/shop/settings/gst/checks` | Pending | Pending | Pending |
+| `/shop/settings/gst/devices` | Pending | Pending | Pending |
+| `/shop/settings/gst/numbers` | Pending | Pending | Pending |
+| `/shop/settings/gst/recovery` | Pending | Pending | Pending |
+| `/shop/settings/gst/recovery/[requestId]` | Pending | Pending | Pending |
+| `/shop/settings/gst/exports` | Pending | Pending | Pending |
+| `/shop/settings/gst/periods` | Pending | Pending | Pending |
+| `/shop/settings/gst/turnover` | Pending | Pending | Pending |
+| `/shop/settings/gst/providers` | Pending | Pending | Pending |
+| `/shop/settings/gst/rounding` | Pending | Pending | Pending |
+| `/shop/products/gst` | Pending | Pending | Pending |
+| `/shop/products/[id]/gst` | Pending | Pending | Pending |
+| `/shop/products/[id]/gst/rsp` | Pending | Pending | Pending |
+| `/shop/adjustments/[id]` | Pending | Pending | Pending |
+| `/shop/estimates` | Pending | Pending | Pending |
+| `/shop/online-store` | Pending | Pending | Pending |
+| `/shop/onboarding` | Pending | Pending | Pending |
+
+## Started
+
+Daily brief: compared mobile daily-brief.tsx with web brief.tsx. Added missing history presentation using existing translations, corrected action cache invalidation, added retry for failed loads, and began summary/action/archive hierarchy. This is incomplete: audio entitlement, stock evidence, regenerate, action navigation and native parity still need review, followed by browser checks.
+
+Adjacent review: /store/[storeId], /store/[storeId]/p/[itemId], /store/[storeId]/orders/[orderId], /subscription/return and /delete-account remain pending.
+
+Daily brief verification: TypeScript, Home action regression tests and translation coverage passed. Actual component fixture at 320px in ten languages had no page overflow. Free audio control and regeneration verified with synthetic responses; live TTS not invoked. Uses existing HomeNudge confirmation, dismissal and message review. Corrected inaccurate translated Daily brief titles.

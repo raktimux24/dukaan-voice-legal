@@ -360,6 +360,7 @@ export type UserPreferences = {
 };
 
 export type Nudge = {
+  createdAt?: string;
   id: string;
   kind: string;
   severity: string;
@@ -369,7 +370,7 @@ export type Nudge = {
   productId: string | null;
   customerId: string | null;
   status: string;
-  evidence?: { anchorProductId?: string; together?: number; anchorBills?: number; supportPct?: number; dayLine?: string } | null;
+  evidence?: { anchorProductId?: string; together?: number; anchorBills?: number; supportPct?: number; dayLine?: string; stock?: {total:number;low:number;out:number} } | null;
 };
 
 export type BriefResponse = {

@@ -522,7 +522,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send<VoiceConfirmResponse>(`/api/shops/${shopId}/voice/confirm`, {method:'POST',body:JSON.stringify({...request,ttsAsync:false})}),
     askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
       send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
-    getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),
+    getBriefAudio: (shopId: string, language?: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio${language?'?language='+encodeURIComponent(language):''}`),
 
     search: (shopId: string, q: string) =>
       send<{
@@ -587,8 +587,9 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     getUdhaarRisk: (shopId:string) => send<{profiles:import('./types').UdhaarRiskProfile[]}>(`/api/shops/${shopId}/nudges/udhaar-risk`),
     getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' | 'buy_list' | 'customer' = 'home') =>
       send<{ nudges: Nudge[]; premium: boolean }>(`/api/shops/${shopId}/nudges?surface=${surface}`),
-    getBrief: (shopId: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief`),
-    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed', surface:'home'|'product'|'checkout'|'buy_list'|'customer'='home') =>
+    getBrief: (shopId: string, language?: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief${language?'?language='+encodeURIComponent(language):''}`),
+    runBrief: (shopId: string) => send(`/api/shops/${shopId}/nudges/run`,{method:'POST'}),
+    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed', surface:'home'|'product'|'checkout'|'buy_list'|'customer'|'brief'='home') =>
       send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface }) }),
     actNudge: (shopId: string, id: string, body: Record<string, unknown> = {}) =>
       send<{ ok: boolean; already?: boolean; message?: string; phone?: string | null }>(`/api/shops/${shopId}/nudges/${id}/act`, { method: 'POST', body: JSON.stringify(body) }),
