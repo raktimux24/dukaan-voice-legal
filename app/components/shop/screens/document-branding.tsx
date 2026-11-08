@@ -1,315 +1,63 @@
-"use client";
-import {useQuery} from "@tanstack/react-query";
-import { useState,useEffect,useRef } from "react";
-import Link from "next/link";
-import { useShop } from "../context";
-import { useBranding } from "../../../lib/shop/documents/workflow";
-import { documentErrorKey } from "../../../lib/shop/documents/client";
-import { DOCUMENT_LAYOUTS } from "../../../lib/shop/documents/contract";
-import { SUPPORTED_LANGUAGES } from "../../../lib/shop/languages";
-import { DocumentPreview } from "../document-preview";
-import { Button, Card, Field, PageHeader, Spinner, inputClass } from "../ui";
+'use client';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect,useRef,useState } from 'react';
+import { useShop } from '../context';
+import { useBranding } from '../../../lib/shop/documents/workflow';
+import { documentErrorKey } from '../../../lib/shop/documents/client';
+import { DOCUMENT_LAYOUTS,DOCUMENT_PAPER } from '../../../lib/shop/documents/contract';
+import { brandingScope,validateBrandImage } from '../../../lib/shop/documents/editor';
+import { SUPPORTED_LANGUAGES } from '../../../lib/shop/languages';
+import { BrandingAssets } from '../branding-assets';
+import { BrandingGuide } from '../branding-guide';
+import { BrandingPreviewDialog } from '../branding-preview-dialog';
+import { Button,Field,PageHeader,Spinner } from '../ui';
 export function DocumentBrandingScreen() {
-  const { shop, userId } = useShop();
-  return <Editor key={shop?.id + ":" + userId} />;
+  const {shop,userId,photoSessionId}=useShop();
+  return <Editor key={brandingScope(shop?.id,userId,photoSessionId)}/>;
 }
 function Editor() {
-  const { api, shop, userId, perms, prefs, offline, t: translate } = useShop(),
-    t = (k: string, v?: Record<string, string | number>) => translate(k, k, v);
-  const w = useBranding(
-    api.documents,
-    shop?.id + ":" + userId,
-    shop?.id ?? "",
-    perms.canManageShop,
-    prefs?.appLanguage ?? "en",
-    () => crypto.randomUUID(),
-  );
-  const pos=useQuery({queryKey:["pos",shop?.id],queryFn:()=>api.getPosSettings(shop!.id),enabled:!!shop&&perms.canManageShop});
-  const [count, setCount] = useState(20);
-  const dialog=useRef<HTMLDivElement>(null);
-  useEffect(()=>{if(!w.preview)return;const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;document.body.style.overflow='hidden';dialog.current?.focus();const key=(event:KeyboardEvent)=>{if(event.key==='Escape'){event.preventDefault();w.setPreview(null);}if(event.key==='Tab'){const nodes=Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')??[]),first=nodes[0],last=nodes.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialog.current)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}};document.addEventListener('keydown',key);return()=>{document.body.style.overflow=overflow;document.removeEventListener('keydown',key);previous?.focus();};},[w.preview]);
-  const blocked = w.busy || !!w.pending || offline;
-  const upload = async (kind: "logo" | "signature", file: File | undefined) => {
-    if (!file) return;
-    try {
-      if (!["image/png", "image/jpeg"].includes(file.type))
-        throw Error("document_image_invalid");
-      if (file.size > 2_000_000) throw Error("document_image_size");
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      await w.upload(kind, base64);
-    } catch (e) {
-      w.setError(e);
-    }
+  const {api,shop,userId,photoSessionId,perms,prefs,offline,t:translate}=useShop(),t=(key:string)=>translate(key,key);
+  const scope=brandingScope(shop?.id,userId,photoSessionId);
+  const w=useBranding(api.documents,scope,shop?.id??'',perms.canManageShop&&!offline,prefs?.appLanguage??'en',()=>crypto.randomUUID());
+  const pos=useQuery({queryKey:['pos',shop?.id],queryFn:()=>api.getPosSettings(shop!.id),enabled:!!shop&&perms.canManageShop&&!offline,refetchOnMount:'always',retry:false});
+  const [tab,setTab]=useState('format'),[count,setCount]=useState(20),[reading,setReading]=useState(false),[confirmReload,setConfirmReload]=useState(false);
+  const alive=useRef(true),readingRef=useRef(false);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+  const blocked=w.busy||!!w.pending||reading||offline||w.meta.isFetching||!!w.meta.error;
+  const upload=async(kind:'logo'|'signature',file?:File)=>{
+    if(!file||blocked||readingRef.current||!perms.canManageShop)return;
+    readingRef.current=true;setReading(true);w.setError(null);
+    try{
+      validateBrandImage(file);
+      const base64=await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(Error('document_image_invalid'));r.readAsDataURL(file);});
+      if(alive.current)await w.upload(kind,base64);
+    }catch(error){if(alive.current)w.setError(error);}finally{readingRef.current=false;if(alive.current)setReading(false);}
   };
-  return (
-    <div className="shop-page">
-      <PageHeader
-        back={{
-          href: "/shop/settings/payments",
-          label: translate("pos_settings.title", ""),
-        }}
-        title={t("documents.title")}
-        description={t("documents.help")}
-      />
-      {!perms.canManageShop ? (
-        <Card>{t("documents.not_owner")}</Card>
-      ) : w.meta.isPending ? (
-        <Spinner />
-      ) : (
-        <>
-          {w.error || w.meta.error ? (
-            <Card>
-              <p role="alert" className="text-danger">
-                {t(documentErrorKey(w.error ?? w.meta.error))}
-              </p>
-            </Card>
-          ) : null}
-          {!w.meta.data ? (
-            <Button onClick={() => void w.reload()}>{t("common.retry")}</Button>
-          ) : (
-            <>
-              <div className="grid gap-4 lg:grid-cols-2">
-                <Card>
-                  <h2 className="shop-section-title">
-                    {t("documents.layout")}
-                  </h2>
-                  <div role="group" aria-label={t("documents.layout")} style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,marginTop:16}}>
-                    {DOCUMENT_LAYOUTS.map(layout=><button key={layout} type="button" disabled={blocked} aria-pressed={w.draft.layout===layout} onClick={()=>w.edit({layout})} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:10,minHeight:110,minWidth:0,padding:14,borderRadius:12,border:'1px solid '+(w.draft.layout===layout?'#FF6B00':'#3A3A46'),background:w.draft.layout===layout?'rgba(255,107,0,.12)':'#1E1E26',color:w.draft.layout===layout?'#FF943F':'#EAEAE6',textAlign:'left',fontSize:13,fontWeight:600,lineHeight:1.4,opacity:blocked?.45:1,cursor:blocked?'not-allowed':'pointer'}}>
-                      <svg aria-hidden="true" viewBox="0 0 32 40" style={{display:'block',width:26,height:34}} fill="none" stroke="currentColor" strokeWidth="1.5"><path d={layout==='receipt'?'M4 2H28V36L24 33L20 36L16 33L12 36L8 33L4 36Z':'M5 2H22L28 8V38H5Z'}/><path d="M10 14H23M10 20H23M10 26H20"/></svg>
-                      <span>{t("documents."+layout)}</span>
-                    </button>)}
-                  </div>
-                  <Field
-                    label={t("documents.language")}
-                    hint={t("documents.language_help")}
-                  >
-                    <select
-                      disabled={blocked}
-                      className={inputClass}
-                      value={w.draft.language}
-                      onChange={(e) => w.edit({ language: e.target.value })}
-                    >
-                      {SUPPORTED_LANGUAGES.map((l) => (
-                        <option key={l.code} value={l.code}>
-                          {l.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <p className="mt-3 text-sm text-muted">
-                    {t("documents.identity_help")}
-                  </p>
-                </Card>
-                <Card>
-                  <h2 className="shop-section-title">{t("documents.terms")}</h2>
-                  <Field
-                    label={t("documents.terms")}
-                    hint={t("documents.terms_help")}
-                  >
-                    <textarea
-                      disabled={blocked}
-                      maxLength={2000}
-                      rows={5}
-                      className={inputClass}
-                      value={w.draft.terms}
-                      onChange={(e) => w.edit({ terms: e.target.value })}
-                    />
-                  </Field>
-                  <label className="mt-4 flex gap-3">
-                    <input
-                      type="checkbox"
-                      disabled={blocked}
-                      checked={w.draft.showPayment}
-                      onChange={(e) =>
-                        w.edit({ showPayment: e.target.checked })
-                      }
-                    />
-                    {t("documents.payment_toggle")}
-                  </label>
-                  <p className="mt-3 text-sm text-muted">
-                    {t("documents.payment_help")}
-                  </p>
-                  <p className="mt-2 break-all">
-                    {pos.data?.upiVpa ??
-                      t("documents.payment_missing")}
-                  </p>
-                  <Link
-                    className="mt-3 inline-block text-sm text-saffron underline"
-                    href="/shop/settings/payments"
-                  >
-                    {t("documents.payment_settings")}
-                  </Link>
-                </Card>
-                {(["logo", "signature"] as const).map((kind) => {
-                  const id =
-                    kind === "logo" ? w.draft.logoId : w.draft.signatureId;
-                  return (
-                    <Card key={kind}>
-                      <h2 className="shop-section-title">
-                        {t("documents." + kind)}
-                      </h2>
-                      {id && w.images[id] ? (
-                        <img
-                          src={w.images[id]}
-                          alt={t("documents." + kind)}
-                          className="mt-4 h-24 max-w-full rounded-lg bg-white p-2 object-contain"
-                        />
-                      ) : null}
-                      <ImageUpload
-                        label={t("documents." + kind + (id ? "_replace" : "_upload"))}
-                        hint={t("documents.image_help")}
-                        disabled={blocked}
-                        onSelect={file => void upload(kind, file)}
-                      />
-                      {id ? (
-                        <Button
-                          tone="ghost"
-                          disabled={blocked}
-                          onClick={() =>
-                            w.edit(
-                              kind === "logo"
-                                ? { logoId: null }
-                                : { signatureId: null, showSignature: false },
-                            )
-                          }
-                        >
-                          {t("documents." + kind + "_remove")}
-                        </Button>
-                      ) : null}
-                      {kind === "logo" ? (
-                        <Field label={t("documents.logo_fit")}>
-                          <select
-                            className={inputClass}
-                            disabled={blocked}
-                            value={w.draft.logoFit}
-                            onChange={(e) =>
-                              w.edit({
-                                logoFit: e.target.value as "contain" | "cover",
-                              })
-                            }
-                          >
-                            <option value="contain">
-                              {t("documents.contain")}
-                            </option>
-                            <option value="cover">
-                              {t("documents.cover")}
-                            </option>
-                          </select>
-                        </Field>
-                      ) : (
-                        <>
-                          <label className="mt-4 flex gap-3">
-                            <input
-                              type="checkbox"
-                              checked={w.draft.showSignature}
-                              disabled={blocked || !id}
-                              onChange={(e) =>
-                                w.edit({ showSignature: e.target.checked })
-                              }
-                            />
-                            {t("documents.signature_enable")}
-                          </label>
-                          <p className="mt-3 text-sm text-muted">
-                            {t("documents.signature_help")}
-                          </p>
-                        </>
-                      )}
-                    </Card>
-                  );
-                })}
-              </div>
-              <Card>
-                <h2 className="shop-section-title">
-                  {t("documents.preview_title")}
-                </h2>
-                <p className="mt-2 text-sm text-muted">
-                  {t("documents.unsaved")}
-                </p>
-                <Field label={t("documents.sample_size")}>
-                  <select
-                    className={inputClass}
-                    disabled={blocked}
-                    value={count}
-                    onChange={(e) => setCount(Number(e.target.value))}
-                  >
-                    {[1, 20, 100].map((n) => (
-                      <option key={n} value={n}>
-                        {t("documents.sample_" + n)}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Button
-                  tone="ghost"
-                  disabled={blocked}
-                  onClick={() => void w.sample(count)}
-                >
-                  {t("documents.preview")}
-                </Button>
-              </Card>
-              {w.pending && !w.busy ? (
-                <p role="status" className="text-warn">
-                  {t("documents.uncertain")}
-                </p>
-              ) : null}
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  disabled={w.busy || offline}
-                  onClick={() => void w.save()}
-                >
-                  {t(w.busy ? "common.loading" : w.pending ? "documents.check_result" : "documents.save")}
-                </Button>
-                <Button
-                  tone="ghost"
-                  disabled={w.busy || offline}
-                  onClick={() => void w.reload()}
-                >
-                  {t("documents.reload")}
-                </Button>
-              </div>
-              {w.saved ? (
-                <p role="status" className="text-ok">
-                  {t(w.saved)}
-                </p>
-              ) : null}
-              <p className="text-sm text-muted">{t("documents.online_help")}</p>
-              {w.preview ? (
-                <div
-                  role="dialog"
-                  ref={dialog} tabIndex={-1}
-                  aria-modal="true"
-                  aria-label={t("documents.preview_title")}
-                  className="fixed inset-0 z-50 overflow-y-auto bg-black/85 p-3 sm:p-8"
-                >
-                  <div className="mx-auto grid max-w-4xl gap-4 rounded-2xl border border-line bg-card p-4 sm:p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h2>{t("documents.preview_title")}</h2>
-                      <Button tone="ghost" onClick={() => w.setPreview(null)}>
-                        {t("documents.close")}
-                      </Button>
-                    </div>
-                    <DocumentPreview {...w.preview} />
-                  </div>
-                </div>
-              ) : null}
-            </>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function ImageUpload({label,hint,disabled,onSelect}:{label:string;hint:string;disabled:boolean;onSelect:(file:File|undefined)=>void}) {
-  const input=useRef<HTMLInputElement>(null);
-  return <div className="mt-4">
-    <Button tone="ghost" disabled={disabled} onClick={()=>input.current?.click()}>{label}</Button>
-    <input ref={input} type="file" hidden tabIndex={-1} aria-label={label} disabled={disabled} accept="image/png,image/jpeg" onChange={event=>{onSelect(event.target.files?.[0]);event.target.value="";}}/>
-    <span className="shop-hint block">{hint}</span>
+  const reload=()=>{if(w.dirty||w.pending)setConfirmReload(true);else void w.reload();};
+  return <div className="shop-page branding-workspace">
+    <PageHeader kicker={translate('settings.title','Settings')} title={t('documents.title')} description={t('documents.help')} back={{href:'/shop/settings/payments',label:translate('pos_settings.title','Payments & bills')}} actions={perms.canManageShop?<Button tone="ghost" disabled={w.busy||reading||offline||w.meta.isFetching} onClick={reload}>{t('documents.reload')}</Button>:undefined}/>
+    {offline?<p role="status" className="shop-hint">{t('documents.online_help')}</p>:!perms.canManageShop?<p className="shop-hint">{t('documents.not_owner')}</p>:w.meta.isPending?<Spinner/>:<>
+      {(w.error||w.meta.error)&&<p role="alert" className="branding-error">{t(documentErrorKey(w.error??w.meta.error))}</p>}
+      {!w.meta.data?<Button disabled={w.busy} onClick={()=>void w.reload()}>{t('common.retry')}</Button>:<>
+        <div className="branding-status"><span className={'shop-pill'+(w.dirty?' shop-pill--saffron':'')}>{w.pending?t('documents.uncertain'):w.dirty?translate('brandweb.draft','Unsaved draft'):w.meta.data.current?translate('brandweb.saved','Saved for new bills'):translate('brandweb.new','Not saved yet')}</span><p>{t('documents.identity_help')}</p></div>
+        {confirmReload&&<section className="branding-reload" aria-labelledby="branding-reload-title"><h2 id="branding-reload-title">{translate('brandweb.reload_title','Replace this draft with saved settings?')}</h2><p>{translate('brandweb.reload_help','Your unsaved edits will be replaced by the latest saved profile. This does not undo a save that already reached the server.')}</p><div className="branding-actions"><Button tone="ghost" onClick={()=>setConfirmReload(false)}>{translate('brandweb.keep','Keep editing')}</Button><Button disabled={w.busy||reading||offline} onClick={()=>{setConfirmReload(false);void w.reload();}}>{t('documents.reload')}</Button></div></section>}
+        <div className="branding-workbench"><div className="branding-editor">
+          <nav className="branding-tabs" aria-label={t('documents.title')}>{[['format',translate('brandweb.format','Format')],['assets',translate('brandweb.assets','Brand assets')],['content',translate('brandweb.content','Content')]].map(([id,label])=><button type="button" key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}>{label}</button>)}</nav>
+          <section hidden={tab!=='format'} className="branding-panel"><h2>{t('documents.layout')}</h2><div className="branding-layouts" role="group" aria-label={t('documents.layout')}>
+            {DOCUMENT_LAYOUTS.map(layout=><button className={'branding-layout is-'+layout} key={layout} type="button" disabled={blocked} aria-pressed={w.draft.layout===layout} onClick={()=>w.edit({layout})}><span className="branding-format-art" aria-hidden="true"><span><i/><i/><i/></span></span><strong>{t('documents.'+layout)}</strong><small>{DOCUMENT_PAPER[layout].widthMm} × {DOCUMENT_PAPER[layout].heightMm} mm</small><span className="branding-choice-check" aria-hidden="true">{w.draft.layout===layout?'✓':''}</span></button>)}
+          </div><Field localized label={t('documents.language')} hint={t('documents.language_help')}><select className="shop-field" disabled={blocked} value={w.draft.language} onChange={e=>w.edit({language:e.target.value})}>{SUPPORTED_LANGUAGES.map(l=><option key={l.code} value={l.code}>{l.label}</option>)}</select></Field></section>
+          <div hidden={tab!=='assets'} className="branding-panel"><BrandingAssets draft={w.draft} images={w.images} disabled={blocked} edit={w.edit} upload={(kind,file)=>void upload(kind,file)}/></div>
+          <section hidden={tab!=='content'} className="branding-panel"><h2>{t('documents.terms')}</h2><Field localized label={t('documents.terms')} hint={t('documents.terms_help')}><textarea className="shop-field" disabled={blocked} rows={6} maxLength={2000} value={w.draft.terms} onChange={e=>w.edit({terms:e.target.value})}/></Field><p className="branding-character-count">{w.draft.terms.length.toLocaleString()} / 2,000</p>
+            <div className="branding-payment"><h2>{t('documents.payment_title')}</h2><label className="branding-toggle"><span>{t('documents.payment_toggle')}</span><input type="checkbox" disabled={blocked} checked={w.draft.showPayment} onChange={e=>w.edit({showPayment:e.target.checked})}/></label><p className="shop-hint">{t('documents.payment_help')}</p>
+              {pos.error?<div role="alert"><p>{translate('brandweb.payment_error','Payment details could not be refreshed. Retry before enabling them on bills.')}</p><Button tone="ghost" disabled={pos.isFetching} onClick={()=>void pos.refetch()}>{t('common.retry')}</Button></div>:pos.isPending?<Spinner/>:<p className="branding-upi">{pos.data?.upiVpa??t('documents.payment_missing')}</p>}
+              <Button tone="quiet" href="/shop/settings/payments">{t('documents.payment_settings')} ↗</Button><p className="shop-hint">{t('documents.payment_caption')}</p>
+            </div>
+          </section>
+        </div><BrandingGuide draft={w.draft} images={w.images} count={count} setCount={setCount} disabled={blocked} preview={()=>void w.sample(count)}/></div>
+        <div className={"branding-savebar"+(!w.dirty&&!w.pending?" is-clean":"")}><div aria-live="polite">{w.busy||reading?t('common.loading'):w.saved?t(w.saved):w.pending?t('documents.uncertain'):w.dirty?translate('brandweb.draft','Unsaved draft'):translate('brandweb.ready','Choose a format, then preview before saving.')}</div><Button disabled={w.busy||reading||offline||w.meta.isFetching||!!w.meta.error||(!w.dirty&&!w.pending&&!!w.meta.data.current)} onClick={()=>void w.save()}>{t(w.pending?'documents.check_result':'documents.save')}</Button></div>
+        <p className="shop-hint">{t('documents.online_help')}</p>
+        {w.preview&&<BrandingPreviewDialog preview={w.preview} close={()=>w.setPreview(null)}/>}
+      </>}
+    </>}
   </div>;
 }

@@ -8,6 +8,7 @@ export type ShopRecord = {
   category: string;
   subtype?: string | null;
   ownerId: string;
+  ownerName?: string | null;
   managerInviteCode: string | null;
   helperInviteCode: string | null;
   language?: string | null;

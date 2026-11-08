@@ -48,15 +48,15 @@ test("explicit false preferences survive normalization and unsupported languages
     "hinglish",
   );
 });
-test("only owners receive shop setup, payments and subscription management destinations", () => {
+test("all members can view the shop profile; only owners receive subscription management", () => {
   for (const role of ["OWNER", "MANAGER", "HELPER"]) {
     const paths = settingsLinks(permissionsFor(role), false).map((x) => x.href);
     for (const path of [
-      "/shop/settings/shop",
-      "/shop/settings/payments",
       "/shop/settings/subscription",
     ])
       assert.equal(paths.includes(path), role === "OWNER");
+    assert.equal(paths.includes("/shop/settings/shop"), true);
+    assert.equal(paths.includes("/shop/settings/payments"), true);
     assert.equal(paths.includes("/shop/settings/staff"), role !== "HELPER");
     assert.equal(paths.includes("/shop/purchases"), role !== "HELPER");
   }
