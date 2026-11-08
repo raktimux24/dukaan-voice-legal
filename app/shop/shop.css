@@ -4363,3 +4363,11 @@ a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); ba
 .brief-history h3 { font-size: 16px; margin-bottom: 8px; }
 .brief-history p { color: var(--text-muted, #aaaab3); line-height: 1.7; overflow-wrap: anywhere; }
 @media(max-width: 600px) { .brief-workspace .brief-day { padding: 20px 16px; } .brief-action .shop-btn { min-height: 44px; } }
+
+.alerts-workspace { max-width: 1120px; }
+.alerts-workspace .shop-seg { border-radius: 0; background: transparent; border-width: 0 0 1px; flex-wrap: wrap; }
+.alerts-workspace .alert-card { border-radius: 0; border-width: 0 0 1px 2px; padding: 24px; background: transparent; }
+.alerts-workspace .alert-card > div:first-child { min-width: 0; flex: 1; }
+.alerts-bulk { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 0; border-bottom:1px solid var(--border,#303038); }
+@media(max-width:600px){.alerts-bulk,.alerts-workspace .alert-card{flex-wrap:wrap}.alerts-workspace .alert-card{padding:20px 12px}.alerts-workspace .alert-card .shop-list-title{overflow-wrap:anywhere}.alerts-bulk .shop-btn{width:100%}}
+@media(max-width:600px){.alerts-workspace .shop-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.alerts-workspace .shop-seg button{min-width:0;white-space:normal;overflow-wrap:anywhere;min-height:44px}.alerts-workspace .alert-card{display:flex}.alerts-workspace .alert-card .shop-btn{white-space:normal;max-width:100%}}
