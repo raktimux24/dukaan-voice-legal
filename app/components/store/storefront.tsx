@@ -102,7 +102,8 @@ export function Storefront() {
   useEffect(() => {
     alive.current = true;
     try {
-      const saved = localStorage.getItem("samaan-public-language");
+      const requested = new URLSearchParams(location.search).get("lang");
+      const saved = requested && (APP_LANGUAGES as string[]).includes(requested) ? requested : localStorage.getItem("samaan-public-language");
       const generation = ++languageRequest.current;
       if (saved && (APP_LANGUAGES as string[]).includes(saved))
         void loadBundledLanguage(saved).then(() => {

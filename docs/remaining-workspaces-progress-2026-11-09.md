@@ -38,7 +38,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 
 ## Verification notes
 
-Adjacent review: /store/[storeId], /store/[storeId]/p/[itemId], /store/[storeId]/orders/[orderId], /subscription/return and /delete-account remain pending.
+Adjacent review is recorded below.
 
 Daily brief verification: TypeScript, Home action regression tests and translation coverage passed. Actual component fixture at 320px in ten languages had no page overflow. Free audio control and regeneration verified with synthetic responses; live TTS not invoked. Uses existing HomeNudge confirmation, dismissal and message review. Corrected inaccurate translated Daily brief titles.
 
@@ -85,3 +85,7 @@ Debit-note collections: existing financial API retains original requests and ver
 Estimates: existing dedicated web editor already matches the new app direction. Extended status filters and improved narrow-screen amount/status layout. Existing freshness, expiration, cart-conflict and document safeguards retained. No estimate issued, shared or converted live. Financial regression, translations and TypeScript passed.
 
 Online store: shared contract/client/workflow retain native publishing, stock reservation, QR, order-state and bill handoff capabilities. Opening a detail hides the repeated list; back restores it. No store published, QR downloaded, order accepted or customer notification sent. Synthetic controls and reason guards reviewed.
+
+### Public catalogue, product and order tracking
+
+`/store/[storeId]`, `/store/[storeId]/p/[itemId]` and `/store/[storeId]/orders/[orderId]` share one reviewed implementation. Aligned surfaces with the web workspaces, reduced mobile header height, preserved accessible language labels and added supported `lang` deep links. Ten-language 320px checks cover catalogue, product, order tracking and cart. Cart add/review checked with synthetic data. Existing email verification, private tracking token and staff-confirmed payment conditions retained; no real order, verification email or UPI payment invoked.
