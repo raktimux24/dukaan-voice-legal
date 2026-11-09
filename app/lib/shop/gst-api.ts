@@ -463,13 +463,14 @@ export function bindGstApi(
         integrity: string;
         remaining: string;
         collected: string;
-        obligation: { saleId: string; grossAmount: string; customerId: string };
+        obligation: { saleId: string; grossAmount: string; customerId: string; createdAt: string };
         events: {
           id: string;
           kind: string;
           amount: string;
           method: string;
           reversesId: string | null;
+          occurredAt: string; evidenceReference: string; reason: string;
         }[];
       }>(`${base(s)}/adjustments/${id}`),
     debitSettlement: (
