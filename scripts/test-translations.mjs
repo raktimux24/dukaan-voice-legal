@@ -15,6 +15,13 @@ for (const language of languages) {
   }
   for (const key of Object.keys(mobile[language])) assert.ok(general[key] || mobile[language][key]);
 }
+// Hinglish UI text uses Roman script and retains the source variables.
+const hinglish = JSON.parse(fs.readFileSync('app/lib/shop/locales/hinglish.json', 'utf8'));
+const generalEnglish = JSON.parse(fs.readFileSync('app/lib/shop/locales/en.json', 'utf8'));
+for (const [key, value] of Object.entries(hinglish)) {
+  assert.doesNotMatch(value, /[\u0900-\u097f]/u, `Hinglish uses Devanagari in ${key}`);
+  if (generalEnglish[key]) assert.deepEqual(placeholders(value), placeholders(generalEnglish[key]), `Hinglish placeholders ${key}`);
+}
 // Native-language labels must not accidentally inherit another language's script.
 const scripts = { hi: [0x900, 0x97f], mr: [0x900, 0x97f], bn: [0x980, 0x9ff], gu: [0xa80, 0xaff], ta: [0xb80, 0xbff], te: [0xc00, 0xc7f], kn: [0xc80, 0xcff], ml: [0xd00, 0xd7f], hinglish: [0, 0] };
 for (const [language, [start, end]] of Object.entries(scripts)) {
