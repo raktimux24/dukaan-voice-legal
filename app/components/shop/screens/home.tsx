@@ -203,7 +203,7 @@ function HomeWorkspace() {
   const brief = useQuery({
     queryKey: ["brief", shopId, userId, prefs?.appLanguage],
     enabled: !!shopId && perms.canSeeReports,
-    queryFn: () => api.getBrief(shopId),
+    queryFn: () => api.getBrief(shopId, prefs?.appLanguage),
   });
   const nudges = useQuery({
     queryKey: ["nudges", shopId, "home", userId, prefs?.appLanguage],

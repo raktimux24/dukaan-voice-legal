@@ -180,7 +180,7 @@ function setup(role = "OWNER") {
     getSalesSummary: () => read("summary"),
     getSales: () => read("sales"),
     getSale: () => read("sale"),
-    getBrief: () => read("brief"),
+    getBrief: (shop, language) => { calls.push(["brief-language", shop, language]); return read("brief"); },
     getNudges: () => read("nudges"),
     getAlerts: async () => ({ counts: { total: 0 } }),
     getCustomerSummary: async () => ({ customerCount: 2 }),
@@ -479,4 +479,9 @@ test("refund-only payment totals remain visible instead of claiming there are no
   await mount(t);
   assert(document.body.textContent.includes("-₹100.00"));
   assert(!document.body.textContent.includes("No payments yet today"));
+});
+
+test("home requests the brief in the viewer's selected language", async (t) => {
+  setup(); context.prefs.appLanguage = "hinglish"; await mount(t);
+  assert(calls.some((c) => c[0] === "brief-language" && c[1] === "s1" && c[2] === "hinglish"));
 });
