@@ -111,3 +111,8 @@ test('a weighted barcode hit outside the current catalogue can be reviewed and r
  setup('OWNER',[item]);scanItem={...weight,quantity:6,reservedQuantity:2};await mount(t);await click(button('Camera'));await click(button('Synthetic scan'));assert(document.querySelector('[role=dialog]'));
  await fill(document.querySelector('.pos-picker-step input'),'9');await click([...document.querySelectorAll('.sell-quantity-picker button')].at(-1));assert.equal(readCart().lines[0].quantity,4);assert.equal(readCart().inputMethod,'scan');
 });
+
+test('search result uses the same translated unit for quantity and price',async t=>{
+ setup();const base=context.t;context.t=(key,fallback,vars)=>key==='unit_picker.piece'?'nag':base(key,fallback,vars);await mount(t);await fill(document.querySelector('input[type=search]'),'Rice pack');await settle();
+ const option=document.querySelector('[role=option]');assert(option);assert.match(option.textContent,/8 nag/);assert.match(option.textContent,/\/nag/);assert(!document.querySelector('.sell-catalogue-heading').textContent.includes('1 products'));
+});
