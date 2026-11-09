@@ -17,9 +17,10 @@ import {
   useGstQuery,
 } from "../gst-workspace";
 import { formatINR } from "../../../lib/shop/money";
+import {validSavedDebitSettlementShape} from "../../../lib/shop/gst-core/financial-request-shape";
 import { financialScope, retainedRequests } from "../../../lib/shop/gst-storage";
 export function GstAdjustmentScreen({ id }: { id: string }) {
-  const { api, shop, offline, t } = useShop(),
+  const { api, shop, userId, offline, t } = useShop(),
     text = useGstText(),
     action = useGstAction(), formatDate = useFiscalDate();
   const query = useGstQuery(["debit-balance", id], () =>
@@ -34,7 +35,12 @@ export function GstAdjustmentScreen({ id }: { id: string }) {
   const pending = useRef<Parameters<typeof api.gst.debitSettlement>[2] | null>(
     null,
   );
-  const journal = useGstQuery(["debit-settlement-pending",id],async()=> (await retainedRequests(financialScope(shop!.id))).filter(row=>row.state==="pending"&&row.path===`/api/shops/${shop!.id}/adjustments/${id}/settlements`),true,"always");
+  useEffect(()=>{pending.current=null;setAmount("");setReference("");setReason("");setConfirmed(false);setDate(new Date().toISOString());setMethod("cash")},[userId,shop?.id,id]);
+  const journal = useGstQuery(["debit-settlement-pending",id],async()=> {
+    const rows=(await retainedRequests(financialScope(shop!.id))).filter(row=>row.state==="pending"&&row.path===`/api/shops/${shop!.id}/adjustments/${id}/settlements`);
+    if(rows.length>1||rows.some(row=>!validSavedDebitSettlementShape({adjustmentId:id,body:row.payload})))throw Error(t("purchase.request_storage_error", "The saved request could not be read. Keep this device data and retry loading before recording another operation."));
+    return rows;
+  },true,"always");
   useEffect(()=>{const row=journal.data?.[0];if(row) {const input=row.payload as NonNullable<typeof pending.current>;pending.current=input;setDate(input.occurredAt);setReference(input.evidenceReference);setReason(input.reason);setAmount(String(input.amount));setMethod(input.method)}},[journal.data]);
   const validDate=Number.isFinite(Date.parse(date))&&Date.parse(date)<=Date.now()+60000&&!!query.data&&Date.parse(date)>=Date.parse(query.data.obligation.createdAt);
   const validEvidence=!!reference.trim()&&reference.length<=500&&!!reason.trim()&&reason.length<=1000;
