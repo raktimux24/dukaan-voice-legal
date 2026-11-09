@@ -89,3 +89,7 @@ Online store: shared contract/client/workflow retain native publishing, stock re
 ### Public catalogue, product and order tracking
 
 `/store/[storeId]`, `/store/[storeId]/p/[itemId]` and `/store/[storeId]/orders/[orderId]` share one reviewed implementation. Aligned surfaces with the web workspaces, reduced mobile header height, preserved accessible language labels and added supported `lang` deep links. Ten-language 320px checks cover catalogue, product, order tracking and cart. Cart add/review checked with synthetic data. Existing email verification, private tracking token and staff-confirmed payment conditions retained; no real order, verification email or UPI payment invoked.
+
+### Subscription return
+
+`/subscription/return` now uses a focused status workspace and ten-language copy, with query-preserving language selection. Existing authenticated checkout polling and app return parameters are retained. Paid, authorized, failed, missing-detail and signed-out states were checked with synthetic responses; all ten languages fit 320px. Authorization is explicitly distinguished from a confirmed subscription charge. Billing regression, translations and TypeScript pass. No real checkout was opened or paid.
