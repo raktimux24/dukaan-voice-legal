@@ -519,7 +519,7 @@ export function EstimateList({ items, blocked, open }: EstimateListProps) {
           />
         </Field>
         <div className="estimate-filters">
-          {["all", "draft", "issued", "accepted"].map((s) => (
+          {["all", "draft", "issued", "accepted", "declined", "cancelled", "converted"].map((s) => (
             <Chip key={s} active={filter === s} onClick={() => setFilter(s)}>
               {t(s === "all" ? "estimates.all" : "estimates.status." + s)}
             </Chip>

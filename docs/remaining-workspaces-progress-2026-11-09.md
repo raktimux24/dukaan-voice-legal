@@ -32,7 +32,7 @@ User scope: all 31 remaining shop routes, plus adjacent public storefront and ut
 | `/shop/products/[id]/gst` | Native history/scheduling compared; support identity and separate cancellation reasons restored | Status-led history and schedule disclosure | Ten languages at 320px; empty-reason guard checked |
 | `/shop/products/[id]/gst/rsp` | Native review/preview compared; refresh, IST date restoration and stale-preview reset restored | Responsive evidence form and retained review summary | Ten languages at 320px; unreviewed save disabled |
 | `/shop/adjustments/[id]` | Native collection/reversal compared; date/time, evidence limits and saved-request restoration added | Balance summary, paired entry fields and dated collection history | Ten languages at 320px; over-balance and reviewed-entry guards checked |
-| `/shop/estimates` | Pending | Pending | Pending |
+| `/shop/estimates` | Shared workflow/view match mobile; editor, issue, share and bill handoff audited | Existing staged editor retained; status filters and compact list refined | Ten languages at 320px for list/editor/detail; item selection, terms and discard checked |
 | `/shop/online-store` | Pending | Pending | Pending |
 | `/shop/onboarding` | Owner name, language, phone validation, invite-link/QR support restored | Two-stage responsive create/join workspace | Ten languages × join/details/GST at 320px; phone and invite parsing verified |
 
@@ -81,3 +81,5 @@ Product GST catalogue/history: native authorization, history and scheduling comp
 RSP review: existing receipt verification, feature gate and review-only notices preserved. TypeScript and responsive fixture checks pass. No RSP profile or preview submitted to the server; this does not establish enabled RSP billing.
 
 Debit-note collections: existing financial API retains original requests and verifies outcomes. The screen restores unresolved input, blocks offline/new submissions while loading that journal, checks effective dates and refreshes balances after success. No payment or reversal recorded; synthetic amount validation checked. TypeScript passed.
+
+Estimates: existing dedicated web editor already matches the new app direction. Extended status filters and improved narrow-screen amount/status layout. Existing freshness, expiration, cart-conflict and document safeguards retained. No estimate issued, shared or converted live. Financial regression, translations and TypeScript passed.
