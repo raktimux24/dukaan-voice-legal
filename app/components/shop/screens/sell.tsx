@@ -19,7 +19,7 @@ import { searchSellCatalog, sellAmount, sellBillPreview, sellStockShortfalls } f
 import { matchHomeDemand } from '../../../lib/shop/home';
 import { formatINR } from '../../../lib/shop/money';
 import type { InventoryItem } from '../../../lib/shop/types';
-import { chipLabel, convert, defaultChips, altUnit, formatQty, isWeightOrVolume, r3, stepFor } from '../../../lib/shop/units';
+import { chipLabel, convert, defaultChips, altUnit, formatQty, unitLabel, isWeightOrVolume, r3, stepFor } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { CustomerAttach } from '../customer-attach';
 import { Button, Chip, Glyph, Kbd, Notice, Spinner, cx, inputClass } from '../ui';
@@ -296,7 +296,7 @@ export function SellScreen() {
   const catalogueError = (catalog.isError||posSettings.isError)?<div className="sell-read-error" role="alert"><p>{t('sellweb.load_failed','Products could not be refreshed. Retry before adding items.')}</p><Button tone="quiet" size="sm" onClick={()=>{void posSettings.refetch();void catalog.refetch()}}>{t('common.retry','Try again')}</Button></div>:null;
   const productChoices = <div className="sell-product-choices"><Notice error={error}/>{catalogueError}
         <div className="sell-catalogue-heading">
-          <h2>{t('sellweb.products_count','{{n}} products',{n:matches.length})}</h2>
+          <h2>{t('products.title','Products')} · {matches.length}</h2>
           <label><span className="sr-only">{uiText('Categories')}</span><select value={category} onChange={event=>setCategory(event.target.value)}>
             <option value="all">{t('products.all_categories','All categories')}</option>{categories.map(([code,label])=><option key={code} value={code}>{label}</option>)}
           </select></label>
@@ -312,10 +312,10 @@ export function SellScreen() {
               <ProductImage image={item.product.media?.cover} name={item.product.name} size={48}/>
               <span className="sell-product-copy"><span className="pos-tile-name">{item.product.name}</span>
                 <span className={cx('pos-tile-qty',out&&'is-out',tracked&&item.stockStatus==='LOW'&&'is-low')}>
-                  {tracked?(out?t('home.stat_out_of_stock','Out of stock'):formatQty(item.quantity,item.unit)):t('pos.no_stock_tracking','Untracked')}
+                  {tracked?(out?t('home.stat_out_of_stock','Out of stock'):formatQty(item.quantity,item.unit,{unitLabel:u=>unitLabel(u,t)})):t('pos.no_stock_tracking','Untracked')}
                   {item.product.shortCode?` · ${item.product.shortCode}`:''}
                 </span></span>
-              <span className="sell-product-price"><span className={cx('pos-tile-price num',unpriced&&'text-warning')}>{unpriced?t('pos.set_price','Set price'):formatINR(item.product.sellingPrice)}</span><small>/{t(`unit_picker.${item.unit}`,item.unit)}</small></span>
+              <span className="sell-product-price"><span className={cx('pos-tile-price num',unpriced&&'text-warning')}>{unpriced?t('pos.set_price','Set price'):formatINR(item.product.sellingPrice)}</span><small>/{unitLabel(item.unit,t)}</small></span>
               <span className={cx('sell-product-add',inCart&&'has-quantity')} aria-hidden="true">{inCart?`×${r3(inCart.quantity)}`:'+'}</span>
             </button>;
           })}
@@ -448,7 +448,7 @@ function QtyPicker({
           <p className="party-name">{item.product.name}</p>
           <p className="party-meta">
             {formatINR(price)} / {unit}
-            {tracked ? ` · ${t('pos.in_stock_fmt','{{qty}} in stock',{qty:formatQty(item.quantity,unit,{packSize:item.product.packSize,packLabel:item.product.packLabel})})}` : ` · ${t('pos.no_stock_tracking','Untracked')}`}
+            {tracked ? ` · ${t('pos.in_stock_fmt','{{qty}} in stock',{qty:formatQty(item.quantity,unit,{packSize:item.product.packSize,packLabel:item.product.packLabel,unitLabel:u=>unitLabel(u,t)})})}` : ` · ${t('pos.no_stock_tracking','Untracked')}`}
           </p>
           </div>
         </div>
