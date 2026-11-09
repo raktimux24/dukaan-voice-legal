@@ -34,6 +34,7 @@ const loadTs = (filename) => {
   return exports;
 };
 const { translateUi } = loadTs('app/lib/shop/translations.ts');
+assert.equal(translateUi('hinglish', { 'nav.sales': 'Sales' }, 'nav.sales', 'Sales'), 'Sales', 'Hinglish navigation must not fall back to an unrelated Hindi alias');
 const retail = JSON.parse(fs.readFileSync('app/lib/shop/retail-locales.json', 'utf8'));
 for (const language of ['en', ...languages]) {
   assert.deepEqual(Object.keys(retail[language]).sort(), Object.keys(retail.en).sort());

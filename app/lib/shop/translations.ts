@@ -31,7 +31,7 @@ export function translateUi(language: string, dictionary: Record<string, string>
       const value = catalog[candidate];
       const tokens = value?.match(/\{\{?(\w+)\}?\}/g) ?? [];
       const complete = tokens.every(token => vars && token.replace(/[{}]/g, '') in vars);
-      if (value && complete && value !== candidate && (language === 'en' || value !== english[candidate] || retail[language]?.[candidate] === value || (explicitHomeCopy && candidate === key && web[language]?.[candidate] === value))) {
+      if (value && complete && value !== candidate && (language === 'en' || value !== english[candidate] || (candidate === key && key.startsWith('nav.')) || retail[language]?.[candidate] === value || (explicitHomeCopy && candidate === key && web[language]?.[candidate] === value))) {
         text = value;
         break outer;
       }
