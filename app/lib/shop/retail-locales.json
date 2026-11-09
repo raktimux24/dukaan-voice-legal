@@ -1837,7 +1837,15 @@
     "product_images.leave_title": "Leave this form?",
     "product_images.leave_hint": "Your saved product will not change. Photo changes stay in a draft on this device. Unfinished photos may need to be selected again.",
     "product_images.leave": "Leave and keep draft",
-    "product_images.load_failed": "Photo could not be loaded."
+    "product_images.load_failed": "Photo could not be loaded.",
+    "importUI.mode": "Import mode",
+    "importUI.columns": "File columns",
+    "importUI.other_fields": "Other fields",
+    "importUI.match_name": "Choose the column that contains the name to continue.",
+    "importUI.update": "Update",
+    "importUI.all_rows": "All rows",
+    "importUI.resolve": "Fix the file or skip the rows that need attention before importing.",
+    "importUI.tools": "Import options"
   },
   "hi": {
     "imports.title": "उत्पाद आयात करें",
@@ -3677,7 +3685,15 @@
     "product_images.leave_title": "यह फ़ॉर्म छोड़ें?",
     "product_images.leave_hint": "आपका सहेजा उत्पाद नहीं बदलेगा। फ़ोटो बदलाव इस डिवाइस पर ड्राफ़्ट में रहेंगे। अधूरी फ़ोटो फिर चुननी पड़ सकती हैं।",
     "product_images.leave": "ड्राफ़्ट रखकर छोड़ें",
-    "product_images.load_failed": "फ़ोटो लोड नहीं हो सकी।"
+    "product_images.load_failed": "फ़ोटो लोड नहीं हो सकी।",
+    "importUI.mode": "इम्पोर्ट का तरीका",
+    "importUI.columns": "फ़ाइल के कॉलम",
+    "importUI.other_fields": "अन्य फ़ील्ड",
+    "importUI.match_name": "आगे बढ़ने के लिए नाम वाला कॉलम चुनें।",
+    "importUI.update": "अपडेट",
+    "importUI.all_rows": "सभी पंक्तियाँ",
+    "importUI.resolve": "इम्पोर्ट करने से पहले फ़ाइल ठीक करें या समस्या वाली पंक्तियाँ छोड़ें।",
+    "importUI.tools": "इम्पोर्ट विकल्प"
   },
   "hinglish": {
     "imports.title": "Products import karein",
@@ -5517,7 +5533,15 @@
     "product_images.leave_title": "Yeh form chhodein?",
     "product_images.leave_hint": "Saved product nahi badlega. Photo changes is device par draft mein rahenge. Adhuri photos dobara chunni pad sakti hain.",
     "product_images.leave": "Draft rakhkar chhodein",
-    "product_images.load_failed": "Photo load nahi ho saki."
+    "product_images.load_failed": "Photo load nahi ho saki.",
+    "importUI.mode": "Import ka tareeka",
+    "importUI.columns": "File ke columns",
+    "importUI.other_fields": "Baaki fields",
+    "importUI.match_name": "Aage badhne ke liye naam wala column chunein.",
+    "importUI.update": "Update",
+    "importUI.all_rows": "Sabhi rows",
+    "importUI.resolve": "Import se pehle file theek karein ya problem wali rows skip karein.",
+    "importUI.tools": "Import options"
   },
   "ta": {
     "imports.title": "பொருட்களை இறக்குமதி செய்",
@@ -7357,7 +7381,15 @@
     "product_images.leave_title": "இந்தப் படிவத்திலிருந்து வெளியேறவா?",
     "product_images.leave_hint": "சேமித்த பொருள் மாறாது. பட மாற்றங்கள் இந்தச் சாதனத்தில் வரைவாக இருக்கும். முடிக்காத படங்களை மீண்டும் தேர்ந்தெடுக்க வேண்டியிருக்கலாம்.",
     "product_images.leave": "வரைவை வைத்துக்கொண்டு வெளியேறு",
-    "product_images.load_failed": "படத்தை ஏற்ற முடியவில்லை."
+    "product_images.load_failed": "படத்தை ஏற்ற முடியவில்லை.",
+    "importUI.mode": "இறக்குமதி முறை",
+    "importUI.columns": "கோப்பின் நெடுவரிசைகள்",
+    "importUI.other_fields": "பிற புலங்கள்",
+    "importUI.match_name": "தொடர பெயர் உள்ள நெடுவரிசையைத் தேர்ந்தெடுக்கவும்.",
+    "importUI.update": "புதுப்பி",
+    "importUI.all_rows": "எல்லா வரிசைகளும்",
+    "importUI.resolve": "இறக்குமதிக்கு முன் கோப்பைத் திருத்தவும் அல்லது சிக்கலுள்ள வரிசைகளைத் தவிர்க்கவும்.",
+    "importUI.tools": "இறக்குமதி விருப்பங்கள்"
   },
   "te": {
     "imports.title": "ఉత్పత్తులను దిగుమతి చేయండి",
@@ -9197,7 +9229,15 @@
     "product_images.leave_title": "ఈ ఫారమ్ నుండి వెళ్లాలా?",
     "product_images.leave_hint": "సేవ్ చేసిన ఉత్పత్తి మారదు. ఫోటో మార్పులు ఈ పరికరంలో డ్రాఫ్ట్‌గా ఉంటాయి. పూర్తికాని ఫోటోలను మళ్లీ ఎంచుకోవాల్సి రావచ్చు.",
     "product_images.leave": "డ్రాఫ్ట్ ఉంచి వెళ్లండి",
-    "product_images.load_failed": "ఫోటోను లోడ్ చేయలేకపోయాము."
+    "product_images.load_failed": "ఫోటోను లోడ్ చేయలేకపోయాము.",
+    "importUI.mode": "దిగుమతి విధానం",
+    "importUI.columns": "ఫైల్ నిలువు వరుసలు",
+    "importUI.other_fields": "ఇతర ఫీల్డ్‌లు",
+    "importUI.match_name": "కొనసాగించడానికి పేరు ఉన్న నిలువు వరుసను ఎంచుకోండి.",
+    "importUI.update": "మార్చు",
+    "importUI.all_rows": "అన్ని వరుసలు",
+    "importUI.resolve": "దిగుమతికి ముందు ఫైల్‌ను సరిచేయండి లేదా సమస్య ఉన్న వరుసలను దాటవేయండి.",
+    "importUI.tools": "దిగుమతి ఎంపికలు"
   },
   "bn": {
     "imports.title": "পণ্য আমদানি করুন",
@@ -11037,7 +11077,15 @@
     "product_images.leave_title": "এই ফর্ম ছেড়ে যাবেন?",
     "product_images.leave_hint": "সেভ করা পণ্য বদলাবে না। ছবির পরিবর্তন এই ডিভাইসে খসড়া হিসেবে থাকবে। অসম্পূর্ণ ছবি আবার বাছতে হতে পারে।",
     "product_images.leave": "খসড়া রেখে বেরোন",
-    "product_images.load_failed": "ছবি লোড করা যায়নি।"
+    "product_images.load_failed": "ছবি লোড করা যায়নি।",
+    "importUI.mode": "ইমপোর্টের ধরন",
+    "importUI.columns": "ফাইলের কলাম",
+    "importUI.other_fields": "অন্যান্য ক্ষেত্র",
+    "importUI.match_name": "এগিয়ে যেতে নামের কলামটি বেছে নিন।",
+    "importUI.update": "আপডেট",
+    "importUI.all_rows": "সব সারি",
+    "importUI.resolve": "ইমপোর্টের আগে ফাইলটি ঠিক করুন অথবা সমস্যাযুক্ত সারিগুলি বাদ দিন।",
+    "importUI.tools": "ইমপোর্টের বিকল্প"
   },
   "mr": {
     "imports.title": "उत्पादने आयात करा",
@@ -12877,7 +12925,15 @@
     "product_images.leave_title": "हा फॉर्म सोडायचा?",
     "product_images.leave_hint": "जतन केलेले उत्पादन बदलणार नाही. फोटोतील बदल या डिव्हाइसवर मसुद्यात राहतील. अपूर्ण फोटो पुन्हा निवडावे लागू शकतात.",
     "product_images.leave": "मसुदा ठेवून बाहेर पडा",
-    "product_images.load_failed": "फोटो लोड करता आला नाही."
+    "product_images.load_failed": "फोटो लोड करता आला नाही.",
+    "importUI.mode": "इम्पोर्टची पद्धत",
+    "importUI.columns": "फाइलमधील स्तंभ",
+    "importUI.other_fields": "इतर फील्ड",
+    "importUI.match_name": "पुढे जाण्यासाठी नाव असलेला स्तंभ निवडा.",
+    "importUI.update": "अपडेट",
+    "importUI.all_rows": "सर्व ओळी",
+    "importUI.resolve": "इम्पोर्ट करण्यापूर्वी फाइल दुरुस्त करा किंवा समस्या असलेल्या ओळी वगळा.",
+    "importUI.tools": "इम्पोर्ट पर्याय"
   },
   "kn": {
     "imports.title": "ಉತ್ಪನ್ನಗಳನ್ನು ಆಮದು ಮಾಡಿ",
@@ -14717,7 +14773,15 @@
     "product_images.leave_title": "ಈ ಫಾರ್ಮ್‌ನಿಂದ ಹೊರಹೋಗಬೇಕೇ?",
     "product_images.leave_hint": "ಉಳಿಸಿದ ಉತ್ಪನ್ನ ಬದಲಾಗುವುದಿಲ್ಲ. ಫೋಟೋ ಬದಲಾವಣೆಗಳು ಈ ಸಾಧನದಲ್ಲಿ ಕರಡಾಗಿ ಉಳಿಯುತ್ತವೆ. ಪೂರ್ಣಗೊಳ್ಳದ ಫೋಟೋಗಳನ್ನು ಮತ್ತೆ ಆಯ್ಕೆ ಮಾಡಬೇಕಾಗಬಹುದು.",
     "product_images.leave": "ಕರಡು ಉಳಿಸಿ ಹೊರಹೋಗಿ",
-    "product_images.load_failed": "ಫೋಟೋ ಲೋಡ್ ಆಗಲಿಲ್ಲ."
+    "product_images.load_failed": "ಫೋಟೋ ಲೋಡ್ ಆಗಲಿಲ್ಲ.",
+    "importUI.mode": "ಆಮದು ವಿಧಾನ",
+    "importUI.columns": "ಫೈಲ್‌ನ ಕಾಲಮ್‌ಗಳು",
+    "importUI.other_fields": "ಇತರ ಕ್ಷೇತ್ರಗಳು",
+    "importUI.match_name": "ಮುಂದುವರಿಸಲು ಹೆಸರು ಇರುವ ಕಾಲಮ್ ಆಯ್ಕೆಮಾಡಿ.",
+    "importUI.update": "ನವೀಕರಿಸಿ",
+    "importUI.all_rows": "ಎಲ್ಲಾ ಸಾಲುಗಳು",
+    "importUI.resolve": "ಆಮದು ಮಾಡುವ ಮೊದಲು ಫೈಲ್ ಸರಿಪಡಿಸಿ ಅಥವಾ ಸಮಸ್ಯೆಯಿರುವ ಸಾಲುಗಳನ್ನು ಬಿಟ್ಟುಬಿಡಿ.",
+    "importUI.tools": "ಆಮದು ಆಯ್ಕೆಗಳು"
   },
   "gu": {
     "imports.title": "ઉત્પાદનો આયાત કરો",
@@ -16557,7 +16621,15 @@
     "product_images.leave_title": "આ ફોર્મ છોડવું છે?",
     "product_images.leave_hint": "સાચવેલું ઉત્પાદન બદલાશે નહીં. ફોટાના ફેરફારો આ ઉપકરણ પર ડ્રાફ્ટમાં રહેશે. અધૂરા ફોટા ફરી પસંદ કરવા પડી શકે છે.",
     "product_images.leave": "ડ્રાફ્ટ રાખીને બહાર જાઓ",
-    "product_images.load_failed": "ફોટો લોડ થઈ શક્યો નથી."
+    "product_images.load_failed": "ફોટો લોડ થઈ શક્યો નથી.",
+    "importUI.mode": "ઇમ્પોર્ટ કરવાની રીત",
+    "importUI.columns": "ફાઇલની કૉલમ",
+    "importUI.other_fields": "અન્ય ફીલ્ડ",
+    "importUI.match_name": "આગળ વધવા માટે નામવાળી કૉલમ પસંદ કરો.",
+    "importUI.update": "અપડેટ",
+    "importUI.all_rows": "બધી પંક્તિઓ",
+    "importUI.resolve": "ઇમ્પોર્ટ કરતા પહેલાં ફાઇલ સુધારો અથવા સમસ્યાવાળી પંક્તિઓ છોડો.",
+    "importUI.tools": "ઇમ્પોર્ટ વિકલ્પો"
   },
   "ml": {
     "imports.title": "ഉൽപ്പന്നങ്ങൾ ഇറക്കുമതി ചെയ്യുക",
@@ -18397,6 +18469,14 @@
     "product_images.leave_title": "ഈ ഫോം വിടണോ?",
     "product_images.leave_hint": "സേവ് ചെയ്ത ഉൽപ്പന്നം മാറില്ല. ഫോട്ടോ മാറ്റങ്ങൾ ഈ ഉപകരണത്തിൽ ഡ്രാഫ്റ്റായി തുടരും. പൂർത്തിയാകാത്ത ഫോട്ടോകൾ വീണ്ടും തിരഞ്ഞെടുക്കേണ്ടി വന്നേക്കാം.",
     "product_images.leave": "ഡ്രാഫ്റ്റ് സൂക്ഷിച്ച് പുറത്തുകടക്കുക",
-    "product_images.load_failed": "ഫോട്ടോ ലോഡ് ചെയ്യാനായില്ല."
+    "product_images.load_failed": "ഫോട്ടോ ലോഡ് ചെയ്യാനായില്ല.",
+    "importUI.mode": "ഇറക്കുമതി രീതി",
+    "importUI.columns": "ഫയലിലെ കോളങ്ങൾ",
+    "importUI.other_fields": "മറ്റ് ഫീൽഡുകൾ",
+    "importUI.match_name": "തുടരാൻ പേര് അടങ്ങിയ കോളം തിരഞ്ഞെടുക്കുക.",
+    "importUI.update": "പുതുക്കുക",
+    "importUI.all_rows": "എല്ലാ വരികളും",
+    "importUI.resolve": "ഇറക്കുമതിക്ക് മുമ്പ് ഫയൽ തിരുത്തുക അല്ലെങ്കിൽ പ്രശ്നമുള്ള വരികൾ ഒഴിവാക്കുക.",
+    "importUI.tools": "ഇറക്കുമതി ഓപ്ഷനുകൾ"
   }
 }

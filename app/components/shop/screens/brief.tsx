@@ -1,62 +1,25 @@
-'use client';
-
-import {ProductImageById} from "../product-image";
-import { useGstText as useUiText } from "../gst-ui";
-
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { SpeechAudio } from '../voice-capture';
-import type { Nudge } from '../../../lib/shop/types';
-import { useShop } from '../context';
-import { Button, Card, NoAccess, Notice, PageHeader, Spinner } from '../ui';
-
-function canAct(nudge: Nudge, canEdit: boolean) {
-  const type = nudge.action?.type ?? '';
-  if (!type) return false;
-  if (/price|stock|product|batch/i.test(type)) return canEdit;
-  return true;
-}
-
-export function BriefScreen() {
-  const uiText = useUiText();
-  const { api, shop, userId, prefs, premium, perms, t } = useShop();
-  const queryClient = useQueryClient();
-  const brief = useQuery({
-    queryKey: ['brief', userId, shop?.id, prefs?.appLanguage],
-    enabled: !!shop && perms.canSeeReports,
-    queryFn: () => api.getBrief(shop!.id),
-  });
-  const audio = useQuery({queryKey:['brief-audio',userId,shop?.id,prefs?.appLanguage],enabled:false,queryFn:()=>api.getBriefAudio(shop!.id),retry:false});
-  const [error, setError] = useState<unknown>(null);
-  if (!shop) return <Spinner />;
-  if (!perms.canSeeReports) return <NoAccess what={uiText("The daily brief is for the owner and managers.")} />;
-  if (brief.isLoading) return <Spinner label={uiText("Loading brief")} />;
-  if (brief.error) return <Notice error={brief.error} />;
-
-  const items = [brief.data?.today, ...(brief.data?.items ?? [])].filter((item): item is Nudge => !!item);
-
-  return (
-    <div className="shop-page">
-      <PageHeader kicker="Insights" title={t('brief.title', 'Daily brief')} description={uiText("A short read on the day, with the actions that matter most.")} />
-      {items.length === 0 ? <Card><p>{uiText("No actions today. The brief is still here.")}</p></Card> : null}
-      <Notice error={error ?? audio.error} />
-      {premium ? <Card><Button tone="ghost" disabled={audio.isFetching} onClick={()=>void audio.refetch()}>{audio.isFetching?t('common.loading','Loading'):t('brief.listen','Listen')}</Button><SpeechAudio base64={audio.data?.audioBase64} label={t('brief.listen','Listen')} /></Card> : null}
-      {items.map((item) => (
-        <Card key={item.id}>
-          <p className="flex items-center gap-3 font-semibold">{item.productId?<ProductImageById productId={item.productId} name={item.title} size={36}/>:null}{item.title}</p>
-          <p className="mt-1 text-muted">{item.body}</p>
-          {canAct(item, perms.canEditProducts) ? (
-            <div className="mt-3">
-              <Button
-                onClick={() => {
-                  void api.nudgeEvent(shop.id, item.id, 'tapped').catch(() => undefined);
-                  void api.actNudge(shop.id, item.id, item.action?.params ?? {}).then(() => queryClient.invalidateQueries({ queryKey: ['brief', shop.id] })).catch(setError);
-                }}
-              > {uiText("Do this")} </Button>
-            </div>
-          ) : null}
-        </Card>
-      ))}
-    </div>
-  );
+"use client";
+import {useQuery} from '@tanstack/react-query';
+import {useRef,useState} from 'react';
+import {useShop} from '../context';
+import {HomeNudge} from '../home-nudge';
+import {SpeechAudio} from '../voice-capture';
+import {Button,Card,NoAccess,Notice,PageHeader,Spinner} from '../ui';
+import {useGstText} from '../gst-ui';
+import {useShopDates} from '../use-shop-dates';
+export function BriefScreen(){const c=useShop();return <BriefWorkspace key={c.shop?.id+':'+c.userId+':'+c.prefs?.appLanguage}/>}
+function BriefWorkspace(){
+ const {api,shop,userId,prefs,perms,offline,t}=useShop(),text=useGstText(),{formatDay}=useShopDates();
+ const [error,setError]=useState<unknown>(null),[refreshing,setRefreshing]=useState(false),running=useRef(false);
+ const brief=useQuery({queryKey:['brief',shop?.id,userId,prefs?.appLanguage],enabled:!!shop&&perms.canSeeReports,queryFn:()=>api.getBrief(shop!.id,prefs?.appLanguage)});
+ const audio=useQuery({queryKey:['brief-audio',shop?.id,userId,prefs?.appLanguage],enabled:false,queryFn:()=>api.getBriefAudio(shop!.id,prefs?.appLanguage),retry:false});
+ if(!shop)return <Spinner/>;
+ if(!perms.canSeeReports)return <NoAccess what={text('The daily brief is for the owner and managers.')}/>;
+ const today=brief.data?.today,history=(brief.data?.history??[]).filter(x=>x.id!==today?.id),stock=today?.evidence?.stock;
+ const refresh=async()=>{if(running.current||offline)return;running.current=true;setRefreshing(true);setError(null);try{await api.runBrief(shop.id);await brief.refetch();}catch(e){setError(e)}finally{running.current=false;setRefreshing(false)}};
+ return <div className="shop-page brief-workspace"><PageHeader kicker={t('reports.title','Reports')} title={t('brief.title','Daily brief')} description={text('A short read on the day, with the actions that matter most.')} back={{href:'/shop',label:t('nav.home','Home')}} actions={<Button tone="ghost" disabled={refreshing||offline} onClick={()=>void refresh()}>{refreshing?t('common.loading','Loading…'):t('brief.refresh','Refresh')}</Button>}/>
+ <Notice error={error??brief.error??audio.error}/>{brief.error?<Button onClick={()=>void brief.refetch()}>{t('common.retry','Try again')}</Button>:null}{brief.isPending?<Spinner/>:null}
+ {today?<Card className="brief-day"><h2>{today.evidence?.dayLine??today.title}</h2><p>{stock?t('brief.stock_snapshot','',stock):today.body}</p>{stock?<Button tone="quiet" href="/shop/products">{t('brief.stock_action','Review stock')} ↗</Button>:null}<div className="shop-actions"><Button disabled={audio.isFetching||offline} onClick={()=>void audio.refetch()}>{audio.isFetching?t('common.loading','Loading…'):t('brief.listen','Listen')}</Button></div><SpeechAudio base64={audio.data?.audioBase64} label={t('brief.listen','Listen')}/></Card>:null}
+ {(brief.data?.items??[]).length?<section className="brief-actions"><h2>{t('brief.actions','Actions')}</h2>{brief.data!.items.map(item=><HomeNudge key={item.id} nudge={item} surface="brief"/>)}</section>:brief.isSuccess&&!stock?.low&&!stock?.out?<p className="shop-list-empty">{t(brief.data?.premium?'brief.nothing_urgent':'brief.stock_clear','Nothing urgent today.')}</p>:null}
+ {history.length?<section className="brief-history"><h2>{t('brief.earlier','Earlier')}</h2>{history.map(item=><article key={item.id}><h3>{item.createdAt?formatDay(item.createdAt):item.title}</h3><p>{item.body}</p></article>)}</section>:null}</div>;
 }

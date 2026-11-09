@@ -1,4 +1,6 @@
 'use client';
+import {unitLabel,formatQty} from '../../../lib/shop/units';
+import {formatINR} from '../../../lib/shop/money';
 import {ProductImageById} from "../product-image";
 import {ProductSelect} from "../product-select";
 import {useEffect,useRef,useState} from 'react';
@@ -21,7 +23,7 @@ export function VoiceScreen({intercepted=false}:{intercepted?:boolean}){
   return <VoiceSheet title={t('a11y.voice','Voice command')} closeLabel={t('common.close','Close')} onClose={()=>intercepted?router.back():router.replace(context==='counter'?'/shop/sell':'/shop')}><VoiceWorkspace key={`${userId}:${shop?.id}:${prefs?.voiceLanguage}:${context}`} context={context}/></VoiceSheet>;
 }
 function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
-  const {api,userId,shop,prefs,perms,premium,t,hideCost}=useShop();
+  const {api,userId,shop,prefs,perms,premium,t,hideCost,offline}=useShop();
   const text=useGstText();const router=useRouter();const client=useQueryClient();
   const alive=useRef(true);const attempted=useRef(false);
   const stockAttempt=useRef<VoiceStockAttempt>({status:'ready'});
@@ -33,14 +35,14 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
   const [busy,setBusy]=useState(false);
   const [uncertain,setUncertain]=useState(false);
   const [retrySale,setRetrySale]=useState(false);
-  const catalog=useQuery({queryKey:['voice-catalog',userId,shop?.id,hideCost],enabled:!!shop&&premium,queryFn:()=>api.getAllInventory(shop!.id,hideCost)});
+  const catalog=useQuery({queryKey:['voice-catalog',userId,shop?.id,hideCost],enabled:!!shop&&premium&&!offline,queryFn:()=>api.getAllInventory(shop!.id,hideCost)});
   if(!shop||!userId)return <Spinner/>;
   const hasSales=entities.some(row=>row.action==='sell');
   const mutations=entities.filter(row=>row.action!=='sell'&&row.action!=='query');
   const valid=entities.length>0&&entities.filter(row=>row.action!=='query').every(voiceEntityValid);
   const actionLabel=(action:string)=>t(action==='sell'?'badge.sale':action==='query'?'modal.voice.in_stock':`badge.${action}`,action);
   const confirm=async()=>{
-    if(!valid||busy||(attempted.current&&!retrySale))return;
+    if(offline||!valid||busy||(attempted.current&&!retrySale))return;
     attempted.current=true;setBusy(true);setError(null);setRetrySale(false);
     let stockWritten=false;
     try {
@@ -80,20 +82,20 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
     } finally {if(alive.current)setBusy(false);}
   };
   return <div className="shop-page shop-voice-content">
-    <p className="shop-hint">{t('modal.voice.verify_command','Please verify the command')}</p>
+    <nav className="voice-stages" aria-label={t('a11y.voice','Voice command')}>{[t('a11y.voice','Voice'),t('modal.voice.verify','Please verify'),t('modal.voice.done_title','Done!')].map((label,i)=><span key={i} aria-current={i===(result?2:response?1:0)?'step':undefined}><b>0{i+1}</b>{label}</span>)}</nav><p className="shop-hint">{t('modal.voice.verify_command','Please verify the command')}</p>{offline?<p role="status">{t('voiceweb.offline','Connect to the internet to use voice.')}</p>:null}
     {!premium?<PremiumLock feature="voice"/>:<>
       <Notice error={error}/>
-      {!response?<Card><VoiceCapture disabled={busy} onRecorded={async recording=>{
+      {!response?<Card className="voice-record-panel"><VoiceCapture disabled={busy||offline} onRecorded={async recording=>{
         setError(null);setBusy(true);
         try {const processed=await api.processVoice(shop.id,recording,prefs?.voiceLanguage??'en',context,prefs?.voiceFeedbackEnabled!==false);if(alive.current){if(processed.error)throw Error(processed.code??'voice_failed');setResponse(processed);setEntities(processed.entities);}}
         catch(caught){if(alive.current)setError(caught);throw caught;}finally{if(alive.current)setBusy(false);}
       }}/></Card>:<>
-        <Card><p>{t('modal.voice.heard','Heard: "{{transcript}}"',{transcript:response.transcript})}</p>
-          {response.analyticsResult?<p>{response.analyticsResult.answer}</p>:null}
+        <Card className="voice-transcript"><p>{t('modal.voice.heard','Heard: "{{transcript}}"',{transcript:response.transcript})}</p>
+          <p className="shop-hint">{t(response.overallConfidence>80?'modal.voice.high_confidence':'modal.voice.verify',response.overallConfidence>80?'High Confidence':'Please verify')} · {Math.max(0,Math.min(100,response.overallConfidence))}%</p>{response.analyticsResult?<p>{response.analyticsResult.answer}</p>:null}
           <SpeechAudio base64={response.analyticsResult?.ttsAudioBase64??response.sale?.ttsAudioBase64??response.ttsAudioBase64} label={t('brief.listen','Listen')}/>
         </Card>
         {!entities.length&&!response.analyticsResult?<Card><p>{t('modal.voice.err.not_understood',"Couldn't understand the command. Please try again.")}</p></Card>:null}
-        {entities.map((entity,index)=><Card key={index} className="stack-form">
+        {entities.map((entity,index)=><Card key={index} className="stack-form voice-review-line">
           <ProductImageById productId={entity.matchedProduct?.id} name={entity.matchedProduct?.name??entity.product} size={40}/>
           {!entity.matchedProduct?<p className="shop-hint">{entity.product}</p>:null}
           <div className="form-grid is-2"><Field label={t('modal.voice.entity_product','Product')}>
@@ -102,15 +104,15 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
               setEntities(rows=>rows.map((row,i)=>i===index?editVoiceEntity(row,{product:item.product.name,unit:item.unit,unitMismatch:false,matchedProduct:item.product,inventoryItem:{id:item.id,quantity:item.quantity,stockStatus:item.stockStatus}}):row));
             }} options={(catalog.data??[]).map(item=>[item.productId,item.product.name] as const)}/>
           </Field><Field label={t('modal.voice.entity_quantity','Quantity')}><input className={inputClass} type="number" step="0.001" min={entity.action==='update'?0:0.001} disabled={busy||attempted.current||entity.action==='query'} value={Number.isFinite(entity.quantity)?entity.quantity:''} onChange={event=>setEntities(rows=>rows.map((row,i)=>i===index?editVoiceEntity(row,{quantity:event.target.value===''?NaN:Number(event.target.value)}):row))}/></Field></div>
-          <p>{actionLabel(entity.action)} · {entity.matchedProduct?.unit??entity.unit}</p>
+          <p className="voice-line-action">{actionLabel(entity.action)} · {unitLabel(entity.matchedProduct?.unit??entity.unit,t)}</p>{entity.action==='sell'?<p className="voice-line-price">{t('modal.voice.entity_price','Price')}: {entity.matchedProduct?.sellingPrice!=null?formatINR(entity.matchedProduct.sellingPrice)+' × '+formatQty(entity.quantity,entity.matchedProduct.unit,{unitLabel:u=>unitLabel(u,t)})+' = '+formatINR(Math.round(entity.matchedProduct.sellingPrice*entity.quantity*100)/100):t('pos.set_price','Set price')}</p>:null}{entity.action==='remove'&&entity.reason?<p>{t('adjust.reason_label','Reason')}: {t('adjust.reason.'+entity.reason,entity.reason)}</p>:null}
           {entity.unitMismatch?<p className="text-danger">{t('modal.voice.unit_mismatch','Heard {{spoken}}; this product uses {{unit}}',{spoken:entity.spokenUnit??entity.unit,unit:entity.matchedProduct?.unit??entity.unit})}</p>:null}
-          {entity.action==='query'?<p>{entity.inventoryItem?.quantity??'—'} {entity.unit} {t('modal.voice.in_stock','in stock')}</p>:null}
+          {entity.action==='query'?<p>{entity.inventoryItem?.quantity??'—'} {unitLabel(entity.unit,t)} {t('modal.voice.in_stock','in stock')}</p>:null}
         </Card>)}
         {response.sale?.customerName?<p>{t('modal.voice.entity_customer','Customer')}: {response.sale.matchedCustomer?.name??response.sale.customerName}</p>:null}
         {response.sale?.paymentHint?<p>{t('modal.voice.entity_payment','Payment')}: {t(`modal.voice.payment_hint.${response.sale.paymentHint}`,response.sale.paymentHint)}</p>:null}
         {catalog.error?<Notice error={catalog.error}/>:null}
         {retrySale?<Card><p>{t('voice.stock_saved','Stock changes are saved. Retry adding the sale to your cart; stock will not be updated again.')}</p></Card>:null}
-        {hasSales||mutations.length?<Button disabled={!valid||busy||(attempted.current&&!retrySale)} onClick={()=>void confirm()}>{busy?t('common.loading','Loading...'):hasSales?t('modal.voice.to_checkout','Add to cart & checkout'):t('modal.voice.update_stock_not_sale','Update stock (not a sale)')}</Button>:null}
+        {hasSales||mutations.length?<Button disabled={offline||!valid||busy||(attempted.current&&!retrySale)} onClick={()=>void confirm()}>{busy?t('common.loading','Loading...'):hasSales?t('modal.voice.to_checkout','Add to cart & checkout'):t('modal.voice.update_stock_not_sale','Update stock (not a sale)')}</Button>:null}
         {result?<Card>{result.results.map((row,index)=><p key={index}>{t('modal.voice.stock_change','{{product}}: {{old}} → {{new}}',{product:row.product,old:row.previousQuantity,new:row.newQuantity})} · {row.success?t('modal.voice.done_title','Done!'):t('modal.voice.error_title','Something went wrong')}</p>)}<SpeechAudio base64={result.ttsAudioBase64} label={t('brief.listen','Listen')}/></Card>:null}
         {uncertain?<Card><p>{t('voice.stock_outcome_unknown','The stock update could not be confirmed. Check your products and activity before trying the command again.')}</p><Button href="/shop/products" tone="ghost">{text('Products')}</Button></Card>:null}
         {!attempted.current?<Button tone="ghost" onClick={()=>{setResponse(null);setEntities([]);setError(null);}}>{t('common.cancel','Cancel')}</Button>:<Button href="/shop/products" tone="ghost">{t('modal.voice.done_button','Done')}</Button>}

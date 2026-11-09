@@ -125,6 +125,17 @@ export const openingWebUi: OpeningUi = {
     <IllustratedEmpty title={title} body={body} action={actionLabel && onAction ? <Button onClick={onAction}>{actionLabel}</Button> : undefined} />
   ),
 };
+export const openingWorkspaceUi:OpeningUi={...openingWebUi,
+ Section:({title,hint,children})=><section className="opening-section">{title?<h2>{title}</h2>:null}{hint?<p className="shop-hint">{hint}</p>:null}<div className="opening-section-content">{children}</div></section>,
+ Notice:({tone,children})=><div className={'opening-banner tone-'+tone}>{children}</div>,
+ Badge:({label,tone})=><span className={'opening-badge tone-'+tone}>{label}</span>,
+ Stat:({label,value,big,tone})=><div className={'opening-stat tone-'+tone+(big?' is-total':'')}><span>{label}</span><strong className="num">{value}</strong></div>,
+ Row:({title,subtitle,description,badge,leading,trailing,onPress,disabled,emphasis})=>{const content=<><div className="opening-row-main">{leading}<div><strong>{title}</strong>{subtitle?<p className="shop-hint">{subtitle}</p>:null}{description?<p className="shop-hint">{description}</p>:null}</div></div>{badge?<span className={'opening-badge tone-'+badge.tone}>{badge.label}</span>:null}{trailing!=='none'&&onPress?<span aria-hidden="true">{trailing==='plus'?'+':trailing==='check'?'✓':'→'}</span>:null}</>;return onPress?<button className={'opening-record'+(emphasis?' is-emphasized':'')} onClick={onPress} disabled={disabled}>{content}</button>:<div className="opening-record">{content}</div>},
+ Choice:({options,value,onChange,disabled,cards})=><div className={'opening-options'+(cards?' as-cards':'')} role="group">{options.map(o=><button key={o.value} disabled={disabled} aria-pressed={value===o.value} onClick={()=>onChange(o.value)}><strong>{o.label}</strong>{o.hint?<small>{o.hint}</small>:null}</button>)}</div>,
+ Link:({label,onPress,disabled,tone,back})=><Button tone="quiet" onClick={onPress} disabled={disabled} className={tone==='danger'?'text-danger':undefined}>{back?'← ':''}{label}</Button>,
+ Footer:({primary,secondary,links})=><footer className="opening-workspace-footer"><div>{secondary}{primary}</div>{links?<div>{links}</div>:null}</footer>
+};
+
 export function OpeningBalancesScreen() {
   const c = useShop();
   return <Editor key={c.shop?.id + ":" + c.userId} />;
@@ -169,7 +180,7 @@ function Editor() {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [w.view, w.draft.step]);
   return (
-    <div className="shop-page opening-page">
+    <div className="shop-page opening-page opening-workspace">
       <PageHeader
         title={t("opening.title")}
         back={{ href: "/shop/settings", label: t("nav.settings"), disabled: w.busy || !!w.pending, onClick: () => {
@@ -181,7 +192,7 @@ function Editor() {
       />
       {allowed ? (
         <OpeningView
-          ui={openingWebUi}
+          ui={openingWorkspaceUi}
           w={w}
           t={t}
           owner={role === "OWNER"}

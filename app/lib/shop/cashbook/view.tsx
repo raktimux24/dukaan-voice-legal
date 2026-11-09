@@ -1,4 +1,5 @@
 import { useState, type ComponentType } from "react";
+
 import type { OpeningUi } from "../openings/view";
 import {
   cashDay,
@@ -19,6 +20,41 @@ export type CashUi = OpeningUi & {
   Totals: ComponentType<{
     items: { label: string; value: string }[];
     highlightLast?: boolean;
+  }>;
+  /** A tappable tile for the day's main actions; falls back to Button when a UI has none. */
+  Action?: ComponentType<{
+    label: string;
+    icon: "expense" | "cash" | "count" | "reopen" | "export" | "cancel";
+    onPress: () => void;
+    disabled?: boolean;
+    primary?: boolean;
+  }>;
+  /** A complete expense form with fast-entry controls; falls back to plain inputs when a UI has none. */
+  ExpenseForm?: ComponentType<import("../../../components/shop/cashbook-expense-form").ExpenseFormProps>;
+  /** An expense as a row (list, tappable) or hero (detail); falls back to plain text when a UI has none. */
+  ExpenseCard?: ComponentType<{
+    variant: "row" | "hero";
+    title: string;
+    amount: string;
+    status: "paid" | "part_paid" | "unpaid" | "cancelled";
+    statusLabel: string;
+    paid: string;
+    due: string;
+    paidLabel: string;
+    dueLabel: string;
+    meta: string;
+    note?: string;
+    scheduled?: string;
+    onPress?: () => void;
+    disabled?: boolean;
+  }>;
+  /** One money movement as a compact ledger row; falls back to a card when a UI has none. */
+  Entry?: ComponentType<{
+    title: string;
+    amount: string;
+    direction: "in" | "out" | "none";
+    meta: string;
+    children?: React.ReactNode;
   }>;
 };
 type T = (k: string, v?: Record<string, string | number>) => string;
@@ -53,7 +89,8 @@ const codes = [
 ];
 export function cashbookErrorKey(e: unknown, loading = false) {
   const raw = (e as any)?.code ?? (e as any)?.message ?? "";
-  const code = codes.find((k) => raw === "cashbook_" + k);
+  const unsupported = (e as any)?.status === 503 || /not_supported|unavailable/.test(String(raw));
+  const code = unsupported ? "unavailable" : codes.find((k) => raw === "cashbook_" + k);
   return "cashbook.error." + (code ?? (loading ? "load" : "failed"));
 }
 export function CashbookView({
@@ -71,7 +108,10 @@ export function CashbookView({
   share: (file: NonNullable<CashResult["export"]>) => Promise<void>;
   onNavigate?: () => void;
 }) {
-  const { Box, Text, Button, Input, Check, Busy, Select, Totals,Tabs } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Select, Totals,Tabs,Action,Entry,ExpenseForm } = ui,
+    Card = ui.ExpenseCard,
+    Act = (props: { label: string; icon: "expense" | "cash" | "count" | "reopen" | "export" | "cancel"; onPress: () => void; disabled?: boolean; primary?: boolean }) =>
+      Action ? <Action {...props} /> : <Button label={props.label} onPress={props.onPress} disabled={props.disabled} primary={props.primary} />,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("cashbook." + k, v),
     [tab, setTab] = useState<"cashbook" | "expenses">("cashbook"),
@@ -80,7 +120,7 @@ export function CashbookView({
     [message, setMessage] = useState(""),
     [seed, setSeed] = useState(false),
     [startDay, setStartDay] = useState(cashDay),
-    [opening, setOpening] = useState("0"),
+    [opening, setOpening] = useState(""),
     [review, setReview] = useState(false),
     [amount, setAmount] = useState(""),
     [category, setCategory] = useState("rent"),
@@ -128,7 +168,8 @@ export function CashbookView({
       onNavigate?.();
       setForm("");
       if (r.expenseId) {
-        setSelected(r.expenseId);
+        // Land on the list so the next expense is one tap away.
+        setSelected(null);
         setTab("expenses");
       }
       setMessage(tr("saved"));
@@ -173,7 +214,7 @@ export function CashbookView({
       ) : null}
       {message ? <Text live>{message}</Text> : null}
       {d && !d.account ? (
-        <>
+        <Box card>
           <Text heading>{tr("setup")}</Text>
           <Text tone="muted">{tr("setup_help")}</Text>
           {owner ? (
@@ -242,7 +283,7 @@ export function CashbookView({
                       seed && d.suggested
                         ? cashDay(d.suggested.effectiveAt)
                         : startDay,
-                    opening: seed && d.suggested ? d.suggested.amount : opening,
+                    opening: seed && d.suggested ? d.suggested.amount : opening.trim() || "0",
                     openingRef: seed ? (d.suggested?.id ?? null) : null,
                     reference,
                     reviewed: review,
@@ -253,7 +294,7 @@ export function CashbookView({
           ) : (
             <Text>{tr("owner_setup")}</Text>
           )}
-        </>
+        </Box>
       ) : null}
       {d?.account !== null && !form ? Tabs ? <Tabs items={[{key:"cashbook",label:tr("cashbook")},{key:"expenses",label:tr("expenses")}]} value={tab} disabled={blocked} onChange={value=>{if(value!=="cashbook"&&value!=="expenses")return;setTab(value);onNavigate?.();setForm("");setSelected(null);}}/> : (
         <Box row>
@@ -309,7 +350,41 @@ export function CashbookView({
                   onNavigate?.();
                 }}
               />
-              {form === "expense" ? (
+              {form === "expense" && ExpenseForm ? (
+                <>
+                  <Text heading>{tr("expense_form")}</Text>
+                  <ExpenseForm
+                    tr={tr}
+                    categories={d.categories.map((c) => ({ value: c.id, label: cat(c.id) }))}
+                    methods={methods}
+                    today={cashDay()}
+                    amount={amount}
+                    setAmount={setAmount}
+                    category={category}
+                    setCategory={setCategory}
+                    date={date}
+                    setDate={(v) => {
+                      setDate(v);
+                      if (v > cashDay()) setPaid(false);
+                    }}
+                    paid={paid}
+                    setPaid={setPaid}
+                    method={method}
+                    setMethod={setMethod}
+                    payee={payee}
+                    setPayee={setPayee}
+                    reference={reference}
+                    setReference={setReference}
+                    note={note}
+                    setNote={setNote}
+                    disabled={blocked}
+                    onSubmit={() =>
+                      void run({ kind: "expense", date, category, amount, payee, note, reference, paid, method: method as any })
+                    }
+                  />
+                </>
+              ) : null}
+              {form === "expense" && !ExpenseForm ? (
                 <>
                   <Text heading>{tr("expense_form")}</Text>
                   <Input
@@ -699,27 +774,31 @@ export function CashbookView({
                 <Text tone="danger">{tr("negative")}</Text>
               ) : null}
               <Box row>
-                <Button
+                <Act
                   primary
+                  icon="expense"
                   label={tr("add_expense")}
                   disabled={blocked}
                   onPress={() => reset("expense")}
                 />
                 {owner ? (
                   <>
-                    <Button
+                    <Act
+                      icon="cash"
                       label={tr("cash_tools")}
                       disabled={blocked}
                       onPress={() => reset("cash")}
                     />
-                    <Button
+                    <Act
+                      icon={s.close ? "reopen" : "count"}
                       label={tr(s.close ? "reopen" : "count")}
                       disabled={blocked}
                       onPress={() => reset(s.close ? "reopen" : "count")}
                     />
                   </>
                 ) : null}
-                <Button
+                <Act
+                  icon="export"
                   label={tr("export")}
                   disabled={blocked}
                   onPress={() =>
@@ -763,53 +842,54 @@ export function CashbookView({
                 ))}
               </Box>
               <Text heading>{tr("events")}</Text>
+
               <Text tone="muted">
                 {tr("showing", { n: s.events.length, total: s.totalEvents })}
               </Text>
-              {s.events.length === 0 ? <Text>{tr("no_events")}</Text> : null}
-              {s.events.map((e) => (
-                <Box card key={e.id}>
-                  <Text heading>{tr("kind." + e.kind)}</Text>
-                  <Text tone="accent">
-                    {(Number(e.amount) < 0
-                      ? "−"
-                      : Number(e.amount) > 0
-                        ? "+"
-                        : "") +
-                      "₹" +
-                      (Number(e.amount) < 0 ? e.amount.slice(1) : e.amount) +
-                      " · " +
-                      tr("method." + e.method)}
-                  </Text>
-                  <Text>
-                    {tr("effective") +
-                      ": " +
-                      new Date(e.effectiveAt).toLocaleString(displayLocale, {
-                        timeZone: "Asia/Kolkata",
-                      })}
-                  </Text>
-                  {e.backfilled ? (
-                    <Text tone="muted">{tr("backfill")}</Text>
-                  ) : cashDay(e.effectiveAt) !== cashDay(e.recordedAt) ? (
-                    <Text tone="danger">
-                      {tr("late", { date: cashDay(e.effectiveAt) })}
+              {s.events.length === 0 ? <Text tone="muted">{tr("no_events")}</Text> : null}
+              {s.events.map((e) => {
+                const amt = Number(e.amount);
+                const extra = (
+                  <>
+                    {e.backfilled ? (
+                      <Text tone="muted">{tr("backfill")}</Text>
+                    ) : cashDay(e.effectiveAt) !== cashDay(e.recordedAt) ? (
+                      <Text tone="danger">
+                        {tr("late", { date: cashDay(e.effectiveAt) })}
+                      </Text>
+                    ) : null}
+                    {e.reference ? <Text tone="muted">{e.reference}</Text> : null}
+                    {e.note ? <Text tone="muted">{e.note}</Text> : null}
+                  </>
+                );
+                const when = new Date(e.effectiveAt).toLocaleString(displayLocale, {
+                  timeZone: "Asia/Kolkata",
+                });
+                const who = d.actors[e.actor] || tr("actor");
+                if (Entry)
+                  return (
+                    <Entry
+                      key={e.id}
+                      title={tr("kind." + e.kind)}
+                      amount={(amt < 0 ? "−" : amt > 0 ? "+" : "") + "₹" + (amt < 0 ? e.amount.slice(1) : e.amount)}
+                      direction={amt < 0 ? "out" : amt > 0 ? "in" : "none"}
+                      meta={tr("method." + e.method) + " · " + when + " · " + who}
+                    >
+                      {extra}
+                    </Entry>
+                  );
+                return (
+                  <Box card key={e.id}>
+                    <Text heading>{tr("kind." + e.kind)}</Text>
+                    <Text tone="accent">
+                      {(amt < 0 ? "−" : amt > 0 ? "+" : "") + "₹" + (amt < 0 ? e.amount.slice(1) : e.amount) + " · " + tr("method." + e.method)}
                     </Text>
-                  ) : null}
-                  {e.reference ? <Text>{e.reference}</Text> : null}
-                  {e.note ? <Text>{e.note}</Text> : null}
-                  <Text tone="muted">
-                    {tr("actor") +
-                      ": " +
-                      (d.actors[e.actor] || tr("actor")) +
-                      " · " +
-                      tr("recorded") +
-                      ": " +
-                      new Date(e.recordedAt).toLocaleString(displayLocale, {
-                        timeZone: "Asia/Kolkata",
-                      })}
-                  </Text>
-                </Box>
-              ))}
+                    <Text>{tr("effective") + ": " + when}</Text>
+                    {extra}
+                    <Text tone="muted">{tr("actor") + ": " + who}</Text>
+                  </Box>
+                );
+              })}
               <Box row>
                 {w.offset > 0 ? (
                   <Button
@@ -855,12 +935,21 @@ export function CashbookView({
             <>
               {p ? (
                 <>
-                  <ExpenseCard p={p} ui={ui} tr={tr} cat={cat} />
+                  <Button
+                    label={t("common.back") + " · " + tr("expenses")}
+                    disabled={blocked}
+                    onPress={() => {
+                      setSelected(null);
+                      onNavigate?.();
+                    }}
+                  />
+                  {Card ? <ExpenseCardView p={p} Card={Card} variant="hero" tr={tr} cat={cat} /> : <ExpenseCard p={p} ui={ui} tr={tr} cat={cat} />}
                   {!p.cancelled ? (
                     <Box row>
                       {Number(p.due) > 0 ? (
-                        <Button
+                        <Act
                           primary
+                          icon="cash"
                           label={tr("pay")}
                           disabled={blocked || p.date > cashDay()}
                           onPress={() => {
@@ -879,36 +968,39 @@ export function CashbookView({
                     </Box>
                   ) : null}
                   <Text heading>{tr("payment_history")}</Text>
-                  {p.payments.map((e) => (
-                    <Box card key={e.id}>
-                      <Text>
-                        {"₹" +
-                          e.amount +
-                          " · " +
-                          tr("method." + e.method) +
-                          " · " +
-                          e.date}
-                      </Text>
-                      {e.note ? <Text>{e.note}</Text> : null}
-                      {e.reference ? <Text>{e.reference}</Text> : null}
-                      {!p.cancelled &&
-                      !e.reversesId &&
-                      !p.payments.some((r) => r.reversesId === e.id) ? (
-                        <Button
-                          label={tr("reverse")}
-                          disabled={blocked}
-                          onPress={() => {
-                            reset("reverse");
-                            setDate(cashDay());
-                            setReverseId(e.id);
-                          }}
-                        />
-                      ) : null}
-                      {e.reversesId ? (
-                        <Text tone="muted">{tr("event.reverse")}</Text>
-                      ) : null}
-                    </Box>
-                  ))}
+                  {p.payments.map((e) => {
+                    const reversible = !p.cancelled && !e.reversesId && !p.payments.some((r) => r.reversesId === e.id);
+                    const extra = (
+                      <>
+                        {e.note ? <Text tone="muted">{e.note}</Text> : null}
+                        {e.reference ? <Text tone="muted">{e.reference}</Text> : null}
+                        {e.reversesId ? <Text tone="muted">{tr("event.reverse")}</Text> : null}
+                        {reversible ? (
+                          <Button
+                            label={tr("reverse")}
+                            disabled={blocked}
+                            onPress={() => {
+                              reset("reverse");
+                              setDate(cashDay());
+                              setReverseId(e.id);
+                            }}
+                          />
+                        ) : null}
+                      </>
+                    );
+                    if (Entry)
+                      return (
+                        <Entry key={e.id} title={tr("method." + e.method)} amount={"−₹" + e.amount} direction={e.reversesId ? "in" : "out"} meta={e.date}>
+                          {extra}
+                        </Entry>
+                      );
+                    return (
+                      <Box card key={e.id}>
+                        <Text>{"₹" + e.amount + " · " + tr("method." + e.method) + " · " + e.date}</Text>
+                        {extra}
+                      </Box>
+                    );
+                  })}
                   <Text heading>{tr("history")}</Text>
                   {p.history.map((e, i) => (
                     <Text key={i} tone="muted">
@@ -925,37 +1017,48 @@ export function CashbookView({
                 </>
               ) : (
                 <>
-                  <Box row>
-                    <Button
-                      primary
-                      label={tr("add_expense")}
-                      disabled={blocked}
-                      onPress={() => reset("expense")}
-                    />
-                    {owner ? (
+                  <Act
+                    primary
+                    icon="expense"
+                    label={tr("add_expense")}
+                    disabled={blocked}
+                    onPress={() => reset("expense")}
+                  />
+                  {!d.expenses.length ? (
+                    <Text tone="muted">{tr("empty_expenses")}</Text>
+                  ) : null}
+                  {d.expenses.map((e) =>
+                    Card ? (
+                      <ExpenseCardView key={e.id} p={e} Card={Card} variant="row" tr={tr} cat={cat} onPress={() => { setSelected(e.id); onNavigate?.(); }} disabled={blocked} />
+                    ) : (
+                      <Box card key={e.id}>
+                        <ExpenseCard p={e} ui={ui} tr={tr} cat={cat} />
+                        <Button
+                          label={tr("expense_open")}
+                          onPress={() => {
+                            setSelected(e.id);
+                            onNavigate?.();
+                          }}
+                          disabled={blocked}
+                        />
+                      </Box>
+                    ),
+                  )}
+                  {owner ? (
+                    ui.Link ? (
+                      <ui.Link
+                        label={tr("category_tools")}
+                        disabled={blocked}
+                        onPress={() => reset("category")}
+                      />
+                    ) : (
                       <Button
                         label={tr("category_tools")}
                         disabled={blocked}
                         onPress={() => reset("category")}
                       />
-                    ) : null}
-                  </Box>
-                  {!d.expenses.length ? (
-                    <Text>{tr("empty_expenses")}</Text>
+                    )
                   ) : null}
-                  {d.expenses.map((e) => (
-                    <Box card key={e.id}>
-                      <ExpenseCard p={e} ui={ui} tr={tr} cat={cat} />
-                      <Button
-                        label={tr("expense_open")}
-                        onPress={() => {
-                          setSelected(e.id);
-                          onNavigate?.();
-                        }}
-                        disabled={blocked}
-                      />
-                    </Box>
-                  ))}
                   <Box row>
                     {w.expenseOffset > 0 ? (
                       <Button
@@ -981,6 +1084,27 @@ export function CashbookView({
         </>
       ) : null}
     </Box>
+  );
+}
+function ExpenseCardView({ p, Card, variant, tr, cat, onPress, disabled }: { p: Expense; Card: NonNullable<CashUi["ExpenseCard"]>; variant: "row" | "hero"; tr: T; cat: (id: string) => string; onPress?: () => void; disabled?: boolean }) {
+  const status = p.cancelled ? "cancelled" : Number(p.paid) === 0 ? "unpaid" : Number(p.due) > 0 ? "part_paid" : "paid";
+  return (
+    <Card
+      variant={variant}
+      title={cat(p.category)}
+      amount={"₹" + p.amount}
+      status={status}
+      statusLabel={tr("expense_status." + status)}
+      paid={"₹" + p.paid}
+      due={"₹" + p.due}
+      paidLabel={tr("paid")}
+      dueLabel={tr("due")}
+      meta={[p.date, p.payee].filter(Boolean).join(" · ")}
+      note={[p.reference, p.note].filter(Boolean).join(" · ") || undefined}
+      scheduled={p.date > cashDay() && !p.cancelled ? tr("scheduled") : undefined}
+      onPress={onPress}
+      disabled={disabled}
+    />
   );
 }
 function ExpenseCard({

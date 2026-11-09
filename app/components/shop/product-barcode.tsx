@@ -18,10 +18,12 @@ export function ProductBarcodeCard({
   productId,
   item: provided,
   manage = true,
+  compact = false,
 }: {
   productId: string;
   item?: BarcodeItem;
   manage?: boolean;
+  compact?: boolean;
 }) {
   const {
     api,
@@ -71,7 +73,7 @@ export function ProductBarcodeCard({
   const problem = error ?? meta.error ?? png.error;
   return (
     <Card className="stack-form">
-      <h2 className="shop-section-title">{t("barcodes.title")}</h2>
+      {!compact ? <h2 className="shop-section-title">{t("barcodes.title")}</h2> : null}
       {item ? (
         <>
           <p className="break-all font-semibold">

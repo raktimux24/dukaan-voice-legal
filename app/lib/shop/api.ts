@@ -351,7 +351,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
     },
-    createShop: (input: { name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
+    createShop: (input: { ownerName?: string; name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
       send<{ shop: ShopRecord }>('/api/shops', { method: 'POST', body: JSON.stringify(input) }),
     getShop: (shopId: string) => send<{ shop: ShopRecord; role: string }>(`/api/shops/${shopId}`),
     updateShop: (shopId: string, input: Record<string, unknown>) =>
@@ -522,7 +522,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send<VoiceConfirmResponse>(`/api/shops/${shopId}/voice/confirm`, {method:'POST',body:JSON.stringify({...request,ttsAsync:false})}),
     askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
       send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
-    getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),
+    getBriefAudio: (shopId: string, language?: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio${language?'?language='+encodeURIComponent(language):''}`),
 
     search: (shopId: string, q: string) =>
       send<{
@@ -587,8 +587,9 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     getUdhaarRisk: (shopId:string) => send<{profiles:import('./types').UdhaarRiskProfile[]}>(`/api/shops/${shopId}/nudges/udhaar-risk`),
     getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' | 'buy_list' | 'customer' = 'home') =>
       send<{ nudges: Nudge[]; premium: boolean }>(`/api/shops/${shopId}/nudges?surface=${surface}`),
-    getBrief: (shopId: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief`),
-    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed', surface:'home'|'product'|'checkout'|'buy_list'|'customer'='home') =>
+    getBrief: (shopId: string, language?: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief${language?'?language='+encodeURIComponent(language):''}`),
+    runBrief: (shopId: string) => send(`/api/shops/${shopId}/nudges/run`,{method:'POST'}),
+    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed', surface:'home'|'product'|'checkout'|'buy_list'|'customer'|'brief'='home') =>
       send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface }) }),
     actNudge: (shopId: string, id: string, body: Record<string, unknown> = {}) =>
       send<{ ok: boolean; already?: boolean; message?: string; phone?: string | null }>(`/api/shops/${shopId}/nudges/${id}/act`, { method: 'POST', body: JSON.stringify(body) }),
@@ -600,7 +601,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     deleteDemandTerm: (shopId:string, term:string) => send(`/api/shops/${shopId}/nudges/demand?term=${encodeURIComponent(term)}`, {method:'DELETE'}),
 
     getAlerts: (shopId: string) => send<UnifiedAlerts>(`/api/shops/${shopId}/predictions/alerts`),
-    getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string; productId?: string | null; productName?: string | null }[] }>(`/api/shops/${shopId}/predictions`),
+    getPredictions: (shopId: string) => send<{ predictions: import('./types').AlertPrediction[] }>(`/api/shops/${shopId}/predictions`),
     dismissPrediction: (shopId: string, id: string) => send(`/api/shops/${shopId}/predictions/${id}/dismiss`, { method: 'PATCH' }),
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
     getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalStockValue?: number; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),

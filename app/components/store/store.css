@@ -407,3 +407,7 @@
  .store-grid.is-detail .store-gallery { grid-column: 1; grid-row: auto; }
  .store-grid.is-detail .store-product > :not(.store-gallery) { grid-column: 1; }
 }
+
+/* Public catalogue uses the same restrained surfaces and readable controls as the shop. */
+.store-card{border-radius:6px;box-shadow:none;background:rgba(28,28,34,.65)}.store-confirm>.store-card:first-of-type{border-top:2px solid #ff9857}.store-product h2{overflow-wrap:anywhere}.store-top-actions{min-width:0;flex-wrap:wrap}.store-product-line{align-items:flex-start}.store-product-line p{min-width:0;flex:1}.store-photo{border-radius:4px}.store-card input,.store-card select,.store-card textarea{min-width:0;max-width:100%}.store-price{white-space:nowrap}.store-grid{grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr))}@media(max-width:480px){.store-top{align-items:flex-start}.store-top-actions{justify-content:flex-end}.store-top label{flex-wrap:wrap;justify-content:flex-end}.store-top select{max-width:100%}.store-card{padding:18px}.store-confirm h1{font-size:32px}.store-cart-chip{max-width:100%;white-space:normal}}
+@media(max-width:480px){.store-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}.store-top-actions{display:contents}.store-top label{grid-column:2;grid-row:1;display:block;max-width:110px}.store-top label>span{display:none}.store-top .store-cart-chip{grid-column:1/-1;grid-row:2;justify-self:stretch;min-height:44px}.store-top select{width:100%;max-width:110px}.store-word{font-size:16px}.store-mark{width:32px;height:32px}}

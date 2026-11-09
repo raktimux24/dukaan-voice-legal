@@ -272,7 +272,7 @@ export function bindGstApi(
       }>(`${base(s)}/purchases/${id}/cost-preview?decision=${decision}`),
     history: (s: string, kind: string, before?: string) =>
       get<{ items: GstReport[]; nextCursor: string | null }>(
-        `${base(s)}/gst-exports?${new URLSearchParams({ kind, ...(before ? { before } : {}) })}`,
+        `${base(s)}/gst-exports?${new URLSearchParams({ ...(kind && kind !== "all" ? { kind } : {}), ...(before ? { before } : {}) })}`,
       ),
     report: (s: string, id: string) =>
       get<string>(`${base(s)}/gst-exports/${id}`),
@@ -463,13 +463,14 @@ export function bindGstApi(
         integrity: string;
         remaining: string;
         collected: string;
-        obligation: { saleId: string; grossAmount: string; customerId: string };
+        obligation: { saleId: string; grossAmount: string; customerId: string; createdAt: string };
         events: {
           id: string;
           kind: string;
           amount: string;
           method: string;
           reversesId: string | null;
+          occurredAt: string; evidenceReference: string; reason: string;
         }[];
       }>(`${base(s)}/adjustments/${id}`),
     debitSettlement: (

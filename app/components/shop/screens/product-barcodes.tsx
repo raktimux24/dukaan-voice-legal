@@ -30,6 +30,7 @@ export function ProductBarcodesScreen() {
       });
     }
   }, [review]);
+  const [missingOnly,setMissingOnly]=useState(false);
   const [search, setSearch] = useState(""),
     [selected, setSelected] = useState<string[]>([]),
     [limit, setLimit] = useState(40),
@@ -40,6 +41,8 @@ export function ProductBarcodesScreen() {
     setReview(null);
     setSelected([]);
     setSearch("");
+    setMissingOnly(false);
+    setLimit(40);
     setReplace(false);
     setValue("");
     setReason("");
@@ -48,7 +51,7 @@ export function ProductBarcodesScreen() {
     single = items.find((i) => i.id === productId),
     filtered = items.filter(
       (i) =>
-        i.active &&
+        i.active && (!missingOnly||!i.value) &&
         (!productId || i.id === productId) &&
         (!search ||
           i.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -82,7 +85,7 @@ export function ProductBarcodesScreen() {
   const problem = w.error ?? w.metadata.error;
   if (!shop) return <Spinner />;
   return (
-    <div className="shop-page">
+    <div className="shop-page barcodes-workspace">
       <PageHeader
         title={t("barcodes.title")}
         description={t("barcodes.help")}
@@ -91,10 +94,9 @@ export function ProductBarcodesScreen() {
           label: translate("products.title", "Products"),
         }}
       />
-      <Card>
-        <p className="shop-hint">{t("barcodes.internal_help")}</p>
+      <details className="barcode-guidance"><summary>{t("barcodes.internal_help")}</summary>
         <p className="shop-hint mt-3">{t("barcodes.online_help")}</p>
-      </Card>
+      </details>
       {!perms.canEditProducts ? (
         <Card>
           <p>{t("barcodes.error.not_allowed")}</p>
@@ -224,7 +226,7 @@ export function ProductBarcodesScreen() {
               ))}
             </Card>
           ) : null}
-          <Card className="stack-form">
+          <Card className="stack-form barcode-command-bar">
             {!productId ? (
               <>
                 <Field label={t("barcodes.search")}>
@@ -237,6 +239,7 @@ export function ProductBarcodesScreen() {
                     }}
                   />
                 </Field>
+                <label className="import-confirm"><input type="checkbox" checked={missingOnly} onChange={e=>{setMissingOnly(e.target.checked);setLimit(40)}}/>{t('barcodes.missing')}</label>
                 <Button
                   tone="ghost"
                   disabled={blocked}
@@ -278,9 +281,9 @@ export function ProductBarcodesScreen() {
               </Button>
             </div>
           </Card>
-          <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+          <div className="barcode-records">
             {visible.map((item) => (
-              <section key={item.id} className="min-w-0">
+              <section key={item.id} className="barcode-record">
                 <h2 className="shop-section-title mb-3 flex items-center gap-3"><ProductImageById productId={item.id} name={item.name} size={40}/>{item.name}</h2>
                 {!item.value ? (
                   <label className="import-confirm">
@@ -305,6 +308,7 @@ export function ProductBarcodesScreen() {
                   </label>
                 ) : null}
                 <ProductBarcodeCard
+                  compact
                   productId={item.id}
                   item={item}
                   manage={!productId}

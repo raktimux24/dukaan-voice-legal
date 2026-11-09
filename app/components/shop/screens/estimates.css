@@ -431,3 +431,6 @@
   border: 1px solid #34343e;
   border-radius: 12px;
 }
+
+.estimate-list-item{border-radius:4px;border-width:0 0 1px;background:transparent;padding:24px 0}.estimate-list-item:hover{background:rgba(255,107,0,.035)}.estimate-list-item>strong{white-space:nowrap;font-variant-numeric:tabular-nums}.estimate-list-tools{border-block:1px solid var(--estimate-line);padding-block:20px}.estimate-filters{flex-wrap:wrap}.estimate-list-item .shop-pill{white-space:normal}.estimate-editor-summary{border-top:2px solid #ff9857}
+@media(max-width:480px){.estimate-list-item{grid-template-columns:minmax(0,1fr)}.estimate-list-item>div,.estimate-list-item>.shop-pill,.estimate-list-item>strong{grid-column:1;grid-row:auto}.estimate-list-item>.shop-pill{justify-self:start;max-width:100%}.estimate-list-item>strong{font-size:22px}.estimates-page .shop-btn{white-space:normal;max-width:100%;min-width:0}.estimate-filters>*{min-width:0;white-space:normal}}

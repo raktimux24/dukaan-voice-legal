@@ -31,7 +31,7 @@ export function CreditView({
   reviewCollections: () => void;
   Statement: ComponentType<{ statement: CreditStatement }>;
 }) {
-  const { Box, Text, Input, Button, Check, Select, Totals } = ui,
+  const { Box, Text, Input, Button, Check, Select, Totals, Tabs } = ui,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("credit." + k, v),
     d = w.data.data,
@@ -129,32 +129,7 @@ export function CreditView({
               />
             </Box>
           ) : null}
-          <Box row>
-            <Button
-              label={tr("items")}
-              primary={tab === "items"}
-              onPress={() => {
-                setTab("items");
-                setForm("");
-              }}
-            />
-            <Button
-              label={tr("statement")}
-              primary={tab === "statement"}
-              onPress={() => {
-                setTab("statement");
-                setForm("");
-              }}
-            />
-            <Button
-              label={tr("policy")}
-              primary={tab === "policy"}
-              onPress={() => {
-                setTab("policy");
-                setForm("");
-              }}
-            />
-          </Box>
+          {Tabs ? <Tabs items={['statement','items','policy'].map(key=>({key,label:tr(key)}))} value={tab} disabled={blocked} onChange={value=>{setTab(value);setForm('')}}/> : null}
           {tab === "policy" ? (
             <Box card>
               <Text heading>
@@ -261,7 +236,7 @@ export function CreditView({
               ) : (
                 <Box card>
                   <Text heading>{tr("statement")}</Text>
-                  <Input
+                  <div className="credit-date-range"><Input
                     label={tr("from")}
                     type="date"
                     value={from}
@@ -275,11 +250,11 @@ export function CreditView({
                     onChange={setTo}
                     disabled={blocked}
                   />
-                  <Text tone="muted">{tr("export_help")}</Text>
+                  </div><Text tone="muted">{tr("export_help")}</Text>
                   <Button
                     label={tr("create_statement")}
                     primary
-                    disabled={blocked || !from || !to}
+                    disabled={blocked || !from || !to || from > to}
                     onPress={() =>
                       void run({ kind: "statement", from, to, language })
                     }

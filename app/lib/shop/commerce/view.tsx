@@ -91,10 +91,7 @@ export function CommerceView({
       {w.store.data?.orderingAvailable === false ? (
         <Text tone="danger">{tr("error.email_unavailable")}</Text>
       ) : null}
-      {tab === "setup" ? <Box row>
-        <Button label={tr("nav_products")} onPress={() => { setTab("products"); w.setOrder(null); setListing(null); }} />
-        <Button label={tr("nav_orders")} onPress={() => { setTab("orders"); w.setOrder(null); setListing(null); }} />
-      </Box> : <Button label={tr("nav_setup")} onPress={() => { setTab("setup"); w.setOrder(null); setListing(null); }} />}
+      {Tabs ? <Tabs items={["setup","products","orders"].map(key=>({key,label:tr("nav_"+key)}))} value={tab} disabled={blocked} onChange={value=>{if(value!=="setup"&&value!=="products"&&value!=="orders")return;setTab(value);w.setOrder(null);setListing(null);}}/> : null}
       {w.busy || localBusy || w.store.isPending ? (
         <Busy label={t("common.loading")} />
       ) : null}
@@ -350,7 +347,7 @@ export function CommerceView({
               <Text tone="muted">{tr("qr_help")}</Text>
             </Box>
           ) : null}
-          {w.store.data?.items.map((l) => (
+          {!listing && w.store.data?.items.map((l) => (
             <Box card key={l.id}>
               <Box row><ProductImage image={l.media?.cover} name={l.name} size={48}/><Text heading>{l.name}</Text></Box>
               <Text>
@@ -520,7 +517,7 @@ export function CommerceView({
               />
             </Box>
           ) : null}
-          {(["requested"] as const).length && w.orders.data ? (
+          {!p && w.orders.data ? (
             [
               ["group_decision", ["requested"]],
               ["group_progress", ["accepted", "preparing", "ready", "out_for_delivery"]],

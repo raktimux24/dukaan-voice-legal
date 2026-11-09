@@ -360,6 +360,7 @@ export type UserPreferences = {
 };
 
 export type Nudge = {
+  createdAt?: string;
   id: string;
   kind: string;
   severity: string;
@@ -369,7 +370,7 @@ export type Nudge = {
   productId: string | null;
   customerId: string | null;
   status: string;
-  evidence?: { anchorProductId?: string; together?: number; anchorBills?: number; supportPct?: number; dayLine?: string } | null;
+  evidence?: { anchorProductId?: string; together?: number; anchorBills?: number; supportPct?: number; dayLine?: string; stock?: {total:number;low:number;out:number} } | null;
 };
 
 export type BriefResponse = {
@@ -594,13 +595,14 @@ export interface StockReport {
   suppliers?: SupplierPurchases[];
 }
 
+export type AlertPrediction = {id:string;title:string;description:string;severity:string;productId?:string|null;productName?:string|null;productUnit?:string|null;isActionable?:boolean;generatedAt?:string;metadata?:{suggestedOrderQty?:number;daysUntilStockout?:number;dailyUsage?:number}};
 export type UnifiedAlerts = {
   stock: {
     outOfStock: { productId: string; productName: string; quantity: number; unit: string; minStockLevel: number }[];
     lowStock: { productId: string; productName: string; quantity: number; unit: string; minStockLevel: number }[];
   };
   expiry: { productId: string; productName: string; unit: string; expiryDate: string; daysRemaining: number; quantity: number }[];
-  predictions: { id: string; title: string; description: string; severity: string; productId: string | null }[];
+  predictions: AlertPrediction[];
   counts: { total: number; stock: number; expiry: number; ai: number };
 };
 

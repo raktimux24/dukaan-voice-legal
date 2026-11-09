@@ -30,7 +30,7 @@ function Editor() {
     storage,
   );
   return (
-    <div className="shop-page retail-workspace">
+    <div className="shop-page retail-workspace commerce-workspace">
       <PageHeader
         title={t("commerce.title")}
         back={{ href: "/shop/settings", label: t("nav.settings") }}

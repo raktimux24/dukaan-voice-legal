@@ -10,7 +10,7 @@ import { useShop } from "./context";
 import { Button, Notice } from "./ui";
 import { VoiceSheet } from "./voice-sheet";
 
-export function HomeNudge({ nudge, surface='home' }: { nudge: Nudge; surface?:'home'|'product'|'buy_list'|'customer' }) {
+export function HomeNudge({ nudge, surface='home' }: { nudge: Nudge; surface?:'home'|'product'|'buy_list'|'customer'|'brief' }) {
   const { api, shop, perms, offline, t, setNotice } = useShop();
   const client = useQueryClient(),
     alive = useRef(true),
