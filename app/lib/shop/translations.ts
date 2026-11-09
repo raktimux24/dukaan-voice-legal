@@ -18,6 +18,13 @@ for (const [key, value] of Object.entries(english)) {
   keysByText.set(value, keys);
 }
 
+/** Prefer reviewed Roman Hinglish over stale server translations, while retaining server-only keys. */
+export function mergeLanguageCatalog(language: string, bundled: Record<string, string>, fresh: Record<string, string>) {
+  if (language !== 'hinglish') return { ...bundled, ...fresh };
+  const romanFresh = Object.fromEntries(Object.entries(fresh).filter(([, value]) => !/[\u0900-\u097f]/u.test(value)));
+  return { ...romanFresh, ...bundled };
+}
+
 export function translateUi(language: string, dictionary: Record<string, string>, key: string, fallback: string, vars?: Record<string, string | number>) {
   const catalogs = [retail[language] ?? {}, web[language] ?? {}, mobile[language] ?? {}, ...(language === 'en' ? [currentEnglishGst] : []), dictionary];
   const webKey = 'web.gst.' + fallback.toLowerCase().replace(/[^a-z0-9]+/g, '_');

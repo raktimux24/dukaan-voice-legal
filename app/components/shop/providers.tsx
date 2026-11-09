@@ -12,7 +12,7 @@ import {clearOfflineShop,createOfflineShopContext,loadOfflineShop,offlineShopRec
 import {premiumAt,premiumDeadline} from '../../lib/shop/offline-premium';
 import {syncQueuedSales} from '../../lib/shop/gst-issuance';
 import { setFinancialScope } from '../../lib/shop/gst-storage';
-import { loadBundledLanguage, translateUi } from '../../lib/shop/translations';
+import { loadBundledLanguage, mergeLanguageCatalog, translateUi } from '../../lib/shop/translations';
 import { bindApi } from '../../lib/shop/api';
 import { permissionsFor, parseRole } from '../../lib/shop/permissions';
 import type { ShopRecord, UserPreferences } from '../../lib/shop/types';
@@ -220,7 +220,7 @@ function ShopSession({ children }: { children: ReactNode }) {
       if (language === 'en') return;
       try {
         const fresh = flattenStrings(await api.getTranslations(language));
-        if (!cancelled) setCatalog({ language, entries: { ...bundled, ...fresh } });
+        if (!cancelled) setCatalog({ language, entries: mergeLanguageCatalog(language, bundled, fresh) });
       } catch { /* Bundled mobile catalogs remain available when the server cannot be reached. */ }
     });
     return () => { cancelled = true; };
