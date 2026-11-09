@@ -302,7 +302,9 @@ export function isDenied(error: unknown) {
 }
 
 export function PremiumLock({ feature }: { shopId?: string; feature?: string }) {
-  const { t } = useShop();
+  const { t, entitlementStatus, retryEntitlement } = useShop();
+  if (entitlementStatus === 'loading') return <Spinner label={t('common.loading', 'Loading')} />;
+  if (entitlementStatus === 'error') return <Card><p role="alert">{t('common.error', 'Something went wrong')}</p><Button onClick={retryEntitlement}>{t('common.retry', 'Try again')}</Button></Card>;
   const title = feature ? t(`subscription.gate.${feature}.title`, 'Premium') : 'Premium';
   const body = feature
     ? t(`subscription.gate.${feature}.body`, 'This needs Premium.')
