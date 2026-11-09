@@ -4468,3 +4468,5 @@ button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04
 @media(max-width:1000px){.gst-product-columns{grid-template-columns:minmax(0,1fr)}}
 
 .gst-adjustment-workspace{max-width:1100px}.gst-adjustment-workspace .gst-row{display:flex;justify-content:space-between;gap:20px;padding-block:20px;flex-wrap:wrap}.gst-adjustment-workspace .gst-row small{display:block;margin-top:8px;overflow-wrap:anywhere}
+
+.commerce-workspace{max-width:1120px}.commerce-workspace .retail-section-tabs{margin-bottom:12px}.commerce-workspace>.opening-stack>.opening-stack>.shop-surface:first-child{border-top:2px solid #ff9857}.commerce-workspace .opening-stack>.shop-surface{border-radius:6px}.commerce-workspace .opening-stack>label{max-width:720px}.commerce-workspace .opening-actions{gap:12px;flex-wrap:wrap}.commerce-workspace .shop-btn{min-width:0;max-width:100%;white-space:normal}.commerce-workspace .opening-text{overflow-wrap:anywhere}.commerce-workspace .shop-section-link{color:#ff9857}
