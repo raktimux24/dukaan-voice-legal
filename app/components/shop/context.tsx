@@ -15,6 +15,8 @@ export type ShopContextValue = {
   perms: Permissions;
   entitlement: SubscriptionEntitlement | null;
   premium: boolean;
+  entitlementStatus?: "loading" | "ready" | "error";
+  retryEntitlement?: () => void;
   api: ShopApi;
   refreshShops: () => Promise<void>;
   selectShop: (shopId: string) => void;

@@ -282,6 +282,8 @@ function ShopSession({ children }: { children: ReactNode }) {
     perms,
     entitlement: entitlementQuery.data ?? null,
     premium: premiumAt(entitlementQuery.data,premiumClock),
+    entitlementStatus: entitlementQuery.data ? "ready" : entitlementQuery.isError ? "error" : "loading",
+    retryEntitlement: () => { void entitlementQuery.refetch(); },
     api,
     refreshShops,
     selectShop,

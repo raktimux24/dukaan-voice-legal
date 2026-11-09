@@ -1,4 +1,5 @@
 import { useState, type ComponentType } from "react";
+import {cashMoney as money} from "./format";
 
 import type { OpeningUi } from "../openings/view";
 import {
@@ -58,8 +59,7 @@ export type CashUi = OpeningUi & {
   }>;
 };
 type T = (k: string, v?: Record<string, string | number>) => string;
-const money = (value: string) =>
-  value.startsWith("-") ? "−₹" + value.slice(1) : "₹" + value;
+
 const codes = [
   "invalid",
   "amount",
@@ -473,7 +473,7 @@ export function CashbookView({
                 <>
                   <Text heading>{tr("pay")}</Text>
                   <Text>
-                    {cat(p.category) + " · " + tr("due") + ": ₹" + p.due}
+                    {cat(p.category) + " · " + tr("due") + ": " + money(p.due)}
                   </Text>
                   <Input
                     label={tr("payment_amount")}
@@ -658,7 +658,7 @@ export function CashbookView({
                 <>
                   <Text heading>{tr("count")}</Text>
                   <Text tone="muted">{tr("count_help")}</Text>
-                  <Text>{tr("closing") + ": ₹" + s.closing}</Text>
+                  <Text>{tr("closing") + ": " + money(s.closing)}</Text>
                   <Input
                     label={tr("counted_input")}
                     type="decimal"
@@ -672,8 +672,7 @@ export function CashbookView({
                   {amount && Number.isFinite(Number(amount)) ? (
                     <Text>
                       {tr("difference") +
-                        ": ₹" +
-                        (Number(amount) - Number(s.closing)).toFixed(2)}
+                        ": " + money((Number(amount) - Number(s.closing)).toFixed(2))}
                     </Text>
                   ) : null}
                   <Input
@@ -828,16 +827,16 @@ export function CashbookView({
                     {tr("method." + m) +
                       " · " +
                       tr("in") +
-                      ": ₹" +
-                      s.methods[m].in +
+                      ": " +
+                      money(s.methods[m].in) +
                       " · " +
                       tr("out") +
-                      ": ₹" +
-                      s.methods[m].out +
+                      ": " +
+                      money(s.methods[m].out) +
                       " · " +
                       tr("net") +
-                      ": ₹" +
-                      s.methods[m].net}
+                      ": " +
+                      money(s.methods[m].net)}
                   </Text>
                 ))}
               </Box>
@@ -871,7 +870,7 @@ export function CashbookView({
                     <Entry
                       key={e.id}
                       title={tr("kind." + e.kind)}
-                      amount={(amt < 0 ? "−" : amt > 0 ? "+" : "") + "₹" + (amt < 0 ? e.amount.slice(1) : e.amount)}
+                      amount={(amt > 0 ? "+" : "") + money(e.amount)}
                       direction={amt < 0 ? "out" : amt > 0 ? "in" : "none"}
                       meta={tr("method." + e.method) + " · " + when + " · " + who}
                     >
@@ -882,7 +881,7 @@ export function CashbookView({
                   <Box card key={e.id}>
                     <Text heading>{tr("kind." + e.kind)}</Text>
                     <Text tone="accent">
-                      {(amt < 0 ? "−" : amt > 0 ? "+" : "") + "₹" + (amt < 0 ? e.amount.slice(1) : e.amount) + " · " + tr("method." + e.method)}
+                      {(amt > 0 ? "+" : "") + money(e.amount) + " · " + tr("method." + e.method)}
                     </Text>
                     <Text>{tr("effective") + ": " + when}</Text>
                     {extra}
@@ -990,13 +989,13 @@ export function CashbookView({
                     );
                     if (Entry)
                       return (
-                        <Entry key={e.id} title={tr("method." + e.method)} amount={"−₹" + e.amount} direction={e.reversesId ? "in" : "out"} meta={e.date}>
+                        <Entry key={e.id} title={tr("method." + e.method)} amount={money("-" + e.amount)} direction={e.reversesId ? "in" : "out"} meta={e.date}>
                           {extra}
                         </Entry>
                       );
                     return (
                       <Box card key={e.id}>
-                        <Text>{"₹" + e.amount + " · " + tr("method." + e.method) + " · " + e.date}</Text>
+                        <Text>{money(e.amount) + " · " + tr("method." + e.method) + " · " + e.date}</Text>
                         {extra}
                       </Box>
                     );
@@ -1092,11 +1091,11 @@ function ExpenseCardView({ p, Card, variant, tr, cat, onPress, disabled }: { p: 
     <Card
       variant={variant}
       title={cat(p.category)}
-      amount={"₹" + p.amount}
+      amount={money(p.amount)}
       status={status}
       statusLabel={tr("expense_status." + status)}
-      paid={"₹" + p.paid}
-      due={"₹" + p.due}
+      paid={money(p.paid)}
+      due={money(p.due)}
       paidLabel={tr("paid")}
       dueLabel={tr("due")}
       meta={[p.date, p.payee].filter(Boolean).join(" · ")}
@@ -1121,7 +1120,7 @@ function ExpenseCard({
   const { Text, Box } = ui;
   return (
     <Box>
-      <Text heading>{cat(p.category) + " · ₹" + p.amount}</Text>
+      <Text heading>{cat(p.category) + " · " + money(p.amount)}</Text>
       <Text tone="accent">
         {tr(
           "expense_status." +
@@ -1136,7 +1135,7 @@ function ExpenseCard({
       </Text>
       <Text>{p.date + (p.payee ? " · " + p.payee : "")}</Text>
       <Text>
-        {tr("paid") + ": ₹" + p.paid + " · " + tr("due") + ": ₹" + p.due}
+        {tr("paid") + ": " + money(p.paid) + " · " + tr("due") + ": " + money(p.due)}
       </Text>
       {p.date > cashDay() && !p.cancelled ? (
         <Text tone="muted">{tr("scheduled")}</Text>
