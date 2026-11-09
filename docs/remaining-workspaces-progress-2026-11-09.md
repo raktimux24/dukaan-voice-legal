@@ -93,3 +93,7 @@ Online store: shared contract/client/workflow retain native publishing, stock re
 ### Subscription return
 
 `/subscription/return` now uses a focused status workspace and ten-language copy, with query-preserving language selection. Existing authenticated checkout polling and app return parameters are retained. Paid, authorized, failed, missing-detail and signed-out states were checked with synthetic responses; all ten languages fit 320px. Authorization is explicitly distinguished from a confirmed subscription charge. Billing regression, translations and TypeScript pass. No real checkout was opened or paid.
+
+### Account deletion
+
+`/delete-account` matches the utility workspace and loads the selected language catalogue. Shared deletion workflow/view match mobile; retained-record checks, explicit confirmation and identity-removal ordering are unchanged. Corrected translation precedence so Gujarati uses the reviewed delete-account wording rather than an obsolete merge label. Ten languages fit 320px. Deletion regression passed; no deletion was submitted.
