@@ -40,7 +40,9 @@ const loadTs = (filename) => {
   new Function('require', 'exports', source)((id) => id === './en-fallback' ? loadTs('app/lib/shop/en-fallback.ts') : id === './languages' ? loadTs('app/lib/shop/languages.ts') : require(id), exports);
   return exports;
 };
-const { translateUi } = loadTs('app/lib/shop/translations.ts');
+const { translateUi, mergeLanguageCatalog } = loadTs('app/lib/shop/translations.ts');
+assert.deepEqual(mergeLanguageCatalog('hinglish', {'settings.title':'Settings'}, {'settings.title':'सेटिंग्स','other':'सूचना','new.key':'Naya'}), {'settings.title':'Settings','new.key':'Naya'});
+assert.deepEqual(mergeLanguageCatalog('hi', {a:'local'}, {a:'server'}), {a:'server'});
 assert.equal(translateUi('hinglish', { 'nav.sales': 'Sales' }, 'nav.sales', 'Sales'), 'Sales', 'Hinglish navigation must not fall back to an unrelated Hindi alias');
 const retail = JSON.parse(fs.readFileSync('app/lib/shop/retail-locales.json', 'utf8'));
 for (const language of ['en', ...languages]) {
