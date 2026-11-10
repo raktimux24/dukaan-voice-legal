@@ -24,24 +24,6 @@
   width: min(1120px, calc(100% - 48px));
   margin-inline: auto;
 }
-.store-cart-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-  padding: 16px 20px;
-  border: 1px solid #2a2a34;
-  border-radius: 16px;
-  background: #15151c;
-}
-.store-cart-bar .store-kicker {
-  margin-bottom: 4px;
-}
-.store-cart-bar .store-button {
-  flex: none;
-  margin: 0;
-}
 .public-store,
 .public-store *,
 .public-store *::before,
@@ -55,8 +37,10 @@
   margin: 0;
 }
 .public-store :where(h1, h2, h3),
-.store-word {
-  font-family: var(--font-dm-sans), var(--font-display), sans-serif;
+.store-word,
+.store-price,
+.store-button {
+  font-family: var(--font-display), "Space Grotesk", sans-serif;
   color: var(--ink);
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -195,6 +179,21 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+.store-text-button {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #8a8a90;
+  font: 500 14px var(--font-inter), Inter, sans-serif;
+}
+.store-product-copy .store-text-button {
+  align-self: flex-start;
+  color: var(--saffron);
+  font-family: var(--font-display), "Space Grotesk", sans-serif;
+  font-weight: 600;
+}
 
 .store-kicker {
   margin: 0 0 8px;
@@ -234,10 +233,10 @@
 
 .store-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 22px;
   align-items: stretch;
-  padding: 20px 0 8px;
+  padding: 40px 0 16px;
 }
 .store-grid > .store-button {
   grid-column: 1 / -1;
@@ -255,29 +254,49 @@
   flex-direction: column;
   overflow: hidden;
   padding: 0;
+  border-color: rgba(255, 255, 255, 0.06);
+  background: #15151c;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.store-product:hover {
+  border-color: rgba(255, 107, 0, 0.45);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 .store-product-photo,
 .store-product .store-gallery {
   display: block;
   min-width: 0;
+  padding: 28px 28px 8px;
+  background: linear-gradient(180deg, #1e1e26 0%, #15151c 100%);
 }
 .store-product-copy {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
-  padding: 16px;
+  padding: 8px 28px 28px;
 }
 .store-product-copy h2 {
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 600;
+}
+.store-product-copy p {
+  color: #8a8a90;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.store-product-copy .store-price {
+  color: var(--ink);
+  font-size: 22px;
 }
 .store-product-copy .store-button {
   width: 100%;
-  margin: auto 0 0;
+  margin: 12px 0 0;
 }
 .store-product.is-in-cart {
-  box-shadow: inset 0 0 0 1px rgba(255, 107, 0, 0.45);
+  border-color: rgba(255, 107, 0, 0.45);
 }
 .store-price,
 .store-total {
@@ -311,24 +330,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
+  min-height: 48px;
   max-width: 100%;
-  padding: 12px 16px;
+  padding: 14px 22px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--elevated);
+  border-radius: 10px;
+  background: transparent;
   color: var(--ink);
-  font: 650 14px var(--font-inter), Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
   text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.2s ease;
 }
 .store-button.primary {
+  border: none;
   background: var(--saffron);
-  border-color: var(--saffron);
-  color: #1a120c;
+  color: #0a0a0f;
 }
-.store-button:hover:not(:disabled) {
-  filter: brightness(1.06);
+.store-button.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255, 107, 0, 0.28);
 }
 .store-button:disabled {
   opacity: 0.45;
@@ -375,29 +398,29 @@
   flex: none;
 }
 .store-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
 }
-.store-pills .store-choice {
+.store-pills .store-choice,
+.store-pills .store-choice:has(input:checked) {
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 12px;
   width: auto;
   margin: 0;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #15151c;
-}
-.store-pills .store-choice:has(input:checked) {
-  border-color: var(--saffron);
-  background: rgba(255, 107, 0, 0.1);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--ink);
+  font-size: 16px;
+  line-height: 1.4;
 }
 .public-store input[type="radio"],
 .public-store input[type="checkbox"] {
+  -webkit-appearance: auto;
   appearance: auto;
   width: 18px;
   height: 18px;
@@ -454,10 +477,10 @@
 }
 .store-checkout-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(0, 720px);
   gap: 16px;
   align-items: start;
-  margin-top: 20px;
+  margin-top: 28px;
 }
 .store-checkout-flow,
 .store-review {
@@ -466,8 +489,7 @@
   min-width: 0;
 }
 .store-review {
-  position: sticky;
-  top: 84px;
+  position: static;
 }
 .store-step {
   padding: 20px;
@@ -559,22 +581,32 @@
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: 0;
-  background: var(--elevated);
+  background: transparent;
   color: #ff9a50;
-  font: 650 42px var(--font-dm-sans), sans-serif;
+  font: 600 48px var(--font-display), "Space Grotesk", sans-serif;
 }
 .store-photo img {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
   object-fit: contain;
+  transition: transform 0.4s ease;
+}
+.store-product:hover .store-photo img {
+  transform: scale(1.04);
 }
 .store-photo.is-compact {
   width: 72px;
   height: 72px;
   border-radius: 12px;
   font-size: 22px;
+  background: #1e1e26;
+}
+.store-photo.is-compact img {
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 .store-gallery > button {
   display: block;
@@ -712,13 +744,8 @@
     max-width: none;
   }
   .store-checkout .store-button,
-  .store-confirm .store-button,
-  .store-cart-bar .store-button {
+  .store-confirm .store-button {
     width: 100%;
-  }
-  .store-cart-bar {
-    align-items: stretch;
-    flex-direction: column;
   }
   .store-hero {
     padding-top: 24px;

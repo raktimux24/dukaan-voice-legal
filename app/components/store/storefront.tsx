@@ -527,19 +527,6 @@ export function Storefront() {
             </p>
           </section>
           ) : null}
-          {view === "products" && !params.orderId && cart.length > 0 ? (
-            <section className="store-cart-bar" aria-label={tr("cart")}>
-              <div>
-                <p className="store-kicker">{tr("cart")}</p>
-                <p>
-                  {tr("view_cart")} · {cart.length}
-                </p>
-              </div>
-              <button type="button" className="store-button primary" onClick={showCart}>
-                {tr("view_cart")}
-              </button>
-            </section>
-          ) : null}
           {pending ? (
             <div className="store-card">
               <p>{tr("saved_request")}</p>
