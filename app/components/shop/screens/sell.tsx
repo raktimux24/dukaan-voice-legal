@@ -73,6 +73,7 @@ export function SellScreen() {
   const latestQuery = useRef(query);
   latestQuery.current = query;
   const [cameraOn, setCameraOn] = useState(false);
+  const [scanMode, setScanMode] = useState<'bill' | 'stock'>('bill');
   const searchParams = useSearchParams();
   const scanRequested = useRef(false);
   useEffect(() => {
@@ -152,6 +153,16 @@ export function SellScreen() {
       if((offline||navigator.onLine===false)&&cached.length!==1)throw Error(t('counter.offline_scan_miss',''));
       const hit=(offline||navigator.onLine===false)?{found:true,item:cached[0]}:await api.lookupBarcode(shop.id,code,hideCost);
       if(!alive.current)return;api.assertSession();
+      if (scanMode === 'stock' && perms.canEditProducts) {
+        setQuery('');
+        if (hit.found && hit.item && hit.item.product.isActive !== false) {
+          router.push(`/shop/products/${hit.item.productId}?batch=1`);
+          return;
+        }
+        if (code.startsWith('SB-')) { setNotice(t('barcodes.error.not_found','This code is unavailable in this shop.')); return; }
+        router.push(`/shop/products/new?barcode=${encodeURIComponent(code)}`);
+        return;
+      }
       if (hit.found && hit.item && hit.item.product.isActive !== false) {
         const availableItem = {...hit.item,quantity:Math.max(0,hit.item.quantity-(hit.item.reservedQuantity??0)),reservedQuantity:0};
         choose(availableItem,'scan');
@@ -360,6 +371,11 @@ export function SellScreen() {
             </div>
             <Button tone="ghost" onClick={openBrowse} disabled={locked}><Glyph name="package"/>{t('sellweb.browse','Browse products')}</Button>
           </div>
+          {perms.canEditProducts ? <div className="shop-seg" role="tablist" aria-label={t('scanner.scan_barcode','Scan')}>
+            <button type="button" role="tab" aria-selected={scanMode==='bill'} className={scanMode==='bill'?'is-active':undefined} onClick={()=>setScanMode('bill')}>{t('scanner.tab_sell','Sell')}</button>
+            <button type="button" role="tab" aria-selected={scanMode==='stock'} className={scanMode==='stock'?'is-active':undefined} onClick={()=>setScanMode('stock')}>{t('scanner.tab_stock','Add stock')}</button>
+          </div> : null}
+          <p className="text-sm text-muted">{scanMode==='stock'&&perms.canEditProducts?t('scanner.stock_hint','Scan a product to add stock'):t('scanner.cart_hint','Scan items — each scan adds one')}</p>
           <div className="sale-input-methods" role="group" aria-label={t('sellweb.add_items','Add items')}>
             <button type="button" disabled={locked} aria-pressed={cameraOn} onClick={()=>{setQuery('');setUsbOn(false);setCameraOn(v=>!v)}}><Glyph name="scan"/>{t('sellweb.camera','Camera')}</button>
             <button type="button" disabled={locked} aria-pressed={usbOn} onClick={()=>{setQuery('');setCameraOn(false);setUsbOn(v=>!v)}}><Glyph name="barcode"/>{t('sellweb.scanner','USB scanner')}</button>
