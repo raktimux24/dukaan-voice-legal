@@ -219,26 +219,38 @@
 .store-layout {
   display: flex;
   flex: none;
-  gap: 6px;
+  gap: 2px;
   margin-bottom: 8px;
+  padding: 3px;
+  border: 1px solid #2a2a34;
+  border-radius: 12px;
+  background: #15151c;
 }
 .store-layout button {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #2a2a34;
-  border-radius: 10px;
-  background: #15151c;
-  color: #eaeae6;
-  font-family: var(--font-display), "Space Grotesk", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #8a8a90;
   cursor: pointer;
 }
-.store-layout button[aria-pressed="true"] {
-  border-color: #ff6b00;
+.store-layout button svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: currentColor;
+}
+.store-layout button[aria-selected="true"] {
   background: #ff6b00;
   color: #0a0a0f;
+}
+.store-layout button:hover:not([aria-selected="true"]) {
+  color: #eaeae6;
+  background: #1e1e26;
 }
 .store-meta {
   display: flex;

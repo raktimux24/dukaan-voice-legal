@@ -41,6 +41,26 @@ const hexToken = () =>
   Array.from(crypto.getRandomValues(new Uint8Array(32)), (v) =>
     v.toString(16).padStart(2, "0"),
   ).join("");
+function GridIcon({ cols }: { cols: 2 | 3 | 4 }) {
+  if (cols === 4)
+    return (
+      <svg viewBox="0 0 18 18" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="6" height="6" rx="1.2" />
+        <rect x="10.5" y="1.5" width="6" height="6" rx="1.2" />
+        <rect x="1.5" y="10.5" width="6" height="6" rx="1.2" />
+        <rect x="10.5" y="10.5" width="6" height="6" rx="1.2" />
+      </svg>
+    );
+  const bars = cols === 2 ? [1.5, 9.75] : [1.5, 7.25, 13];
+  const width = cols === 2 ? 6.75 : 3.5;
+  return (
+    <svg viewBox="0 0 18 18" aria-hidden="true">
+      {bars.map((x) => (
+        <rect key={x} x={x} y="1.5" width={width} height="15" rx="1.2" />
+      ))}
+    </svg>
+  );
+}
 function BrandMark() {
   return (
     <span
@@ -545,15 +565,17 @@ export function Storefront() {
                 : ""}
             </p>
           </section>
-          <div className="store-layout" role="group" aria-label={tr("catalogue")}>
+          <div className="store-layout" role="tablist" aria-label={tr("catalogue")}>
             {([2, 3, 4] as const).map((n) => (
               <button
                 key={n}
                 type="button"
-                aria-pressed={cols === n}
+                role="tab"
+                aria-selected={cols === n}
+                aria-label={String(n)}
                 onClick={() => chooseCols(n)}
               >
-                {n}
+                <GridIcon cols={n} />
               </button>
             ))}
           </div>
