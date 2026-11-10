@@ -614,6 +614,12 @@ body:has(.public-store) {
 .store-contact .store-button {
   width: 100%;
 }
+.store-required {
+  margin-left: 4px;
+  color: var(--saffron);
+  font-weight: 700;
+  text-decoration: none;
+}
 .store-step > h2 {
   margin-bottom: 4px;
 }

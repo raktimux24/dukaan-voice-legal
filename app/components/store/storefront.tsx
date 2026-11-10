@@ -289,7 +289,12 @@ export function Storefront() {
       sessionStorage.setItem("store-cols:" + id, String(next));
     } catch {}
   };
+  const contactReady =
+    customer.name.trim().length > 0 &&
+    customer.phone.trim().length > 0 &&
+    customer.email.trim().length > 0;
   const place = async () => {
+    if (!pending && !contactReady) return;
     const request = pending ?? {
       clientId: crypto.randomUUID(),
       challengeId: challenge,
@@ -802,7 +807,10 @@ export function Storefront() {
                           {(["name", "phone", "email"] as const).map((k) => (
                             <label key={k}>
                               {tr("contact_" + k)}
+                              <abbr className="store-required" title="required">*</abbr>
                               <input
+                                required
+                                aria-required="true"
                                 value={customer[k]}
                                 autoComplete={
                                   k === "name"
@@ -954,7 +962,7 @@ export function Storefront() {
                                 store.orderingAvailable === false ||
                                 !verified ||
                                 !reviewed ||
-                                !customer.name.trim() ||
+                                !contactReady ||
                                 !/^[6-9]\d{9}$/.test(customer.phone) ||
                                 (fulfilment === "delivery" &&
                                   !customer.address.trim())
