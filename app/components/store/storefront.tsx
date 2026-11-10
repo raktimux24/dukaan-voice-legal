@@ -806,8 +806,10 @@ export function Storefront() {
                         <article className="store-card store-step store-contact">
                           {(["name", "phone", "email"] as const).map((k) => (
                             <label key={k}>
-                              {tr("contact_" + k)}
-                              <abbr className="store-required" title="required">*</abbr>
+                              <span className="store-contact-label">
+                                {tr("contact_" + k)}
+                                <abbr className="store-required" title="required">*</abbr>
+                              </span>
                               <input
                                 required
                                 aria-required="true"

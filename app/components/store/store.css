@@ -614,11 +614,16 @@ body:has(.public-store) {
 .store-contact .store-button {
   width: 100%;
 }
+.store-contact-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
 .store-required {
-  margin-left: 4px;
   color: var(--saffron);
   font-weight: 700;
   text-decoration: none;
+  line-height: 1;
 }
 .store-step > h2 {
   margin-bottom: 4px;
