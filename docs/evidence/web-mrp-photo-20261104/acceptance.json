@@ -1,0 +1,46 @@
+{
+  "scope": "Synthetic local browser and PGlite SQL only; injected actor, not production JWT/provider validation",
+  "blockedFirstShop": {
+    "saleAttempts": 0,
+    "sales": 0,
+    "documents": 0,
+    "saleCounter": 0,
+    "warning": "price_above_mrp",
+    "packageFinalInclusive": 105.71,
+    "MRP": 90
+  },
+  "finalFreshShop": {
+    "sales": 1,
+    "documents": 1,
+    "saleCounter": 1,
+    "allocationBlocks": 1,
+    "total": 90.71,
+    "netSales": 65,
+    "taxTotal": 25.71,
+    "discountAmount": 30,
+    "packageStock": {
+      "before": 12,
+      "after": 11
+    },
+    "noPhotoStock": {
+      "before": 8,
+      "after": 7
+    },
+    "requestHashVerified": true,
+    "documentHashVerified": true,
+    "canonicalRequestExcludesPhotosAndMRP": true,
+    "exactReplayStatus": 200,
+    "changedRequestStatus": 409,
+    "retainedRecordsUnchangedOnReplay": true,
+    "photoRequestsRefused": 3,
+    "photoRecoveryDecodedWidth": 120,
+    "photoRecoveryRetainedRecordsUnchanged": true
+  },
+  "legacyDraftEvidence": "Mounted cart retention and actual offline catalogue/helper tests; no browser legacy-reload claim",
+  "screenshots": [
+    "mrp-blocked.jpg",
+    "corrected-photo-outage.jpg",
+    "verified-receipt.jpg",
+    "recovered-photo-stock.jpg"
+  ]
+}

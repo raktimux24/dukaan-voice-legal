@@ -1,4 +1,7 @@
 "use client";
+import {useState} from 'react';
+import {textFontCss} from '../../lib/shop/documents/fonts';
+import {IssuedDocumentButton} from "./document-preview";
 import type {FiscalDocument} from "../../lib/shop/gst-types";
 import type {SalePaymentInput} from "../../lib/shop/types";
 import type {DocumentView} from "../../lib/shop/gst-document-view";
@@ -10,6 +13,7 @@ import { verifyDocument } from "../../lib/shop/gst-document";
 import { documentView } from "../../lib/shop/gst-document-view";
 import { documentHtml, printDocument } from "../../lib/shop/gst-print";
 import { saveFile } from "../../lib/shop/gst-storage";
+import { GstDocumentLines } from "./gst-document-lines";
 import { formatINR } from "../../lib/shop/money";
 export function GstDocuments({ saleId }: { saleId: string }) {
  const {api,shop,perms}=useShop(),text=useGstText(),date=useFiscalDate();
@@ -25,19 +29,20 @@ export function GstDocuments({ saleId }: { saleId: string }) {
 }
 
 export function FiscalDocumentArticle({doc,view,local=false,payments}:{doc:FiscalDocument;view:DocumentView;local?:boolean;payments?:SalePaymentInput[]}) {
- const text=useGstText(),date=useFiscalDate();
+ const text=useGstText(),date=useFiscalDate(),{api,t}=useShop(),[printError,setPrintError]=useState(false),[printing,setPrinting]=useState(false);
  const address=(party: {address:string;structuredAddress?:{address1:string;address2?:string;location:string;pincode:string}},version?:string)=>version==='gst_bill_v2'&&party.structuredAddress?[party.structuredAddress.address1,party.structuredAddress.address2,party.structuredAddress.location,party.structuredAddress.pincode].filter(Boolean).join(', '):party.address;
+ if(doc.documentPresentation)return <IssuedDocumentButton issued={doc.documentPresentation}/>;
  return <article className="gst-document" id={'gst-doc-'+doc.id}>
    {local?<p className="shop-hint">{text('Saved locally · awaiting synchronization')}</p>:null}
    <header><p><b>{text(doc.type.replaceAll('_',' '))} {doc.number}</b></p><p>{date(doc.issuedAt)}</p><h2 className="shop-section-title">{view.context.settings.legalName}</h2><p>{address(view.context.settings,view.context.documentRenderVersion)}</p><p>GSTIN {view.context.settings.gstin}</p><p>{text('State / place of supply')}: {view.context.placeOfSupply}</p></header>
    {view.context.buyer?<div className="gst-row"><b>{view.context.buyer.name}</b><span>{view.context.buyer.gstin}</span><p>{address(view.context.buyer,view.context.documentRenderVersion)}</p></div>:null}
    {doc.originalNumber?<p>{text('Original invoice')}: {doc.originalNumber}</p>:null}
    {view.reason?<p>{text('Reason')}: {view.reason}</p>:null}
-   <div className="gst-table-wrap"><table className="gst-table"><thead><tr><th>{text('Product')}</th><th>{text('Quantity')}</th><th>{text('HSN / SAC')}</th><th>{text('Before GST')}</th><th>{text('Taxable value')}</th><th>{text('GST')}</th><th>{text('Total')}</th></tr></thead><tbody>{view.lines.map((line,index)=><tr key={index}><td>{line.name}</td><td>{line.quantity} {line.unit}</td><td>{line.classification}<br/>{line.rate}</td><td>{formatINR(line.net)}{line.discount>0?<p>{text('Discount')}: {formatINR(line.discount)}</p>:null}</td><td>{formatINR(line.taxable)}</td><td>{formatINR(line.tax)}{Object.entries(line.components).filter(([,v])=>v>0).map(([k,v])=><p key={k}>{k} {formatINR(v)}</p>)}</td><td>{formatINR(line.total)}</td></tr>)}</tbody></table></div>
+   <GstDocumentLines lines={view.lines} text={text}/>
    <div className="gst-price-preview"><span>{text('Before GST')}<b>{formatINR(view.net)}</b></span><span>{text('GST reporting taxable value')}<b>{formatINR(view.taxable)}</b></span><span>GST<b>{formatINR(view.tax)}</b></span>{Object.entries(view.components).filter(([,v])=>v>0).map(([k,v])=><span key={k}>{k}<b>{formatINR(v)}</b></span>)}{view.roundOff!==0?<span>{text('Round-off')}<b>{formatINR(view.roundOff)}</b></span>:null}<span>{text('Total')}<b>{formatINR(view.total)}</b></span>{view.creditReduction!==undefined?<span>{text('Unpaid credit reduced')}<b>{formatINR(view.creditReduction)}</b></span>:null}{view.moneyRefund!==undefined?<span>{text('Money refund')}<b>{formatINR(view.moneyRefund)}</b></span>:null}</div>
    {view.context.settings.registration==='composition'?<p>{text('Composition taxable person, not eligible to collect tax on supplies')}</p>:<p>{text('Reverse charge: No (local forward-charge supply)')}</p>}
    <p className="shop-hint">{text('Authorised signatory')} __________________</p><p className="shop-hint">{text('The app does not digitally sign GST documents. Sign a printed copy when required.')}</p>
    {payments?<div className="gst-price-preview"><b>{text('Payment')}</b>{payments.map((p,index)=><span key={index}>{text(({cash:'Cash',upi:'UPI',card:'Card',credit:'Udhaar'})[p.method])}<b>{formatINR(p.amount)}</b></span>)}</div>:null}
-   <div className="shop-actions no-print"><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)saveFile(documentHtml(el,doc.number),`samaan-${doc.number.replace(/[^a-zA-Z0-9-]/g,'-')}.html`,'text/html');}}>{text('Download bill')}</Button><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)printDocument(el,doc.number);}}>{text('Print / save PDF')}</Button><Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-${doc.id}.json`,'application/json')}>{text('Download saved document')}</Button></div>
+   {printError?<p role="alert">{t('counter.print_failed','')}</p>:null}<div className="shop-actions no-print"><Button tone="ghost" onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el)saveFile(documentHtml(el,doc.number),`samaan-${doc.number.replace(/[^a-zA-Z0-9-]/g,'-')}.html`,'text/html');}}>{text('Download bill')}</Button><Button tone="ghost" disabled={printing} onClick={()=>{const el=document.getElementById('gst-doc-'+doc.id);if(el){setPrinting(true);setPrintError(false);void textFontCss(JSON.stringify(view)).then(fonts=>printDocument(el,doc.number,fonts,api.assertSession)).catch(()=>setPrintError(true)).finally(()=>setPrinting(false));}}}>{text('Print / save PDF')}</Button><Button tone="ghost" onClick={()=>saveFile(JSON.stringify(doc,null,2),`samaan-${doc.id}.json`,'application/json')}>{text('Download saved document')}</Button></div>
   </article>;
 }

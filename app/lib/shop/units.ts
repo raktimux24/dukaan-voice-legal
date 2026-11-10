@@ -7,6 +7,11 @@ const SUB_UNITS: Record<string, { small: string; large: string; factor: number }
 
 export const UNITS = ['kg', 'g', 'L', 'mL', 'piece', 'packet', 'dozen', 'crate'] as const;
 
+export function unitLabel(unit: string, t: (key: string, fallback: string) => string): string {
+  const key = unit === 'packet' ? 'pack' : unit === 'L' ? 'liter' : unit === 'mL' ? 'ml' : unit;
+  return t(`unit_picker.${key}`, unit);
+}
+
 export const isWeightOrVolume = (unit: string) => unit in SUB_UNITS;
 
 export function altUnit(unit: string): string | null {
@@ -63,16 +68,17 @@ const trim = (n: number) => {
 export function formatQty(
   qty: number,
   unit: string,
-  opts: { packSize?: number | null; packLabel?: string | null } = {},
+  opts: { packSize?: number | null; packLabel?: string | null; unitLabel?: (unit: string) => string } = {},
 ): string {
   const pair = SUB_UNITS[unit];
+  const labelUnit = opts.unitLabel ?? ((value: string) => value);
   let text: string;
   if (pair && unit === pair.large && qty > 0 && qty < 1) {
-    text = `${trim(qty * pair.factor)} ${pair.small}`;
+    text = `${trim(qty * pair.factor)} ${labelUnit(pair.small)}`;
   } else if (pair && unit === pair.small && qty >= pair.factor) {
-    text = `${trim(qty / pair.factor)} ${pair.large}`;
+    text = `${trim(qty / pair.factor)} ${labelUnit(pair.large)}`;
   } else {
-    text = `${trim(qty)} ${unit}`;
+    text = `${trim(qty)} ${labelUnit(unit)}`;
   }
   if (opts.packSize && opts.packSize > 0 && qty >= opts.packSize) {
     const packs = qty / opts.packSize;

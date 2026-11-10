@@ -1,5 +1,6 @@
 import type { Locale } from '../i18n';
 import { udhaarLocales } from './udhaarLocales';
+import offerCorrections from './offerCorrections.json';
 
 export type UdhaarCopy = {
   title: string;
@@ -29,11 +30,11 @@ const english: UdhaarCopy = {
     'Record udhaar on the same bill as cash and UPI. The customer’s name stays with the sale. This is the counter, not a separate khata app.',
   h1: 'Udhaar on the kirana bill',
   lead:
-    'Udhaar in Samaan Bol is a way to close the sale, next to cash and UPI. You put the items on a customer’s name while they are still at the counter. It is not a second notebook, and it is not a khata app you open after the shop shuts.',
+    'Record the unpaid part of a sale against the customer, then find the outstanding balance when they return. The bill, customer and tracked stock stay connected. Udhaar is a Premium feature.',
   stepsHeading: 'How udhaar gets onto the bill',
   steps: [
     'Say the sale on the phone, or search and scan it on the laptop. It is the same shop.',
-    'Choose udhaar instead of cash or the UPI QR.',
+    'With Premium access, choose udhaar for the unpaid amount.',
     'Put the customer’s name on that bill.',
     'Share the bill on WhatsApp while they are still there, if you want them to see it.',
     'Stock moves with the bill. The amount sits on that name.',
@@ -41,28 +42,28 @@ const english: UdhaarCopy = {
   nameHeading: 'A name, not a slip in the drawer',
   nameBody:
     'The open amount belongs to the person on the bill. When you look later, you are looking for Ramesh, not for a loose page from last month. Cash and UPI from the same day stay separate, so the evening box is not mixed up with what is still owed.',
-  premiumHeading: 'The list of who still owes is Premium',
+  premiumHeading: 'Udhaar is a Premium feature',
   premiumPoints: [
-    'Putting one sale on a name happens on the bill.',
+    'Recording an udhaar sale requires Premium access.',
     'The list of open udhaar, by customer name, is on Premium.',
     'Reminders for that open list are on Premium.',
-    'New shops get 7 days of Premium in the app, with no card.',
+    'Eligible new shops get a 7-day Premium trial without a card.',
   ],
-  notHeading: 'What this is not',
+  notHeading: 'Before recording udhaar',
   notPoints: [
-    'Not a separate khata book you keep beside the bills.',
-    'Not interest, penalties, or a loan.',
-    'Not a GST return. This is the counter bill.',
+    'Check the customer and unpaid amount before completing the sale.',
+    'A new credit sale needs internet and Premium access.',
+    'Sharing a reminder does not confirm delivery or payment.',
   ],
   faqHeading: 'Questions about udhaar',
   faq: [
     {
-      q: 'Is this a khata app?',
-      a: 'No. Udhaar is one way to finish the kirana bill, with cash and UPI. The name sits on that sale. It does not replace the bill with a second book.',
+      q: 'How does udhaar connect to a bill?',
+      a: 'Choose the customer and record the unpaid portion when you complete the sale. The amount is linked to that customer so you can review the outstanding balance later.',
     },
     {
       q: 'Can I see everyone who still owes?',
-      a: 'The list of open udhaar by customer name, and reminders for that list, are on Premium. One sale on a name is part of the bill.',
+      a: 'Yes. Recording udhaar, the outstanding list and reminders are Premium features. Reminders must be prepared and shared by you.',
     },
     {
       q: 'Does the customer get the bill?',
@@ -131,6 +132,26 @@ const hindi: UdhaarCopy = {
 
 const udhaarCopy: Partial<Record<Locale, UdhaarCopy>> = { hi: hindi, ...udhaarLocales };
 
+// The credit-sale gate applies to the bill itself, not only to the outstanding list.
+const creditPremiumDisclosure: Partial<Record<Locale, string>> = {
+  hi: 'उधार बिक्री दर्ज करना और बाकी उधार की लिस्ट देखना Premium सुविधाएँ हैं।',
+  bn: 'উধার বিক্রি রেকর্ড করা এবং বকেয়ার তালিকা দেখা Premium সুবিধা।',
+  ta: 'உதார் விற்பனையைப் பதிவு செய்வதும் நிலுவைப் பட்டியலைப் பார்ப்பதும் Premium வசதிகள்.',
+  te: 'ఉధార్ అమ్మకాన్ని నమోదు చేయడం, బకాయిల జాబితా చూడడం Premium సౌకర్యాలు.',
+  mr: 'उधारीची विक्री नोंदवणे आणि बाकीची यादी पाहणे या Premium सुविधा आहेत.',
+  kn: 'ಉಧಾರ ಮಾರಾಟ ದಾಖಲಿಸುವುದು ಮತ್ತು ಬಾಕಿ ಪಟ್ಟಿ ನೋಡುವುದು Premium ಸೌಲಭ್ಯಗಳು.',
+  gu: 'ઉધાર વેચાણ નોંધવું અને બાકી રકમની યાદી જોવી Premium સુવિધાઓ છે.',
+  ml: 'ഉധാർ വിൽപ്പന രേഖപ്പെടുത്തുന്നതും കുടിശ്ശിക പട്ടിക കാണുന്നതും Premium സൗകര്യങ്ങളാണ്.',
+  pa: 'ਉਧਾਰ ਵਿਕਰੀ ਦਰਜ ਕਰਨਾ ਅਤੇ ਬਕਾਇਆ ਸੂਚੀ ਦੇਖਣਾ Premium ਸਹੂਲਤਾਂ ਹਨ।',
+  or: 'ଉଧାର ବିକ୍ରି ରେକର୍ଡ କରିବା ଓ ବକେୟା ତାଲିକା ଦେଖିବା Premium ସୁବିଧା।',
+};
+
 export function getUdhaarCopy(locale: Locale): UdhaarCopy {
-  return udhaarCopy[locale] ?? english;
+  const copy = udhaarCopy[locale] ?? english;
+  const disclosure = creditPremiumDisclosure[locale];
+  return {
+    ...copy,
+    premiumPoints: [disclosure ?? copy.premiumPoints[0], ...copy.premiumPoints.slice(1, -1), offerCorrections[locale].closing],
+    faq: disclosure ? copy.faq.map((item, index) => index === 1 ? { ...item, a: disclosure } : item) : copy.faq,
+  };
 }

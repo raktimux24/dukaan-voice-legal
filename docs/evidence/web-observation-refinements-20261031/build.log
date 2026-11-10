@@ -1,0 +1,116 @@
+
+> dukaan-voice-legal@1.0.0 build
+> next build
+
+▲ Next.js 16.2.6 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.7s
+  Running TypeScript ...
+  Finished TypeScript in 7.2s ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/148) ...
+  Generating static pages using 9 workers (37/148) 
+  Generating static pages using 9 workers (74/148) 
+  Generating static pages using 9 workers (111/148) 
+✓ Generating static pages using 9 workers (148/148) in 608ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /[locale]
+├ ƒ /[locale]/account
+├ ƒ /[locale]/billing-on-a-laptop
+├ ƒ /[locale]/contact
+├ ƒ /[locale]/pricing
+├ ƒ /[locale]/privacy-policy
+├ ƒ /[locale]/terms-of-service
+├ ƒ /[locale]/udhaar
+├ ƒ /account
+├ ƒ /account/mobile
+├ ƒ /billing-on-a-laptop
+├ ƒ /contact
+├ ƒ /delete-account
+├ ƒ /guides/voice-billing-for-kirana
+├ ○ /icon.svg
+├ ○ /manifest.webmanifest
+├ ○ /opengraph-image
+├ ƒ /pricing
+├ ƒ /privacy-policy
+├ ƒ /refund-policy
+├ ○ /robots.txt
+├ ƒ /shop
+├ ƒ /shop/activity
+├ ƒ /shop/adjustments/[id]
+├ ƒ /shop/alerts
+├ ƒ /shop/brief
+├ ƒ /shop/buy-list
+├ ƒ /shop/cashbook
+├ ƒ /shop/customers
+├ ƒ /shop/customers/[id]
+├ ƒ /shop/customers/[id]/statement
+├ ƒ /shop/customers/followups
+├ ƒ /shop/customers/import
+├ ƒ /shop/estimates
+├ ƒ /shop/onboarding
+├ ƒ /shop/online-store
+├ ƒ /shop/products
+├ ƒ /shop/products/[id]
+├ ƒ /shop/products/[id]/edit
+├ ƒ /shop/products/[id]/gst
+├ ƒ /shop/products/[id]/gst/rsp
+├ ƒ /shop/products/barcodes
+├ ƒ /shop/products/bulk
+├ ƒ /shop/products/gst
+├ ƒ /shop/products/import
+├ ƒ /shop/products/new
+├ ƒ /shop/purchase-orders
+├ ƒ /shop/purchases
+├ ƒ /shop/purchases/[id]
+├ ƒ /shop/purchases/new
+├ ƒ /shop/reports
+├ ƒ /shop/sales
+├ ƒ /shop/sales/[id]
+├ ƒ /shop/sales/refunds
+├ ƒ /shop/sell
+├ ƒ /shop/sell/checkout
+├ ƒ /shop/settings
+├ ƒ /shop/settings/gst
+├ ƒ /shop/settings/gst/checks
+├ ƒ /shop/settings/gst/devices
+├ ƒ /shop/settings/gst/exports
+├ ƒ /shop/settings/gst/numbers
+├ ƒ /shop/settings/gst/periods
+├ ƒ /shop/settings/gst/providers
+├ ƒ /shop/settings/gst/recovery
+├ ƒ /shop/settings/gst/recovery/[requestId]
+├ ƒ /shop/settings/gst/rounding
+├ ƒ /shop/settings/gst/turnover
+├ ƒ /shop/settings/opening-balances
+├ ƒ /shop/settings/payments
+├ ƒ /shop/settings/payments/branding
+├ ƒ /shop/settings/shop
+├ ƒ /shop/settings/staff
+├ ƒ /shop/settings/subscription
+├ ƒ /shop/sso-callback
+├ ƒ /shop/suppliers
+├ ƒ /shop/suppliers/[name]
+├ ƒ /shop/suppliers/import
+├ ƒ /shop/suppliers/records/[id]
+├ ƒ /shop/voice
+├ ○ /sitemap.xml
+├ ƒ /store/[storeId]
+├ ƒ /store/[storeId]/orders/[orderId]
+├ ƒ /store/[storeId]/p/[itemId]
+├ ƒ /subscription/return
+├ ƒ /terms-of-service
+├ ○ /twitter-image
+└ ƒ /udhaar
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

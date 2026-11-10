@@ -1345,7 +1345,7 @@
   "gst.ui.previous_check_status_has_not_been_confirmed_e69523": "पिछले चेक का स्टेटस कन्फर्म नहीं हुआ है।",
   "gst.ui.the_latest_check_failed_results_below_are_from_earlier_che_a9a338": "लेटेस्ट चेक फेल हो गया। नीचे दिए गए results पुराने checks के हैं।",
   "gst.ui.new_checks_are_disabled_on_this_server_previous_results_re_684886": "इस server पर नए checks बंद हैं। पिछले results उपलब्ध रहेंगे।",
-  "gst.ui.results_reflect_the_time_of_the_check_not_legal_or_filing__5ec57b": "Results चेक का समय दर्शाते हैं, न कि कानूनी या filing अप्रूवल।",
+  "gst.ui.results_reflect_the_time_of_the_check_not_legal_or_filing__5ec57b": "परिणाम जाँच के समय की स्थिति दिखाते हैं। ये कानूनी स्वीकृति या रिटर्न दाखिल होने की पुष्टि नहीं हैं।",
   "gst.ui.checking_records_77455b": "Records चेक किए जा रहे हैं…",
   "gst.ui.check_records_6be61d": "Records चेक करें",
   "gst.ui.refreshing_961411": "रिफ्रेश किया जा रहा है…",

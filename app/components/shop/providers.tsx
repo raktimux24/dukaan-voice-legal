@@ -1,4 +1,5 @@
 'use client';
+import {SUPPORTED_LANGUAGES} from '../../lib/shop/languages';
 import {BROWSER_PUSH_OWNER,disconnectBrowserPush} from './browser-notifications';
 import {assertPushSession,beginPushSession,pushSession,withPushSession} from '../../lib/shop/browser-push-session';
 
@@ -11,7 +12,7 @@ import {clearOfflineShop,createOfflineShopContext,loadOfflineShop,offlineShopRec
 import {premiumAt,premiumDeadline} from '../../lib/shop/offline-premium';
 import {syncQueuedSales} from '../../lib/shop/gst-issuance';
 import { setFinancialScope } from '../../lib/shop/gst-storage';
-import { loadBundledLanguage, translateUi } from '../../lib/shop/translations';
+import { loadBundledLanguage, mergeLanguageCatalog, translateUi } from '../../lib/shop/translations';
 import { bindApi } from '../../lib/shop/api';
 import { permissionsFor, parseRole } from '../../lib/shop/permissions';
 import type { ShopRecord, UserPreferences } from '../../lib/shop/types';
@@ -19,9 +20,19 @@ import { AuthScreen } from './auth-screen';
 import { ShopChrome } from './chrome';
 import {BillingShell,clearBillingShell} from './billing-shell';
 import { ShopContext, type ShopContextValue } from './context';
+import {retainProductPhotoSaves} from './use-product-save-recovery';
+import {retainProductPhotoEditors} from './product-image-editor';
+import {retainProductThumbnails} from '../../lib/shop/product-images/thumbnail-storage.web';
+import type {ProductSaveScope} from '../../lib/shop/product-images/save-recovery';
+
+function retainPhotoScope(scope:ProductSaveScope|null){
+  void retainProductPhotoSaves(scope).catch(()=>{});
+  void retainProductPhotoEditors(scope).catch(()=>{});
+  void retainProductThumbnails(scope).catch(()=>{});
+}
 
 /** Codes accepted by PATCH /api/preferences. Punjabi and Odia are not in that list. */
-const APP_LANGUAGES = new Set(['en', 'hi', 'hinglish', 'bn', 'ta', 'te', 'mr', 'kn', 'gu', 'ml']);
+const APP_LANGUAGES = new Set<string>(SUPPORTED_LANGUAGES.map(l=>l.code));
 
 function flattenStrings(value: unknown, prefix = '', out: Record<string, string> = {}) {
   if (typeof value === 'string') {
@@ -148,6 +159,12 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   const shop = shops?.find((item) => item.id === shopId) ?? null;
   useLayoutEffect(() => { setFinancialScope(userId && shop ? { actorId:userId, shopId:shop.id } : null); return () => setFinancialScope(null); }, [userId, shop?.id]);
+  useLayoutEffect(()=>{
+    // Keep eligible offline data while the initial shop lookup is unresolved.
+    // A completed empty list or denied lookup must clear the previous scope.
+    if(!isLoaded||(isSignedIn&&userId&&sessionId&&!shop&&shops===null&&!loadError))return;
+    retainPhotoScope(isSignedIn&&userId&&sessionId&&shop?{actor:userId,session:sessionId,shop:shop.id}:null);
+  },[isLoaded,isSignedIn,userId,sessionId,shop?.id,shops,loadError]);
   useEffect(()=>{
     if(!shop||!userId||offline||navigator.onLine===false)return;
     let canceled=false,running=false;
@@ -203,7 +220,7 @@ function ShopSession({ children }: { children: ReactNode }) {
       if (language === 'en') return;
       try {
         const fresh = flattenStrings(await api.getTranslations(language));
-        if (!cancelled) setCatalog({ language, entries: { ...bundled, ...fresh } });
+        if (!cancelled) setCatalog({ language, entries: mergeLanguageCatalog(language, bundled, fresh) });
       } catch { /* Bundled mobile catalogs remain available when the server cannot be reached. */ }
     });
     return () => { cancelled = true; };
@@ -222,6 +239,8 @@ function ShopSession({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onRemoved = () => {
+      // Revocation is already authoritative even if refreshing other shops stalls.
+      retainPhotoScope(null);
       try{if(userId)clearOfflineShop(localStorage,userId);}catch{}
       setShops(null);setOffline(false);activeShop.current=null;
       setShopId(null);
@@ -247,19 +266,30 @@ function ShopSession({ children }: { children: ReactNode }) {
     return translateUi(language, catalog.language === language ? catalog.entries : {}, key, fallback, vars);
   }, [catalog, prefs?.appLanguage]);
 
+  const signOutShop = useCallback(async () => {
+    clearBillingShell();
+    try { if (userId) clearOfflineShop(localStorage, userId); } catch { /* Storage is optional. */ }
+    try { await disconnectBrowserPush(api, pushSession(userId!)); } catch { /* Sign out even if push is unavailable. */ }
+    await signOut({ redirectUrl: '/' });
+  }, [api, userId, signOut]);
+
   const value: ShopContextValue = {
     userId: userId ?? null,
+    photoSessionId: sessionId ?? null,
     shops: shops ?? [],
     shop,
     role,
     perms,
     entitlement: entitlementQuery.data ?? null,
     premium: premiumAt(entitlementQuery.data,premiumClock),
+    entitlementStatus: entitlementQuery.data ? "ready" : entitlementQuery.isError ? "error" : "loading",
+    retryEntitlement: () => { void entitlementQuery.refetch(); },
     api,
     refreshShops,
     selectShop,
     prefs,
     savePrefs,
+    signOutShop,
     t,
     notice,
     setNotice,
@@ -309,7 +339,7 @@ function ShopSession({ children }: { children: ReactNode }) {
         data-text={prefs?.textSize || 'medium'}
         data-contrast={prefs?.highContrastMode ? 'high' : 'normal'}
       >
-        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => {clearBillingShell();try{if(userId)clearOfflineShop(localStorage,userId);}catch{}void Promise.resolve().then(()=>disconnectBrowserPush(api,pushSession(userId!))).catch(()=>{}).finally(()=>signOut({ redirectUrl: '/' }));}}>
+        <BillingShell enabled={!!userId&&!!sessionId&&!!shop} offline={offline}/><ShopChrome onSignOut={() => { void signOutShop().catch(() => {}); }}>
           {offline?<div className="shop-surface shop-card mb-4" role="status"><p>{t('shop.offline_notice','Using saved shop context for billing. Connect and refresh to manage the shop or view reports.')}</p><div className="shop-actions mt-3"><button type="button" className="text-saffron" onClick={()=>void refreshShops().catch(()=>{})}>{t('common.retry','Try again')}</button><Link className="text-saffron" href="/shop/settings/gst/recovery">{t('gst.rsp.saved_recovery','View saved requests')}</Link></div></div>:null}
           {children}
         </ShopChrome>

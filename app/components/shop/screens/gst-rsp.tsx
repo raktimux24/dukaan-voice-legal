@@ -1,4 +1,6 @@
 "use client";
+import { indianCalendarDate } from "../../../lib/shop/gst-core/fiscal-date";
+import {ProductImageById} from "../product-image";
 import { useEffect, useRef, useState } from "react";
 import { useShop } from "../context";
 import { Card, Button, PageHeader, Notice } from "../ui";
@@ -62,7 +64,7 @@ type Review = {
   reason: string;
 };
 export function GstRspScreen({ id }: { id: string }) {
-  const { api, shop, t, userId } = useShop(),
+  const { api, shop, t, userId, offline } = useShop(),
     text = useGstText(),
     action = useGstAction();
   const label = (key: string) =>
@@ -106,8 +108,8 @@ export function GstRspScreen({ id }: { id: string }) {
             source: p.sourceReference,
             goodsEvidence: p.goods.evidenceReference,
             rateSource: p.rates.sourceReference,
-            from: p.effectiveFrom.slice(0, 10),
-            until: p.effectiveUntil?.slice(0, 10) ?? "",
+            from: indianCalendarDate(new Date(p.effectiveFrom)),
+            until: p.effectiveUntil ? indianCalendarDate(new Date(p.effectiveUntil)) : "",
             cgst: String(p.rates.cgst),
             sgst: String(p.rates.sgst),
             utgst: String(p.rates.utgst),
@@ -195,7 +197,7 @@ export function GstRspScreen({ id }: { id: string }) {
   }
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-rsp-workspace">
         <PageHeader
           title={label("title")}
           back={{
@@ -204,6 +206,7 @@ export function GstRspScreen({ id }: { id: string }) {
           }}
           description={label("notice")}
         />
+        <div className="shop-actions"><ProductImageById productId={id} name={text("Product")} size={48}/><Button tone="quiet" disabled={action.busy || offline} onClick={()=>{void settings.refetch();void q.refetch()}}>{t("gst.health_refresh", "Refresh report")}</Button></div>
         <ReadState query={settings}>
           {settings.data?.gstRspProfileReviewsAvailable ? (
             <>
@@ -216,7 +219,7 @@ export function GstRspScreen({ id }: { id: string }) {
                     <Button
                       tone="ghost"
                       disabled={
-                        restoring ||
+                        offline || restoring ||
                         !!restoreError ||
                         action.busy ||
                         !!pending.current
@@ -230,8 +233,8 @@ export function GstRspScreen({ id }: { id: string }) {
                           source: p.sourceReference,
                           goodsEvidence: p.goods.evidenceReference,
                           rateSource: p.rates.sourceReference,
-                          from: p.effectiveFrom.slice(0, 10),
-                          until: p.effectiveUntil?.slice(0, 10) ?? "",
+                          from: indianCalendarDate(new Date(p.effectiveFrom)),
+                          until: p.effectiveUntil ? indianCalendarDate(new Date(p.effectiveUntil)) : "",
                           cgst: String(p.rates.cgst),
                           sgst: String(p.rates.sgst),
                           utgst: String(p.rates.utgst),
@@ -245,10 +248,10 @@ export function GstRspScreen({ id }: { id: string }) {
                   ) : null}
                 </Card>
               </ReadState>
-              <Card>
-                <fieldset
+              <Card className="stack-form">
+                <fieldset className="form-grid is-2"
                   disabled={
-                    restoring ||
+                    offline || restoring ||
                     !!restoreError ||
                     action.busy ||
                     !!pending.current
@@ -308,7 +311,7 @@ export function GstRspScreen({ id }: { id: string }) {
                 {action.notice}
                 <Button
                   disabled={
-                    restoring ||
+                    offline || restoring ||
                     !!restoreError ||
                     action.busy ||
                     !q.data ||
@@ -338,7 +341,7 @@ function RspPreview({
   id: string;
   profile: RspProductProfile;
 }) {
-  const { api, shop, t, userId } = useShop(),
+  const { api, shop, t, userId, offline } = useShop(),
     action = useGstAction();
   const l = (k: string) =>
     t(
@@ -360,6 +363,7 @@ function RspPreview({
     [result, setResult] = useState<
       ReturnType<typeof calculateRspProfileCommercial>["calculation"] | null
     >(null);
+  useEffect(()=>{setResult(null);setReviewed(false)},[profile.version]);
   const prices = (s: string) =>
     s.trim()
       ? s.split(",").map((v) => {
@@ -370,7 +374,7 @@ function RspPreview({
   return (
     <Section title={l("title")}>
       <p>{l("notice")}</p>
-      <fieldset disabled={action.busy}>
+      <fieldset className="form-grid is-2" disabled={offline || action.busy}>
         {Object.entries(draft).map(([key, value]) => (
           <TextField
             key={key}
@@ -391,7 +395,7 @@ function RspPreview({
         />
       </fieldset>
       <Button
-        disabled={action.busy || !reviewed}
+        disabled={offline || action.busy || !reviewed}
         onClick={() =>
           void action.run(async () => {
             const active = financialScope(shop!.id);

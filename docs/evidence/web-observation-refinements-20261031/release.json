@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-31",
+  "productionCommit": "0a52a726c863104c3e3b5719918ecd36cdd7ec36",
+  "deployId": "6ae50d5acde00af93ffabaa9",
+  "state": "ready",
+  "url": "https://samaanbol.space",
+  "prs": [
+    155,
+    156,
+    157
+  ],
+  "qa": {
+    "bill": "Retained bill 26-3-001: total and Cash/Paid before compact paper; full preview, Escape and focus return to trigger passed",
+    "exports": "Receipt PDF one page, 80 by 210 mm; PNG 604 by 1587; Share PDF fell back successfully to download in embedded browser",
+    "stock": "Current on-hand caption separate from 7/30-day movement selection",
+    "estimates": "All filters fit narrow viewport; grouped 23,800 amount; existing estimate list/detail/back",
+    "store": "English and Hindi Store/Products/Orders fit narrow viewport; copy success toast; Products and empty Orders loaded",
+    "sales": "Empty Today with stale search opens Yesterday with filters cleared and four Oct30 bills",
+    "followups": "Saved customer and brought-forward 760 balance, detail/history loaded without sending reminder",
+    "financial": "Five-bill baseline unchanged after read/download/navigation QA",
+    "focus": "Deployed full preview closes with Escape and focuses View full preview"
+  },
+  "financialHash": "99085137415e1d9a0470b39ee4c120f9ab29d7e9fcf9e480afb8745b1b2d70c0",
+  "limits": [
+    "No physical printer or recipient sharing delivery claimed",
+    "Native browser clipboard bridge did not expose copied bytes; UI success and unchanged source URL verified",
+    "Local authentication blocked by Clerk production origin rule; authenticated UI checks ran on production"
+  ]
+}

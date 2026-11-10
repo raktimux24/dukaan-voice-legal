@@ -30,12 +30,16 @@ try {
     "--ignoreDeprecations",
     "6.0",
     "--skipLibCheck",
+    "app/lib/shop/counter/scanner.ts",
+    "app/lib/shop/counter/shell.ts",
+    "app/lib/shop/counter/query.ts",
     "app/lib/shop/gst-monitor-view.ts",
     "app/lib/shop/report-review.ts",
     "app/lib/shop/purchase-draft.ts",
     "app/lib/shop/gst-core/gst-export-review.ts",
     "app/lib/shop/browser-push-session.ts",
     "app/lib/shop/checkout-customer.ts",
+    "app/lib/shop/checkout-mrp.ts",
     "app/lib/shop/checkout-rejection.ts",
     "app/lib/shop/gst-api.ts",
     "app/lib/shop/gst-recovery.ts",
@@ -52,6 +56,7 @@ try {
     "app/lib/shop/rsp-cart-entry.ts",
     "app/lib/shop/gst-print.ts",
     "app/lib/shop/share-bill.ts",
+    "app/lib/shop/estimates/editor.ts",
     "app/lib/shop/gst-document.ts",
     "app/lib/shop/gst-core/purchase-batch-link.ts",
     "app/lib/shop/gst-core/purchase-settlement.ts",
@@ -60,6 +65,7 @@ try {
   ]);
   symlinkSync(resolve("node_modules"), join(folder, "node_modules"), "dir");
   writeFileSync(join(folder, "package.json"), '{"type":"commonjs"}');
+  run(resolve("tests/estimate-editor.mjs"), [], { ...process.env, GST_TEST_BUILD: join(folder, "shop") });
   run(resolve("tests/share-bill-context.mjs"), [], {
     ...process.env,
     GST_TEST_BUILD: join(folder, "shop"),
@@ -158,6 +164,8 @@ try {
     GST_TEST_BUILD: join(folder, "shop"),
   });
   run(resolve("tests/tax-history-refresh.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/counter-parity.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
+  run(resolve("tests/checkout-mrp.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});
   run(resolve("tests/billing-shell.mjs"), []);
   run(resolve("tests/browser-push-worker.mjs"), []);
   run(resolve("tests/browser-push-session.mjs"), [], {...process.env,GST_TEST_BUILD:join(folder,"shop")});

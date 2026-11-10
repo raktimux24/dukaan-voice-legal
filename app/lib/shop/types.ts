@@ -1,3 +1,4 @@
+import type {DocumentContextRef,DocumentContextView,IssuedDocument} from './documents/contract';
 import type { GstContext, GstSettings, ProductTax, TaxTotals, LineTax, Buyer } from './gst-types';
 import type { Role } from './permissions';
 
@@ -7,6 +8,7 @@ export type ShopRecord = {
   category: string;
   subtype?: string | null;
   ownerId: string;
+  ownerName?: string | null;
   managerInviteCode: string | null;
   helperInviteCode: string | null;
   language?: string | null;
@@ -29,6 +31,7 @@ export type Member = {
 };
 
 export type Product = {
+  media?:import("./product-images/contract").ProductMedia|null;
   gstTaxSnapshot?:import("./gst-core/gst-tax-cache").ProductTaxSnapshot;
   gstRspSnapshot?:import("./gst-core/gst-rsp-cache").ProductRspSnapshot;
   gstConfig?: ProductTax | null;
@@ -36,6 +39,7 @@ export type Product = {
   shopId: string;
   name: string;
   barcode?: string;
+  barcodeAliases?:string[];barcodeConflict?:boolean;
   category: string;
   subcategory?: string | null;
   unit: string;
@@ -56,6 +60,7 @@ export type Product = {
 };
 
 export type InventoryItem = {
+  reservedQuantity?:number;
   id: string;
   productId: string;
   shopId: string;
@@ -126,6 +131,9 @@ export type SalePaymentInput = {
 };
 
 export type CreateSalePayload = {
+  creditTerms?:import("./credit/contract").CreditTerms;
+  estimateSource?:import("./estimates/contract").EstimateSource;
+  documentPresentation?:DocumentContextRef;
   mixedDiscountReview?:{policy:"commercial_amount_proportional_v1";reviewed:true;evidenceReference:string};
   roundingSnapshot?:import("./gst-core/payable-rounding-snapshot").PayableRoundingSnapshot;
   roundingGrant?:import("./rounding-grant").RetainedRoundingGrant;
@@ -141,7 +149,11 @@ export type CreateSalePayload = {
   inputMethod?: 'manual' | 'voice' | 'scan';
 };
 
+export type SaleReturnCapacity = {saleId:string;customerId:string;originalCredit:string;originalPaid:string;allocatedCollections:string;creditReduced:string;moneyRefunded:string;unpaidCredit:string;refundableMoney:string;remainingGross:string;unassignedCollections:string;status:"ready"|"unassigned_collections"|"inconsistent_evidence"};
+
 export type SaleItem = {
+  batches?: {batchId:string;quantity:number;purchasePrice:number|null;batchNumber:string|null;purchaseDate:string|null;supplier:string|null}[];
+  remainingAmounts?: {netSales:number;costTotal:number|null;status:"exact"|"legacy_estimate"}|null;
   rspSnapshot?:ReturnType<typeof import("./gst-core/rsp-profile-contract").calculateRspProfileCommercial>|null;
   netSales?:number|null;
   taxSnapshot?: LineTax | null;
@@ -160,6 +172,9 @@ export type SaleItem = {
 };
 
 export type Sale = {
+  estimateId?:string|null;
+  documentPresentation?:IssuedDocument|null;
+  documentPresentationError?:string|null;
   requestHash?: string;
   gstIntegrity?: string;
   mixedGstSnapshot?:import("./gst-core/mixed-gst-fiscal").MixedFiscalPayload|null;
@@ -183,6 +198,7 @@ export type Sale = {
   showCost?: boolean;
   paidTotal: number;
   creditTotal: number;
+  collection?: import("./sale-collection").SaleCollection | null;
   paymentStatus: 'paid' | 'partial' | 'credit';
   inputMethod: string;
   note: string | null;
@@ -193,6 +209,9 @@ export type Sale = {
   items: SaleItem[];
   payments: { id: string; method: PaymentMethod; kind: string; amount: number; tendered: number | null; changeGiven: number | null; reference: string | null }[];
   returns: {
+    creditNoteNumber?:string|null;
+    settlement?:import("./gst-core/sale-return-settlement").ReturnSettlementPlan|null;
+    documentPresentation?:IssuedDocument|null;
     id: string;
     items: { saleItemId: string; quantity: number; restock: boolean; reason: string | null }[];
     refundMethod: PaymentMethod | null;
@@ -210,6 +229,7 @@ export type SaleListRow = {
   total: number;
   paidTotal: number;
   creditTotal: number;
+  collection?: import("./sale-collection").SaleCollection | null;
   paymentStatus: string;
   soldAt: string;
   soldBy: string;
@@ -223,6 +243,7 @@ export type SaleListRow = {
 };
 
 export type SalesSummary = {
+  avgBill: number;
   bills: number;
   revenue: number;
   grossProfit: number;
@@ -237,6 +258,7 @@ export type SalesSummary = {
 };
 
 export type Customer = {
+  monthPurchaseTotal?: number;
   billingPartyId?: string | null;
   billingParty?: {id:string;buyer:Buyer} | null;
   id: string;
@@ -251,6 +273,8 @@ export type Customer = {
 };
 
 export type LedgerEntry = {
+  effectiveAt?: string | null;
+  adjustmentId?: string | null;
   id: string;
   type: string;
   amount: number;
@@ -263,6 +287,7 @@ export type LedgerEntry = {
 };
 
 export type BuyListItem = {
+  orderedQuantity?:number;purchaseOrderId?:string;
   id: string;
   shopId: string;
   productId?: string;
@@ -278,6 +303,8 @@ export type BuyListItem = {
 };
 
 export type PosSettings = {
+  documentBranding?:DocumentContextView|null;
+  documentBrandingAvailable?:boolean;
   gstSettings?: GstSettings | null;
   gstProtocol?: number;
   gstAvailable?: boolean;
@@ -333,6 +360,7 @@ export type UserPreferences = {
 };
 
 export type Nudge = {
+  createdAt?: string;
   id: string;
   kind: string;
   severity: string;
@@ -342,7 +370,7 @@ export type Nudge = {
   productId: string | null;
   customerId: string | null;
   status: string;
-  evidence?: { anchorProductId?: string; supportPct?: number } | null;
+  evidence?: { anchorProductId?: string; together?: number; anchorBills?: number; supportPct?: number; dayLine?: string; stock?: {total:number;low:number;out:number} } | null;
 };
 
 export type BriefResponse = {
@@ -366,13 +394,16 @@ export type SupplierItem = {
   productId: string;
   name: string;
   unit: string;
+  isActive?: boolean;
+  packSize?: number | null;
+  packLabel?: string | null;
   sellingPrice: number | null;
   batches: number;
   quantity: number;
   spend: number;
-  lastPrice: number;
-  minPrice: number;
-  maxPrice: number;
+  lastPrice: number | null;
+  minPrice: number | null;
+  maxPrice: number | null;
   lastAt: string | null;
   alt: { supplier: string; price: number; at: string } | null;
 };
@@ -384,7 +415,7 @@ export type SupplierBatch = {
   unit: string;
   quantity: number;
   remaining: number;
-  price: number;
+  price: number | null;
   at: string;
   expiryDate: string | null;
   status: string;
@@ -409,6 +440,7 @@ export type SupplierCompareProduct = {
 };
 
 export type SalesReport = {
+  range?: { from: string; to: string };
   period: string;
   premium: boolean;
   limitedToDays: number | null;
@@ -440,8 +472,8 @@ export type SalesReport = {
   byCategory: { category: string; bills: number; units: number; revenue: number; sharePct: number; marginPct: number }[];
   byWeekday: { dow: number; bills: number; revenue: number }[];
   bestHour: number | null;
-  basket: { itemsPerBill: number; avgBill: number; discountPctOfGross: number; discountedBills: number } | null;
-  returns: { returns: number; returnAmount: number; voids: number; voidAmount: number } | null;
+  basket: { itemsPerBill: number; avgBill: number; discountPctOfGross: number; discountedBills: number; discountedBillsPct?: number | null; discounts?: number } | null;
+  returns: { returns: number; returnAmount: number; voids: number; voidAmount: number; returnPctOfSales?: number | null; topReturned?: {name: string; units: number; times: number}[] } | null;
   inputMethods: { method: string; bills: number; revenue: number }[];
   runRate?: {mtdRevenue:number;daysElapsed:number;daysInMonth:number;projected:number;lastMonthRevenue:number;vsLastMonthPct:number|null} | null;
   customers?: {bills:number;billsWithCustomer:number;walkIns:number;uniqueCustomers:number;newCustomers:number;returningCustomers:number;top:{customerId:string;name:string;bills:number;revenue:number;fiscalCorrectionNet?:number;owes:number}[]};
@@ -563,13 +595,14 @@ export interface StockReport {
   suppliers?: SupplierPurchases[];
 }
 
+export type AlertPrediction = {id:string;title:string;description:string;severity:string;productId?:string|null;productName?:string|null;productUnit?:string|null;isActionable?:boolean;generatedAt?:string;metadata?:{suggestedOrderQty?:number;daysUntilStockout?:number;dailyUsage?:number}};
 export type UnifiedAlerts = {
   stock: {
     outOfStock: { productId: string; productName: string; quantity: number; unit: string; minStockLevel: number }[];
     lowStock: { productId: string; productName: string; quantity: number; unit: string; minStockLevel: number }[];
   };
   expiry: { productId: string; productName: string; unit: string; expiryDate: string; daysRemaining: number; quantity: number }[];
-  predictions: { id: string; title: string; description: string; severity: string; productId: string | null }[];
+  predictions: AlertPrediction[];
   counts: { total: number; stock: number; expiry: number; ai: number };
 };
 
@@ -577,10 +610,12 @@ export type ProductTaxAuthorization = { id: string; shopId: string; memberId: st
 export type ProductTaxAuthorizationEntry = { managerId: string; memberId: string; authorization: ProductTaxAuthorization | null };
 export type SaleReturnListRow = {
   id: string; saleId: string; saleNumber: number; invoiceNumber?: string | null; createdAt: string;
-  refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
+  moneyRefund?:number;creditReduction?:number;refundAmount: number; refundMethod: PaymentMethod | null; reason: string | null; createdByName: string | null;
   itemCount: number; firstItem: string | null; customerName: string | null;
   settlement?: {creditReduction: string; moneyRefund: string} | null;
 };
-export type ReturnsListSummary = { count: number; amount: number; byMethod: Record<string, number> };
+export type ReturnsListSummary = { moneyRefund?:number;creditReduction?:number;count: number; amount: number; byMethod: Record<string, number> };
 
 export type SpokenAnswer = {answer:string;intent:string|null;transcript?:string;ttsAudioBase64?:string;ttsJobId?:string};
+
+export type UdhaarRiskProfile={customerId:string;balance:number;typicalRepayDays:number|null;daysSinceCredit:number|null;daysSincePayment:number|null;softLimit:number|null;overdue:boolean;stale:boolean;overLimit:boolean;risk:'low'|'medium'|'high'};

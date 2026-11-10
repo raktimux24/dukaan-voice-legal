@@ -44,6 +44,7 @@ export function SupplierField({
     <div><span className="shop-label">{t('modal.add_product.supplier_label', 'Supplier')}</span>
       <div className="supplier-field">
         <input
+          aria-label={t('modal.add_product.supplier_label', 'Supplier')}
           className={inputClass}
           value={value}
           placeholder={t('modal.add_product.supplier_placeholder', 'e.g. Krishna Traders')}

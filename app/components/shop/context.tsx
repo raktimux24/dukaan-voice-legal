@@ -8,16 +8,20 @@ import type { SubscriptionEntitlement } from '../../lib/subscriptions';
 
 export type ShopContextValue = {
   userId: string | null;
+  photoSessionId?: string | null;
   shops: ShopRecord[];
   shop: ShopRecord | null;
   role: Role | null;
   perms: Permissions;
   entitlement: SubscriptionEntitlement | null;
   premium: boolean;
+  entitlementStatus?: "loading" | "ready" | "error";
+  retryEntitlement?: () => void;
   api: ShopApi;
   refreshShops: () => Promise<void>;
   selectShop: (shopId: string) => void;
   prefs: UserPreferences | null;
+  signOutShop: () => Promise<void>;
   savePrefs: (partial: Partial<UserPreferences>) => Promise<void>;
   t: (key: string, fallback: string, vars?: Record<string, string | number>) => string;
   notice: string | null;

@@ -1,461 +1,1170 @@
-'use client';
+"use client";
 
-import { useGstText as useUiText } from "../gst-ui";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ProductImageById } from "../product-image";
+import { VoiceCapture, SpeechAudio } from "../voice-capture";
+import { ReportChart } from "../report-chart";
+import { SalesInsights } from "../report-sales-insights";
+import { StockInsights } from "../report-stock-insights";
+import { labeledL1 } from "../../../lib/shop/catalog";
+import { downloadText } from "../../../lib/shop/csv";
+import {
+  dateLocale,
+  formatINR,
+  formatShortDay,
+  formatDay,
+} from "../../../lib/shop/money";
+import type {
+  SalesReport,
+  StockReport,
+  SpokenAnswer,
+} from "../../../lib/shop/types";
+import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
+import {
+  SALES_PERIODS,
+  STOCK_PERIODS,
+  effectiveReportPeriod,
+  reportTab,
+  reportCostVisible,
+  stockMovementTotals,
+  type SalesPeriod,
+  type StockPeriod,
+} from "../../../lib/shop/reports";
+import { useShop } from "../context";
+import {
+  Button,
+  Field,
+  NoAccess,
+  Notice,
+  PageHeader,
+  PremiumLock,
+  Spinner,
+  inputClass,
+} from "../ui";
 
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { VoiceCapture, SpeechAudio } from '../voice-capture';
-import type { SpokenAnswer } from '../../../lib/shop/types';
-import { labeledL1 } from '../../../lib/shop/catalog';
-import { downloadText } from '../../../lib/shop/csv';
-import { formatINR, formatShortDay } from '../../../lib/shop/money';
-import type { SalesReport, StockReport } from '../../../lib/shop/types';
-import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
-import {SalesInsights} from '../report-sales-insights';
-import {StockInsights} from '../report-stock-insights';
-import { useShop } from '../context';
-import { Button, Card, Chip, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isPremiumError } from '../ui';
-
-const SALES_PERIODS = ['today', '7d', '30d', 'month', 'last_month'] as const;
-const STOCK_PERIODS = ['7d', '30d', '90d'] as const;
-
-const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
-const WEEKDAY_FALLBACK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const METHODS = [
-  { id: 'cash', label: 'Cash' },
-  { id: 'upi', label: 'UPI' },
-  { id: 'card', label: 'Card' },
-  { id: 'credit', label: 'Udhaar' },
-] as const;
-
-function periodChip(id: string, t: (key: string, fallback: string) => string) {
-  if (id === 'today') return t('sales.period.today', 'Today');
-  if (id === '7d') return t('sales.period.7d', '7 days');
-  if (id === '30d') return t('sales.period.30d', '30 days');
-  if (id === '90d') return t('reports.stock.period_90d', '90 days');
-  if (id === 'month') return t('sales.period.month', 'This month');
-  return t('reports.sales.period_last_month', 'Last month');
+const METHODS = ["cash", "upi", "card", "credit"] as const;
+const QUESTION_KEYS = [
+  "sales_today",
+  "cash",
+  "top_selling",
+  "udhaar",
+  "low_stock",
+  "stock_value",
+  "expiring",
+  "movement",
+  "most_active",
+  "buy_list",
+  "team",
+];
+function useLabels() {
+  const { t } = useShop();
+  return (key: string, vars?: Record<string, string | number>) =>
+    t(key, EN_FALLBACK[key] || key, vars);
 }
-
-function clockLabel(hour: number) {
-  const suffix = hour >= 12 ? 'pm' : 'am';
-  return `${hour % 12 || 12}${suffix}`;
+function periodLabel(id: string, label: ReturnType<typeof useLabels>) {
+  return label(
+    id === "last_month"
+      ? "reports.sales.period_last_month"
+      : id === "90d"
+        ? "reports.stock.period_90d"
+        : `sales.period.${id}`,
+  );
 }
-
-function ColumnChart({ columns }: { columns: { label: string; bars: { value: number; tone?: string }[] }[] }) {
-  const max = Math.max(1, ...columns.flatMap((column) => column.bars.map((bar) => bar.value)));
+function Metric({
+  label,
+  children,
+  note,
+}: {
+  label: string;
+  children: ReactNode;
+  note?: ReactNode;
+}) {
   return (
-    <div className="chart-bars" role="img">
-      {columns.map((column, index) => (
-        <div key={`${column.label}-${index}`} className="chart-col">
-          <div className="chart-pair">
-            {column.bars.map((bar, barIndex) => (
-              <span
-                key={barIndex}
-                className={bar.tone}
-                style={{ height: bar.value <= 0 ? '0%' : `${Math.max(6, (bar.value / max) * 100)}%` }}
-              />
-            ))}
-          </div>
-          <small>{column.label}</small>
-        </div>
-      ))}
+    <div className="report-metric">
+      <span>{label}</span>
+      <strong>{children}</strong>
+      {note ? <small>{note}</small> : null}
     </div>
   );
 }
-
-function ShareList({ rows }: { rows: { key: string; label: string; pct: number; value: string; tone?: string }[] }) {
-  const uiText = useUiText();
-  if (rows.length === 0) return <p className="party-meta">{uiText("Nothing in this period.")}</p>;
+function Panel({
+  title,
+  children,
+  note,
+}: {
+  title: string;
+  children: ReactNode;
+  note?: ReactNode;
+}) {
   return (
-    <div className="chart-rows">
-      {rows.map((row) => (
-        <div key={row.key} className="chart-row">
-          <span>{row.label}</span>
-          <div className="chart-track" aria-hidden="true">
-            <i className={row.tone} style={{ width: `${row.pct <= 0 ? 0 : Math.max(2, Math.min(100, row.pct))}%` }} />
-          </div>
-          <b>{row.value}</b>
+    <section className="report-panel">
+      <h2>{title}</h2>
+      {note ? <p className="shop-hint">{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+function Breakdown({ rows }: { rows: { label: string; value: number }[] }) {
+  const label = useLabels();
+  const total = rows.reduce((n, r) => n + Math.max(0, r.value), 0);
+  return rows.length ? (
+    <div className="report-breakdown">
+      {rows.map((r, i) => (
+        <div key={i}>
+          <span>{r.label}</span>
+          <strong>{formatINR(r.value)}</strong>
+          <i aria-hidden="true">
+            <b
+              style={{
+                width: `${total ? (Math.max(0, r.value) / total) * 100 : 0}%`,
+              }}
+            />
+          </i>
         </div>
       ))}
     </div>
+  ) : (
+    <p className="shop-hint">{label("modal.analytics.no_data")}</p>
   );
 }
-
-function SalesView({ report, showCost }: { report: SalesReport; showCost: boolean }) {
-  const uiText = useUiText();
-  const { t, prefs } = useShop();
-  const summary = report.summary;
-  const revenue = summary?.revenue ?? 0;
-  const methodTotal = METHODS.reduce((sum, method) => sum + (summary?.byMethod?.[method.id] ?? 0), 0) || 1;
-  const hours = summary?.byHour ?? [];
-  const series = summary?.series ?? [];
-  const week = WEEKDAYS.map((id, dow) => ({
-    label: t(`reports.sales.dow.${id}`, WEEKDAY_FALLBACK[dow] ?? id),
-    value: report.byWeekday?.find((day) => day.dow === dow)?.revenue ?? 0,
-  }));
-
+function SalesView({
+  report,
+  showCost,
+  children,
+}: {
+  report: SalesReport;
+  showCost: boolean;
+  children?: ReactNode;
+}) {
+  const { t, prefs } = useShop(),
+    label = useLabels(),
+    s = report.summary;
+  const hour = (h: number) =>
+    new Intl.DateTimeFormat(dateLocale(prefs?.appLanguage), {
+      hour: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(Date.UTC(2026, 0, 1, h)));
   return (
     <>
-      {report.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: report.limitedToDays })}</p> : null}
-      <div className="kpi-grid">
-        <div className="kpi">
-          <p className="kpi-label">{t('sales.summary.revenue', 'Revenue')}</p>
-          <p className="kpi-value">{formatINR(revenue)}</p>
-          {report.comparison && report.comparison.deltaPct.revenue != null ? (
-            <p className={report.comparison.deltaPct.revenue >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
-              {report.comparison.deltaPct.revenue >= 0 ? '+' : ''}
-              {Math.round(report.comparison.deltaPct.revenue)}% {report.comparison.label === 'same_day_last_week' ? t('reports.sales.vs_last_week', 'vs last week') : t('reports.sales.vs_previous', 'vs previous')}
+      <div className="report-overview">
+        <Metric
+          label={label("sales.summary.revenue")}
+          note={t("reportweb.net_sales", "After returns, excluding GST")}
+        >
+          {formatINR(s.revenue)}
+          {report.comparison?.deltaPct.revenue != null ? (
+            <em
+              className={
+                report.comparison.deltaPct.revenue >= 0 ? "is-up" : "is-down"
+              }
+            >
+              {report.comparison.deltaPct.revenue > 0 ? "+" : ""}
+              {Math.round(report.comparison.deltaPct.revenue)}%{" "}
+              <span>
+                {label(
+                  report.comparison.label === "same_day_last_week"
+                    ? "reports.sales.vs_last_week"
+                    : "reports.sales.vs_previous",
+                )}
+              </span>
+            </em>
+          ) : null}
+        </Metric>
+        <Metric label={label("sales.summary.bills")}>{s.bills}</Metric>
+        <Metric label={label("reports.sales.avg_before_returns")}>
+          {formatINR(s.avgBill)}
+        </Metric>
+        <Metric label={label("reports.sales.items_sold")}>{s.itemsSold}</Metric>
+      </div>
+      {report.comparison ? (
+        <p className="report-context">
+          {label(
+            report.comparison.label === "same_day_last_week"
+              ? "reports.sales.compare_note_week"
+              : "reports.sales.compare_note_prev",
+            {
+              amount: formatINR(report.comparison.previous.revenue),
+              n: report.comparison.previous.bills,
+            },
+          )}
+        </p>
+      ) : null}
+      <div className="report-two-col">
+        <Panel
+          title={label(
+            report.period === "today" && report.premium
+              ? "reports.sales.by_hour"
+              : "reports.sales.by_day",
+          )}
+          note={
+            report.period === "today" && report.premium
+              ? undefined
+              : t("reportweb.net_sales", "After returns, excluding GST")
+          }
+        >
+          {report.period === "today" && report.premium ? (
+            <ReportChart
+              money
+              columns={s.byHour.map((v, h) => ({
+                label: hour(h),
+                values: [v],
+              }))}
+              series={[label("sales.summary.revenue")]}
+            />
+          ) : s.series?.length ? (
+            <ReportChart
+              money
+              columns={s.series.map((d) => ({
+                label: formatShortDay(d.date, prefs?.appLanguage),
+                values: [d.revenue],
+              }))}
+              series={[label("sales.summary.revenue")]}
+            />
+          ) : (
+            <p className="shop-hint">{label("sales.empty_title")}</p>
+          )}
+        </Panel>
+        <Panel
+          title={label("reports.sales.payment_mix")}
+          note={t(
+            "reportweb.payment_note",
+            "Includes collections and refunds; this is not the sales total.",
+          )}
+        >
+          <Breakdown
+            rows={METHODS.map((m) => ({
+              label: label(`pos.method.${m}`),
+              value: s.byMethod[m] ?? 0,
+            }))}
+          />
+          {s.collections && Object.values(s.collections).some((n) => n > 0) ? (
+            <p className="shop-hint">
+              {label("reports.sales.incl_collections", {
+                amount: formatINR(
+                  Object.values(s.collections).reduce((a, b) => a + b, 0),
+                ),
+              })}
             </p>
           ) : null}
-        </div>
-        <div className="kpi">
-          <p className="kpi-label">{t('sales.summary.bills', 'Bills')}</p>
-          <p className="kpi-value">{summary?.bills ?? 0}</p>
-          {report.comparison && report.comparison.deltaPct.bills != null ? (
-            <p className={report.comparison.deltaPct.bills >= 0 ? 'dash-delta is-up' : 'dash-delta is-down'}>
-              {report.comparison.deltaPct.bills >= 0 ? '+' : ''}
-              {Math.round(report.comparison.deltaPct.bills)}%
-            </p>
+        </Panel>
+      </div>
+      {children}
+      <details className="report-disclosure">
+        <summary>
+          <span>
+            {t("reportweb.sales_detail", "Sales breakdown")}
+            <small>
+              {t(
+                "reportweb.sales_detail_hint",
+                "Categories, busy hours, baskets and returns",
+              )}
+            </small>
+          </span>
+          <span aria-hidden="true">+</span>
+        </summary>
+        <div className="report-disclosure-body">
+          <div className="report-two-col">
+            <Panel title={label("reports.sales.by_category")}>
+              <Breakdown
+                rows={report.byCategory.map((c) => ({
+                  label:
+                    c.category === "legacy_unknown"
+                      ? label("reports.sales.category_unknown")
+                      : labeledL1(c.category, (k) => label(k)),
+                  value: c.revenue,
+                }))}
+              />
+            </Panel>
+            <Panel title={label("reports.sales.busy_days")}>
+              <ReportChart
+                money
+                columns={Array.from({ length: 7 }, (_, dow) => ({
+                  label: label(
+                    `reports.sales.dow.${["sun", "mon", "tue", "wed", "thu", "fri", "sat"][dow]}`,
+                  ),
+                  values: [
+                    report.byWeekday.find((d) => d.dow === dow)?.revenue ?? 0,
+                  ],
+                }))}
+                series={[label("sales.summary.revenue")]}
+              />
+            </Panel>
+          </div>
+          {report.premium && report.period !== "today" ? (
+            <Panel
+              title={label("reports.sales.by_hour")}
+              note={
+                report.bestHour != null
+                  ? label("reports.sales.best_hour_line", {
+                      hour: hour(report.bestHour),
+                    })
+                  : undefined
+              }
+            >
+              <ReportChart
+                money
+                columns={s.byHour.map((v, h) => ({
+                  label: hour(h),
+                  values: [v],
+                }))}
+                series={[label("sales.summary.revenue")]}
+              />
+            </Panel>
+          ) : null}
+          <Panel title={label("reports.sales.basket")}>
+            <div className="report-stat-grid">
+              <Metric label={label("reports.sales.items_per_bill_label")}>
+                {report.basket?.itemsPerBill ?? "—"}
+              </Metric>
+              <Metric label={label("bill.discount")}>
+                {formatINR(s.discounts)}
+              </Metric>
+              <Metric label={label("reports.sales.of_gross")}>
+                {report.basket?.discountPctOfGross == null
+                  ? "—"
+                  : `${report.basket.discountPctOfGross}%`}
+              </Metric>
+              <Metric
+                label={label("reports.sales.bills_discounted")}
+                note={
+                  report.basket?.discountedBillsPct == null
+                    ? undefined
+                    : `${report.basket.discountedBillsPct}%`
+                }
+              >
+                {report.basket?.discountedBills ?? 0}
+              </Metric>
+            </div>
+            <p className="shop-hint">{label("reports.sales.average_help")}</p>
+          </Panel>
+          <Panel title={label("sale_detail.returns")}>
+            <div className="report-stat-grid">
+              <Metric label={label("sale_detail.returns")}>
+                {report.returns?.returns ?? 0}
+              </Metric>
+              <Metric
+                label={t("reportweb.return_value", "Returns value")}
+                note={
+                  report.returns?.returnPctOfSales == null
+                    ? undefined
+                    : `${report.returns.returnPctOfSales}%`
+                }
+              >
+                {formatINR(report.returns?.returnAmount)}
+              </Metric>
+              <Metric label={label("sales.status_filter.voided")}>
+                {report.returns?.voids ?? 0}
+              </Metric>
+              <Metric label={t("reportweb.void_value", "Voided value")}>
+                {formatINR(report.returns?.voidAmount)}
+              </Metric>
+            </div>
+            {report.premium && report.returns?.topReturned?.length ? (
+              <p className="shop-hint">
+                {label("reports.sales.most_returned")}:{" "}
+                {report.returns.topReturned
+                  .map((x) => `${x.name} ×${x.units}`)
+                  .join(", ")}
+              </p>
+            ) : null}
+          </Panel>
+          {report.inputMethods?.length ? (
+            <Panel title={label("reports.sales.input_methods")}>
+              <div className="report-stat-grid">
+                {report.inputMethods.map((m) => (
+                  <Metric
+                    key={m.method}
+                    label={label(`reports.sales.method_${m.method}`)}
+                    note={formatINR(m.revenue)}
+                  >
+                    {label("reports.sales.bills_n", { n: m.bills })}
+                  </Metric>
+                ))}
+              </div>
+            </Panel>
           ) : null}
         </div>
-        <div className="kpi">
-          <p className="kpi-label">{t('sales.summary.avg_bill', 'Avg bill')}</p>
-          <p className="kpi-value">{formatINR(summary?.avgBill)}</p>
+      </details>
+      <Panel
+        title={label("reports.sales.net_cash_flow")}
+        note={label("reports.sales.net_cash_flow_help")}
+      >
+        <div className="report-cash">
+          <strong>{formatINR(s.cashInDrawer)}</strong>
+          <Button tone="quiet" href="/shop/cashbook">
+            {label("cashbook.title")} ↗
+          </Button>
         </div>
-        <div className="kpi">
-          <p className="kpi-label">{showCost ? t('reports.sales.margin', 'Margin') : t('reports.sales.items_sold', 'Items sold')}</p>
-          <p className="kpi-value">{showCost ? (summary?.marginPct == null ? '—' : `${summary.marginPct.toFixed(1)}%`) : summary?.itemsSold ?? 0}</p>
-        </div>
-      </div>
-      <div className="dash-columns">
-        <Card>
-          <h2 className="shop-section-title">{t('reports.sales.by_hour', 'By hour')}</h2>
-          <p className="shop-section-sub">{report.bestHour == null ? t('sales.empty_title', 'No sales in this period.') : t('reports.sales.best_hour_line', 'Busiest at {{hour}}.', { hour: clockLabel(report.bestHour) })}</p>
-          <ColumnChart
-            columns={hours.map((value, hour) => ({
-              label: hour % 3 === 0 ? clockLabel(hour) : '',
-              bars: [{ value }],
-            }))}
-          />
-        </Card>
-        <Card>
-          <h2 className="shop-section-title">{t('reports.sales.busy_days', 'By weekday')}</h2>
-          <p className="shop-section-sub">{t('sales.summary.revenue', 'Revenue')}</p>
-          <ColumnChart columns={week.map((day) => ({ label: day.label, bars: [{ value: day.value }] }))} />
-        </Card>
-      </div>
-      {series.length > 0 ? (
-        <Card>
-          <h2 className="shop-section-title">{t('reports.sales.by_day', 'Over the period')}</h2>
-          <ColumnChart
-            columns={series.map((point, index) => ({
-              label: series.length > 14 && index % Math.ceil(series.length / 8) !== 0 ? '' : formatShortDay(point.date, prefs?.appLanguage),
-              bars: [{ value: point.revenue }],
-            }))}
-          />
-        </Card>
+      </Panel>
+      {report.premium && showCost ? (
+        <details className="report-disclosure">
+          <summary>
+            <span>
+              {label("reports.sales.gross_profit")}
+              <small>
+                {t(
+                  "reportweb.profit_hint",
+                  "Cost, margin and purchase-cost corrections",
+                )}
+              </small>
+            </span>
+            <span aria-hidden="true">+</span>
+          </summary>
+          <div className="report-disclosure-body">
+            <div className="report-stat-grid">
+              <Metric label={label("reports.sales.gross_profit")}>
+                {formatINR(s.grossProfit)}
+              </Metric>
+              <Metric label={label("reports.sales.margin")}>
+                {s.marginPct == null ? "—" : `${s.marginPct.toFixed(1)}%`}
+              </Metric>
+            </div>
+            <p className="shop-hint">
+              {label("reports.sales.cogs_note", { amount: formatINR(s.cogs) })}
+            </p>
+            {s.purchaseCostMovement && s.purchaseCostMovement.count > 0 ? (
+              <Panel
+                title={label("gst.cost_movement_title")}
+                note={label("gst.cost_movement_notice")}
+              >
+                <div className="report-stat-grid">
+                  {(["inventory", "consumed", "total"] as const).map((k) => (
+                    <Metric key={k} label={label(`gst.cost_movement_${k}`)}>
+                      {formatINR(Number(s.purchaseCostMovement![k]))}
+                    </Metric>
+                  ))}
+                </div>
+              </Panel>
+            ) : null}
+          </div>
+        </details>
       ) : null}
-      <div className="dash-columns">
-        <Card>
-          <h2 className="shop-section-title">{t('reports.sales.payment_mix', 'How it was paid')}</h2>
-          {summary.collections && Object.values(summary.collections).some(amount => amount > 0) ? <p className="shop-hint">{t('reports.sales.incl_collections', EN_FALLBACK['reports.sales.incl_collections'], { amount: formatINR(Object.values(summary.collections).reduce((sum, amount) => sum + amount, 0)) })}</p> : null}
-          <ShareList
-            rows={METHODS.map((method) => {
-              const amount = summary?.byMethod?.[method.id] ?? 0;
-              return { key: method.id, label: t(`pos.method.${method.id}`, method.label), pct: (amount / methodTotal) * 100, value: formatINR(amount) };
-            })}
-          />
-        </Card>
-        <Card>
-          <h2 className="shop-section-title">{t('reports.sales.by_category', 'Categories')}</h2>
-          <ShareList
-            rows={(report.byCategory ?? []).map((row) => ({
-              key: row.category,
-              label: `${labeledL1(row.category, (key) => t(key, key))}${showCost && row.marginPct != null ? ` · ${row.marginPct}% ${t('reports.sales.margin', 'Margin')}` : ''}`,
-              pct: row.sharePct,
-              value: formatINR(row.revenue),
-            }))}
-          />
-        </Card>
-      </div>
-      <div className="kpi-grid">
-        <div className="kpi"><p className="kpi-label">{t('reports.sales.items_per_bill_label', 'Items / bill')}</p><p className="kpi-value">{report.basket?.itemsPerBill?.toFixed(1) ?? '—'}</p></div>
-        <div className="kpi"><p className="kpi-label">{t('reports.sales.bills_discounted', 'Discounted bills')}</p><p className="kpi-value">{report.basket?.discountedBills ?? 0}</p></div>
-        <div className="kpi"><p className="kpi-label">{t('sale_detail.returns', 'Returns')}</p><p className="kpi-value">{formatINR(report.returns?.returnAmount)}</p></div>
-        <div className="kpi"><p className="kpi-label">{t('sales.status_filter.voided', 'Voids')}</p><p className="kpi-value">{report.returns?.voids ?? 0}</p></div>
-      </div>
-      {showCost ? (
-        <div className="kpi-grid">
-          <div className="kpi"><p className="kpi-label">{t('reports.sales.gross_profit', 'Gross profit')}</p><p className="kpi-value">{formatINR(summary?.grossProfit)}</p></div>
-          <div className="kpi"><p className="kpi-label">{uiText("Cost of goods")}</p><p className="kpi-value">{formatINR(summary?.cogs)}</p></div>
-          <div className="kpi"><p className="kpi-label">{t('reports.sales.cash_in_drawer', 'Cash in drawer')}</p><p className="kpi-value">{formatINR(summary?.cashInDrawer)}</p></div>
-          <div className="kpi"><p className="kpi-label">{t('bill.discount', 'Discounts')}</p><p className="kpi-value">{formatINR(summary?.discounts)}</p></div>
-        </div>
-      ) : null}
-      {showCost && summary?.purchaseCostMovement && summary.purchaseCostMovement.count > 0 ? (
-        <Card>
-          <h2 className="shop-section-title">{t('gst.cost_movement_title', EN_FALLBACK['gst.cost_movement_title'])} ({summary.purchaseCostMovement.count})</h2>
-          <dl className="grid gap-3">
-            {(['inventory', 'consumed', 'total'] as const).map(key => <div key={key} className="flex flex-wrap items-baseline justify-between gap-3"><dt>{t(`gst.cost_movement_${key}`, EN_FALLBACK[`gst.cost_movement_${key}`])}</dt><dd>{formatINR(Number(summary.purchaseCostMovement![key]))}</dd></div>)}
-          </dl>
-          <p className="shop-hint">{t('gst.cost_movement_notice', EN_FALLBACK['gst.cost_movement_notice'])}</p>
-        </Card>
-      ) : null}
-      {(report.inputMethods ?? []).length > 0 ? (
-        <Card>
-          <h2 className="shop-section-title">{t('reports.sales.input_methods', 'How bills were entered')}</h2>
-          <ShareList
-            rows={report.inputMethods.map((row) => ({
-              key: row.method,
-              label: t(`reports.sales.method_${row.method === 'manual' ? 'manual' : row.method === 'scan' ? 'scan' : row.method === 'voice' ? 'voice' : row.method}`, row.method),
-              pct: summary?.bills ? (row.bills / summary.bills) * 100 : 0,
-              value: t('reports.sales.bills_n', '{{n}} bills', { n: row.bills }),
-            }))}
-          />
-        </Card>
-      ) : null}
-      <SalesInsights report={report} showCost={showCost}/>
+      <SalesInsights report={report} showCost={showCost} />
     </>
   );
 }
-
-function StockView({ report, showCost }: { report: StockReport; showCost: boolean }) {
-  const uiText = useUiText();
-  const { t, prefs } = useShop();
-  const onHand = report.onHand;
-  const products = onHand?.products || 1;
-  const movement = report.movementByDay ?? [];
-  const statuses = [
-    { key: 'OK', label: t('reports.stock.status_ok', 'In stock'), tone: 'is-ok' },
-    { key: 'LOW', label: t('reports.stock.status_low', 'Low'), tone: 'is-warn' },
-    { key: 'OUT', label: t('reports.stock.status_out', 'Out'), tone: 'is-danger' },
-  ] as const;
-
+function StockView({
+  report,
+  showCost,
+}: {
+  report: StockReport;
+  showCost: boolean;
+}) {
+  const { t, prefs } = useShop(),
+    label = useLabels(),
+    s = report.onHand,
+    totals = stockMovementTotals(report.movementByDay);
   return (
     <>
-      {report.limitedToDays ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', { days: report.limitedToDays })}</p> : null}
-      <div className="kpi-grid">
-        <div className="kpi"><p className="kpi-label">{t('reports.stock.products', 'Products')}</p><p className="kpi-value">{onHand?.products ?? 0}</p></div>
-        <div className="kpi"><p className="kpi-label">{t('reports.stock.units', 'Units on hand')}</p><p className="kpi-value">{Math.round(onHand?.units ?? 0)}</p></div>
-        <div className="kpi"><p className="kpi-label">{t('reports.stock.retail_value', 'Retail value')}</p><p className="kpi-value">{formatINR(onHand?.retailValue)}</p></div>
-        {showCost ? <div className="kpi"><p className="kpi-label">{t('reports.stock.value_at_cost', 'Cost value')}</p><p className="kpi-value">{formatINR(onHand?.costValue)}</p></div> : null}
+      <div className="report-overview">
+        <Metric
+          label={label(
+            showCost ? "reports.stock.value_at_cost" : "reports.stock.units",
+          )}
+          note={t(
+            "reportweb.current_stock",
+            "Current stock. The selected period applies to movements and history.",
+          )}
+        >
+          {showCost ? formatINR(s.costValue) : s.units}
+        </Metric>
+        <Metric label={label("reports.stock.products")}>{s.products}</Metric>
+        <Metric label={label("reports.stock.status_low")}>
+          {s.byStatus.LOW.products}
+        </Metric>
+        <Metric label={label("reports.stock.status_out")}>
+          {s.byStatus.OUT.products}
+        </Metric>
       </div>
-      <div className="dash-columns">
-        <Card>
-          <h2 className="shop-section-title">{t('reports.stock.on_hand', 'Stock health')}</h2>
-          <ShareList
-            rows={statuses.map((status) => {
-              const count = onHand?.byStatus?.[status.key]?.products ?? 0;
-              return { key: status.key, label: status.label, pct: (count / products) * 100, value: String(count), tone: status.tone };
-            })}
-          />
-        </Card>
-        <Card>
-          <h2 className="shop-section-title">{t('reports.stock.expiry', 'Expiring')}</h2>
-          <div className="party-stats">
-            <div className="party-stat"><span>{t('sales.period.7d', '7 days')}</span><b>{report.expiry?.within7?.batches ?? 0}</b></div>
-            <div className="party-stat"><span>{t('sales.period.30d', '30 days')}</span><b>{report.expiry?.within30?.batches ?? 0}</b></div>
-            <div className="party-stat"><span>{uiText("60 days")}</span><b>{report.expiry?.within60?.batches ?? 0}</b></div>
+      {showCost ? (
+        <p className="report-context">
+          {label("reports.stock.status_ok")}: {s.byStatus.OK.products} ·{" "}
+          {label("reports.stock.retail_value")}: {formatINR(s.retailValue)} ·{" "}
+          {label("reports.stock.potential_margin", {
+            amount: formatINR(s.potentialMargin),
+          })}
+        </p>
+      ) : null}
+      <div className="report-two-col">
+        <Panel
+          title={label("reports.stock.movement")}
+          note={label("mobile.observations.movement_range")}
+        >
+          <div className="report-stat-grid report-movement-totals">
+            {(["incoming", "sold", "adjusted", "net"] as const).map((k, i) => (
+              <Metric
+                key={k}
+                label={label(
+                  [
+                    "reports.stock.units_in",
+                    "reports.stock.units_sold",
+                    "reports.stock.units_adjusted",
+                    "reports.stock.net",
+                  ][i],
+                )}
+              >
+                {totals[k]}
+              </Metric>
+            ))}
           </div>
-        </Card>
-      </div>
-      <Card>
-        <h2 className="shop-section-title">{t('reports.stock.movement', 'Movement')}</h2>
-        <p className="chart-legend"><i /> {t('reports.stock.units_in', 'In')} <i className="is-ok" /> {t('reports.stock.units_sold', 'Sold')} <i className="is-danger" /> {t('reports.stock.units_adjusted', 'Adjusted')}</p>
-        {movement.length === 0 ? <p className="party-meta">{uiText("No stock movement in this period.")}</p> : (
-          <ColumnChart
-            columns={movement.map((day, index) => ({
-              label: movement.length > 14 && index % Math.ceil(movement.length / 8) !== 0 ? '' : formatShortDay(day.date, prefs?.appLanguage),
-              bars: [
-                { value: day.unitsAdjusted, tone: 'is-danger' },
-                { value: day.unitsIn, tone: '' },
-                { value: day.unitsSold, tone: 'is-ok' },
-              ],
-            }))}
-          />
-        )}
-      </Card>
-      <Card>
-        <h2 className="shop-section-title">{showCost ? t('reports.stock.value_by_category', 'Value by category') : t('reports.stock.units_by_category', 'Units by category')}</h2>
-        <ShareList
-          rows={(report.byCategory ?? []).map((row) => ({
-            key: row.category,
-            label: labeledL1(row.category, (key) => t(key, key)),
-            pct: (showCost ? row.costValue ?? 0 : row.units) / ((report.byCategory ?? []).reduce((total, category) => total + (showCost ? category.costValue ?? 0 : category.units), 0) || 1) * 100,
-            value: showCost ? formatINR(row.costValue) : `${row.units} ${t('reports.stock.units', 'Units')}`,
-          }))}
-        />
-      </Card>
-      {(report.expiry?.items.length ?? 0) > 0 ? (
-        <Card flush>
-          <div className="card-intro">
-            <h2 className="shop-section-title">{t('reports.stock.expiry', 'Batches nearing expiry')}</h2>
-          </div>
-          <div className="shop-list">
-            {report.expiry?.items.map((item) => (
-              <div key={`${item.productId}-${item.expiryDate}`} className="shop-list-row">
-                <div className="shop-list-main">
-                  <p className="shop-list-title">{item.name}</p>
-                  <p className="shop-list-meta">{item.units} {item.unit} · {formatShortDay(item.expiryDate, prefs?.appLanguage)}</p>
-                </div>
-                <b>{item.daysRemaining}d</b>
+          {report.movementByDay.length ? (
+            <>
+              <div className="report-legend">
+                {["units_in", "units_sold", "units_adjusted"].map((k, i) => (
+                  <span key={k}>
+                    <i className={`report-series-${i}`} />
+                    {label(`reports.stock.${k}`)}
+                  </span>
+                ))}
+              </div>
+              <ReportChart
+                columns={report.movementByDay.map((d) => ({
+                  label: formatShortDay(d.date, prefs?.appLanguage),
+                  values: [d.unitsIn, d.unitsSold, d.unitsAdjusted],
+                }))}
+                series={["units_in", "units_sold", "units_adjusted"].map((k) =>
+                  label(`reports.stock.${k}`),
+                )}
+              />
+            </>
+          ) : (
+            <p className="shop-hint">{label("modal.analytics.no_data")}</p>
+          )}
+        </Panel>
+        <Panel title={label("reports.stock.expiry")}>
+          <p className="shop-hint">
+            {t(
+              "reportweb.expiry_note",
+              "Upcoming expiry windows overlap. Review the batches below.",
+            )}
+          </p>
+          <div className="report-expiry">
+            {(["within7", "within30", "within60"] as const).map((k, i) => (
+              <div key={k}>
+                <span>{label(`reports.stock.expiry_${[7, 30, 60][i]}`)}</span>
+                <strong>
+                  {showCost
+                    ? formatINR(report.expiry[k].costValue)
+                    : report.expiry[k].units}
+                </strong>
+                <small>
+                  {t("reportweb.batches", "{{n}} batches", {
+                    n: report.expiry[k].batches,
+                  })}
+                </small>
               </div>
             ))}
           </div>
-        </Card>
-      ) : null}
-      <StockInsights report={report} showCost={showCost}/>
-    </>
-  );
-}
-
-function StockHistory({ history, loading, error, showCost, premium, limited }: { history: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number; totalStockValue: number; totalItemsMoved: number }[]; loading: boolean; error: unknown; showCost: boolean; premium: boolean; limited: boolean }) {
-  const { t } = useShop();
-  const uiText = useUiText();
-  if (isPremiumError(error)) return <PremiumLock feature="history" />;
-  const values = history.map((day) => day.totalStockValue);
-  const max = Math.max(...values, 1);
-  const latest = history.at(-1);
-  return (
-    <Card>
-      <h2 className="shop-section-title">{t('modal.analytics.value_trend_title', 'Stock value trend')}</h2>
-      <p className="shop-section-sub">{uiText('Daily snapshots of products, low stock, and stock that moved.')}</p>
-      {limited ? <p className="text-sm text-muted">{t('subscription.gate.history.body', 'Free shops see the last 7 days. Premium keeps the longer ranges.')}</p> : null}
-      {loading ? <Spinner /> : null}
-      {error && !isPremiumError(error) ? <Notice error={error} /> : null}
-      {!loading && history.length === 0 ? <p className="shop-list-empty">{uiText('No stock snapshots yet. Save one from a product page.')}</p> : null}
-      {history.length > 1 && showCost ? (
-        <div className="chart-bars" role="img" aria-label={t('modal.analytics.value_trend_title', 'Stock value trend')}>
-          {history.map((day) => (
-            <div key={day.date} className="chart-col">
-              <div className="chart-pair"><span style={{ height: `${Math.max(6, (day.totalStockValue / max) * 100)}%` }} /></div>
-              <small>{formatShortDay(day.date)}</small>
+          <Button href="/shop/products?filter=near_expiry" tone="quiet">
+            {t("reportweb.review_stock", "Review stock")} ↗
+          </Button>
+        </Panel>
+      </div>
+      <details className="report-disclosure">
+        <summary>
+          <span>
+            {t("reportweb.stock_detail", "Stock breakdown")}
+            <small>
+              {t(
+                "reportweb.stock_detail_hint",
+                "Categories and batches nearing expiry",
+              )}
+            </small>
+          </span>
+          <span aria-hidden="true">+</span>
+        </summary>
+        <div className="report-disclosure-body">
+          <Panel
+            title={label(
+              showCost
+                ? "reports.stock.value_by_category"
+                : "reports.stock.units_by_category",
+            )}
+          >
+            <div className="report-category-list">
+              {report.byCategory.length ? (
+                report.byCategory.map((c) => (
+                  <div key={c.category}>
+                    <span>
+                      {labeledL1(c.category, (k) => label(k))}
+                      <small>
+                        {label("reports.stock.status_low")}: {c.lowStock} ·{" "}
+                        {label("reports.stock.status_out")}: {c.outOfStock}
+                      </small>
+                    </span>
+                    <strong>
+                      {showCost ? formatINR(c.costValue) : c.units}
+                    </strong>
+                  </div>
+                ))
+              ) : (
+                <p>{label("modal.analytics.no_data")}</p>
+              )}
             </div>
-          ))}
+          </Panel>
+          <Panel title={label("reports.stock.expiry")}>
+            <div className="report-product-list">
+              {report.expiry.items.length ? (
+                report.expiry.items.map((item, i) => (
+                  <Link
+                    key={`${item.productId}-${item.expiryDate}-${i}`}
+                    href={`/shop/products/${encodeURIComponent(item.productId)}`}
+                  >
+                    <ProductImageById
+                      productId={item.productId}
+                      name={item.name}
+                      size={40}
+                    />
+                    <span>
+                      <strong>{item.name}</strong>
+                      <small>
+                        {item.units} {item.unit} ·{" "}
+                        {formatShortDay(item.expiryDate, prefs?.appLanguage)}
+                        {item.batchNumber ? ` · ${item.batchNumber}` : ""}
+                      </small>
+                    </span>
+                    <b>
+                      {item.daysRemaining <= 0
+                        ? label("reports.stock.expired")
+                        : label("reports.stock.in_days", {
+                            n: item.daysRemaining,
+                          })}
+                    </b>
+                    <span aria-hidden="true">↗</span>
+                  </Link>
+                ))
+              ) : (
+                <p className="shop-hint">{label("modal.analytics.no_data")}</p>
+              )}
+            </div>
+          </Panel>
         </div>
-      ) : null}
-      {latest ? (
-        <p className="text-sm text-muted">
-          {formatShortDay(latest.date)} · {latest.totalProducts} {t('products.title', 'Products').toLowerCase()} · {latest.lowStockCount} {t('home.stat_low_stock', 'low')} · {latest.outOfStockCount} {t('home.stat_out_of_stock', 'out')}
-          {showCost ? ` · ${formatINR(latest.totalStockValue)}` : ''} · {latest.totalItemsMoved} {uiText('moved')}
-        </p>
-      ) : null}
-    </Card>
+      </details>
+      <StockInsights
+        key={`${report.range.from}:${report.range.to}`}
+        report={report}
+        showCost={showCost}
+      />
+    </>
   );
 }
 
 export function ReportsScreen() {
-  const uiText = useUiText();
-  const { api, shop, userId, perms, premium, prefs, hideCost, t } = useShop();
-  const [salesPeriod, setSalesPeriod] = useState<(typeof SALES_PERIODS)[number]>('today');
-  const [stockPeriod, setStockPeriod] = useState<(typeof STOCK_PERIODS)[number]>('7d');
-  const [topBy, setTopBy] = useState<'quantity' | 'revenue'>('quantity');
-  const [tab, setTab] = useState<'sales' | 'stock'>('sales');
-  const period = tab === 'sales' ? salesPeriod : stockPeriod;
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState<{scope:string;response:SpokenAnswer} | null>(null);
-  const scope = `${userId}:${shop?.id}:${prefs?.voiceLanguage}:${prefs?.voiceFeedbackEnabled}`;
-  const currentScope=useRef(scope);currentScope.current=scope;
-  const shownAnswer=answer?.scope===scope?answer.response:null;
-  useEffect(()=>{setQuestion('');setAnswer(null);setError(null);setAsking(false);},[scope]);
-  const [error, setError] = useState<unknown>(null);
-  const [asking, setAsking] = useState(false);
-  const enabled = !!shop && perms.canSeeReports;
-  const sales = useQuery({ queryKey: ['report-sales', shop?.id, salesPeriod], enabled: enabled && tab === 'sales', queryFn: () => api.getSalesReport(shop!.id, salesPeriod) });
-  const stock = useQuery({ queryKey: ['report-stock', shop?.id, stockPeriod], enabled: enabled && tab === 'stock', queryFn: () => api.getStockReport(shop!.id, stockPeriod) });
-  const top = useQuery({ queryKey: ['top', shop?.id, salesPeriod, premium ? topBy : 'quantity'], enabled: enabled && tab === 'sales', queryFn: () => api.getTopProducts(shop!.id, { period: salesPeriod, by: premium ? topBy : 'quantity', limit: 8 }) });
-  const historyDays = !premium || stockPeriod === '7d' ? 7 : stockPeriod === '90d' ? 90 : 30;
-  const history = useQuery({ queryKey: ['shop-history', shop?.id, historyDays], enabled: enabled && tab === 'stock', queryFn: () => api.getHistory(shop!.id, historyDays) });
-
-  if (!shop) return <Spinner />;
-  if (!perms.canSeeReports) return <NoAccess what={uiText("Reports are for the owner and managers.")} />;
-
-  const activeError = tab === 'sales' ? sales.error : stock.error;
-  const showCost = (tab === 'sales' ? sales.data?.showCost : stock.data?.showCost) !== false && !hideCost;
-  const exportCsv = () => {
-    setError(null);
-    const task = tab === 'sales'
-      ? api.salesCsv(shop.id, { period }).then((csv) => downloadText(`sales-${period}.csv`, csv))
-      : api.stockCsv(shop.id, period).then((csv) => downloadText(`stock-${period}.csv`, csv));
-    void task.catch(setError);
-  };
-
+  const { shop, userId, perms, premium, prefs, hideCost } = useShop();
   return (
-    <div className="shop-page">
+    <ReportsWorkspace
+      key={`${shop?.id}:${userId}:${perms.role}:${premium}:${hideCost}:${prefs?.voiceLanguage}:${prefs?.voiceFeedbackEnabled}`}
+    />
+  );
+}
+function ReportsWorkspace() {
+  const { api, shop, userId, perms, premium, prefs, hideCost, t, offline } =
+      useShop(),
+    label = useLabels(),
+    params = useSearchParams();
+  const [tab, setTab] = useState(() => reportTab(params.get("tab")));
+  const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("today"),
+    [stockPeriod, setStockPeriod] = useState<StockPeriod>("7d");
+  const [topBy, setTopBy] = useState<"quantity" | "revenue">("quantity");
+  const [question, setQuestion] = useState(""),
+    [answer, setAnswer] = useState<SpokenAnswer | null>(null),
+    [error, setError] = useState<unknown>(null),
+    [askError, setAskError] = useState<unknown>(null),
+    [asking, setAsking] = useState(false),
+    [exporting, setExporting] = useState(false),
+    [exported, setExported] = useState(false);
+  const alive = useRef(true),
+    askLock = useRef(false),
+    exportLock = useRef(false);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  useEffect(() => setTab(reportTab(params.get("tab"))), [params.get("tab")]);
+  const salesEffective = effectiveReportPeriod(salesPeriod, premium),
+    stockEffective = effectiveReportPeriod(stockPeriod, premium);
+  const enabled = !!shop && perms.canSeeReports && !offline,
+    scope = [shop?.id, userId, perms.role, premium, hideCost];
+  const sales = useQuery({
+    queryKey: ["report-sales", ...scope, salesEffective],
+    enabled: enabled && tab === "sales",
+    queryFn: () => api.getSalesReport(shop!.id, salesEffective),
+  });
+  const stock = useQuery({
+    queryKey: ["report-stock", ...scope, stockEffective],
+    enabled: enabled && tab === "stock",
+    queryFn: () => api.getStockReport(shop!.id, stockEffective),
+  });
+  const top = useQuery({
+    queryKey: ["top", ...scope, salesEffective, premium ? topBy : "quantity"],
+    enabled: enabled && tab === "sales",
+    queryFn: () =>
+      api.getTopProducts(shop!.id, {
+        period: salesEffective,
+        by: premium ? topBy : "quantity",
+        limit: 8,
+      }),
+  });
+  const history = useQuery({
+    queryKey: ["report-history", ...scope, stockEffective],
+    enabled: enabled && tab === "stock" && perms.canSeeCost && !hideCost,
+    queryFn: () => api.getHistory(shop!.id, parseInt(stockEffective)),
+  });
+  const active = tab === "sales" ? sales : stock,
+    report = active.data;
+  const showCost = reportCostVisible(
+    report?.showCost,
+    perms.canSeeCost,
+    hideCost,
+  );
+  const selected = tab === "sales" ? salesPeriod : stockPeriod,
+    effective = tab === "sales" ? salesEffective : stockEffective;
+  const refresh = () => {
+    void active.refetch();
+    if (tab === "sales") void top.refetch();
+    else if (perms.canSeeCost && !hideCost) void history.refetch();
+  };
+  const ask = async (text: string) => {
+    if (!text.trim() || !shop || !enabled || !premium || askLock.current)
+      return;
+    askLock.current = true;
+    setAsking(true);
+    setAnswer(null);
+    setAskError(null);
+    setQuestion(text);
+    try {
+      const response = await api.ask(
+        shop.id,
+        text.trim(),
+        prefs?.voiceLanguage ?? prefs?.appLanguage,
+        prefs?.voiceFeedbackEnabled !== false,
+      );
+      if (alive.current) setAnswer(response);
+    } catch (e) {
+      if (alive.current) setAskError(e);
+    } finally {
+      if (alive.current) {
+        askLock.current = false;
+        setAsking(false);
+      }
+    }
+  };
+  const exportCsv = async () => {
+    if (
+      !shop ||
+      !enabled ||
+      !premium ||
+      !report ||
+      active.isError ||
+      exportLock.current
+    )
+      return;
+    exportLock.current = true;
+    setExporting(true);
+    setExported(false);
+    setError(null);
+    const requestedTab = tab,
+      requestedPeriod = effective;
+    try {
+      api.assertSession();
+      const csv =
+        requestedTab === "sales"
+          ? await api.salesCsv(shop.id, { period: requestedPeriod })
+          : await api.stockCsv(shop.id, requestedPeriod);
+      api.assertSession();
+      if (alive.current) {
+        downloadText(`${requestedTab}-${requestedPeriod}.csv`, csv);
+        setExported(true);
+      }
+    } catch (e) {
+      if (alive.current) setError(e);
+    } finally {
+      if (alive.current) {
+        exportLock.current = false;
+        setExporting(false);
+      }
+    }
+  };
+  if (!shop) return <Spinner />;
+  if (!enabled)
+    return (
+      <NoAccess
+        what={t(
+          offline ? "reportweb.offline" : "reportweb.access",
+          offline
+            ? "Reconnect to view up-to-date reports."
+            : "Reports are for owners and managers.",
+        )}
+      />
+    );
+  return (
+    <div className="shop-page reports-workspace">
       <PageHeader
-        kicker={t('reports.title', 'Insights')}
-        title={t('reports.title', 'Reports')}
-        description={uiText("Sales and stock for the period you pick. Switch the view without losing the dates.")}
+        kicker={t("reportweb.insights", "Insights")}
+        title={label("reports.title")}
+        description={t(
+          "reportweb.intro",
+          "See what sold, what moved, and what needs a closer look.",
+        )}
         actions={
-          premium ? (
-            <Button tone="ghost" onClick={exportCsv}>{t('reports.sales.export_csv', tab === 'sales' ? 'Sales CSV' : 'Stock movement CSV')}</Button>
-          ) : <Button href="/shop/settings/subscription" tone="ghost">{t('reports.sales.export_csv', 'CSV')} · {t('subscription.status.active', 'Premium')}</Button>
+          <>
+            <Button tone="ghost" disabled={active.isFetching} onClick={refresh}>
+              {t("common.refresh", "Refresh")}
+            </Button>
+            {premium ? (
+              <Button
+                disabled={
+                  exporting || active.isFetching || !report || active.isError
+                }
+                onClick={() => void exportCsv()}
+              >
+                {exporting
+                  ? label("common.loading")
+                  : t("reportweb.export", "Export CSV")}{" "}
+                ↓
+              </Button>
+            ) : (
+              <Button tone="ghost" href="/shop/settings/subscription">
+                {t("reportweb.export", "Export CSV")} ·{" "}
+                {label("subscription.status.active")} ↗
+              </Button>
+            )}
+          </>
         }
       />
-      <div className="shop-toolbar">
-        <div className="shop-seg" role="tablist" aria-label={uiText("Report")}>
-          <button type="button" role="tab" aria-selected={tab === 'sales'} className={tab === 'sales' ? 'is-active' : undefined} onClick={() => setTab('sales')}>{t('reports.tab.sales', 'Sales')}</button>
-          <button type="button" role="tab" aria-selected={tab === 'stock'} className={tab === 'stock' ? 'is-active' : undefined} onClick={() => setTab('stock')}>{t('reports.tab.stock', 'Stock')}</button>
+      <div className="report-controls">
+        <div className="report-tabs" aria-label={label("reports.title")}>
+          {(["sales", "stock"] as const).map((id) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={tab === id}
+              onClick={() => {
+                setTab(id);
+                setExported(false);
+              }}
+            >
+              {label(`reports.tab.${id}`)}
+            </button>
+          ))}
         </div>
-        <div className="pos-chips">
-          {tab === 'sales' ? SALES_PERIODS.map(id => <Chip key={id} active={salesPeriod === id} onClick={() => setSalesPeriod(id)}>{periodChip(id, t)}</Chip>) : STOCK_PERIODS.map(id => <Chip key={id} active={stockPeriod === id} onClick={() => setStockPeriod(id)}>{periodChip(id, t)}</Chip>)}
-        </div>
+        <Field label={t("reportweb.period", "Report period")}>
+          <select
+            className={inputClass}
+            value={selected}
+            onChange={(e) => {
+              tab === "sales"
+                ? setSalesPeriod(e.target.value as SalesPeriod)
+                : setStockPeriod(e.target.value as StockPeriod);
+              setExported(false);
+            }}
+          >
+            {(tab === "sales" ? SALES_PERIODS : STOCK_PERIODS).map((p) => (
+              <option key={p} value={p}>
+                {periodLabel(p, label)}
+                {effectiveReportPeriod(p, premium) !== p ? " · Premium" : ""}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
-      <Notice error={error} />
-      {isPremiumError(activeError) ? <PremiumLock shopId={shop.id} feature="pos_reports" /> : null}
-      {activeError && !isPremiumError(activeError) ? <Notice error={activeError} /> : null}
-      {tab === 'sales' && sales.isLoading ? <Spinner label={uiText("Loading sales")} /> : null}
-      {tab === 'stock' && stock.isLoading ? <Spinner label={uiText("Loading stock")} /> : null}
-      {tab === 'sales' && sales.data && !isPremiumError(sales.error) ? <SalesView report={sales.data} showCost={showCost} /> : null}
-      {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} /> : null}
-      {tab === 'stock' ? <StockHistory history={history.data?.stats ?? []} loading={history.isLoading} error={history.error} showCost={showCost} premium={premium} limited={!premium && stockPeriod !== '7d'} /> : null}
-      {tab === 'sales' ? (
-        <Card>
-          <div className="shop-toolbar">
-            <h2 className="shop-section-title">{t('reports.sales.top_products', 'Top sellers')}</h2>
-            {premium ? <div className="shop-seg">
-              {(['quantity', 'revenue'] as const).map(by => <button key={by} type="button" aria-pressed={topBy === by} className={topBy === by ? 'is-active' : undefined} onClick={() => setTopBy(by)}>{t(`reports.sales.by_${by}`, by === 'quantity' ? 'Qty' : '₹')}</button>)}
-            </div> : null}
-          </div>
-          {top.isLoading ? <Spinner /> : top.error ? <Notice error={top.error} /> : (
-            <div className="grid gap-4">
-              {(top.data?.products ?? []).map((product, index) => <div key={`${product.productId}-${product.name}`} className="flex flex-wrap justify-between gap-3">
-                <div><strong>{index + 1}. {product.name}</strong><p className="shop-hint">{product.quantity} {product.unit} · {t('reports.sales.in_bills', 'in {{n}} bills', { n: product.bills })}{showCost && product.marginPct != null ? ` · ${product.marginPct}% ${t('reports.sales.margin', 'Margin')}` : ''}</p>
-                {product.fiscalCorrectionNet ? <p className="shop-hint">{t('reports.sales.value_corrections', EN_FALLBACK['reports.sales.value_corrections'])}: {formatINR(product.fiscalCorrectionNet)}</p> : null}</div>
-                <strong>{formatINR(product.revenue)}</strong>
-              </div>)}
-              {!top.data?.products.length ? <p className="shop-hint">{t('modal.analytics.no_data', 'No data yet')}</p> : null}
-            </div>
-          )}
-        </Card>
+      <div className="report-caption">
+        <span>
+          {periodLabel(effective, label)}
+          {report?.range
+            ? ` · ${formatDay(report.range.from, prefs?.appLanguage)} – ${formatDay(new Date(new Date(report.range.to).getTime() - 1).toISOString(), prefs?.appLanguage)}`
+            : ""}
+        </span>
+        <span>{t("reportweb.india_time", "India time · IST")}</span>
+      </div>
+      {effective !== selected ? (
+        <div className="report-plan-note">
+          <p>
+            {label(
+              tab === "sales"
+                ? "reports.sales.range_premium"
+                : "reports.stock.range_premium",
+            )}
+          </p>
+
+          <Button tone="quiet" href="/shop/settings/subscription">
+            {t("reportweb.plans", "View plans")} ↗
+          </Button>
+        </div>
       ) : null}
-      <Card>
-        <form
-          className="stack-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const text = question.trim();
-            if (!text || !premium) return;
-            setAsking(true);
-            setError(null);
-            const requestedScope=scope;
-            void api.ask(shop.id, text, prefs?.voiceLanguage ?? prefs?.appLanguage, prefs?.voiceFeedbackEnabled !== false).then(response=>{if(currentScope.current===requestedScope)setAnswer({scope:requestedScope,response});}).catch(caught=>{if(currentScope.current===requestedScope)setError(caught);}).finally(()=>{if(currentScope.current===requestedScope)setAsking(false);});
-          }}
-        >
-          <Field label={t('modal.analytics.ask_placeholder', 'Ask about this shop')}>
-            <textarea className={inputClass} value={question} onChange={(event) => setQuestion(event.target.value)} />
-          </Field>
-          {premium ? <Button type="submit" disabled={asking || !question.trim()}>{asking ? t('modal.analytics.analyzing','Analyzing your question...') : uiText('Ask')}</Button> : <PremiumLock shopId={shop.id} feature="analytics" />}
-          {premium ? <VoiceCapture key={scope} disabled={asking} onRecorded={async recording=>{
-            const requestedScope=scope;setAsking(true);setError(null);
-            try {const response=await api.askVoice(shop.id,recording,prefs?.voiceLanguage ?? prefs?.appLanguage,prefs?.voiceFeedbackEnabled !== false);if(currentScope.current===requestedScope){setAnswer({scope:requestedScope,response});if(response.transcript)setQuestion(response.transcript);}}
-            catch(caught){if(currentScope.current===requestedScope)setError(caught);throw caught;}
-            finally{if(currentScope.current===requestedScope)setAsking(false);}
-          }} /> : null}
-          {shownAnswer ? <div><p>{shownAnswer.answer}</p><SpeechAudio base64={shownAnswer.ttsAudioBase64} label={t('brief.listen','Listen')} /></div> : null}
-        </form>
-      </Card>
+      <Notice error={error} />
+      {exported ? (
+        <p role="status" className="shop-hint">
+          {t("reportweb.export_ready", "CSV download started.")}
+        </p>
+      ) : null}
+      {active.isLoading ? (
+        <Spinner label={label("mobile.audit.loading_report")} />
+      ) : active.isError ? (
+        <div>
+          <Notice error={active.error} />
+          <Button tone="ghost" onClick={refresh}>
+            {label("common.retry")}
+          </Button>
+        </div>
+      ) : null}
+      {!active.isError && report ? (
+        <>
+          {tab === "sales" && sales.data ? (
+            <SalesView report={sales.data} showCost={showCost}>
+              <Panel title={label("reports.sales.top_products")}>
+                <div className="report-ranking-head">
+                  {premium ? (
+                    <div className="report-tabs">
+                      {(["quantity", "revenue"] as const).map((by) => (
+                        <button
+                          key={by}
+                          aria-pressed={topBy === by}
+                          onClick={() => setTopBy(by)}
+                        >
+                          {label(`reports.sales.by_${by}`)}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  <Button href="/shop/sales" tone="quiet">
+                    {t("reportweb.view_sales", "View sales")} ↗
+                  </Button>
+                </div>
+                {top.isLoading ? (
+                  <Spinner />
+                ) : top.isError ? (
+                  <>
+                    <Notice error={top.error} />
+                    <Button tone="quiet" onClick={() => void top.refetch()}>
+                      {label("common.retry")}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="report-product-list">
+                    {top.data?.products.map((p, i) => (
+                      <div key={`${p.productId}-${i}`}>
+                        <small className="report-rank">
+                          {String(i + 1).padStart(2, "0")}
+                        </small>
+                        <ProductImageById
+                          productId={p.productId}
+                          name={p.name}
+                          size={40}
+                        />
+                        <span>
+                          {p.productId ? (
+                            <Link
+                              href={`/shop/products/${encodeURIComponent(p.productId)}`}
+                            >
+                              {p.name} ↗
+                            </Link>
+                          ) : (
+                            <strong>{p.name}</strong>
+                          )}
+                          <small>
+                            {p.quantity} {p.unit} ·{" "}
+                            {label("reports.sales.in_bills", { n: p.bills })}
+                            {premium && showCost && p.marginPct != null
+                              ? ` · ${p.marginPct}% ${label("reports.sales.margin")}`
+                              : ""}
+                          </small>
+                          {p.fiscalCorrectionNet ? (
+                            <small>
+                              {label("reports.sales.value_corrections")}:{" "}
+                              {formatINR(p.fiscalCorrectionNet)}
+                            </small>
+                          ) : null}
+                        </span>
+                        <b>{formatINR(p.revenue)}</b>
+                      </div>
+                    ))}
+                    {!top.data?.products.length ? (
+                      <p className="shop-hint">
+                        {label("modal.analytics.no_data")}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+              </Panel>
+            </SalesView>
+          ) : null}
+          {tab === "stock" && stock.data ? (
+            <StockView report={stock.data} showCost={showCost} />
+          ) : null}
+          {tab === "stock" && showCost ? (
+            <Panel
+              title={label("modal.analytics.value_trend_title")}
+              note={t(
+                "reportweb.history_note",
+                "Daily stock-value snapshots. Missing days are not filled in.",
+              )}
+            >
+              {history.isLoading ? (
+                <Spinner />
+              ) : history.isError ? (
+                <>
+                  <Notice error={history.error} />
+                  <Button tone="quiet" onClick={() => void history.refetch()}>
+                    {label("common.retry")}
+                  </Button>
+                </>
+              ) : history.data?.stats.filter((d) => d.totalStockValue != null)
+                  .length ? (
+                <ReportChart
+                  money
+                  columns={history.data.stats
+                    .filter((d) => d.totalStockValue != null)
+                    .map((d) => ({
+                      label: formatShortDay(d.date, prefs?.appLanguage),
+                      values: [d.totalStockValue!],
+                    }))}
+                  series={[label("modal.analytics.value_trend_title")]}
+                />
+              ) : (
+                <p className="shop-hint">
+                  {t(
+                    "reportweb.history_empty",
+                    "No stock-value snapshots yet.",
+                  )}
+                </p>
+              )}
+            </Panel>
+          ) : null}
+
+          {!premium ? (
+            <div className="report-plan-note">
+              <p>
+                {label(
+                  tab === "sales"
+                    ? "reports.sales.more_premium"
+                    : "reports.stock.more_premium",
+                )}
+              </p>
+              <Button tone="quiet" href="/shop/settings/subscription">
+                {t("reportweb.plans", "View plans")} ↗
+              </Button>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+      <section className="report-ask">
+        <div>
+          <p className="shop-kicker">
+            {t("reportweb.ask_kicker", "A closer look")}
+          </p>
+          <h2>{label("modal.analytics.ask_title")}</h2>
+          <p>
+            {t(
+              "reportweb.ask_hint",
+              "Ask about your shop in your own words. Answers may cover a different period from this report.",
+            )}
+          </p>
+        </div>
+        <div>
+          <Notice error={askError} />
+          {premium ? (
+            <form
+              className="stack-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void ask(question);
+              }}
+            >
+              <Field label={label("modal.analytics.ask_placeholder")}>
+                <textarea
+                  className={inputClass}
+                  rows={3}
+                  value={question}
+                  disabled={asking}
+                  onChange={(e) => setQuestion(e.target.value)}
+                />
+              </Field>
+              <div className="shop-actions">
+                <Button type="submit" disabled={asking || !question.trim()}>
+                  {asking
+                    ? label("modal.analytics.analyzing")
+                    : t("reportweb.ask", "Ask")}
+                </Button>
+                <VoiceCapture
+                  disabled={asking}
+                  onRecorded={async (recording) => {
+                    if (askLock.current) return;
+                    askLock.current = true;
+                    setAsking(true);
+                    setAnswer(null);
+                    setAskError(null);
+                    try {
+                      const response = await api.askVoice(
+                        shop.id,
+                        recording,
+                        prefs?.voiceLanguage ?? prefs?.appLanguage,
+                        prefs?.voiceFeedbackEnabled !== false,
+                      );
+                      if (alive.current) {
+                        setAnswer(response);
+                        if (response.transcript)
+                          setQuestion(response.transcript);
+                      }
+                    } catch (e) {
+                      if (alive.current) setAskError(e);
+                      throw e;
+                    } finally {
+                      if (alive.current) {
+                        askLock.current = false;
+                        setAsking(false);
+                      }
+                    }
+                  }}
+                />
+              </div>
+              {!answer ? (
+                <details className="report-data">
+                  <summary>{t("reportweb.examples", "Try a question")}</summary>
+                  <div className="report-question-list">
+                    {QUESTION_KEYS.map((k) => (
+                      <button
+                        type="button"
+                        key={k}
+                        disabled={asking}
+                        onClick={() =>
+                          void ask(label(`modal.analytics.sample_${k}`))
+                        }
+                      >
+                        {label(`modal.analytics.sample_${k}`)} ↗
+                      </button>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <div className="report-answer" aria-live="polite">
+                  <p>{answer.answer}</p>
+                  <SpeechAudio
+                    base64={answer.ttsAudioBase64}
+                    label={label("brief.listen")}
+                  />
+                  <Button
+                    tone="quiet"
+                    onClick={() => {
+                      setAnswer(null);
+                      setQuestion("");
+                    }}
+                  >
+                    {label("modal.analytics.ask_another")}
+                  </Button>
+                </div>
+              )}
+            </form>
+          ) : (
+            <PremiumLock shopId={shop.id} feature="analytics" />
+          )}
+        </div>
+      </section>
     </div>
   );
 }

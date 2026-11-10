@@ -1,6 +1,7 @@
 import type { Locale } from '../i18n';
 import { getLocalizedHtml } from './localized';
 import { getSubscriptionStrings } from './subscriptionStrings';
+import { getPricingMetadataCopy } from './pricingPage';
 
 function clip(text: string, max = 160) {
   const normalized = text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
@@ -12,11 +13,7 @@ function clip(text: string, max = 160) {
 
 export function localizedPageCopy(locale: Locale, page: 'pricing' | 'contact' | 'privacy' | 'terms') {
   if (page === 'pricing') {
-    const pricing = getSubscriptionStrings(locale).pricing;
-    return {
-      title: `${pricing.heroTitle} — Samaan Bol`,
-      description: clip(pricing.heroLead),
-    };
+    return getPricingMetadataCopy(locale);
   }
 
   if (page === 'contact') {

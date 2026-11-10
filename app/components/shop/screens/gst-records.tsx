@@ -4,6 +4,8 @@ import {
   gstMonitorReceiptConfirmed,
   CORE_MONITOR_KINDS,
 } from "../../../lib/shop/gst-monitor-view";
+import { VoiceSheet } from "../voice-sheet";
+import { gstPositionRanges } from "../../../lib/shop/gst-register-positions";
 import { hasLocalIssuedReceipt } from "../../../lib/shop/local-issued-receipt";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
@@ -30,6 +32,7 @@ import {
   retainedRequests,
   saveFile,
   requestStatus,
+  readState,
   assertScope,
   type RetainedRequest,
 } from "../../../lib/shop/gst-storage";
@@ -44,13 +47,13 @@ import {
 import type { CreateSalePayload } from "../../../lib/shop/types";
 const base = "/shop/settings/gst";
 export function GstRecordsScreen() {
-  const { api, shop } = useShop(),
+  const { api, shop, t } = useShop(),
     text = useGstText();
   const health = useGstQuery(["health"], () => api.gst.health(shop!.id)),
     settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id));
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-overview">
         <PageHeader
           title={text("GST records & invoice numbers")}
           back={{
@@ -75,12 +78,12 @@ export function GstRecordsScreen() {
                     health.data.integrity.mismatches.length +
                     health.data.evidence.missingInvoices +
                     health.data.evidence.missingCreditNotes +
-                    health.data.evidence.unbalancedSales,
+                    health.data.evidence.unbalancedSales + (health.data.evidence.providerHistoryMismatches ?? 0),
                 },
                 {
                   label: text("Coverage"),
                   value: text(
-                    health.data.integrity.truncated
+                    (health.data.integrity.truncated || health.data.allocations.truncated)
                       ? "Partial results"
                       : "Saved records checked",
                   ),
@@ -89,6 +92,7 @@ export function GstRecordsScreen() {
             />
           ) : null}
         </ReadState>
+        {health.data ? <Section title={t('recordsUI.checkDetails','Check details')}><dl className="gst-record-metrics">{[['gst.health_missing_invoice',health.data.evidence.missingInvoices],['gst.health_missing_credit',health.data.evidence.missingCreditNotes],['gst.health_unbalanced',health.data.evidence.unbalancedSales],['gst.health_provider_history',health.data.evidence.providerHistoryMismatches??0]].map(([key,value])=><div key={key}><dt>{t(String(key),String(key))}</dt><dd>{value}</dd></div>)}</dl>{health.data.integrity.mismatches.map(d=><Button key={d.id} tone="ghost" href={d.saleId?'/shop/sales/'+d.saleId+'?documentId='+d.id:'/shop/sales'}>{d.number} →</Button>)}</Section>:null}
         <div className="gst-navigation">
           {[
             [
@@ -141,7 +145,7 @@ export function GstRecordsScreen() {
           <GstDevicesScreen embedded />
         </Section>
         <Section title={text("GST provider status")}>
-          <Button href={base + "/providers"} tone="ghost">
+          {health.data?.providerJobs ? <dl className="gst-record-metrics">{Object.entries(health.data.providerJobs).map(([state,count])=><div key={state}><dt>{t('gst.provider.state.'+state,state)}</dt><dd>{count}</dd></div>)}</dl>:null}<Button href={base + "/providers"} tone="ghost">
             {text("GST provider status")}
           </Button>
         </Section>
@@ -254,7 +258,7 @@ export function GstChecksScreen() {
   }[view];
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-check-workspace">
         <PageHeader
           title={text("GST record checks")}
           back={{ href: base, label: text("GST records") }}
@@ -263,7 +267,7 @@ export function GstChecksScreen() {
           )}
         />
         <Notice error={q.error} />
-        <Card>
+        <Card className="gst-check-summary">
           <h2 className="shop-section-title">{text(status)}</h2>
           <p className="shop-hint">
             {last
@@ -352,14 +356,14 @@ export function GstChecksScreen() {
             </p>
           </Card>
         ) : null}
-        {issues.map((issue) => {
+        <div className="gst-issue-grid">{issues.map((issue) => {
           const message = issue.kind === "closedPeriodChanged" ? [t("gst.monitor.kind.closedPeriodChanged", "Closed reporting period has new records"),t("gst.period_changed", "Records changed after closing. Reopen and review updated reports."),"periods"] : messages[issue.kind] ?? [
             "Saved records need review",
             "Keep the original records and ask support to investigate.",
             "recovery",
           ];
           return (
-            <Card key={issue.id}>
+            <Card key={issue.id} className="gst-issue-record">
               <Pill tone={issue.severity === "critical" ? "danger" : "warn"}>
                 {text("Needs review")}
               </Pill>
@@ -417,7 +421,7 @@ export function GstChecksScreen() {
             </Card>
           );
         })}
-        {report?.issueTruncated && issueLimit < 10000 ? (
+        </div>{report?.issueTruncated && issueLimit < 10000 ? (
           <Button
             tone="ghost"
             disabled={q.isFetching || action.busy || offline}
@@ -498,7 +502,7 @@ export function GstNumbersScreen() {
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-number-workspace">
         <PageHeader
           title={text("Invoice number register")}
           back={{ href: base, label: text("GST records") }}
@@ -506,6 +510,7 @@ export function GstNumbersScreen() {
             "Unconfirmed numbers may include bills issued offline. Do not reuse or reclaim them.",
           )}
         />
+        <div className="shop-actions"><Button tone="ghost" disabled={q.isFetching} onClick={()=>void q.refetch()}>{text('Refresh report')}</Button></div>
         <ReadState query={q} empty={!rows.length}>
           {rows.map((block) => (
             <Section
@@ -524,8 +529,9 @@ export function GstNumbersScreen() {
                   )}
                 />
               ) : null}
+              <Section title={text('Support reference')}><p className="gst-reference">{text('Issuing user')}: {block.userId}</p><p className="gst-reference">{text('Installation identity')}: {block.deviceEpoch || '—'}</p></Section>
               <div className="gst-table-wrap">
-                <table className="gst-table">
+                <table className="gst-table gst-mobile-records">
                   <thead>
                     <tr>
                       <th>{text("Number")}</th>
@@ -536,10 +542,10 @@ export function GstNumbersScreen() {
                   <tbody>
                     {block.synchronized.map((row) => (
                       <tr key={row.index}>
-                        <td>{row.number}</td>
-                        <td>{date(row.issuedAt)}</td>
-                        <td>
-                          <Link href={"/shop/sales/" + row.saleId}>
+                        <td data-label={text("Number")}>{row.number}</td>
+                        <td data-label={text("Issued")}>{date(row.issuedAt)}</td>
+                        <td data-label={text("Bill")}>
+                          <Link href={row.saleId?"/shop/sales/" + row.saleId+"?documentId="+row.documentId:"/shop/sales"}>
                             {text("Open bill")}
                           </Link>
                         </td>
@@ -550,7 +556,7 @@ export function GstNumbersScreen() {
               </div>
               <p className="shop-hint">
                 {text("Unconfirmed positions")}:{" "}
-                {block.unconfirmedIndices.join(", ") || "—"}
+                {gstPositionRanges(block.unconfirmedIndices) || "—"}
               </p>
             </Section>
           ))}
@@ -563,7 +569,7 @@ export function GstNumbersScreen() {
 export function GstDevicesScreen({
   embedded = false,
 }: { embedded?: boolean } = {}) {
-  const { api, shop, role } = useShop(),
+  const { api, shop, role, userId, t, offline } = useShop(),
     text = useGstText(),
     date = useFiscalDate();
   const q = useGstPages(["devices"], (cursor) =>
@@ -571,10 +577,11 @@ export function GstDevicesScreen({
   );
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [],
     action = useGstAction();
-  const [reason, setReason] = useState("");
+  const [reason,setReason]=useState(''),[selected,setSelected]=useState<string|null>(null),[epoch,setEpoch]=useState<string|null>(null);
+  useEffect(()=>{let active=true;void readState<string>('epoch:'+userId).then(value=>{if(active)setEpoch(value??null)}).catch(()=>{});return()=>{active=false}},[userId]);
   return (
     <GstAccess>
-      <div className={embedded ? "grid gap-4" : "shop-page"}>
+      <div className={embedded ? "grid gap-4" : "shop-page gst-workspace gst-device-workspace"}>
         {!embedded ? (
           <PageHeader
             title={text("Billing installations")}
@@ -584,14 +591,15 @@ export function GstDevicesScreen({
             )}
           />
         ) : null}
-        {action.notice}
+        {action.notice}<Button tone="ghost" disabled={q.isFetching||action.busy} onClick={()=>void q.refetch()}>{text('Refresh report')}</Button>
         <ReadState query={q} empty={!rows.length}>
           {rows.map((row) => (
             <Section
               key={row.id}
-              title={row.actorName ?? text("Shop member")}
+              title={row.userId===userId&&row.deviceEpoch===epoch?t("gst.ui.this_device_fa5a6d","This device"):row.actorName ?? text("Shop member")}
               summary={text(row.revocation ? "Revoked" : "Active")}
             >
+              <p className="gst-reference">{text('Issuing user')}: {row.userId}</p><p className="gst-reference">{text('Installation identity')}: {row.deviceEpoch}</p>
               <p>
                 {text("Enrolled")} {date(row.enrolledAt)}
               </p>
@@ -601,44 +609,23 @@ export function GstDevicesScreen({
               {row.revocation ? (
                 <p>{row.revocation.reason}</p>
               ) : role === "OWNER" ? (
-                <>
-                  <TextField
-                    label={text("Reason for revocation")}
-                    value={reason}
-                    onChange={setReason}
-                  />
-                  <p className="shop-hint">
-                    {text(
-                      "Revocation prevents new billing from this installation. Previously issued bills remain preserved.",
-                    )}
-                  </p>
-                  <Button
-                    tone="danger"
-                    disabled={action.busy || !reason.trim()}
-                    onClick={() =>
-                      void action.run(() =>
-                        api.gst.revoke(shop!.id, row.id, reason),
-                      )
-                    }
-                  >
-                    {text("Revoke installation")}
-                  </Button>
-                </>
+                <Button tone="danger" disabled={action.busy||offline} onClick={()=>{setReason('');setSelected(row.id)}}>{text('Revoke installation')}</Button>
               ) : null}
             </Section>
           ))}
         </ReadState>
         <More query={q} />
+        {selected&&rows.some(r=>r.id===selected&&!r.revocation)?<VoiceSheet title={text('Revoke installation')} closeLabel={text('Cancel')} onClose={()=>{if(!action.busy)setSelected(null)}}><p>{rows.find(r=>r.id===selected)?.actorName??text('Shop member')}</p><p className="shop-hint">{text('Revocation prevents new billing from this installation. Previously issued bills remain preserved.')}</p><TextField label={text('Reason for revocation')} value={reason} onChange={setReason} disabled={action.busy}/><div className="shop-actions"><Button tone="ghost" disabled={action.busy} onClick={()=>setSelected(null)}>{text('Cancel')}</Button><Button tone="danger" disabled={action.busy||offline||!reason.trim()} onClick={()=>void action.run(async()=>{await api.gst.revoke(shop!.id,selected,reason.trim());setSelected(null);setReason('')})}>{t('gst.device_revoke_confirm','Confirm revocation')}</Button></div></VoiceSheet>:null}
       </div>
     </GstAccess>
   );
 }
 export function GstRecoveryScreen() {
-  const { api, shop, userId, offline } = useShop(),
+  const { api, shop, userId, offline, perms, t } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
-  const [closureReason, setClosureReason] = useState(""),
+  const [closureReasons,setClosureReasons]=useState<Record<string,string>>({}),[section,setSection]=useState("bills"),
     settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id)),
     q = useGstQuery(
       ["recovery"],
@@ -652,11 +639,12 @@ export function GstRecoveryScreen() {
       true,
       "always",
     );
+  const rows=(q.data??[]).filter(row=>row.path.endsWith('/sales')?section==='bills'||!perms.canSeeCost:perms.canSeeCost&&section==='requests');
   async function retry(row: RetainedRequest) {
     await recoverFinancialRequest(api, shop!.id, row);
   }
   return (
-    <div className="shop-page">
+    <div className="shop-page gst-workspace gst-recovery-workspace">
       <PageHeader
         title={text("Device bill recovery")}
         back={{ href: base, label: text("GST records") }}
@@ -665,8 +653,9 @@ export function GstRecoveryScreen() {
         )}
       />
       {action.notice}
-      <ReadState query={q} empty={!q.data?.length}>
-        {q.data?.map((row) => (
+      {perms.canSeeCost?<div className="gst-workspace-tabs" role="group">{['bills','requests'].map(key=><button key={key} aria-pressed={section===key} onClick={()=>setSection(key)}>{key==='bills'?t('sales.summary.bills','Bills'):t('recordsUI.requests','Requests')}</button>)}</div>:null}
+      <ReadState query={q} empty={!rows.length}>
+        {rows.map((row) => (
           <Section
             key={row.id}
             title={text(
@@ -677,7 +666,7 @@ export function GstRecoveryScreen() {
             summary={`${text(row.state === "confirmed" ? "Confirmed" : row.state === "closed" ? "Closed without recording" : "Needs recovery")} · ${date(row.createdAt)}`}
           >
             <Notice error={row.error ? Error(row.error) : null} />
-            <p className="shop-hint">
+            <p className="gst-reference">
               {text("Original request")} {row.id}
             </p>
             {hasLocalIssuedReceipt(row) ? (
@@ -709,21 +698,21 @@ export function GstRecoveryScreen() {
                 </p>
                 <TextField
                   label={text("Reason")}
-                  value={closureReason}
-                  onChange={setClosureReason}
+                  value={closureReasons[row.id]??""}
+                  onChange={value=>setClosureReasons(old=>({...old,[row.id]:value}))}
                 />
                 <Button
                   tone="danger"
-                  disabled={action.busy || !closureReason.trim()}
+                  disabled={action.busy || offline || !(closureReasons[row.id]??"").trim()}
                   onClick={() =>
                     void action.run(async () => {
                       await closeUnrecordedPurchase(
                         api,
                         shop!.id,
                         row,
-                        closureReason,
+                        closureReasons[row.id]??"",
                       );
-                      setClosureReason("");
+                      setClosureReasons(old=>({...old,[row.id]:""}));
                       await q.refetch();
                     })
                   }

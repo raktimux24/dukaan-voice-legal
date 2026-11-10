@@ -1,26 +1,35 @@
 'use client';
+import {ProductImage,ProductImageById} from '../product-image';
+import {serialScanner} from '../../../lib/shop/counter/scanner';
+import {UsbCounterScanner,CounterCamera} from '../counter-scanner';
+import {CounterStatus} from '../counter-status';
+import {isBarcodeQuery,cachedBarcodeMatches} from '../../../lib/shop/barcodes/contract';
+import {barcodeErrorKey} from '../../../lib/shop/barcodes/client';
 
 import {prepareOfflineInvoices} from '../../../lib/shop/invoice-preparation';
 import { useGstText as useUiText } from "../gst-ui";
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { labeledL1 } from '../../../lib/shop/catalog';
-import { computeTotals, useCart, type CartLine } from '../../../lib/shop/cart';
+import { useCart, lineGross, lineDiscount, type CartLine } from '../../../lib/shop/cart';
+import { searchSellCatalog, sellAmount, sellBillPreview, sellStockShortfalls } from '../../../lib/shop/sell';
+import { matchHomeDemand } from '../../../lib/shop/home';
 import { formatINR } from '../../../lib/shop/money';
 import type { InventoryItem } from '../../../lib/shop/types';
-import { chipLabel, convert, defaultChips, altUnit, formatQty, isWeightOrVolume, r3, stepFor } from '../../../lib/shop/units';
+import { chipLabel, convert, defaultChips, altUnit, formatQty, unitLabel, isWeightOrVolume, r3, stepFor } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { CustomerAttach } from '../customer-attach';
-import { Button, Card, Chip, Kbd, Notice, Spinner, cx, inputClass } from '../ui';
+import { Button, Chip, Glyph, Kbd, Notice, Spinner, cx, inputClass } from '../ui';
+import { VoiceSheet } from '../voice-sheet';
 
 const BARCODE = /^\d{4,}$/;
 
 export function SellScreen() {
   const uiText = useUiText();
-  const { api, shop, userId, perms, hideCost, setNotice, t } = useShop();
+  const { api, shop, userId, perms, hideCost, offline, setNotice, t } = useShop();
   const shopId = shop?.id ?? '';
   const cartApi = useCart(userId, shop?.id ?? null);
   const posSettings=useQuery({queryKey:["pos",shopId],enabled:!!shopId,networkMode:'always',queryFn:()=>api.getPosSettings(shopId)});
@@ -47,17 +56,38 @@ export function SellScreen() {
   });
   const queryClient = useQueryClient();
   const router = useRouter();
-  const searchRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null),usbRef=useRef<HTMLInputElement>(null);
+  const highlightedProduct = useRef<HTMLButtonElement>(null);
+
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>('all');
   const [highlight, setHighlight] = useState(0);
   const [error, setError] = useState<unknown>(null);
   const [priceDraft, setPriceDraft] = useState<Record<string, string>>({});
+  const [priceFor, setPriceFor] = useState<InventoryItem | null>(null);
+  const [priceBusy, setPriceBusy] = useState(false);
+  const [browseOpen, setBrowseOpen] = useState(false);
+  const [searchActive, setSearchActive] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(60);
+  const [noting, setNoting] = useState(false);
+  const latestQuery = useRef(query);
+  latestQuery.current = query;
   const [cameraOn, setCameraOn] = useState(false);
-  const [scanMode, setScanMode] = useState<'bill' | 'stock'>('bill');
-  const [picker, setPicker] = useState<{ productId: string; value: number } | null>(null);
+  const searchParams = useSearchParams();
+  const scanRequested = useRef(false);
+  useEffect(() => {
+    if (searchParams.get('scan') === '1' && !scanRequested.current) {
+      scanRequested.current = true;
+      setCameraOn(true);
+      router.replace('/shop/sell', { scroll: false });
+    }
+  }, [searchParams, router]);
+  const [usbOn,setUsbOn]=useState(false),scanQueue=useRef(serialScanner()),alive=useRef(true);
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false}},[]);
+  const closeCamera=()=>{setCameraOn(false);searchRef.current?.focus()};
+  const [picker, setPicker] = useState<{ productId: string; item: InventoryItem; value: number; source: 'manual' | 'scan' } | null>(null);
 
-  const items = useMemo(() => (catalog.data ?? []).filter((item) => item.product.isActive !== false), [catalog.data]);
+  const items = useMemo(() => (catalog.data ?? []).map(item=>({...item,quantity:Math.max(0,item.quantity-(item.reservedQuantity??0)),reservedQuantity:0})).filter((item) => item.product.isActive !== false), [catalog.data]);
 
   const categories = useMemo(() => {
     const seen = new Map<string, string>();
@@ -67,37 +97,31 @@ export function SellScreen() {
     return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
   }, [items, t]);
 
-  const hits = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const pool = category === 'all' ? items : items.filter((item) => item.product.category === category);
-    if (!q) return pool.slice(0, 60);
-    return pool
-      .filter((item) => item.product.name.toLowerCase().includes(q) || item.product.barcode?.includes(q) || item.product.shortCode?.toLowerCase() === q)
-      .sort((a, b) => {
-        const aStarts = a.product.name.toLowerCase().startsWith(q) ? 0 : 1;
-        const bStarts = b.product.name.toLowerCase().startsWith(q) ? 0 : 1;
-        return aStarts - bStarts;
-      })
-      .slice(0, 60);
-  }, [items, query, category]);
+  const allMatches = useMemo(() => searchSellCatalog(items, query), [items, query]);
+  const matches = useMemo(() => searchSellCatalog(items, query, category), [items, query, category]);
+  const hits = matches.slice(0, visibleCount);
+  const unpricedCount = items.filter(item => item.product.sellingPrice == null).length;
+  const canNote = !cartApi.pending && perms.canSell && catalog.isSuccess && !catalog.isError && posSettings.isSuccess && !posSettings.isError && query.trim().length >= 2 && !allMatches.length;
+  const demand = useQuery({queryKey:['demandTerms',shopId],enabled:!!shopId&&canNote&&!offline,queryFn:()=>api.getDemandTerms(shopId)});
+  const noted = canNote ? matchHomeDemand(demand.data?.terms,query) : null;
 
   useEffect(() => {
     setHighlight(0);
+    setVisibleCount(60);
   }, [query, category]);
 
   useEffect(() => {
-    const term = query.trim();
-    if (!shopId || term.length < 2 || hits.length > 0) return;
-    const timer = window.setTimeout(() => {
-      void api.postDemand(shopId, term).catch(() => undefined);
-    }, 800);
-    return () => window.clearTimeout(timer);
-  }, [api, hits.length, query, shopId]);
+    if (query) highlightedProduct.current?.scrollIntoView?.({block:'nearest'});
+  }, [highlight, query]);
+
 
   if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
-  const totals = computeTotals(cartApi.cart);
+  const {totals,reviewTax,context:taxContext} = sellBillPreview(cartApi.cart,posSettings.isError?undefined:posSettings.data,shopId);
   const lineCount = cartApi.cart.lines.length;
+  const locked = !!cartApi.pending || !perms.canSell;
+  const shortfalls = sellStockShortfalls(cartApi.cart,items);
+  const amountLabel = reviewTax ? t('gst.tax_details','Review tax details') : formatINR(totals.total);
   const inCartIds = new Set(cartApi.cart.lines.map((line) => line.productId));
   const suggestions = (boughtWith.data?.nudges ?? [])
     .filter((nudge) => {
@@ -106,11 +130,12 @@ export function SellScreen() {
     })
     .slice(0, 3);
 
-  const add = (item: InventoryItem) => {
+  const add = (item: InventoryItem,source:'manual'|'scan'='manual') => {
+    if (locked) return;
     const step = stepFor(item.unit);
-    const result = cartApi.addProduct(item, step >= 1 ? 1 : step);
+    const result = cartApi.addProduct(item, step >= 1 ? 1 : step,source);
     if (result.message === 'unpriced') {
-      setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
+      setNotice(t('pos.ask_manager_to_price','{{name}} has no price yet — ask the owner or manager to set one',{name:item.product.name}));
       return;
     }
     if (result.message) setNotice(result.message === 'out_of_stock'
@@ -119,36 +144,27 @@ export function SellScreen() {
     if (result.ok) setError(null);
   };
 
-  const lookup = async (code: string) => {
+  const lookup = (code: string) => scanQueue.current(async()=> {
+    if(!alive.current||locked)return;
     setError(null);
     try {
-      const hit = await api.lookupBarcode(shop.id, code, hideCost);
-      const item = hit.found && hit.item && hit.item.product.isActive !== false ? hit.item : null;
-      if (scanMode === 'stock' && perms.canEditProducts) {
-        setQuery('');
-        if (item) {
-          router.push(`/shop/products/${item.productId}?batch=1`);
-          return;
-        }
-        if (code.startsWith('SB-')) {
-          setNotice(t('barcodes.error.not_found', 'This code is unavailable in this shop.'));
-          return;
-        }
-        router.push(`/shop/products/new?barcode=${encodeURIComponent(code)}`);
-        return;
-      }
-      if (item) {
-        if (isWeightOrVolume(item.unit) || (item.product.packSize ?? 0) > 0) choose(item);
-        else add(item);
+      const cached=cachedBarcodeMatches(items,code);
+      if((offline||navigator.onLine===false)&&cached.length!==1)throw Error(t('counter.offline_scan_miss',''));
+      const hit=(offline||navigator.onLine===false)?{found:true,item:cached[0]}:await api.lookupBarcode(shop.id,code,hideCost);
+      if(!alive.current)return;api.assertSession();
+      if (hit.found && hit.item && hit.item.product.isActive !== false) {
+        const availableItem = {...hit.item,quantity:Math.max(0,hit.item.quantity-(hit.item.reservedQuantity??0)),reservedQuantity:0};
+        choose(availableItem,'scan');
         setQuery('');
         return;
       }
+      if(code.startsWith('SB-')){setNotice(t('barcodes.error.not_found','This code is unavailable in this shop.'));return;}
       if (perms.canEditProducts) router.push(`/shop/products/new?barcode=${encodeURIComponent(code)}`);
-      else setNotice('No product for that barcode. Ask a manager to add it.');
+      else setNotice(t('counter.scanner_not_found',''));
     } catch (caught) {
-      setError(caught);
+      if((caught as {code?:string}).code?.startsWith('barcode_'))setNotice(t(barcodeErrorKey(caught),barcodeErrorKey(caught)));else setError(caught);
     }
-  };
+  });
 
   const handleSearchKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown') {
@@ -169,50 +185,56 @@ export function SellScreen() {
     event.preventDefault();
     const q = query.trim();
     if (!q) return;
-    if (BARCODE.test(q)) {
+    if (BARCODE.test(q)||isBarcodeQuery(q)||cachedBarcodeMatches(items,q).length) {
       void lookup(q);
       return;
     }
     const target = hits[highlight] ?? hits[0];
     if (!target) return;
-    if (target.product.sellingPrice == null) {
-      setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
-      return;
-    }
     choose(target);
     setQuery('');
   };
 
-  const choose = (item: InventoryItem) => {
+  const choose = (item: InventoryItem, source: 'manual' | 'scan' = 'manual') => {
+    if (locked) return;
     const tracked = item.product.trackStock !== false;
     if (tracked && item.quantity <= 0) {
       setNotice(t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name }));
       return;
     }
     if (item.product.sellingPrice == null) {
-      setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
+      if(perms.canEditProducts){setBrowseOpen(false);setPriceFor(item);setError(null);}
+      else setNotice(t('pos.ask_manager_to_price','{{name}} has no price yet — ask the owner or manager to set one',{name:item.product.name}));
+      return;
+    }
+    if (!isWeightOrVolume(item.unit) && !(item.product.packSize && item.product.packSize > 0)) {
+      add(item,source);
+      setQuery('');
+      if(!browseOpen)searchRef.current?.focus();
       return;
     }
     const inCart = cartApi.cart.lines.find((line) => line.productId === item.productId);
+    setBrowseOpen(false);
     setPicker({
       productId: item.productId,
+      item,
       value: inCart?.quantity ?? (isWeightOrVolume(item.unit) ? stepFor(item.unit) : 1),
+      source,
     });
     setError(null);
   };
 
   const commitPicker = () => {
-    if (!picker) return;
-    const item = items.find((row) => row.productId === picker.productId);
-    if (!item) return;
+    if (!picker || locked) return;
+    const item = picker.item;
     const existing = cartApi.cart.lines.find((line) => line.productId === item.productId);
     if (existing) {
       const result = cartApi.setQuantity(existing.key, picker.value);
       if (result.capped) setNotice(t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: existing.available ?? 0, unit: t(`unit_picker.${existing.unit}`, existing.unit), name: existing.name }));
     } else {
-      const result = cartApi.addProduct(item, picker.value);
+      const result = cartApi.addProduct(item, picker.value, picker.source);
       if (result.message === 'unpriced') {
-        setNotice(perms.canEditProducts ? 'Set a selling price on the tile first.' : 'Ask a manager to set the price.');
+        setNotice(t('pos.ask_manager_to_price','{{name}} has no price yet — ask the owner or manager to set one',{name:item.product.name}));
         return;
       }
       if (result.message) setNotice(result.message === 'out_of_stock'
@@ -222,250 +244,165 @@ export function SellScreen() {
     }
     setPicker(null);
     setQuery('');
-    searchRef.current?.focus();
+    (usbOn?usbRef.current:searchRef.current)?.focus();
   };
 
   const savePrice = async (item: InventoryItem) => {
-    const price = Number(priceDraft[item.productId]);
-    if (!(price >= 0)) return;
+    if(locked||!perms.canEditProducts||priceBusy)return;
+    const price = sellAmount(priceDraft[item.productId]??'');
+    if (price === null) return;
+    setPriceBusy(true);
     setError(null);
     try {
       await api.updateProduct(shop.id, item.productId, { sellingPrice: price });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
-      add({ ...item, product: { ...item.product, sellingPrice: price } });
+      setPriceFor(null);
+      choose({ ...item, product: { ...item.product, sellingPrice: price } });
       searchRef.current?.focus();
     } catch (caught) {
       setError(caught);
-    }
+    } finally {setPriceBusy(false);}
   };
 
   const clearBill = () => {
-    if (lineCount === 0) return;
+    if (lineCount === 0 || locked) return;
     if (!window.confirm(t('pos.clear_cart_title','Remove everything from the cart?'))) return;
     cartApi.clear();
     searchRef.current?.focus();
   };
 
-  return (
-    <div className="pos">
-      <div className="pos-catalog">
-        <div className="shop-page-head">
-          <div className="shop-page-head-text">
-            <p className="shop-kicker">{uiText("Counter")}</p>
-            <h1 className="shop-title">{t('pos.title', 'Sell')}</h1>
-          </div>
-          <div className="shop-actions">
-            {perms.canEditProducts ? <Button href="/shop/products/new" tone="quiet" size="sm">{t('products.add', 'Add product')}</Button> : null}
-            <Button href="/shop/voice?mode=sell" tone="ghost" size="sm">{t('a11y.voice','Voice command')}</Button>
-            <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
-          </div>
+  const checkout = () => {
+    if (!lineCount) return;
+    if (!locked && shortfalls.length && !window.confirm(t('pos.short_stock_body','Stock on record is lower than the cart for: {{names}}. You can still charge — stock will show 0 until you adjust it.',{names:shortfalls.map(line=>line.name).join(', ')}))) return;
+    router.push('/shop/sell/checkout');
+  };
+  const noteDemand = async () => {
+    if(!canNote||noting||offline)return;
+    const original=query,term=noted?.term??query.trim();
+    setNoting(true);setError(null);
+    try {
+      await api.postDemand(shopId,term);
+      if(!alive.current)return;
+      setNotice(t('nudge.demand.noted',"Noted — we'll count how often it's asked for"));
+      if(latestQuery.current===original)setQuery('');
+      await queryClient.invalidateQueries({queryKey:['demandTerms',shopId]});
+    } catch(caught){if(alive.current)setError(caught);}
+    finally {if(alive.current)setNoting(false);}
+  };
+
+  const openBrowse = () => { setQuery(''); setCategory('all'); setBrowseOpen(true); };
+  const closeBrowse = () => { setBrowseOpen(false); setQuery(''); searchRef.current?.focus(); };
+  const searchResultsOpen = !!query.trim() && searchActive && !browseOpen;
+  const catalogueError = (catalog.isError||posSettings.isError)?<div className="sell-read-error" role="alert"><p>{t('sellweb.load_failed','Products could not be refreshed. Retry before adding items.')}</p><Button tone="quiet" size="sm" onClick={()=>{void posSettings.refetch();void catalog.refetch()}}>{t('common.retry','Try again')}</Button></div>:null;
+  const productChoices = <div className="sell-product-choices"><Notice error={error}/>{catalogueError}
+        <div className="sell-catalogue-heading">
+          <h2>{t('products.title','Products')} · {matches.length}</h2>
+          <label><span className="sr-only">{uiText('Categories')}</span><select value={category} onChange={event=>setCategory(event.target.value)}>
+            <option value="all">{t('products.all_categories','All categories')}</option>{categories.map(([code,label])=><option key={code} value={code}>{label}</option>)}
+          </select></label>
         </div>
-        {perms.canEditProducts ? (
-          <div className="shop-seg" role="tablist" aria-label={t('scanner.scan_barcode', 'Scan')}>
-            <button type="button" role="tab" aria-selected={scanMode === 'bill'} className={scanMode === 'bill' ? 'is-active' : undefined} onClick={() => setScanMode('bill')}>{t('scanner.tab_sell', 'Sell')}</button>
-            <button type="button" role="tab" aria-selected={scanMode === 'stock'} className={scanMode === 'stock' ? 'is-active' : undefined} onClick={() => setScanMode('stock')}>{t('scanner.tab_stock', 'Add stock')}</button>
-          </div>
-        ) : null}
-        <p className="text-sm text-muted">{scanMode === 'stock' ? t('scanner.stock_hint', 'Scan a product to add stock') : t('scanner.cart_hint', 'Scan items — each scan adds one')}</p>
-
-        {cartApi.pending ? (
-          <Card tight className="flex flex-wrap items-center justify-between gap-3">
-            <p>{uiText("A bill is waiting to finish.")}</p>
-            <Button href="/shop/sell/checkout" tone="ghost" size="sm">{uiText("Return to checkout")}</Button>
-          </Card>
-        ) : null}
-        <Notice error={error} />
-        {cameraOn ? <CameraScan onCode={(code) => { setCameraOn(false); void lookup(code); }} /> : null}
-
-        <div className="pos-toolbar">
-          <div className="pos-search">
-            <svg className="pos-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
-            <input
-              ref={searchRef}
-              className="shop-field is-lg"
-              placeholder={t('pos.search_placeholder', 'Search or scan a barcode')}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={handleSearchKey}
-              aria-label={uiText("Find a product to sell")}
-              autoComplete="off"
-              autoFocus
-            />
-            <div className="pos-search-hint">
-              <Kbd>↑↓</Kbd>
-              <Kbd>{uiText("Enter")}</Kbd>
-            </div>
-          </div>
-          {categories.length > 1 ? (
-            <div className="pos-chips" role="tablist" aria-label={uiText("Categories")}>
-              <Chip active={category === 'all'} onClick={() => setCategory('all')}>{t('products.all_categories', 'All')}</Chip>
-              {categories.map(([code, label]) => (
-                <Chip key={code} active={category === code} onClick={() => setCategory(code)}>{label}</Chip>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
-        {picker ? <QtyPicker key={picker.productId} item={items.find((row) => row.productId === picker.productId) ?? null} value={picker.value} onChange={(value) => setPicker({ productId: picker.productId, value })} onAdd={commitPicker} onClose={() => setPicker(null)} /> : null}
-        <div className="pos-grid" role="listbox" aria-label={uiText("Products")}>
-          {hits.map((item, index) => {
-            const unpriced = item.product.sellingPrice == null;
-            const tracked = item.product.trackStock !== false;
-            const out = tracked && item.quantity <= 0;
-            const low = tracked && !out && item.stockStatus === 'LOW';
-            const inCart = cartApi.cart.lines.find((line) => line.productId === item.productId);
-            if (unpriced && perms.canEditProducts) {
-              return (
-                <div key={item.id} className={cx('pos-tile', index === highlight && query && 'is-highlight')}>
-                  <p className="pos-tile-name">{item.product.name}</p>
-                  <div className="grid gap-2">
-                    <p className="pos-tile-qty">{formatQty(item.quantity, item.unit)} {uiText("· no price")}</p>
-                    <form
-                      className="pos-tile-price-form"
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        void savePrice(item);
-                      }}
-                    >
-                      <input
-                        className={inputClass}
-                        inputMode="decimal"
-                        placeholder="₹"
-                        aria-label={`Selling price for ${item.product.name}`}
-                        value={priceDraft[item.productId] ?? ''}
-                        onChange={(event) => setPriceDraft((current) => ({ ...current, [item.productId]: event.target.value }))}
-                      />
-                      <Button type="submit" size="sm">{t('common.save', 'Save')}</Button>
-                    </form>
-                  </div>
-                </div>
-              );
-            }
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="option"
-                aria-selected={index === highlight && !!query}
-                className={cx('pos-tile', index === highlight && query && 'is-highlight', out && 'is-out')}
-                onClick={() => choose(item)}
-                title={out ? 'Out of stock' : `Add ${item.product.name}`}
-              >
-                <p className="pos-tile-name">
-                  {item.product.name}
-                  {inCart ? <span className="ml-2 text-saffron">×{formatQty(inCart.quantity, inCart.unit)}</span> : null}
-                </p>
-                <div className="pos-tile-foot">
-                  <span className={cx('pos-tile-qty', low && 'is-low', out && 'is-out')}>
-                    {tracked ? (out ? t('home.stat_out_of_stock', 'Out of stock') : formatQty(item.quantity, item.unit)) : t('pos.no_stock_tracking', 'Untracked')}
-                  </span>
-                  <span className="pos-tile-price num">{unpriced ? 'No price' : formatINR(item.product.sellingPrice)}</span>
-                </div>
-              </button>
-            );
+        {unpricedCount>0&&!query?<Link className="sell-unpriced" href="/shop/products?filter=unpriced"><Glyph name="alert"/><span>{t('pos.unpriced_banner','{{n}} products have no selling price — fix before selling',{n:unpricedCount})}</span><span aria-hidden="true">↗</span></Link>:null}
+        {catalog.isPending&&!catalog.isError&&!posSettings.isError?<Spinner label={uiText('Loading products')}/>:null}
+        <div className="pos-grid" id="sell-products" role="listbox" aria-label={uiText('Products')}>
+          {hits.map((item,index)=>{
+            const unpriced=item.product.sellingPrice==null,tracked=item.product.trackStock!==false,out=tracked&&item.quantity<=0;
+            const inCart=cartApi.cart.lines.find(line=>line.productId===item.productId);
+            return <button ref={index===highlight?highlightedProduct:undefined} key={item.id} id={`sell-product-${item.id}`} type="button" role="option" aria-selected={index===highlight&&!!query}
+              disabled={locked} className={cx('pos-tile',index===highlight&&query&&'is-highlight',out&&'is-out',inCart&&'is-in-cart')} onClick={()=>choose(item)}>
+              <ProductImage image={item.product.media?.cover} name={item.product.name} size={48}/>
+              <span className="sell-product-copy"><span className="pos-tile-name">{item.product.name}</span>
+                <span className={cx('pos-tile-qty',out&&'is-out',tracked&&item.stockStatus==='LOW'&&'is-low')}>
+                  {tracked?(out?t('home.stat_out_of_stock','Out of stock'):formatQty(item.quantity,item.unit,{unitLabel:u=>unitLabel(u,t)})):t('pos.no_stock_tracking','Untracked')}
+                  {item.product.shortCode?` · ${item.product.shortCode}`:''}
+                </span></span>
+              <span className="sell-product-price"><span className={cx('pos-tile-price num',unpriced&&'text-warning')}>{unpriced?t('pos.set_price','Set price'):formatINR(item.product.sellingPrice)}</span><small>/{unitLabel(item.unit,t)}</small></span>
+              <span className={cx('sell-product-add',inCart&&'has-quantity')} aria-hidden="true">{inCart?`×${r3(inCart.quantity)}`:'+'}</span>
+            </button>;
           })}
         </div>
-        {!catalog.isLoading && hits.length === 0 ? (
-          <Card className="text-center text-muted">
-            {t('products.empty_filtered', 'No products match')} “{query.trim()}”.
-            {perms.canEditProducts ? (
-              <>
-                {' '}
-                <Link href={`/shop/products/new?name=${encodeURIComponent(query.trim())}`} className="text-saffron">{uiText("Add it")}</Link>.
-              </>
-            ) : null}
-          </Card>
-        ) : null}
-      </div>
+        {matches.length>hits.length?<Button tone="quiet" onClick={()=>setVisibleCount(n=>n+60)}>{t('sellweb.more_products','Show more products')}</Button>:null}
+        {catalog.isSuccess&&!catalog.isError&&!posSettings.isError&&!hits.length?<div className="sell-empty">
+          <Glyph name="search"/><h2>{t(query?'pos.no_match_title':'pos.empty_catalog_title',query?'No match':'Add your first product')}</h2>
+          {category!=='all'&&allMatches.length?<Button tone="quiet" onClick={()=>setCategory('all')}>{t('sellweb.all_categories','Search all categories')}</Button>:<>
+            <p>{t(query?'pos.no_match_subtitle':'pos.empty_catalog_subtitle',query?'Try another name or scan a barcode.':'Add products to start making bills.')}</p>
+            {noted?<p>{t('nudge.demand.already_noted','Already noted as “{{term}}” — asked {{n}}× by {{people}} this week',{term:noted.term,n:noted.asks,people:noted.people})}</p>:null}
+            <div className="shop-actions">{canNote?<Button disabled={noting||offline} onClick={()=>void noteDemand()}>{noting?t('common.saving','Saving…'):noted?t('nudge.demand.count_again','Count as “{{term}}” again',{term:noted.term}):t('nudge.demand.note_it','Not in stock? Note it')}</Button>:null}
+              {perms.canEditProducts?<Button tone="ghost" href={`/shop/products/new?name=${encodeURIComponent(query.trim())}`}>{t('products.add','Add product')}</Button>:null}</div>
+          </>}
+        </div>:null}
 
-      <aside className="bill shop-surface" aria-label={uiText("Current bill")}>
-        <div className="bill-head">
-          <h2>{t('bill.bill', 'Bill')}</h2>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted">{lineCount} {lineCount === 1 ? 'line' : 'lines'}</span>
-            {lineCount > 0 ? <button type="button" className="bill-remove" onClick={clearBill}>{t('pos.clear_cart', 'Clear')}</button> : null}
-          </div>
-        </div>
-        <div className="bill-lines">
-          {lineCount === 0 ? (
-            <div className="bill-empty">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 7h16l-1.5 9H5.5z" />
-                <path d="M9 7V5a3 3 0 0 1 6 0v2" />
-              </svg>
-              <p>{t('pos.cart_empty', 'Nothing on the bill yet.')}</p>
-              <p className="text-xs text-faint">{uiText("Search above, scan a barcode, or click a product.")}</p>
-            </div>
-          ) : (
-            cartApi.cart.lines.map((line) => (
-              <BillLine
-                key={line.key}
-                line={line}
-                canEditPrice={perms.canEditProducts}
-                onQuantity={(qty) => {
-                  const result = cartApi.setQuantity(line.key, qty);
-                  if (result.capped) setNotice(t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: line.available ?? 0, unit: t(`unit_picker.${line.unit}`, line.unit), name: line.name }));
-                }}
-                onPrice={(price) => cartApi.setPrice(line.key, price)}
-                onRemove={() => cartApi.removeLine(line.key)}
-              />
-            ))
-          )}
-        </div>
-        {suggestions.length > 0 ? (
-          <div className="pos-chips" aria-label={t('modal.product_detail.bought_with', 'Often bought with')}>
-            {suggestions.map((nudge) => (
-              <Chip
-                key={nudge.id}
-                onClick={() => {
-                  const match = items.find((row) => row.productId === nudge.productId);
-                  if (match) choose(match);
-                }}
-              >
-                {nudge.title}
-              </Chip>
-            ))}
-          </div>
-        ) : null}
-        <div className="bill-foot">
-          <div className="bill-total-row">
-            <span>{t('bill.subtotal', 'Subtotal')}</span>
-            <span className="num">{formatINR(totals.subtotal)}</span>
-          </div>
-          {totals.discount > 0 ? (
-            <div className="bill-total-row">
-              <span>{t('bill.discount', 'Discount')}</span>
-              <span className="num">−{formatINR(totals.discount)}</span>
-            </div>
-          ) : null}
-          <div className="bill-total-row is-grand">
-            <span>{t('bill.total', 'Total')}</span>
-            <strong className="num">{formatINR(totals.total)}</strong>
-          </div>
-          <div className="bill-charge">
-            <CustomerAttach />
-            {lineCount === 0 ? (
-              <Button size="lg" block disabled>{t('pos.charge', 'Charge')}</Button>
-            ) : (
-              <Button size="lg" block href="/shop/sell/checkout">{t('pos.charge_amount', 'Charge {{amount}}', { amount: formatINR(totals.total) })}</Button>
-            )}
-          </div>
-        </div>
-      </aside>
+  </div>;
 
-      {lineCount > 0 ? (
-        <div className="pos-mobile-bar no-print">
-          <div>
-            <p className="text-xs text-muted">{lineCount} {lineCount === 1 ? 'line' : 'lines'}</p>
-            <p className="num font-display text-lg font-bold">{formatINR(totals.total)}</p>
-          </div>
-          <Button href="/shop/sell/checkout">{t('pos.charge', 'Charge')}</Button>
+  return (
+    <div className="sell-workspace sale-workspace">
+      <header className="sale-heading">
+        <h1>{t('pos.title','Sell')}</h1>
+        <div className="shop-actions">
+          <Button tone="quiet" size="sm" onClick={()=>{void posSettings.refetch();void catalog.refetch();}} disabled={catalog.isFetching}>{t('common.refresh','Refresh')}</Button>
+          <Button href="/shop/estimates?from=sell" tone="quiet" size="sm">{t('estimates.mobile.title_short','Estimates')}</Button>
+          {perms.canEditProducts?<Button href="/shop/products/new" tone="ghost" size="sm">＋ {t('products.add','Add product')}</Button>:null}
         </div>
-      ) : null}
+      </header>
+      {cartApi.pending?<div className="sell-pending" role="status"><p>{uiText('A bill is waiting to finish.')}</p><Button href="/shop/sell/checkout" tone="quiet" size="sm">{uiText('Return to checkout')}</Button></div>:null}
+      <section className="sale-sheet" aria-label={uiText('Current bill')}>
+        <div className="sale-sheet-heading">
+          <h2>{t('bill.bill','Bill')} <span className="sale-count num">{lineCount}</span></h2>
+          {!locked?<CustomerAttach presentation="dialog"/>:null}
+        </div>
+        <div className="sale-entry" onFocusCapture={()=>setSearchActive(true)} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node|null))setSearchActive(false)}}>
+          <div className="sale-search-row">
+            <div className="pos-search">
+              <span className="pos-search-icon"><Glyph name="search"/></span>
+              <input ref={searchRef} className="shop-field is-lg" type="search" placeholder={t('pos.search_placeholder','Search products or short code')}
+                value={query} onChange={event=>{setQuery(event.target.value);setCategory('all');setSearchActive(true)}} onKeyDown={handleSearchKey} aria-label={uiText('Find a product to sell')}
+                aria-controls={query&&searchActive?'sell-products':undefined} aria-activedescendant={query&&searchActive&&hits[highlight]?`sell-product-${hits[highlight].id}`:undefined} autoComplete="off" disabled={locked}/>
+              {query?<button type="button" className="sell-search-clear" aria-label={t('a11y.clear_search','Clear search')} onClick={()=>{setQuery('');searchRef.current?.focus()}}>×</button>:<span className="pos-search-hint"><Kbd>↑↓</Kbd><Kbd>{uiText('Enter')}</Kbd></span>}
+            </div>
+            <Button tone="ghost" onClick={openBrowse} disabled={locked}><Glyph name="package"/>{t('sellweb.browse','Browse products')}</Button>
+          </div>
+          <div className="sale-input-methods" role="group" aria-label={t('sellweb.add_items','Add items')}>
+            <button type="button" disabled={locked} aria-pressed={cameraOn} onClick={()=>{setQuery('');setUsbOn(false);setCameraOn(v=>!v)}}><Glyph name="scan"/>{t('sellweb.camera','Camera')}</button>
+            <button type="button" disabled={locked} aria-pressed={usbOn} onClick={()=>{setQuery('');setCameraOn(false);setUsbOn(v=>!v)}}><Glyph name="barcode"/>{t('sellweb.scanner','USB scanner')}</button>
+            <Link href={locked?'#':'/shop/voice?mode=sell'} aria-disabled={locked} tabIndex={locked?-1:undefined} onClick={event=>{if(locked)event.preventDefault()}}><Glyph name="mic"/>{t('a11y.voice','Voice command')}</Link>
+          </div>
+          {searchResultsOpen?<div className="sale-search-results">{productChoices}</div>:null}
+          {usbOn?<UsbCounterScanner inputRef={usbRef} onCode={code=>void lookup(code)} onClose={()=>{setUsbOn(false);searchRef.current?.focus()}}/>:null}
+          {cameraOn?<CounterCamera onCode={code=>{closeCamera();void lookup(code)}} onClose={closeCamera}/>:null}
+          {!searchResultsOpen&&!browseOpen?<><Notice error={error}/>{catalogueError}</>:null}
+          {catalog.isPending&&!catalog.isError&&!posSettings.isError?<Spinner label={uiText('Loading products')}/>:null}
+        </div>
+        <div className="sale-items">
+          {lineCount>0?<div className="sale-column-head" aria-hidden="true"><span>{t('sellweb.item','Item')}</span><span>{t('sellweb.qty_label','Quantity')}</span><span>{t('sellweb.unit_price','Unit price')}</span><span>{t('sellweb.amount','Amount')}</span><span/></div>:null}
+          <div className="bill-lines">
+            {!lineCount?<div className="bill-empty"><Glyph name="receipt"/><h3>{t('pos.cart_empty','Nothing on the bill yet.')}</h3><p>{t('sellweb.start_help','Search above, scan a barcode or browse your products.')}</p><Button tone="ghost" onClick={openBrowse} disabled={locked}>{t('sellweb.browse','Browse products')}</Button></div>
+            :cartApi.cart.lines.map(line=><BillLine key={line.key} line={line} disabled={locked} canEditPrice={perms.canSell}
+              shortfall={shortfalls.some(row=>row.key===line.key)} available={items.find(item=>item.productId===line.productId)?.quantity??line.available}
+              onQuantity={qty=>{if(locked)return;const result=cartApi.setQuantity(line.key,qty);if(result.capped)setNotice(t('pos.capped_toast','Only {{n}} {{unit}} of {{name}} in stock',{n:line.available??0,unit:t(`unit_picker.${line.unit}`,line.unit),name:line.name}))}}
+              onPrice={price=>{if(!locked)cartApi.setPrice(line.key,price)}} onRemove={()=>{if(!locked)cartApi.removeLine(line.key)}}/>) }
+          </div>
+          {suggestions.length&&!locked?<div className="sell-suggestions"><p>{t('modal.product_detail.bought_with','Often bought with')}</p><div className="pos-chips">{suggestions.map(nudge=><Chip key={nudge.id} onClick={()=>{const match=items.find(item=>item.productId===nudge.productId);if(match)choose(match)}}>{nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={24}/>:null}{nudge.title}</Chip>)}</div></div>:null}
+          {lineCount>0?<div className="sale-bill-actions"><Button tone="quiet" size="sm" onClick={openBrowse} disabled={locked}>＋ {t('sellweb.add_items','Add items')}</Button><div>
+            {!locked?<Link href="/shop/estimates?fromCart=1&from=sell">{t('estimates.save_cart','Save cart as estimate')}</Link>:null}
+            <button type="button" disabled={locked} onClick={clearBill}>{t('sellweb.clear_bill','Clear bill')}</button>
+          </div></div>:null}
+        </div>
+        <footer className="sale-checkout">
+          <div className="sale-total">
+            <span>{t('sellweb.estimated_total','Estimated total')}</span><strong className={cx('num',reviewTax&&'is-review')}>{amountLabel}</strong>
+            {(totals.discount>0||totals.tax&&!reviewTax)?<div className="sale-tax-summary"><span>{t('bill.subtotal','Subtotal')} {formatINR(totals.subtotal)}</span>{totals.discount>0?<span>{t('bill.discount','Discount')} −{formatINR(totals.discount)}</span>:null}{totals.tax&&!reviewTax?<span>{uiText(taxContext?.priceMode==='inclusive'?'GST included':'GST added')} {formatINR(totals.tax.tax)}</span>:null}</div>:null}
+          </div>
+          <div className="sale-checkout-action"><p>{t('sellweb.checkout_help','Review payment, discounts and tax at checkout.')}</p><Button size="lg" disabled={!lineCount} onClick={checkout}>{locked?uiText('Return to checkout'):t('sellweb.review_charge','Review & charge')}<span aria-hidden="true"> →</span></Button></div>
+        </footer>
+      </section>
+      <details className="sale-recovery" open={cartApi.draft.state==='error'||!!cartApi.pending?true:undefined}><summary><span>{t('sellweb.draft_help','Draft & recovery')}</span><span>{t(`counter.draft_${cartApi.draft.state}`,'')}</span></summary><CounterStatus cart={cartApi}/></details>
+      {browseOpen?<VoiceSheet title={t('sellweb.browse','Browse products')} closeLabel={t('common.close','Close')} onClose={closeBrowse}><div className="sale-catalogue-dialog">
+        <p>{t('sellweb.browse_help','Select products to add them to your bill.')}</p>
+        <input className="shop-field" type="search" autoFocus placeholder={t('pos.search_placeholder','Search products or short code')} aria-label={uiText('Find a product to sell')} value={query} onChange={event=>setQuery(event.target.value)} onKeyDown={handleSearchKey}/>
+        {productChoices}
+        <div className="sale-catalogue-foot"><span>{t('bill.bill','Bill')} · {lineCount}<strong className="num">{amountLabel}</strong></span><Button onClick={closeBrowse}>{t('sellweb.back_to_bill','Back to bill')} →</Button></div>
+      </div></VoiceSheet>:null}
+      {picker?<VoiceSheet title={t('sellweb.quantity','Choose quantity')} closeLabel={t('common.close','Close')} onClose={()=>{setPicker(null);searchRef.current?.focus();}}><QtyPicker key={picker.productId} item={picker.item} value={picker.value} onChange={value=>setPicker({...picker,value})} onAdd={commitPicker}/></VoiceSheet>:null}
+      {priceFor?<VoiceSheet title={t('pos.set_price_title','Set a selling price')} closeLabel={t('common.close','Close')} onClose={()=>{if(!priceBusy)setPriceFor(null)}}><form className="sell-price-form" onSubmit={event=>{event.preventDefault();void savePrice(priceFor)}}><div className="pos-picker-product"><ProductImage image={priceFor.product.media?.cover} name={priceFor.product.name}/><h3>{priceFor.product.name}</h3></div><Notice error={error}/><label>{t('sellweb.unit_price','Unit price')}<input className={inputClass} autoFocus inputMode="decimal" value={priceDraft[priceFor.productId]??''} onChange={event=>setPriceDraft({...priceDraft,[priceFor.productId]:event.target.value})}/></label><Button type="submit" disabled={priceBusy||sellAmount(priceDraft[priceFor.productId]??'')===null}>{t('pos.save_price_add','Save price & add')}</Button></form></VoiceSheet>:null}
     </div>
   );
 }
@@ -480,19 +417,18 @@ function QtyPicker({
   value,
   onChange,
   onAdd,
-  onClose,
 }: {
   item: InventoryItem | null;
   value: number;
   onChange: (value: number) => void;
   onAdd: () => void;
-  onClose: () => void;
 }) {
   const uiText = useUiText();
   const { t } = useShop();
   const unit = item?.unit ?? 'piece';
   const alt = altUnit(unit);
   const [displayUnit, setDisplayUnit] = useState(unit);
+  const [draft, setDraft] = useState<string | null>(null);
   if (!item) return null;
   const chips = defaultChips(unit, item.product.packSize);
   const tracked = item.product.trackStock !== false;
@@ -504,49 +440,57 @@ function QtyPicker({
   };
 
   return (
-    <div className="pos-picker" role="dialog" aria-label={`Choose a quantity of ${item.product.name}`}>
+    <div className="pos-picker sell-quantity-picker">
       <div className="pos-picker-head">
-        <div>
+        <div className="pos-picker-product">
+          <ProductImage image={item.product.media?.cover} name={item.product.name}/>
+          <div>
           <p className="party-name">{item.product.name}</p>
           <p className="party-meta">
             {formatINR(price)} / {unit}
-            {tracked ? ` · ${formatQty(item.quantity, unit, { packSize: item.product.packSize, packLabel: item.product.packLabel })} on hand` : ' · not tracked'}
+            {tracked ? ` · ${t('pos.in_stock_fmt','{{qty}} in stock',{qty:formatQty(item.quantity,unit,{packSize:item.product.packSize,packLabel:item.product.packLabel,unitLabel:u=>unitLabel(u,t)})})}` : ` · ${t('pos.no_stock_tracking','Untracked')}`}
           </p>
+          </div>
         </div>
-        <button type="button" className="bill-remove" onClick={onClose}>{t('common.close', 'Close')}</button>
       </div>
       <div className="pos-chips" role="group" aria-label={uiText("Quantities")}>
         {chips.map((chip) => (
-          <Chip key={chip} active={Math.abs(value - chip) < 1e-9} onClick={() => onChange(clamp(chip))}>
+          <Chip key={chip} active={Math.abs(value - chip) < 1e-9} onClick={() => {setDraft(null);onChange(clamp(chip));}}>
             {chipLabel(chip, unit, item.product)}
           </Chip>
         ))}
       </div>
       <div className="pos-picker-step">
-        <button type="button" aria-label={t('a11y.decrease', 'Decrease quantity')} onClick={() => onChange(clamp(value - stepFor(unit)))}>−</button>
-        <strong>{trimQty(convert(value, unit, displayUnit))} {displayUnit}</strong>
-        <button type="button" aria-label={t('a11y.increase', 'Increase quantity')} onClick={() => onChange(clamp(value + stepFor(unit)))}>+</button>
+        <button type="button" aria-label={t('a11y.decrease', 'Decrease quantity')} onClick={() => {setDraft(null);onChange(clamp(value - stepFor(unit)));}}>−</button>
+        <label><span className="sr-only">{t('sellweb.quantity','Choose quantity')}</span><input autoFocus inputMode="decimal" value={draft??trimQty(convert(value,unit,displayUnit))} onChange={event=>{const raw=event.target.value;setDraft(raw);if(/^\d+(?:\.\d{0,3})?$/.test(raw)&&Number(raw)>0)onChange(clamp(convert(Number(raw),displayUnit,unit)));}} onBlur={()=>setDraft(null)} onKeyDown={event=>{if(event.key==='Enter'&&value>0&&(draft===null||(/^\d+(?:\.\d{0,3})?$/.test(draft)&&Number(draft)>0)))onAdd();}}/><span>{displayUnit}</span></label>
+        <button type="button" aria-label={t('a11y.increase', 'Increase quantity')} onClick={() => {setDraft(null);onChange(clamp(value + stepFor(unit)));}}>+</button>
         <span className="num">{formatINR(r3(value * price))}</span>
       </div>
       {alt ? (
         <div className="shop-seg" role="group" aria-label={uiText("Unit")}>
-          <button type="button" className={displayUnit === unit ? 'is-active' : undefined} onClick={() => setDisplayUnit(unit)}>{unit}</button>
-          <button type="button" className={displayUnit === alt ? 'is-active' : undefined} onClick={() => setDisplayUnit(alt)}>{alt}</button>
+          <button type="button" className={displayUnit === unit ? 'is-active' : undefined} onClick={() => {setDraft(null);setDisplayUnit(unit)}}>{unit}</button>
+          <button type="button" className={displayUnit === alt ? 'is-active' : undefined} onClick={() => {setDraft(null);setDisplayUnit(alt)}}>{alt}</button>
         </div>
       ) : null}
-      <Button onClick={onAdd} disabled={!(value > 0)}>{t('pos.add_to_cart', 'Add')} {chipLabel(value, unit, item.product)}</Button>
+      <Button onClick={onAdd} disabled={!(value > 0)||draft!==null&&(!/^\d+(?:\.\d{0,3})?$/.test(draft)||Number(draft)<=0)}>{t('pos.add_to_cart', 'Add')} {chipLabel(value, unit, item.product)}</Button>
     </div>
   );
 }
 
 function BillLine({
   line,
+  disabled,
+  shortfall,
+  available,
   canEditPrice,
   onQuantity,
   onPrice,
   onRemove,
 }: {
   line: CartLine;
+  disabled: boolean;
+  shortfall: boolean;
+  available: number | null;
   canEditPrice: boolean;
   onQuantity: (quantity: number) => void;
   onPrice: (price: number) => void;
@@ -566,21 +510,21 @@ function BillLine({
 
   const commitPrice = () => {
     if (priceDraft == null) return;
-    const next = Number(priceDraft);
-    if (Number.isFinite(next) && next >= 0) onPrice(next);
+    const next = sellAmount(priceDraft);
+    if (next !== null) onPrice(next);
     setPriceDraft(null);
   };
 
   return (
     <div className="bill-line">
-      <p className="bill-line-name">{line.name}</p>
-      <p className="bill-line-total num">{formatINR(line.price * line.quantity)}</p>
-      <div className="bill-line-controls">
-        <div className="bill-qty" aria-label={`Quantity of ${line.name}`}>
-          <button type="button" aria-label={`Decrease ${line.name}`} onClick={() => onQuantity(r3(line.quantity - step))}>−</button>
+      <div className="bill-line-name"><ProductImageById productId={line.productId} name={line.name} size={42}/><div><span>{line.name}</span><small>{t(`unit_picker.${line.unit}`,line.unit)}</small>{shortfall?<p className="sell-stock-warning">{t('pos.short_stock_line','Only {{n}} {{unit}} in stock',{n:available??0,unit:t(`unit_picker.${line.unit}`,line.unit)})}</p>:null}{line.listPrice!=null&&line.price<line.listPrice?<p className="sell-price-was">{t('pos.was','was {{price}}',{price:formatINR(line.listPrice)})}</p>:null}</div></div>
+      <p className="bill-line-total num">{formatINR(lineGross(line) - lineDiscount(line))}</p>
+      <fieldset className="bill-line-controls" disabled={disabled}>
+        <div className="sale-quantity-cell"><span className="sale-field-label">{t('sellweb.qty_label','Quantity')}</span><div className="bill-qty" aria-label={`${t('sellweb.quantity','Choose quantity')}: ${line.name}`}>
+          <button type="button" aria-label={`${t('a11y.decrease','Decrease quantity')}: ${line.name}`} onClick={() => onQuantity(r3(line.quantity - step))}>−</button>
           <input
             inputMode="decimal"
-            aria-label={`Quantity of ${line.name} in ${line.unit}`}
+            aria-label={`${t('sellweb.quantity','Choose quantity')}: ${line.name} (${t(`unit_picker.${line.unit}`,line.unit)})`}
             value={qtyDraft ?? String(r3(line.quantity))}
             onFocus={() => setQtyDraft(String(r3(line.quantity)))}
             onChange={(event) => setQtyDraft(event.target.value)}
@@ -589,14 +533,15 @@ function BillLine({
               if (event.key === 'Enter') (event.target as HTMLInputElement).blur();
             }}
           />
-          <button type="button" aria-label={`Increase ${line.name}`} onClick={() => onQuantity(r3(line.quantity + step))}>+</button>
+          <button type="button" aria-label={`${t('a11y.increase','Increase quantity')}: ${line.name}`} onClick={() => onQuantity(r3(line.quantity + step))}>+</button>
         </div>
-        <span className="bill-price">
-          <span>{line.unit} × ₹</span>
+        </div>
+        <div className="sale-price-cell"><span className="sale-field-label">{t('sellweb.unit_price','Unit price')}</span><span className="bill-price">
+          <span>₹</span>
           {canEditPrice ? (
             <input
               inputMode="decimal"
-              aria-label={`Price per ${line.unit} for ${line.name}`}
+              aria-label={`${t('sellweb.unit_price','Unit price')}: ${line.name} (${t(`unit_picker.${line.unit}`,line.unit)})`}
               value={priceDraft ?? String(line.price)}
               onFocus={() => setPriceDraft(String(line.price))}
               onChange={(event) => setPriceDraft(event.target.value)}
@@ -608,69 +553,11 @@ function BillLine({
           ) : (
             <span className="num">{line.price}</span>
           )}
-        </span>
-        <button type="button" className="bill-remove" onClick={onRemove} aria-label={`Remove ${line.name}`}>
-          {t('common.remove', 'Remove')}
+        </span></div>
+        <button type="button" className="bill-remove" onClick={onRemove} aria-label={`${t('common.remove','Remove')}: ${line.name}`}>
+          <span aria-hidden="true">×</span>
         </button>
-      </div>
+      </fieldset>
     </div>
-  );
-}
-
-function CameraScan({ onCode }: { onCode: (code: string) => void }) {
-  const uiText = useUiText();
-  const [message, setMessage] = useState<string | null>(null);
-  const onCodeRef = useRef(onCode);
-  onCodeRef.current = onCode;
-  useEffect(() => {
-    const video = document.createElement('video');
-    const host = document.getElementById('sell-camera');
-    if (!host) return;
-    host.appendChild(video);
-    video.className = 'mt-2 w-full rounded-lg';
-    video.muted = true;
-    video.playsInline = true;
-    let stop = false;
-    let stream: MediaStream | null = null;
-    const formats = ['ean_13', 'ean_8', 'code_128', 'upc_a', 'upc_e', 'qr_code'] as const;
-    void (async () => {
-      const native = (window as unknown as { BarcodeDetector?: new (opts?: { formats?: string[] }) => { detect: (source: HTMLVideoElement) => Promise<{ rawValue?: string }[]> } }).BarcodeDetector;
-      const Detector = native ?? (await import('barcode-detector')).BarcodeDetector;
-      if (stop) return;
-      const detector = new Detector({ formats: [...formats] });
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        video.srcObject = stream;
-        await video.play();
-      } catch {
-        if (!stop) setMessage('Camera permission was blocked. Use a USB scanner instead.');
-        return;
-      }
-      const tick = async () => {
-        if (stop) return;
-        const codes = await detector.detect(video).catch(() => []);
-        const value = codes[0]?.rawValue;
-        if (value) {
-          onCodeRef.current(value);
-          return;
-        }
-        requestAnimationFrame(() => void tick());
-      };
-      void tick();
-    })().catch(() => {
-      if (!stop) setMessage('The camera reader could not start. A USB scanner can type into the search box.');
-    });
-    return () => {
-      stop = true;
-      stream?.getTracks().forEach((track) => track.stop());
-      video.remove();
-    };
-  }, []);
-  return (
-    <Card tight>
-      <div id="sell-camera">
-        {message ? <p className="text-sm text-muted">{message}</p> : <p className="text-sm text-muted">{uiText("Point the camera at a barcode.")}</p>}
-      </div>
-    </Card>
   );
 }

@@ -5,14 +5,17 @@ import { useGstText as useUiText } from "./gst-ui";
 import { ReadState, useGstQuery, useGstAction } from "./gst-workspace";
 import { useQuery } from "@tanstack/react-query";
 import { BuyerFields, emptyBuyer, useGstText } from "./gst-ui";
-import { useState } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
+import {checkoutBuyer} from '../../lib/shop/checkout-customer';
+import {CheckoutCustomerHistory} from './checkout-context';
+import { VoiceSheet } from "./voice-sheet";
 import { useCart } from "../../lib/shop/cart";
 import { formatINR } from "../../lib/shop/money";
 import { normalizeIndianMobile } from "../../lib/shop/phone";
 import { useShop } from "./context";
 import { Button, Field, inputClass } from "./ui";
 
-export function CustomerAttach({ gst = false }: { gst?: boolean }) {
+export function CustomerAttach({ gst = false, presentation = "inline", buyerDetailsRequired = false, buyerState = "", creditHistory = false }: { gst?: boolean; presentation?: "inline" | "dialog"; buyerDetailsRequired?: boolean; buyerState?: string; creditHistory?: boolean }) {
   const uiText = useUiText();
   const text = useGstText();
   const { api, shop, userId, premium, perms, t } = useShop();
@@ -21,6 +24,9 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
   const [q, setQ] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [picking,setPicking]=useState(false);
+  const revision=useRef(0);
+  useEffect(()=>{revision.current++;setPicking(false);return()=>{revision.current++;};},[shop?.id,userId,open]);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const customers = useQuery({
     queryKey: ["customer-search", shop?.id, q],
@@ -39,6 +45,18 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
   const cart = cartApi.cart;
   const attached = !!(cart.customerId || cart.customerName);
 
+  const choose=async(customer:{id:string|null;name:string;phone?:string|null;clientId?:string|null;buyer?:import('../../lib/shop/gst-core/gst').Buyer})=>{
+    if(picking)return;
+    const captured=++revision.current;setPicking(true);setPhoneError(null);
+    try {
+      const contact=gst&&!customer.buyer&&customer.id&&premium&&perms.canManageCustomers?(await api.customerImports.profile(shop.id,customer.id)).contact:undefined;
+      if(captured!==revision.current)return;
+      api.assertSession();
+      cartApi.patch({customerId:customer.id,customerName:customer.name,customerPhone:customer.phone??null,customerClientId:customer.id?null:customer.clientId??null,buyer:checkoutBuyer(customer.name,buyerState,customer.buyer,contact)});
+      setOpen(false);
+    }catch{if(captured===revision.current)setPhoneError(t('common.error','Something went wrong.'));}
+    finally{if(captured===revision.current)setPicking(false);}
+  };
   const clear = () => {
     cartApi.patch({
       customerId: null,
@@ -52,7 +70,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
   const saveNew = () => {
     const normalized = phone.trim() ? normalizeIndianMobile(phone) : null;
     if (normalized === "invalid") {
-      setPhoneError("Enter a valid Indian mobile number.");
+      setPhoneError(uiText("Enter a valid Indian mobile number."));
       return;
     }
     if (!name.trim()) return;
@@ -93,6 +111,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
         </button>
       )}
       {open && !attached ? (
+        <CustomerFormSurface dialog={presentation === "dialog"} title={t("checkout.add_customer", "Add customer")} closeLabel={t("common.close", "Close")} onClose={()=>setOpen(false)}>
         <div className="stack-form">
           {gst || (premium && perms.canManageCustomers) ? (
             <>
@@ -120,20 +139,8 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
                         key={customer.id}
                         type="button"
                         className="shop-list-row"
-                        onClick={() => {
-                          cartApi.patch({
-                            customerId: customer.id,
-                            buyer: parties.data?.find(
-                              (p) =>
-                                p.clientId === customer.id ||
-                                p.clientId === customer.clientId,
-                            )?.buyer,
-                            customerName: customer.name,
-                            customerPhone: customer.phone,
-                            customerClientId: null,
-                          });
-                          setOpen(false);
-                        }}
+                        disabled={picking}
+                        onClick={()=>void choose({...customer,buyer:parties.data?.find(p=>p.clientId===customer.id||p.clientId===customer.clientId)?.buyer??customer.billingParty?.buyer})}
                       >
                         <span className="shop-list-main">
                           <span className="shop-list-title">
@@ -145,6 +152,7 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
                             </span>
                           ) : null}
                         </span>
+                        {creditHistory?<CheckoutCustomerHistory customerId={customer.id}/>:null}
                         <span className="num text-sm text-muted">
                           {formatINR(customer.balance)}
                         </span>
@@ -166,16 +174,8 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
                       type="button"
                       className="shop-list-row"
                       key={p.id}
-                      onClick={() => {
-                        cartApi.patch({
-                          customerId: customer?.id ?? null,
-                          customerName: p.buyer.name,
-                          customerPhone: customer?.phone ?? null,
-                          customerClientId: customer ? null : p.clientId,
-                          buyer: p.buyer,
-                        });
-                        setOpen(false);
-                      }}
+                      disabled={picking}
+                      onClick={()=>void choose({id:customer?.id??null,name:p.buyer.name,phone:customer?.phone,clientId:p.clientId,buyer:p.buyer})}
                     >
                       <span className="shop-list-main">
                         <b>{p.buyer.name}</b>
@@ -209,11 +209,12 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
           {phoneError ? (
             <p className="text-sm text-danger">{phoneError}</p>
           ) : null}
-          <Button type="button" disabled={!name.trim()} onClick={saveNew}> {uiText("Use this customer")} </Button>
+          <Button type="button" disabled={picking||!name.trim()} onClick={saveNew}> {uiText("Use this customer")} </Button>
         </div>
+        </CustomerFormSurface>
       ) : null}
       {gst ? (
-        <details className="gst-section">
+        <details className="gst-section" open={buyerDetailsRequired || undefined}>
           <summary>{text("GST buyer details (optional)")}</summary>
           <div className="gst-section-body">
             <BuyerFields
@@ -274,4 +275,8 @@ export function CustomerAttach({ gst = false }: { gst?: boolean }) {
       ) : null}
     </div>
   );
+}
+
+function CustomerFormSurface({dialog,title,closeLabel,onClose,children}:{dialog:boolean;title:string;closeLabel:string;onClose:()=>void;children:ReactNode}) {
+  return dialog ? <VoiceSheet title={title} closeLabel={closeLabel} onClose={onClose}><div className="sale-customer-dialog">{children}</div></VoiceSheet> : <>{children}</>;
 }

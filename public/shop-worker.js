@@ -14,15 +14,24 @@ async function prewarm(){
    const response=await fetch(path,{credentials:'same-origin',cache:'no-cache'});
    if(!response.ok||response.redirected||!response.headers.get('content-type')?.includes('text/html'))continue;
    const html=await response.clone().text();
-   const urls=[...html.matchAll(/(?:src|href)="([^"<>]+)"/g)].map(m=>new URL(m[1],self.location.origin)).filter(asset);
+   // Read real opening script/link tags, not src/href text in Next's serialized payload.
+   const urls=[];
+   for(const tag of html.matchAll(/<(?:script|link)\b([^<>]*)>/gi)){
+    const attribute=tag[1].match(/(?:^|\s)(?:src|href)\s*=\s*(["'])(.*?)\1/i);
+    if(!attribute)continue;
+    try{const url=new URL(attribute[2].replaceAll('&amp;','&'),self.location.origin);if(asset(url))urls.push(url);}catch{/* Not a usable asset URL. */}
+   }
    // Persist the HTML only once every resource explicitly referenced by it is available.
    let complete=true;
    const resources=[...new Set(urls.map(u=>u.href))];
    for(const url of resources){
-    try{const cached=await cache.match(url),resource=cached??await fetch(url);if(!resource.ok||resource.type==='opaque'){complete=false;break;}if(url.endsWith('.css')){
+    try{const cached=await cache.match(url),resource=cached??await fetch(url);if(!resource.ok||resource.type==='opaque'){complete=false;break;}if(new URL(url).pathname.endsWith('.css')){
      const css=await resource.clone().text();
-     for(const match of css.matchAll(/url\(["']?([^"')]+)["']?\)/g)){
-      const child=new URL(match[1],url);if(asset(child)&&!resources.includes(child.href))resources.push(child.href);
+     // A quoted data URI may contain its own url(...) text; consume it as one CSS value.
+     for(const match of css.matchAll(/url\(\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|((?:\\.|[^)\s])+))\s*\)/gi)){
+      const value=(match[1]??match[2]??match[3]??'').trim();
+      if(/^(?:data:|blob:|#)/i.test(value))continue;
+      const child=new URL(value,url);if(asset(child)&&!resources.includes(child.href))resources.push(child.href);
      }
     }
     if(!cached&&!await save(url,resource)){complete=false;break;}}catch{complete=false;break;}
@@ -44,7 +53,12 @@ self.addEventListener('fetch',event=>{
  const request=event.request,url=new URL(request.url);
  if(request.method!=='GET'||request.headers.get('RSC')==='1')return;
  if(asset(url)){
-  event.respondWith((async()=>{let saved;try{saved=await (await caches.open(CACHE)).match(request);}catch{}if(saved)return saved;const response=await fetch(request);await save(request,response);return response;})());return;
+  // Prefer the current asset (or the browser's normal HTTP cache). Development
+  // chunk names can stay unchanged when their contents or local API URL change.
+  event.respondWith((async()=>{
+   try{const response=await fetch(request);if([404,408,502,503,504].includes(response.status)){try{const saved=await (await caches.open(CACHE)).match(request);if(saved)return saved;}catch{}}await save(request,response);return response;}
+   catch(error){try{const saved=await (await caches.open(CACHE)).match(request);if(saved)return saved;}catch{}throw error;}
+  })());return;
  }
  if(request.mode==='navigate'&&shell(url)){
   event.respondWith((async()=>{

@@ -1,117 +1,36 @@
 'use client';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-
-import { SettingsFields, emptySettings, useGstText } from '../gst-ui';
-import { validateSettings } from '../../../lib/shop/gst-core/gst';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { CATALOG, remapShopSubtype, shopType } from '../../../lib/shop/catalog';
-import { Button, Card, Field, inputClass, Notice } from '../ui';
-import { useShop } from '../context';
-
-export function OnboardingScreen() {
-  const uiText = useUiText();
-  const { api, refreshShops, selectShop, shops, t } = useShop();
-  const router = useRouter();
-  const text=useGstText();
-  const [gst,setGst]=useState(emptySettings);
-  const [gstStep,setGstStep]=useState(false);
-  const [defer,setDefer]=useState(false);
-  const [mode, setMode] = useState<'create' | 'join'>(shops.length ? 'join' : 'create');
-  const [error, setError] = useState<unknown>(null);
-  const [pending, setPending] = useState(false);
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState(CATALOG.shopTypes[0]?.code ?? 'general');
-  const [subtype, setSubtype] = useState(shopType(category).subtypes[0]?.code ?? '');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [code, setCode] = useState('');
-
-  const subtypes = shopType(category).subtypes;
-
-  const finish = async (shopId: string) => {
-    await refreshShops();
-    selectShop(shopId);
-    router.replace('/shop');
-  };
-
-  return (
-    <div className="mx-auto grid max-w-xl gap-4">
-      <h1 className="font-display text-3xl">{t('onboarding.create.title', 'Open your shop')}</h1>
-      <p className="text-muted">{t('onboarding.create.subtitle', 'Create a shop or join one with an invite code.')}</p>
-      <div className="flex gap-2">
-        <Button tone={mode === 'create' ? 'primary' : 'ghost'} onClick={() => setMode('create')}>{t('onboarding.create.button', 'Create shop')}</Button>
-        <Button tone={mode === 'join' ? 'primary' : 'ghost'} onClick={() => setMode('join')}>{t('onboarding.join.button', 'Join with code')}</Button>
-      </div>
-      <Notice error={error} />
-      {mode === 'create' ? (
-        <Card>
-          <form
-            className="grid gap-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if(!gstStep){setGstStep(true);return;}
-              if(!defer){try{if(!gst.reviewed)throw Error(text('Confirm the GST details before saving.'));if(gst.registration==='unknown')throw Error(text('Choose your GST registration or skip setup for now.'));validateSettings({...gst,version:gst.version||crypto.randomUUID()});}catch(e){setError(e);return;}}
-              setPending(true);
-              setError(null);
-              void api
-                .createShop({
-                  ...(!defer?{gstSettings:gst}:{}),
-                  name: name.trim(),
-                  category,
-                  subtype: remapShopSubtype(category, subtype),
-                  phone: phone.trim(),
-                  address: address.trim(),
-                  city: city.trim(),
-                })
-                .then((result) => finish(result.shop.id))
-                .catch(setError)
-                .finally(() => setPending(false));
-            }}
-          >
-            {!gstStep?<>            <Field label={t('onboarding.create.name_label', 'Shop name')}><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
-            <Field label={t('onboarding.create.category_label', 'Type')}>
-              <select className={inputClass} value={category} onChange={(event) => { setCategory(event.target.value); setSubtype(shopType(event.target.value).subtypes[0]?.code ?? ''); }}>
-                {CATALOG.shopTypes.map((type) => <option key={type.code} value={type.code}>{type.label}</option>)}
-              </select>
-            </Field>
-            <Field label={t('onboarding.create.subtype_label', 'Subtype')}>
-              <select className={inputClass} value={subtype} onChange={(event) => setSubtype(event.target.value)}>
-                {subtypes.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
-              </select>
-            </Field>
-            <Field label={t('onboarding.create.phone_label', 'Phone')}><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} required inputMode="tel" placeholder={t('onboarding.create.phone_placeholder', '10-digit mobile number')} /></Field>
-            <Field label={t('onboarding.create.address_label', 'Address')}><input className={inputClass} value={address} onChange={(event) => setAddress(event.target.value)} required placeholder={t('onboarding.create.address_placeholder', 'Shop street, area, landmark')} /></Field>
-            <Field label={t('onboarding.create.city_label', 'City')}><input className={inputClass} value={city} onChange={(event) => setCity(event.target.value)} required placeholder={t('onboarding.create.city_placeholder', 'e.g. Kanpur')} /></Field>
-</>:<div className="grid gap-4"><SettingsFields value={gst} onChange={value=>{setGst(value);setDefer(false);}}/><button type="button" className="shop-section-link" onClick={()=>{setDefer(true);}}>{text('Skip for now — set up in Settings')}</button>{defer?<p role="status">{text('Your shop will be created without a GST declaration.')}</p>:null}</div>}
-            <Button type="submit" disabled={pending || !name.trim()}>{pending ? t('onboarding.create.button_loading', 'Creating…') : !gstStep ? text('Continue to GST setup') : defer ? text('Create shop without GST setup') : text('Save GST & create shop')}</Button>
-          {gstStep?<Button tone="quiet" onClick={()=>{setGstStep(false);setDefer(false);}}>{text('Back to shop details')}</Button>:null}
-          </form>
-        </Card>
-      ) : (
-        <Card>
-          <form
-            className="grid gap-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setPending(true);
-              setError(null);
-              void api
-                .joinShop(code.trim())
-                .then((result) => finish(result.shop.id))
-                .catch(setError)
-                .finally(() => setPending(false));
-            }}
-          >
-            <Field label={t('onboarding.join.code_label', 'Invite code')}><input className={inputClass} value={code} onChange={(event) => setCode(event.target.value)} required autoCapitalize="characters" /></Field>
-            <Button type="submit" disabled={pending || !code.trim()}>{pending ? t('onboarding.join.button_loading', 'Joining…') : t('onboarding.join.button', 'Join shop')}</Button>
-          </form>
-        </Card>
-      )}
-      {shops.length > 0 ? <Button tone="ghost" href="/shop">{uiText("Back to")} {shops[0]?.name}</Button> : null}
-    </div>
-  );
+import {useRef,useState} from 'react';
+import {useRouter,useSearchParams} from 'next/navigation';
+import {SettingsFields,emptySettings,useGstText} from '../gst-ui';
+import {validateSettings} from '../../../lib/shop/gst-core/gst';
+import {CATALOG,labeledShop,labeledSubtype,remapShopSubtype,shopType} from '../../../lib/shop/catalog';
+import {SUPPORTED_LANGUAGES} from '../../../lib/shop/languages';
+import {normalizeIndianMobile} from '../../../lib/shop/phone';
+import {parseInviteCode} from '../../../lib/shop/invite-code';
+import {EN_FALLBACK} from '../../../lib/shop/en-fallback';
+import {CounterCamera} from '../counter-scanner';
+import {Button,Field,Glyph,inputClass,Notice} from '../ui';
+import {useShop} from '../context';
+export function OnboardingScreen(){
+ const {api,refreshShops,selectShop,shops,t,prefs,offline}=useShop(),router=useRouter(),params=useSearchParams(),text=useGstText();
+ const [mode,setMode]=useState<'create'|'join'>(params.get('code')||shops.length?'join':'create'),[gstStep,setGstStep]=useState(false),[gst,setGst]=useState(emptySettings),[defer,setDefer]=useState(false),[error,setError]=useState<unknown>(null),[pending,setPending]=useState(false),saving=useRef(false);
+ const [ownerName,setOwnerName]=useState(''),[name,setName]=useState(''),[phone,setPhone]=useState(''),[address,setAddress]=useState(''),[city,setCity]=useState(''),[category,setCategory]=useState(CATALOG.shopTypes[0]?.code??'general'),[subtype,setSubtype]=useState(shopType(category).subtypes[0]?.code??''),[language,setLanguage]=useState(prefs?.appLanguage??'en'),[code,setCode]=useState(parseInviteCode(params.get('code')??'')??''),[scanner,setScanner]=useState(false);
+ const catalogText=(k:string)=>t(k,EN_FALLBACK[k]??k),blocked=pending||offline;
+ async function finish(id:string,opening=false){await refreshShops();selectShop(id);router.replace(opening?'/shop/settings/opening-balances?onboarding=1':'/shop')}
+ async function create(){if(blocked||saving.current)return;const mobile=normalizeIndianMobile(phone);if(!ownerName.trim()||ownerName.trim().length>120){setError(Error(t('profileweb.owner_required','Enter an owner name of up to 120 characters.')));return}if(!mobile||mobile==='invalid'){setError(Error(t('validation.phone_invalid','Enter a valid 10-digit mobile number')));return}if(!name.trim()||!address.trim()||!city.trim())return;
+ if(!gstStep){setGst(v=>({...v,legalName:v.legalName||name.trim(),address:v.address||[address.trim(),city.trim()].join(', '),reviewed:false}));setError(null);setGstStep(true);return}
+ if(!defer){try{if(!gst.reviewed)throw Error(text('Confirm the GST details before saving.'));if(gst.registration==='unknown')throw Error(text('Choose your GST registration or skip setup for now.'));validateSettings({...gst,version:gst.version||crypto.randomUUID()})}catch(e){setError(e);return}}
+ saving.current=true;setPending(true);setError(null);try{const result=await api.createShop({ownerName:ownerName.trim(),name:name.trim(),category,subtype:remapShopSubtype(category,subtype),phone:mobile,address:address.trim(),city:city.trim(),language,...(!defer?{gstSettings:gst}:{})});await finish(result.shop.id,true)}catch(e){setError(e)}finally{saving.current=false;setPending(false)}}
+ async function join(){if(blocked||saving.current)return;const parsed=parseInviteCode(code);if(!parsed){setError(Error(t('onboarding.join.invalid_qr','Invalid QR code. Please try again.')));return}saving.current=true;setPending(true);setError(null);try{const result=await api.joinShop(parsed);await finish(result.shop.id)}catch(e){setError(e)}finally{saving.current=false;setPending(false)}}
+ return <div className="shop-page setup-workspace"><header className="setup-intro"><span className="setup-emblem"><Glyph name="store"/></span><h1>{t('onboarding.create.title','Open your shop')}</h1><p>{t('onboarding.create.subtitle','Create a shop or join one with an invite code.')}</p><div className="shop-seg" role="group" aria-label={t('onboarding.create.title','Open your shop')}>{(['create','join'] as const).map(value=><button type="button" key={value} disabled={blocked} className={mode===value?'is-active':''} aria-pressed={mode===value} onClick={()=>{setMode(value);setError(null);setScanner(false)}}>{t(value==='create'?'onboarding.create.button':'onboarding.join.button',value==='create'?'Create shop':'Join with code')}</button>)}</div>{mode==='create'?<nav className="setup-stages" aria-label={t('onboarding.create.title','Open your shop')}><span aria-current={!gstStep?'step':undefined}><b>01</b>{t('profileweb.business_type','Business type')}</span><span aria-current={gstStep?'step':undefined}><b>02</b>{text('GST setup')}</span></nav>:<p>{t('onboarding.join.subtitle','Enter an invite code or scan QR')}</p>}</header>
+ <section className="setup-form"><Notice error={error}/>{mode==='create'?<form onSubmit={e=>{e.preventDefault();void create()}}><fieldset disabled={blocked}>{!gstStep?<div className="setup-fields">
+ <Field localized label={t('profileweb.owner','Owner name')}><input className={inputClass} value={ownerName} onChange={e=>setOwnerName(e.target.value)} required maxLength={120} autoComplete="name"/></Field>
+ <Field localized label={t('onboarding.create.name_label','Shop name')}><input className={inputClass} value={name} onChange={e=>setName(e.target.value)} required autoComplete="organization"/></Field>
+ <Field localized label={t('onboarding.create.category_label','Type')}><select className={inputClass} value={category} onChange={e=>{setCategory(e.target.value);setSubtype(shopType(e.target.value).subtypes[0]?.code??'')}}>{CATALOG.shopTypes.map(type=><option key={type.code} value={type.code}>{labeledShop(type.code,catalogText)}</option>)}</select></Field>
+ <Field localized label={t('onboarding.create.subtype_label','Subtype')}><select className={inputClass} value={subtype} onChange={e=>setSubtype(e.target.value)}>{shopType(category).subtypes.map(item=><option key={item.code} value={item.code}>{labeledSubtype(category,item.code,catalogText)}</option>)}</select></Field>
+ <Field localized label={t('onboarding.create.phone_label','Phone')}><input className={inputClass} type="tel" value={phone} onChange={e=>setPhone(e.target.value)} required autoComplete="tel"/></Field>
+ <Field localized label={t('onboarding.create.language_label','Preferred Language')}><select className={inputClass} value={language} onChange={e=>setLanguage(e.target.value)}>{SUPPORTED_LANGUAGES.map(l=><option key={l.code} value={l.code}>{l.label}</option>)}</select></Field>
+ <Field localized label={t('onboarding.create.address_label','Address')}><input className={inputClass} value={address} onChange={e=>setAddress(e.target.value)} required autoComplete="street-address"/></Field>
+ <Field localized label={t('onboarding.create.city_label','City')}><input className={inputClass} value={city} onChange={e=>setCity(e.target.value)} required autoComplete="address-level2"/></Field>
+ </div>:<div className="opening-stack"><SettingsFields value={gst} onChange={value=>{setGst(value);setDefer(false)}}/><Button tone="quiet" onClick={()=>setDefer(true)}>{text('Skip for now — set up in Settings')}</Button>{defer?<p role="status">{text('Your shop will be created without a GST declaration.')}</p>:null}</div>}</fieldset><div className="setup-footer">{gstStep?<Button tone="ghost" disabled={blocked} onClick={()=>{setGstStep(false);setDefer(false)}}>{text('Back to shop details')}</Button>:null}<Button type="submit" disabled={blocked||!name.trim()}>{pending?t('onboarding.create.button_loading','Creating…'):!gstStep?text('Continue to GST setup'):defer?text('Create shop without GST setup'):text('Save GST & create shop')}</Button></div></form>:<form onSubmit={e=>{e.preventDefault();void join()}}><Field localized label={t('onboarding.join.code_label','Invite code')}><input className={inputClass+' setup-code'} value={code} onChange={e=>setCode(parseInviteCode(e.target.value)??e.target.value.toUpperCase())} disabled={blocked} required autoCapitalize="characters" autoComplete="one-time-code" spellCheck={false}/></Field><div className="setup-footer"><Button type="submit" disabled={blocked||!parseInviteCode(code)}>{pending?t('onboarding.join.button_loading','Joining…'):t('onboarding.join.button','Join shop')}</Button><Button tone="ghost" disabled={blocked} onClick={()=>setScanner(v=>!v)}>{t('onboarding.join.scan_title','Scan QR Code')}</Button></div>{scanner?<CounterCamera onClose={()=>setScanner(false)} onCode={value=>{const next=parseInviteCode(value);if(next){setCode(next);setScanner(false);setError(null)}else setError(Error(t('onboarding.join.invalid_qr','Invalid QR code. Please try again.')))}}/>:null}</form>}{shops.length?<Button tone="quiet" disabled={blocked} href="/shop">{t('common.back','Back')} · {shops[0].name}</Button>:null}</section></div>
 }

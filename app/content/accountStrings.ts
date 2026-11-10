@@ -61,6 +61,8 @@ export type AccountStrings = {
   switchAccount: string;
   openInApp: string;
   errorPendingSwitch: string;
+  managementLead: string;
+  managementSignIn: string;
 };
 
 const en: AccountStrings = {
@@ -113,6 +115,8 @@ const en: AccountStrings = {
   switchAccount: 'Switch account',
   openInApp: 'Open in the app',
   errorPendingSwitch: 'Unable to load the scheduled change.',
+  managementLead: 'Account status, paid invoices and cancellation.',
+  managementSignIn: 'Sign in with the same account you use in the app to view subscription status, paid invoices and cancellation options.',
 };
 
 // Per-locale overrides. Add keys here as translations land; anything missing

@@ -33,9 +33,9 @@ export function VoiceCapture({disabled,onRecorded}: {disabled?:boolean;onRecorde
       if(started && version===epoch.current)setState('recording');
     } catch {if(version===epoch.current){setError(true);setState('idle');}}
   };
-  return <div className="grid gap-2">
+  return <div className={'voice-capture-stage is-'+state}><div className="voice-wave" aria-hidden="true">{Array.from({length:17},(_,i)=><i key={i} style={{height:12+((i*13)%37),animationDelay:(i%5)*-.13+'s'}}/>)}</div>
     <div className="shop-actions">
-      <Button tone="ghost" disabled={disabled || state==='starting' || state==='sending'} onClick={()=>state==='recording'?capture.current?.stop():void start()}>
+      <Button tone="primary" disabled={(disabled && state!=='recording') || state==='starting' || state==='sending'} onClick={()=>state==='recording'?capture.current?.stop():void start()}>
         {state==='recording'?t('modal.voice.stop','Stop Recording'):state==='starting'||state==='sending'?t('modal.voice.processing','Processing...'):t('a11y.voice','Voice')}
       </Button>
       {state==='recording'||state==='starting'?<Button tone="ghost" onClick={()=>{epoch.current++;capture.current?.cancel();setState('idle');}}>{t('common.cancel','Cancel')}</Button>:null}

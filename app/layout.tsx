@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Space_Grotesk, Noto_Sans_Devanagari } from 'next/font/google';
+import { Inter, DM_Sans, Space_Grotesk, Noto_Sans_Devanagari } from 'next/font/google';
 import { headers } from 'next/headers';
 import { Analytics } from './components/Analytics';
 import { getLocaleMeta, isLocale } from './i18n';
@@ -8,6 +8,7 @@ import './styles/home.css';
 import './styles/legal-base.css';
 import './styles/subscription.css';
 
+const shopDisplay=DM_Sans({subsets:['latin'],display:'swap',variable:'--font-dm-sans'});
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 const displayFont = Space_Grotesk({ subsets: ['latin'], display: 'swap', variable: '--font-display' });
 const devanagari = Noto_Sans_Devanagari({ subsets: ['devanagari'], display: 'swap', variable: '--font-devanagari', preload: false });
@@ -23,7 +24,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const lang = getLocaleMeta(isLocale(localeHeader) ? localeHeader : 'en').hreflang;
 
   return (
-    <html lang={lang} className={`${inter.variable} ${displayFont.variable} ${devanagari.variable}`}>
+    <html lang={lang} className={`${inter.variable} ${shopDisplay.variable} ${displayFont.variable} ${devanagari.variable}`}>
       <head>
         <meta httpEquiv="content-language" content={lang} />
       </head>

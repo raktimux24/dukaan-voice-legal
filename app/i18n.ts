@@ -15,7 +15,7 @@ export const locales = [
 ] as const;
 
 export type Locale = (typeof locales)[number]['code'];
-export type PageKind = 'home' | 'privacy' | 'terms' | 'pricing' | 'refund' | 'contact' | 'account' | 'subscriptionReturn' | 'laptop' | 'udhaar';
+export type PageKind = 'home' | 'privacy' | 'terms' | 'pricing' | 'refund' | 'contact' | 'account' | 'subscriptionReturn' | 'udhaar';
 
 export const translatedLocales = locales.filter((locale) => locale.code !== defaultLocale);
 
@@ -40,11 +40,15 @@ export function localizedPath(locale: Locale, page: PageKind) {
   if (page === 'refund') return '/refund-policy';
   if (page === 'contact') return `${prefix}/contact` || '/contact';
   if (page === 'account') return `${prefix}/account` || '/account';
-  if (page === 'laptop') return locale === defaultLocale ? '/billing-on-a-laptop' : `/${locale}/billing-on-a-laptop`;
   if (page === 'udhaar') return locale === defaultLocale ? '/udhaar' : `/${locale}/udhaar`;
   if (page === 'subscriptionReturn') return '/subscription/return';
 
   return prefix || '/';
+}
+
+/** The web app overview lives with the product demo on the homepage. */
+export function webAppHref(locale: Locale) {
+  return `${localizedPath(locale, 'home')}#web`;
 }
 
 export function localizedLanguageAlternates(page: PageKind, absolute = false, absoluteUrl?: (path: string) => string) {

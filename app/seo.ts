@@ -22,7 +22,7 @@ export const seoKeywords = [
 ];
 
 export const defaultDescription =
-  'Voice billing app for a kirana counter. Say what they took on the phone. Cash, UPI QR, or udhaar. The same shop runs in the browser. Voice stays on the phone.';
+  'Voice billing, stock and customer dues for Indian shops. Import records, manage purchasing and review cash. GST tools depend on your shop setup.';
 
 export const defaultTitle = 'Samaan Bol — Kirana voice billing, phone and browser';
 
@@ -160,7 +160,14 @@ export const softwareApplicationSchema = {
     "Today's cash and UPI totals",
     'Stock updates with the bill',
     'The same shop in the browser: sell, stock, bills, and billing',
-    '7-day voice in the app for new shops (no card)',
+    'Eligible owners can receive a one-time Premium trial; duration and access depend on the current offer',
+    'Review Excel or CSV product and contact imports and opening balances',
+    'Prepare purchase orders and record received stock',
+    'Record expenses and compare counted cash with expected cash',
+    'Prepare estimates and review eligible conversion to a bill',
+    'Voice: eight Indian languages and English, including Hinglish',
+    'Website reading: eleven languages; Punjabi and Odia are not voice choices',
+    'GST settings, product tax profiles, billing and purchase records, and review exports; no return filing',
   ],
   audience: {
     '@type': 'Audience',

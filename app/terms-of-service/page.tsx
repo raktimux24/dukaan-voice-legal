@@ -6,11 +6,11 @@ import { LegalEffects } from '../components/LegalEffects';
 import { pageMetadata } from '../seo';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Terms of Service — Samaan-Bol',
-  description: 'Read the Samaan-Bol terms of service for account registration, voice input, user roles, acceptable use, service availability, and your data.',
+  title: 'Terms of Service — Samaan Bol',
+  description: 'Read the Samaan Bol terms of service for account registration, voice input, user roles, acceptable use, service availability, and your data.',
   path: '/terms-of-service',
   page: 'terms',
-  keywords: ['Samaan-Bol terms of service', 'voice inventory app terms', 'inventory app acceptable use'],
+  keywords: ['Samaan Bol terms of service', 'voice inventory app terms', 'inventory app acceptable use'],
 });
 
 export default function TermsOfServicePage() {

@@ -29,14 +29,16 @@ export function Section({
   summary,
   children,
   open = false,
+  onToggle,
 }: {
   title: string;
   summary?: string;
   children: ReactNode;
   open?: boolean;
+  onToggle?: (open: boolean) => void;
 }) {
   return (
-    <details className="gst-section" open={open || undefined}>
+    <details className="gst-section" open={open || undefined} onToggle={onToggle ? event => onToggle(event.currentTarget.open) : undefined}>
       <summary>
         <span>
           {title}
@@ -55,6 +57,7 @@ export function TextField({
   type = "text",
   hint,
   required = false,
+  disabled = false,
 }: {
   label: string;
   value: string;
@@ -62,6 +65,7 @@ export function TextField({
   type?: string;
   hint?: string;
   required?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <Field label={label} hint={hint}>
@@ -71,6 +75,7 @@ export function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
+        disabled={disabled}
       />
     </Field>
   );

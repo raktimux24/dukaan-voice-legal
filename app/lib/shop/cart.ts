@@ -1,8 +1,10 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useEffect,useSyncExternalStore } from 'react';
+import {draftState,subscribeDraft,retainCounterDraft,restoredCounterDraft,validCounterDraft,failedCounterDraft} from './counter/draft';
 import { calculateTax, type GstContext, type Buyer, type ProductTax } from './gst-core/gst';
 import {cartLineWithQuantity} from './rsp-cart-quantity';
+import {canonicalJson} from './gst-core/sale-request-canonical';
 import {mixedCartProjection} from './mixed-cart-projection';
 import {ordinaryDocumentType} from './ordinary-document-type';
 import { roundPaise } from './money';
@@ -21,6 +23,8 @@ export type CartLine = {
   quantity: number;
   price: number;
   listPrice: number | null;
+  // undefined is a legacy/unknown limit; null is a confirmed product without MRP.
+  mrp?: number | null;
   discount: number;
   trackStock: boolean;
   available: number | null;
@@ -29,10 +33,12 @@ export type CartLine = {
 };
 
 export type Cart = {
+  estimateSource?:import("./estimates/contract").EstimateSource;
   inputMethod?: 'manual' | 'voice' | 'scan';
   paymentHint?: 'cash' | 'upi' | 'credit';
   mixedDiscountReview?:import("./types").CreateSalePayload["mixedDiscountReview"];
   buyer?:Buyer;
+  gstPriceMode?: 'inclusive' | 'exclusive';
   lines: CartLine[];
   billDiscount: number;
   note: string;
@@ -72,6 +78,7 @@ const empty = (): Cart => ({
 type Snapshot<T> = { raw: string | null; value: T };
 
 const cartSnapshots = new Map<string, Snapshot<Cart>>();
+const volatileCarts=new Map<string,Cart>();
 const pendingSnapshots = new Map<string, Snapshot<PendingSale | null>>();
 
 function readRaw(key: string) {
@@ -86,6 +93,7 @@ function readRaw(key: string) {
 function cartSnapshot(userId: string | null, shopId: string | null): Cart {
   if (!userId || !shopId) return EMPTY_CART;
   const storageKey = cartKey(userId, shopId);
+  const memory=volatileCarts.get(storageKey);if(memory)return memory;
   const raw = readRaw(storageKey);
   const cached = cartSnapshots.get(storageKey);
   if (cached && cached.raw === raw) return cached.value;
@@ -93,7 +101,7 @@ function cartSnapshot(userId: string | null, shopId: string | null): Cart {
   if (raw) {
     try {
       const saved = JSON.parse(raw) as Cart;
-      if (saved?.lines) value = { ...empty(), ...saved, lines: saved.lines };
+      if (validCounterDraft(saved)) value = { ...empty(), ...saved, lines: saved.lines };
     } catch {
       value = EMPTY_CART;
     }
@@ -145,14 +153,21 @@ function readJson<T>(key: string): T | null {
 }
 
 export function readCart(userId: string, shopId: string): Cart {
+  const memory=volatileCarts.get(cartKey(userId,shopId));if(memory)return memory;
   const saved = readJson<Cart>(cartKey(userId, shopId));
-  if (!saved?.lines) return empty();
+  if (!validCounterDraft(saved)) return empty();
   return { ...empty(), ...saved, lines: saved.lines };
 }
 
-export function writeCart(userId: string, shopId: string, cart: Cart) {
-  localStorage.setItem(cartKey(userId, shopId), JSON.stringify(cart));
-  emit();
+export function writeCart(userId:string,shopId:string,cart:Cart){
+ const key=cartKey(userId,shopId);volatileCarts.set(key,cart);
+ try{const raw=JSON.stringify(cart);localStorage.setItem(key,raw);if(localStorage.getItem(key)!==raw)throw Error('counter_draft_unverified');volatileCarts.delete(key)}catch{/* Keep the working draft in memory; only verified IndexedDB persistence earns Saved. */}
+ void retainCounterDraft(userId,shopId,cart);emit();
+}
+
+export function clearChargedCart(userId:string,shopId:string,clientId:string,expected:Cart){
+ if(canonicalJson(readCart(userId,shopId))===canonicalJson(expected))writeCart(userId,shopId,empty());
+ if(readPending(userId,shopId)?.clientId===clientId)writePending(userId,shopId,null);
 }
 
 export function readPending(userId: string, shopId: string) {
@@ -227,6 +242,9 @@ export function useCart(userId: string | null, shopId: string | null) {
     () => null,
   );
 
+  const draft=useSyncExternalStore(subscribeDraft,()=>draftState(userId,shopId),()=>draftState(null,null));
+  useEffect(()=>{if(!userId||!shopId)return;let active=true;const key=cartKey(userId,shopId),raw=readRaw(key);void(async()=>{const current=readCart(userId,shopId);if(raw){try{if(!validCounterDraft(JSON.parse(raw))){failedCounterDraft(userId,shopId);return}}catch{failedCounterDraft(userId,shopId);return}}if(!raw){const saved=await restoredCounterDraft(userId,shopId);if(!active||readRaw(key)!==raw||volatileCarts.has(key))return;if(saved){writeCart(userId,shopId,saved);return}}if(active)await retainCounterDraft(userId,shopId,current)})();return()=>{active=false}},[userId,shopId]);
+  useEffect(()=>{if(!userId||!shopId)return;const changed=(event:StorageEvent)=>{if(event.key===cartKey(userId,shopId))void retainCounterDraft(userId,shopId,readCart(userId,shopId))};window.addEventListener('storage',changed);return()=>window.removeEventListener('storage',changed)},[userId,shopId]);
   const update = (next: Cart) => {
     if (!userId || !shopId) return;
     writeCart(userId, shopId, next);
@@ -235,12 +253,14 @@ export function useCart(userId: string | null, shopId: string | null) {
   return {
     cart,
     pending,
+    draft,
+    retryDraft:()=>{if(userId&&shopId)void(async()=>{const raw=readRaw(cartKey(userId,shopId));let damaged=false;try{damaged=!!raw&&!validCounterDraft(JSON.parse(raw))}catch{damaged=true}if(damaged){const restored=await restoredCounterDraft(userId,shopId);if(restored)writeCart(userId,shopId,restored);else failedCounterDraft(userId,shopId)}else await retainCounterDraft(userId,shopId,readCart(userId,shopId))})()},
     update,
     addProduct(item: InventoryItem, qty = 1, inputMethod: 'manual' | 'voice' | 'scan' = 'manual'): { ok: boolean; capped: boolean; message?: 'unpriced' | 'out_of_stock' | 'capped' } {
       if (!userId || !shopId) return { ok: false, capped: false };
       const current = readCart(userId, shopId);
       const track = item.product.trackStock !== false;
-      const available = track ? item.quantity : null;
+      const available = track ? Math.max(0,item.quantity-(item.reservedQuantity??0)) : null;
       if (track && (available ?? 0) <= 0) return { ok: false, capped: false, message: 'out_of_stock' };
       const price = item.product.sellingPrice;
       if (price == null) return { ok: false, capped: false, message: 'unpriced' };
@@ -264,6 +284,7 @@ export function useCart(userId: string | null, shopId: string | null) {
         quantity: nextQty,
         price: existing?.price ?? price,
         listPrice: price,
+        mrp: item.product.mrp,
         discount: existing?.discount ?? 0,
         trackStock: track,
         available,
@@ -305,6 +326,10 @@ export function useCart(userId: string | null, shopId: string | null) {
     patch(partial: Partial<Cart>) {
       if (!userId || !shopId) return;
       update({ ...readCart(userId, shopId), ...partial });
+    },
+    clearCharged(clientId:string,expected:Cart){
+      if(!userId||!shopId)return;
+      clearChargedCart(userId,shopId,clientId,expected);
     },
     clear() {
       if (!userId || !shopId) return;

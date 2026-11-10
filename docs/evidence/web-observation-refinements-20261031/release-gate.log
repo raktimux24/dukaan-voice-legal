@@ -1,0 +1,110 @@
+
+> dukaan-voice-legal@1.0.0 check:release
+> npm run test:gst && npm run test:translations && npm run test:billing && npm run test:cashbook && npm run test:deletion && npm run test:followups && tsc --noEmit
+
+
+> dukaan-voice-legal@1.0.0 test:gst
+> node scripts/test-gst.mjs
+
+Estimate editor: fractional rounding, invalid input preservation, discounts, Indian phones, ten-language UI and shared text passed.
+Bill sharing: stale image/share/clipboard boundaries, denied clipboard download, visible failure and cancellation passed.
+Bill images: 100 long multilingual lines, grapheme-safe wrapping, bounded amounts and measured footer height passed.
+Bill sharing: localized text, image labels, share title and custom footer passed.
+GST contract tests passed: selling-price tax, buying discounts, fractional quantities, mixed rates, IST ranges and retained-document tampering.
+Period recovery checks outcomes only, preserves pending evidence on failure, and rejects stale or cross-account requests. Review defaults and preparation details match native.
+Purchase drafts: refreshed identity invalidation, immutable review evidence, invoice-only services and request metadata isolation passed.
+Browser journal tests passed: immutable retries, scope isolation, confirmed retention, atomic reservations and concurrent locks.
+Financial outcome tests passed: lost response recovery, original identity replay, uncertain outcome retention and delayed account-switch rejection.
+Original quantity, depleted receipts, existing links and cost eligibility passed.
+Purchase reversal dependencies and exact-paise checks passed.
+Purchase closure preserves exact evidence, guards stale state/scope, and requires verified terminal receipts.
+Web parity tests passed: browser hashes, RSP package review, mixed invoice rendering, rounded credits, cumulative returns, scope/tamper rejection, tax timelines and selected-document print output.
+GST check results: complete, issues, partial, failed/stale, never checked, unavailable and offline states passed.
+Customer snapshot: existing customer identity/display, draft client ID, blank selection and immutable legacy retry passed.
+Local receipt: tax/composition/rounding, exact request binding, scope/tamper rejection, atomic lost-response retention and immutable replay passed.
+Queued stock: concurrent last-unit reservation, stale-cache confirmation, fresh baseline and reconnect replay passed.
+Invoice preparation: number/grant reuse, no counter consumption and immutable lost-response grant retry passed.
+Ordinary receipts: discount/payment totals, immutable request binding, scope/tamper guards, consecutive queued stock and original reconnect replay passed.
+Checkout persistence: readback, silent storage refusal, original request preservation and account separation passed.
+Voice review: product scope, active/priced stock, quantities, duplicate aggregation, tax preservation and atomic cart failure passed.
+Offline shop context: account/session scope, expiry, minimal routing data, reduced permissions, denial and verified storage passed.
+Offline evidence: scope, integrity, age, auth rejection, storage refusal and stale response/write invalidation passed.
+Retained rounding preview: exact interval, scope, immutable capture and policy consistency passed.
+Premium evidence: active/trial exact expiry, temporary server grant, cache expiry and private billing redaction passed.
+Offline API: complete catalog retention, cost redaction, tax subset capture, missing product, session separation and denied POS invalidation passed.
+Browser audio: MIME/base64, 30-second stop, cancellation, pending permission cleanup and denial passed.
+Parity API: filtered pagination, refunds path, guarded authorization, conflict and role denial passed.
+Web API sessions: stale sends/retries, JSON/CSV and export metadata rejected; current-session refresh passed.
+Pagination: large exports, short pages, stalled endpoints and network failure passed.
+Dates: ten languages, midnight IST boundary, invalid dates and foreign timezones passed.
+Tax history: invalid captures, bounded waits, effective-boundary refresh, cancellation and resumed clock passed.
+Counter parity: query recovery, serial repeated scans, late camera cleanup, denied storage, separate checkout locks and safe draft cleanup passed.
+Counter shell waits for the replacement worker before warming cached routes.
+Billing shell: warm complete resources, navigation fallback, no API/auth/RSC/query caching, denied auth response preservation, logout clear and optional storage passed.
+Browser push worker: account isolation, signout, safe destinations, stale clicks, denied storage and malformed payload passed.
+Browser push sessions: stale work isolation, serialized account switches, retries, rotated keys and worker acknowledgement failure/timeout passed.
+Verified 64 vendored GST contracts.
+
+> dukaan-voice-legal@1.0.0 test:translations
+> node scripts/test-translations.mjs
+
+Translation coverage passed: 1144 web labels across 9 translated languages, mobile catalogs and interpolation.
+
+> dukaan-voice-legal@1.0.0 test:billing
+> node scripts/test-mobile-account.cjs
+
+✔ native account page has no purchase or payment-method setup flow in every billing state (774.95ms)
+✔ ordinary website retains checkout; native managers cannot cancel billing (321.694917ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1103.571708
+
+> dukaan-voice-legal@1.0.0 test:cashbook
+> node --test tests/cashbook-navigation.test.cjs
+
+✔ cashbook keeps date navigation available while a selected day loads or fails (8.215ms)
+✔ pending mutations block date navigation; first-time setup retains its own start date (1.100833ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 288.975333
+
+> dukaan-voice-legal@1.0.0 test:deletion
+> node --test tests/deletion.test.cjs
+
+✔ every published legal locale serves corrected retention, deletion, contact and updated terms (7.602791ms)
+✔ identity removal requires an explicit successful server receipt (0.495083ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 365.0265
+
+> dukaan-voice-legal@1.0.0 test:followups
+> node --test tests/followup-read-timeout.test.cjs
+
+✔ a stalled follow-up read becomes a recoverable error and aborts its transport (11.541ms)
+✔ successful reads return normally and a failed attempt does not poison retry (0.708791ms)
+✔ mutation requests keep their durable request unchanged; read timeout never retries a write (0.2075ms)
+✔ the deadline reports a load failure even when transport rejects synchronously on abort (11.747958ms)
+✔ network failures become a read error while authorization failures retain their meaning (0.289417ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 235.397875

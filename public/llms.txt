@@ -1,0 +1,14 @@
+# Samaan Bol
+
+> Voice billing and inventory tools for Indian kirana stores, with the same shop on phone and browser.
+
+- [Home](https://samaanbol.space/): Product overview and visible questions and answers.
+- [Pricing](https://samaanbol.space/pricing): Free download and manual plan. Premium is ₹499/month or ₹3,999/year. New shops receive a 7-day in-app Premium trial without a card.
+- [Voice billing guide](https://samaanbol.space/guides/voice-billing-for-kirana): Review products, quantities and prices before completing a sale. Phone-app voice needs internet. Use search or barcode scanning for browser billing.
+- [Contact](https://samaanbol.space/contact): Product support.
+
+Voice choices: Hindi, Bengali, Tamil, Telugu, Marathi, Kannada, Gujarati, Malayalam, English and Hinglish. Website reading is available in eleven languages, including Punjabi and Odia; this does not imply Punjabi or Odia voice or app-interface support.
+
+GST settings, product tax profiles, billing and purchase records and report exports depend on shop registration and enabled capabilities. Exports support preparation and review, not government return filing. Special billing and provider features require eligibility and activation. No blanket GST compliance claim is made.
+
+Displaying a UPI QR does not confirm payment. Check payment receipt yourself.

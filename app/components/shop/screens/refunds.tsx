@@ -1,57 +1,22 @@
 'use client';
-
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {useInfiniteQuery} from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState } from 'react';
-import { useShop } from '../context';
-import { useGstText, useFiscalDate } from '../gst-ui';
-import { formatINR } from '../../../lib/shop/money';
-import { Button, Card, Chip, NoAccess, Notice, PageHeader, PremiumLock, Spinner, isPremiumError } from '../ui';
-
-const PERIODS = ['today', '7d', '30d', 'month'] as const;
-export function RefundsScreen() {
-  const { api, shop, userId, perms, t } = useShop();
-  const when = useFiscalDate();
-  const uiText = useGstText();
-  const [period, setPeriod] = useState<typeof PERIODS[number]>('7d');
-  const refunds = useInfiniteQuery({
-    queryKey: ['refunds', userId, shop?.id, period],
-    enabled: !!shop && perms.canSeeReports,
-    initialPageParam: 0,
-    queryFn: ({pageParam}) => api.getReturns(shop!.id, {period, offset: pageParam, limit: 50}),
-    getNextPageParam: (last, _pages, offset) => last.hasMore && last.refunds.length ? offset + last.refunds.length : undefined,
-  });
-  if (!shop) return <Spinner />;
-  if (!perms.canSeeReports) return <NoAccess what={t('refunds.no_access', 'Refunds are for owners and managers.')} />;
-  const rows = refunds.data?.pages.flatMap(page => page.refunds) ?? [];
-  const summary = refunds.data?.pages[0]?.summary;
-  const limited = refunds.data?.pages[0]?.limitedToDays;
-  return <div className="shop-page">
-    <PageHeader title={t('refunds.title', 'Refunds')} back={{href: '/shop/sales', label: t('sales.title', 'Sales')}} description={t('refunds.empty_subtitle', 'When you return items from a bill, they show up here.')} />
-    <div className="pos-chips" role="tablist" aria-label={t('refunds.title', 'Refunds')}>
-      {PERIODS.map(value => <Chip key={value} active={period === value} onClick={() => setPeriod(value)}>{t(`sales.period.${value}`, value === 'today' ? 'Today' : value === '7d' ? 'Last 7 days' : value === '30d' ? 'Last 30 days' : 'This month')}</Chip>)}
-    </div>
-    {summary ? <div className="kpi-grid">
-      <Card><p className="kpi-label">{t('refunds.summary.count', 'Returns')}</p><p className="kpi-value">{summary.count}</p></Card>
-      <Card><p className="kpi-label">{t('refunds.summary.total_value', 'Return total')}</p><p className="kpi-value">{formatINR(summary.amount)}</p></Card>
-      {Object.entries(summary.byMethod).filter(([,value]) => value > 0).map(([method, value]) => <Card key={method}><p className="kpi-label">{t(`pos.method.${method}`, method)}</p><p className="kpi-value">{formatINR(value)}</p></Card>)}
-    </div> : null}
-    {limited ? <p className="party-meta">{t('activity.free_limit_title', 'Showing the last {{days}} days.', {days: limited})}</p> : null}
-    {isPremiumError(refunds.error) ? <PremiumLock feature="pos_reports" /> : <Notice error={refunds.error} />}
-    {refunds.isError ? <Button tone="ghost" onClick={() => void refunds.refetch()}>{t('common.retry', 'Try again')}</Button> : null}
-    {refunds.isLoading ? <Spinner /> : null}
-    <Card flush><div className="shop-list">
-      {rows.map(row => <Link key={row.id} href={`/shop/sales/${row.saleId}`} className="shop-list-row">
-        <div className="shop-list-main">
-          <p className="shop-list-title">{t('refunds.bill', 'Bill #{{n}}', {n: row.invoiceNumber ?? row.saleNumber})}</p>
-          <p className="shop-list-meta">{when(row.createdAt)} · {row.firstItem && row.itemCount === 1 ? row.firstItem : t('refunds.items_count', '{{n}} items', {n: row.itemCount})}{row.customerName ? ` · ${row.customerName}` : ''}{row.refundMethod ? ` · ${t(`pos.method.${row.refundMethod}`, row.refundMethod)}` : ''}</p>
-          {row.settlement ? <p className="shop-list-meta">{t('bill.fiscal.credit_reduced', 'Unpaid credit reduced')}: {formatINR(Number(row.settlement.creditReduction))} · {t('refunds.money_refunded', 'Money refunded')}: {formatINR(Number(row.settlement.moneyRefund))}</p> : null}
-          {row.reason ? <p className="shop-list-meta">{row.reason}</p> : null}
-        </div>
-        <p className="num font-semibold text-danger">−{formatINR(row.refundAmount)}</p>
-      </Link>)}
-      {refunds.isSuccess && rows.length === 0 ? <p className="shop-list-empty">{t('refunds.empty_title', 'No refunds in this period')}</p> : null}
-    </div></Card>
-    {refunds.hasNextPage ? <Button tone="ghost" disabled={refunds.isFetchingNextPage} onClick={() => void refunds.fetchNextPage()}>{refunds.isFetchingNextPage ? t('common.loading', 'Loading') : uiText('Load more')}</Button> : null}
-  </div>;
+import {useShop} from '../context';
+import {useFiscalDate} from '../gst-ui';
+import {formatINR} from '../../../lib/shop/money';
+import {CounterNotice,CounterFiltersView,useCounterFilters} from '../counter-filters';
+import {Button,Card,PageHeader,PremiumLock,Spinner,isPremiumError} from '../ui';
+export function RefundsScreen(){
+ const {api,shop,userId,perms,t}=useShop(),when=useFiscalDate(),{filters,params,href,change}=useCounterFilters('refunds'),tr=(k:string,v?:Record<string,string|number>)=>t('counter.'+k,'',v);
+ const awaitingRange=filters.period==='custom'&&(!filters.from||!filters.to||filters.from>filters.to);
+ const refunds=useInfiniteQuery({queryKey:['refunds',shop?.id,userId,params],enabled:!!shop&&!!userId&&perms.canSeeReports&&!awaitingRange,initialPageParam:null as string|null,queryFn:({pageParam})=>api.getReturns(shop!.id,{...params,limit:50,cursor:pageParam??undefined}),getNextPageParam:last=>last.nextCursor??undefined});
+ if(!shop)return <Spinner/>;if(!perms.canSeeReports)return <Card><h2>{tr('access_denied')}</h2><p>{tr('refunds_no_access')}</p></Card>;
+ const rows=refunds.data?.pages.flatMap(p=>p.refunds)??[],first=refunds.data?.pages[0],summary=first?.summary;
+ return <div className="shop-page sales-workspace refunds-workspace"><PageHeader title={tr('refunds_title')} back={{href:'/shop/sales',label:t('sales.title','Sales')}} description={tr('refund_period_help')} actions={<Button tone="ghost" disabled={refunds.isFetching||awaitingRange} onClick={()=>void refunds.refetch()}>{tr('refresh')}</Button>}/>
+ {summary?<><dl className="sales-metrics"><div className="is-leading"><dt>{tr('return_value')}</dt><dd>{formatINR(summary.amount)}</dd></div><div><dt>{t('refunds.summary.count','')}</dt><dd>{summary.count}</dd></div><div><dt>{tr('money_refunded')}</dt><dd>{formatINR(summary.moneyRefund??0)}</dd></div><div><dt>{tr('credit_reduced')}</dt><dd>{formatINR(summary.creditReduction??0)}</dd></div></dl><div className="refund-methods">{Object.entries(summary.byMethod).filter(([method,value])=>method!=='credit'&&value>0).map(([method,value])=><span key={method}>{t('pos.method.'+method,method)} <b className="num">{formatINR(value)}</b></span>)}</div></>:null}
+ {first?.limitedToDays?<p className="shop-hint">{t('activity.free_limit_title','',{days:first.limitedToDays})}</p>:null}
+ <section className="sales-register"><CounterFiltersView kind="refunds" value={filters} onChange={change}/>
+ {isPremiumError(refunds.error)?<PremiumLock feature="pos_reports"/>:<CounterNotice error={refunds.error}/>}{awaitingRange?<p role="status">{tr('error.invalid_range')}</p>:null}{!awaitingRange&&refunds.isPending?<Spinner/>:null}
+ <div className="refund-ledger">{rows.map(row=>{const money=row.moneyRefund??Number(row.settlement?.moneyRefund??0),credit=row.creditReduction??Number(row.settlement?.creditReduction??0);return <article key={row.id} className="refund-entry"><Link href={'/shop/sales/'+row.saleId+'?returnId='+row.id+'&returnTo='+encodeURIComponent(href)} className="refund-entry-link"><div><h2>{row.invoiceNumber??'#'+row.saleNumber}</h2><p className="shop-hint">{when(row.createdAt)}</p><p>{row.firstItem&&row.itemCount===1?row.firstItem:tr('refund_items',{n:row.itemCount})}{row.customerName?' · '+row.customerName:''}</p></div><div className="refund-entry-amount"><strong className="num">−{formatINR(row.refundAmount)}</strong><span>{tr('open_original')} ↗</span></div></Link><dl className="refund-settlement"><div><dt>{tr('money_refunded')}{row.refundMethod&&money?' · '+t('pos.method.'+row.refundMethod,row.refundMethod):''}</dt><dd>{formatINR(money)}</dd></div><div><dt>{tr('credit_reduced')}</dt><dd>{formatINR(credit)}</dd></div></dl><details className="refund-reference"><summary>{tr('return_reference')}</summary><p>{row.id}</p>{row.reason?<p>{row.reason}</p>:null}</details></article>})}{refunds.isSuccess&&!rows.length?<p className="shop-list-empty">{tr('no_refunds')}</p>:null}</div>
+ <footer className="sales-register-footer"><p className="shop-hint">{tr('snapshot_help')}</p>{refunds.hasNextPage?<Button tone="ghost" disabled={refunds.isFetchingNextPage} onClick={()=>void refunds.fetchNextPage()}>{refunds.isFetchingNextPage?t('common.loading',''):tr('more')}</Button>:null}</footer></section></div>;
 }

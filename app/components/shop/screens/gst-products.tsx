@@ -1,4 +1,5 @@
 "use client";
+import {ProductImageById} from "../product-image";
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useShop } from "../context";
@@ -31,13 +32,19 @@ import {
 import { validateProductTax } from "../../../lib/shop/gst-core/gst";
 import { canonicalJson } from "../../../lib/shop/gst-core/sale-request-canonical";
 import type { ProductTax, TaxHistory } from "../../../lib/shop/gst-types";
+function useTaxConfirmation() {
+  const {api,shop,role,userId}=useShop();
+  const authorization=useGstQuery(["product-tax-authorizations",role],()=>api.getProductTaxAuthorizations(shop!.id),role==="MANAGER");
+  return role==="OWNER"||(role==="MANAGER"&&!authorization.isFetching&&!authorization.error&&!!authorization.data?.managers.find(row=>row.managerId===userId)?.authorization?.authorized);
+}
 export function GstProductsScreen() {
-  const { api, shop } = useShop(),
+  const { api, shop, offline, role, userId, t } = useShop(),
     text = useGstText(),
     action = useGstAction();
   const q = useGstQuery(["product-tax-catalog"], () =>
     api.getAllInventory(shop!.id),
   );
+  const canConfirm = useTaxConfirmation();
   const [search, setSearch] = useState(""),
     [selected, setSelected] = useState<string[]>([]),
     [config, setConfig] = useState<ProductTax | null>(null),
@@ -50,7 +57,7 @@ export function GstProductsScreen() {
     ) ?? [];
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-product-workspace">
         <PageHeader
           title={text("Review product GST in bulk")}
           back={{ href: "/shop/products", label: text("Products") }}
@@ -65,7 +72,7 @@ export function GstProductsScreen() {
               <Button
                 key={format}
                 tone="ghost"
-                disabled={action.busy}
+                disabled={offline || action.busy}
                 onClick={() =>
                   void action.run(async () => {
                     const file = await api.gst.exportTax(shop!.id, format);
@@ -115,7 +122,7 @@ export function GstProductsScreen() {
                 onChange={setConfirmed}
               />
               <Button
-                disabled={action.busy || !confirmed}
+                disabled={offline || !canConfirm || action.busy || !confirmed}
                 onClick={() =>
                   void action.run(async () => {
                     const input = retained.current ?? {
@@ -140,7 +147,7 @@ export function GstProductsScreen() {
             </>
           ) : null}
         </Section>
-        <div className="gst-two-columns">
+        <div className="gst-product-columns">
           <div>
             <TextField
               label={text("Search products")}
@@ -150,11 +157,12 @@ export function GstProductsScreen() {
             <p className="shop-hint">
               {selected.length}/100 · {text("products selected")}
             </p>
-            <ReadState query={q}>
+            <ReadState query={q} empty={!rows.length}>
               {rows.map((row) => (
                 <label key={row.productId} className="gst-choice">
                   <input
                     type="checkbox"
+                    disabled={action.busy}
                     checked={selected.includes(row.productId)}
                     onChange={(e) =>
                       setSelected(
@@ -165,7 +173,7 @@ export function GstProductsScreen() {
                     }
                   />
                   <span>
-                    <b>{row.product.name}</b>
+                    <b className="flex items-center gap-3"><ProductImageById productId={row.productId} name={row.product.name} size={40}/>{row.product.name}</b>
                     <small>
                       {row.product.gstConfig
                         ? `${row.product.gstConfig.codeType.toUpperCase()} ${row.product.gstConfig.code} · ${row.product.gstConfig.rate}%`
@@ -179,10 +187,11 @@ export function GstProductsScreen() {
               ))}
             </ReadState>
           </div>
-          <Card>
-            <TaxFields value={config} onChange={setConfig} />
+          <Card className="gst-product-editor stack-form">
+            {!canConfirm ? <p role="status" className="shop-hint">{t("gst.product_confirmation_requires_authorization", "Owner authorization is required to confirm product tax.")}</p> : null}
+            <fieldset disabled={offline || action.busy || !canConfirm}><TaxFields value={config} onChange={setConfig} /></fieldset>
             <Button
-              disabled={action.busy || !selected.length || !config?.reviewed}
+              disabled={offline || !canConfirm || action.busy || !selected.length || !config?.reviewed}
               onClick={() =>
                 void action.run(async () => {
                   validateProductTax(config!);
@@ -201,10 +210,11 @@ export function GstProductsScreen() {
   );
 }
 export function GstProductHistoryScreen({ id }: { id: string }) {
-  const { api, shop } = useShop(),
+  const { api, shop, offline } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
+  const canConfirm = useTaxConfirmation();
   const q = useProductTaxHistory(id);
   const settings = useGstQuery(["settings"], () =>
     api.getPosSettings(shop!.id),
@@ -213,7 +223,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
     [effective, setEffective] = useState(""),
     [source, setSource] = useState(""),
     [reason, setReason] = useState(""),
-    [cancelReason, setCancelReason] = useState("");
+    [cancelReasons, setCancelReasons] = useState<Record<string,string>>({});
   const rows = q.data?.pages.flatMap((p) => p.items) ?? [];
   const effectiveVersion = q.capture?.effectiveVersion === undefined ? q.capture?.currentVersion : q.capture.effectiveVersion;
   const retained = useRef<{
@@ -265,7 +275,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
   }
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page gst-workspace gst-product-workspace">
         <PageHeader
           title={text("Tax profile history")}
           back={{ href: "/shop/products/" + id, label: text("Product") }}
@@ -275,12 +285,12 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
         />
         {action.notice}
         <TaxHistoryRefresh query={q} />
-        {retained.current ? <Button disabled={action.busy} onClick={() => void action.run(() => submit(retained.current!.path, retained.current!.input))}>{text("Retry saved request")}</Button> : null}
+        {retained.current ? <Button disabled={offline || action.busy} onClick={() => void action.run(() => submit(retained.current!.path, retained.current!.input))}>{text("Retry saved request")}</Button> : null}
         <ReadState query={q} empty={!rows.length}>
           <TaxHistoryRows rows={rows} capture={q.capture} action={row => row.scheduled && !row.cancelledAt && row.effectiveAt && Date.parse(row.effectiveAt) > Date.now() ? (
-            <div className="grid gap-3"><TextField label={text("Cancellation reason")} value={cancelReason} onChange={setCancelReason} /><Button tone="danger" disabled={action.busy || !q.historyFresh || !!retained.current || !cancelReason.trim()} onClick={() => void action.run(() => submit(
+            <div className="grid gap-3"><TextField label={text("Cancellation reason")} value={cancelReasons[row.id] ?? ""} onChange={value=>setCancelReasons(current=>({...current,[row.id]:value}))} /><Button tone="danger" disabled={offline || action.busy || !q.historyFresh || !!retained.current || !cancelReasons[row.id]?.trim()} onClick={() => void action.run(() => submit(
               `/api/shops/${shop!.id}/inventory/products/${id}/tax-schedules/${row.id}/cancel`,
-              { requestId: crypto.randomUUID(), reason: cancelReason },
+              { requestId: crypto.randomUUID(), reason: cancelReasons[row.id] },
             ))}>{text("Cancel scheduled change")}</Button></div>
           ) : null} />
         </ReadState>
@@ -302,7 +312,7 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
         ) : null}
         {settings.data?.gstTaxSchedulingAvailable ? (
           <Section title={text("Schedule a tax profile change")}>
-            <fieldset disabled={!!retained.current || action.busy}>
+            <fieldset className="stack-form" disabled={!canConfirm || offline || !!retained.current || action.busy}>
               <TaxFields value={config} onChange={setConfig} />
               <FiscalDateTimeField
                 label={text("Effective")}
@@ -322,9 +332,9 @@ export function GstProductHistoryScreen({ id }: { id: string }) {
             </fieldset>
             <Button
               disabled={
-                action.busy || !!retained.current ||
+                offline || action.busy || !!retained.current ||
                 (!retained.current &&
-                  (!q.historyFresh || !effectiveVersion ||
+                  (!canConfirm || !q.historyFresh || !effectiveVersion ||
                     !config?.reviewed ||
                     !source.trim() ||
                     !reason.trim() ||

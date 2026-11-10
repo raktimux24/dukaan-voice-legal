@@ -77,7 +77,7 @@ const GROUPS: NavGroup[] = [
     label: 'People',
     items: [
       { href: '/shop/customers', label: 'Customers', key: 'customers.title', icon: 'customers', show: (p) => p.canManageCustomers },
-      { href: '/shop/settings/staff', label: 'Staff', key: 'modal.staff.title', icon: 'staff', show: (p) => p.canManageStaff },
+      { href: '/shop/settings/staff', label: 'Staff', key: 'modal.staff.title', icon: 'staff', show: (p) => p.canManageStaff || p.role === 'MANAGER' },
     ],
   },
   {
@@ -127,7 +127,7 @@ function AlertsBell() {
 }
 
 function todayLabel(language?: string | null) {
-  const locale = language && language !== 'en' ? `${language}-IN` : 'en-IN';
+  const locale = language && !['en', 'hinglish'].includes(language) ? `${language}-IN` : 'en-IN';
   return new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 }
 
@@ -153,7 +153,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
       {showNav ? (
         <aside className="shop-rail no-print">
           <Link href="/shop" className="shop-brand">
-            <span className="shop-mark" aria-hidden="true">S</span>
+            <img src="/logo1.svg" width={32} height={32} className="shop-mark" alt="" />
             <span>Samaan<span className="text-saffron">Bol</span></span>
           </Link>
 
@@ -223,7 +223,7 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
           )}
           <div className="shop-topbar-actions">
             {showNav ? <AlertsBell /> : null}
-            {showNav && !pathname.startsWith('/shop/sell') && perms.canSell ? (
+            {showNav && pathname !== '/shop' && !pathname.startsWith('/shop/sell') && perms.canSell ? (
               <Button href="/shop/sell" tone="ghost" size="sm" className="shop-topbar-new">{t('sale_complete.new_sale', 'New sale')}</Button>
             ) : null}
             <UserButton />

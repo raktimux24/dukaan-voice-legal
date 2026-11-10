@@ -1,14 +1,17 @@
 "use client";
+import {PurchaseOverview, PurchaseHistory} from "../purchase-record";
+import {purchaseAccess} from "../../../lib/shop/purchases/presentation";
+import {unitLabel} from "../../../lib/shop/units";
+import {ProductImageById} from "../product-image";
 import { useRef, useState } from "react";
 import { useShop } from "../context";
-import { Button, Card, PageHeader, Pill } from "../ui";
+import { Button, Card, PageHeader, NoAccess } from "../ui";
 import {
   Section,
   FiscalDateTimeField,
   TextField,
   SelectField,
   Check,
-  Stats,
   useGstText,
   useFiscalDate,
 } from "../gst-ui";
@@ -49,12 +52,19 @@ const labels = {
   withinTimeLimit: "Within the permitted time limit",
 };
 export function PurchaseDetailScreen({ id }: { id: string }) {
-  const { api, shop, t } = useShop(),
+  const {shop,userId} = useShop();
+  return <PurchaseDetailContent key={`${userId}:${shop?.id}:${id}`} id={id}/>;
+}
+function PurchaseDetailContent({id}: {id:string}) {
+  const [section,setSection]=useState("details");
+  const [taxOpen,setTaxOpen]=useState(false);
+  const { api, shop, t, perms, offline } = useShop(),
     text = useGstText(),
     date = useFiscalDate(),
     action = useGstAction();
-  const q = useGstQuery(["purchase", id], () => api.gst.purchase(shop!.id, id));
-  const settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id));
+  const q = useGstQuery(["purchase", id], () => api.gst.purchase(shop!.id, id), perms.canSeeCost);
+  const settings = useGstQuery(["settings"], () => api.getPosSettings(shop!.id), perms.canSeeCost);
+  const access=purchaseAccess(settings.data,!!settings.error);
   const pending = useGstQuery(["purchase-pending", id], async () => {
     const rows = await retainedRequests(financialScope(shop!.id));
     const prefix = `/api/shops/${shop!.id}/purchases/${id}/`;
@@ -62,7 +72,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
       ["itc-review", "returns", "settlements", "settlement-reversals"].some(
         (suffix) => row.path === prefix + suffix,
       ));
-  }, true, "always");
+  }, perms.canSeeCost, "always");
   const [closureReason, setClosureReason] = useState<Record<string, string>>({});
   async function closeSavedRequest(row: RetainedRequest) {
     await closeUnrecordedPurchase(api, shop!.id, row, closureReason[row.id] ?? "");
@@ -103,6 +113,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
   } | null>(null);
   const preview = useGstQuery(["cost-preview", id, decision], () =>
     api.gst.costPreview(shop!.id, id, decision),
+    perms.canSeeCost && section === "actions" && taxOpen,
   );
   const detail = q.data;
   const reversalEntry = detail?.settlements.find((entry) => entry.id === reverseId);
@@ -204,17 +215,19 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
     await q.refetch();
     await preview.refetch();
   }
+  if (!perms.canSeeCost) return <NoAccess what={text("This role cannot view purchase costs.")}/>;
   return (
     <GstAccess>
-      <div className="shop-page">
+      <div className="shop-page invoice-workspace invoice-detail">
         <PageHeader
-          title={
-            detail
-              ? `${text("Supplier invoice")} ${detail.snapshot.invoiceNumber}`
-              : text("Supplier invoice")
-          }
-          back={{ href: "/shop/purchases", label: text("Purchases") }}
+          kicker={detail?.snapshot.invoiceNumber ?? text("Supplier invoice")}
+          title={detail?.snapshot.supplier.name ?? text("Supplier invoice")}
+          back={{ href: "/shop/purchases", label: text("Recorded invoices") }}
+          actions={<Button tone="ghost" disabled={offline || q.isFetching || action.busy} onClick={() => { void q.refetch(); void settings.refetch(); }}>{text("Refresh")}</Button>}
         />
+        {detail ? <nav className="invoice-tabs" aria-label={text("Supplier invoice")}>
+          {[["details",t("poweb.details","Details")],["actions",t("poweb.actions","Actions")],["history",t("poweb.history","History")]].map(([key,label])=><button key={key} type="button" aria-pressed={section===key} onClick={()=>setSection(key)}>{label}</button>)}
+        </nav> : null}
         {action.notice}
         {pending.error ? <Card>
           <p>{t("purchase.request_storage_error", EN_FALLBACK["purchase.request_storage_error"])}</p>
@@ -248,100 +261,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
         <ReadState query={q}>
           {detail ? (
             <>
-              <Stats
-                items={[
-                  {
-                    label: text("Invoice total"),
-                    value: formatINR(Number(detail.grossAmount)),
-                  },
-                  {
-                    label: text("Purchase tax"),
-                    value: formatINR(Number(detail.taxAmount)),
-                  },
-                  {
-                    label: text("Outstanding"),
-                    value: formatINR(Number(detail.settlement.outstanding)),
-                  },
-                  {
-                    label: text("Recoverable"),
-                    value: formatINR(Number(detail.settlement.recoverable)),
-                  },
-                ]}
-              />
-              <Card>
-                <h2 className="shop-section-title">
-                  {detail.snapshot.supplier.name}
-                </h2>
-                <p>
-                  {text(
-                    (
-                      {
-                        regular: "Regular GST",
-                        composition: "Composition",
-                        unregistered: "Not registered",
-                      } as const
-                    )[detail.snapshot.supplierRegistration] ??
-                      "Original registration not recorded",
-                  )}{" "}
-                  ·{" "}
-                  {text(
-                    (
-                      {
-                        tax_invoice: "Tax invoice",
-                        bill_of_supply: "Bill of supply",
-                        commercial_invoice:
-                          "Commercial invoice from unregistered supplier",
-                      } as const
-                    )[detail.snapshot.documentType] ??
-                      "Original registration not recorded",
-                  )}
-                </p>
-                <p>
-                  {detail.snapshot.supplier.gstin || text("Not registered")}
-                </p>
-                <p>{detail.snapshot.supplier.address}</p>
-                <p>{date(detail.issuedAt)}</p>
-                <p className="shop-hint">
-                  {text("Evidence reference")}:{" "}
-                  {detail.snapshot.evidenceReference}
-                </p>
-                <div className="gst-table-wrap">
-                  <table className="gst-table">
-                    <thead>
-                      <tr>
-                        <th>{text("Product")}</th>
-                        <th>{text("Quantity")}</th>
-                        <th>{text("Tax")}</th>
-                        <th>{text("Total")}</th>
-                        <th>{text("Stock action")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detail.items.map((item) => {
-                        const stockActionKey = `gst.stock_action.${
-                          detail.snapshot.stockActions?.find(
-                            (action) => action.purchaseItemId === item.id,
-                          )?.action ?? (item.batchId ? "legacy" : "invoice_only")
-                        }`;
-                        return (
-                        <tr key={item.id}>
-                          <td>{item.name}</td>
-                          <td>
-                            {item.quantity} {text(item.unit)}
-                          </td>
-                          <td>{formatINR(Number(item.taxAmount))}</td>
-                          <td>{formatINR(Number(item.grossAmount))}</td>
-                          <td>
-                            {t(stockActionKey, EN_FALLBACK[stockActionKey])}
-                          </td>
-                        </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
+              <div hidden={section!=="details"} className="invoice-detail-overview">
+              <PurchaseOverview detail={detail}/>
               <Section title={text("Invoice details")}>
+                <div className="gst-row"><span>{text("Invoice date")}</span><b>{date(detail.issuedAt)}</b></div>
+                <div className="gst-row"><span>{text("Original supplier document type")}</span><b>{t(`purchase.document_${detail.snapshot.documentType}`, detail.snapshot.documentType ?? text("Unavailable"))}</b></div>
+                <div className="gst-row"><span>{text("Supplier registration for this invoice")}</span><b>{t(`gst.registration.${detail.snapshot.supplierRegistration}`,text("Original registration not recorded"))}</b></div>
+                <div className="gst-row"><span>{text("Evidence reference")}</span><b>{detail.snapshot.evidenceReference || "—"}</b></div>
                 <div className="gst-row">
                   <span>{text("Net value")}</span>
                   <b>{formatINR(detail.snapshot.totals.net)}</b>
@@ -423,9 +349,13 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   );
                 })}
               </Section>
-              <fieldset disabled={action.busy || !!retained.current || pending.isPending || !!pending.error || !!pending.data?.length}>
+              </div>
+              <div hidden={section!=="actions"} className="invoice-action-panels">
+              {!access.writable || offline ? <p role="status" className="shop-hint">{text(offline ? "Waiting for a connection" : "Purchase recording is unavailable on this server.")}</p> : null}
+              <fieldset disabled={!access.writable || offline || action.busy || !!retained.current || pending.isPending || !!pending.error || !!pending.data?.length}>
                 <Section
                   title={text("Review input tax")}
+                  onToggle={setTaxOpen}
                   summary={detail.reviews[0]
                     ? t(`purchase.decision_${detail.reviews[0].decision}`, EN_FALLBACK[`purchase.decision_${detail.reviews[0].decision}`])
                     : text("Not reviewed")}
@@ -486,7 +416,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   <ReadState query={preview}>
                     {preview.data?.changes.map((row, i) => (
                       <div className="gst-row" key={i}>
-                        <b>{row.name}</b>
+                        <span className="flex items-center gap-3"><ProductImageById productId={detail.items.find(item=>item.id===row.purchaseItemId)?.productId} name={row.name} size={36}/><b>{row.name}</b></span>
                         <span>
                           {formatINR(Number(row.previousUnitCost))} →{" "}
                           {formatINR(Number(row.newUnitCost))}
@@ -540,6 +470,7 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     settled: "All settled",
                   } as Record<string, string>)[detail.settlement.status] ?? "Unavailable")}
                 >
+                  <dl className="invoice-balances"><div><dt>{t("invoiceweb.payable","Owed to supplier")}</dt><dd>{formatINR(Number(detail.settlement.outstanding))}</dd></div><div><dt>{text("Recoverable")}</dt><dd>{formatINR(Number(detail.settlement.recoverable))}</dd></div></dl>
                   <p className="shop-hint">{text("This records a payment made outside the app. It does not transfer money.")}</p>
                   <div className="form-grid is-2">
                     <SelectField
@@ -689,8 +620,9 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                     if (Number(item.quantity) - returned <= 0) return null;
                     return (
                       <div key={item.id} className="gst-row">
+                        <ProductImageById productId={item.productId} name={item.name} size={36}/>
                         <TextField
-                          label={`${item.name} · ${text("Remaining")} ${Number(item.quantity) - returned}`}
+                          label={`${item.name} · ${text("Remaining")} ${Number(item.quantity) - returned} ${unitLabel(item.unit,t)}`}
                           type="number"
                           value={quantities[item.id] ?? ""}
                           onChange={(v) =>
@@ -760,38 +692,8 @@ export function PurchaseDetailScreen({ id }: { id: string }) {
                   </Button>
                 </Section>
               </fieldset>
-              <Section title={text("Review and adjustment history")}>
-                {detail.reviews.map((row) => (
-                  <div key={row.id} className="gst-row">
-                    <b>{t(`purchase.decision_${row.decision}`, EN_FALLBACK[`purchase.decision_${row.decision}`])}</b>
-                    <span>{date(row.createdAt)}</span>
-                    <p>
-                      {row.note} · {row.evidenceReference}
-                    </p>
-                  </div>
-                ))}
-                {detail.returns.map((row) => (
-                  <div key={row.id} className="gst-row">
-                    <b>
-                      {row.supplierCreditNumber} ·{" "}
-                      {formatINR(Number(row.grossAmount))}
-                    </b>
-                    <p>{row.reason}</p>
-                  </div>
-                ))}
-                {detail.costAdjustments.map((row) => (
-                  <div key={row.id} className="gst-row">
-                    <b>{t("purchase.cost_adjustment", EN_FALLBACK["purchase.cost_adjustment"])}</b>
-                    <span>{date(row.createdAt)}</span>
-                    <p>{detail.items.find((item) => item.id === row.purchaseItemId)?.name}</p>
-                    <p>
-                      {t("purchase.inventory", EN_FALLBACK["purchase.inventory"])}: {formatINR(Number(row.inventoryAdjustment))}
-                      {" · "}
-                      {t("purchase.consumed", EN_FALLBACK["purchase.consumed"])}: {formatINR(Number(row.consumedAdjustment))}
-                    </p>
-                  </div>
-                ))}
-              </Section>
+              </div>
+              {section==="history" ? <PurchaseHistory detail={detail}/> : null}
             </>
           ) : null}
         </ReadState>

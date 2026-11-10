@@ -1,0 +1,15 @@
+const fs=require('node:fs'),ts=require('typescript');require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,f);
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const node_test_1 = require("node:test");
+const strict_1 = __importDefault(require("node:assert/strict"));
+const client_ts_1 = require("../app/lib/shop/followups/client.ts");
+(0, node_test_1.test)('a stalled follow-up read becomes a recoverable error and aborts its transport', async () => { let signal; await strict_1.default.rejects((0, client_ts_1.followupRead)((_p, init) => { signal = init?.signal; return new Promise(() => { }); }, '/read', 10), (e) => e.code === 'followups_load_unavailable' && e.status === 408); strict_1.default.equal(signal?.aborted, true); });
+(0, node_test_1.test)('successful reads return normally and a failed attempt does not poison retry', async () => { let count = 0; const send = async () => { if (!count++)
+    throw Error('offline'); return { rows: [1] }; }; await strict_1.default.rejects((0, client_ts_1.followupRead)(send, '/read', 50), /offline/); strict_1.default.deepEqual(await (0, client_ts_1.followupRead)(send, '/read', 50), { rows: [1] }); });
+(0, node_test_1.test)('mutation requests keep their durable request unchanged; read timeout never retries a write', async () => { const calls = []; const api = (0, client_ts_1.bindFollowups)(async (path, init) => { calls.push({ path, init }); return { status: 'recorded' }; }); const request = { clientId: 'saved-id', action: { kind: 'contacted', note: 'QA' } }; await api.action('shop', 'customer', request); strict_1.default.equal(calls.length, 1); strict_1.default.equal(calls[0].init.method, 'POST'); strict_1.default.deepEqual(JSON.parse(calls[0].init.body), request); strict_1.default.equal(calls[0].init.signal, undefined); });
+(0, node_test_1.test)('the deadline reports a load failure even when transport rejects synchronously on abort', async () => { await strict_1.default.rejects((0, client_ts_1.followupRead)((_p, init) => new Promise((_resolve, reject) => init?.signal?.addEventListener('abort', () => reject(Object.assign(Error('cancelled'), { name: 'AbortError' })))), '/read', 10), (e) => e.code === 'followups_load_unavailable'); });
+(0, node_test_1.test)('network failures become a read error while authorization failures retain their meaning', async () => { await strict_1.default.rejects((0, client_ts_1.followupRead)(async () => { throw new TypeError('Network request failed'); }, '/read'), (e) => e.code === 'followups_load_unavailable'); await strict_1.default.rejects((0, client_ts_1.followupRead)(async () => { throw Object.assign(Error('forbidden'), { status: 403, code: 'followups_not_allowed' }); }, '/read'), (e) => e.code === 'followups_not_allowed'); });

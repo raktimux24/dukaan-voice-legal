@@ -1,4 +1,5 @@
 'use client';
+import {counterShellWorker} from '../../lib/shop/counter/shell';
 import {useEffect,useMemo} from 'react';
 import {useRouter} from 'next/navigation';
 import {useShop} from './context';
@@ -13,11 +14,12 @@ export function BillingShell({enabled,offline}:{enabled:boolean;offline:boolean}
   const warm=async()=>{
    if(navigator.onLine===false)return;
    try{
-    await navigator.serviceWorker.register('/shop-worker.js',{scope:'/'});
+    const registration=await navigator.serviceWorker.register('/shop-worker.js',{scope:'/'});
     if(cancelled)return;
-    const ready=await navigator.serviceWorker.ready;
+    await navigator.serviceWorker.ready;
+    const worker=await counterShellWorker(registration);
     if(cancelled)return;
-    ready.active?.postMessage({type:'WARM_BILLING_SHELL'});
+    worker?.postMessage({type:'WARM_BILLING_SHELL'});
     // The same-origin translation chunks are bundled assets, never user records.
     await Promise.allSettled(APP_LANGUAGES.map(loadBundledLanguage));
    }catch{/* Shell caching is optional; storage failure never blocks connected billing. */}

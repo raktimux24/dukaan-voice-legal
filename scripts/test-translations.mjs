@@ -15,6 +15,13 @@ for (const language of languages) {
   }
   for (const key of Object.keys(mobile[language])) assert.ok(general[key] || mobile[language][key]);
 }
+// Hinglish UI text uses Roman script and retains the source variables.
+const hinglish = JSON.parse(fs.readFileSync('app/lib/shop/locales/hinglish.json', 'utf8'));
+const generalEnglish = JSON.parse(fs.readFileSync('app/lib/shop/locales/en.json', 'utf8'));
+for (const [key, value] of Object.entries(hinglish)) {
+  assert.doesNotMatch(value, /[\u0900-\u097f]/u, `Hinglish uses Devanagari in ${key}`);
+  if (generalEnglish[key]) assert.deepEqual(placeholders(value), placeholders(generalEnglish[key]), `Hinglish placeholders ${key}`);
+}
 // Native-language labels must not accidentally inherit another language's script.
 const scripts = { hi: [0x900, 0x97f], mr: [0x900, 0x97f], bn: [0x980, 0x9ff], gu: [0xa80, 0xaff], ta: [0xb80, 0xbff], te: [0xc00, 0xc7f], kn: [0xc80, 0xcff], ml: [0xd00, 0xd7f], hinglish: [0, 0] };
 for (const [language, [start, end]] of Object.entries(scripts)) {
@@ -30,10 +37,22 @@ const require = createRequire(new URL('../app/lib/shop/translations.ts', import.
 const loadTs = (filename) => {
   const exports = {};
   const source = ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true } }).outputText;
-  new Function('require', 'exports', source)((id) => id === './en-fallback' ? loadTs('app/lib/shop/en-fallback.ts') : require(id), exports);
+  new Function('require', 'exports', source)((id) => id === './en-fallback' ? loadTs('app/lib/shop/en-fallback.ts') : id === './languages' ? loadTs('app/lib/shop/languages.ts') : require(id), exports);
   return exports;
 };
-const { translateUi } = loadTs('app/lib/shop/translations.ts');
+const { translateUi, mergeLanguageCatalog } = loadTs('app/lib/shop/translations.ts');
+assert.deepEqual(mergeLanguageCatalog('hinglish', {'settings.title':'Settings'}, {'settings.title':'सेटिंग्स','other':'सूचना','new.key':'Naya'}), {'settings.title':'Settings','new.key':'Naya'});
+assert.deepEqual(mergeLanguageCatalog('hi', {a:'local'}, {a:'server'}), {a:'server'});
+assert.equal(translateUi('hinglish', { 'nav.sales': 'Sales' }, 'nav.sales', 'Sales'), 'Sales', 'Hinglish navigation must not fall back to an unrelated Hindi alias');
+const retail = JSON.parse(fs.readFileSync('app/lib/shop/retail-locales.json', 'utf8'));
+for (const language of ['en', ...languages]) {
+  assert.deepEqual(Object.keys(retail[language]).sort(), Object.keys(retail.en).sort());
+  for (const [key, text] of Object.entries(retail[language])) {
+    const vars = Object.fromEntries([...text.matchAll(/\{\{(\w+)\}\}/g)].map(match => [match[1], '2']));
+    const expected = text.replace(/\{\{\w+\}\}/g, '2');
+    assert.equal(translateUi(language, { [key]: 'stale server text' }, key, key, vars), expected, language + ':' + key);
+  }
+}
 // An older general catalog must not replace current bundled GST guidance.
 assert.equal(translateUi('en', { 'gst.margin_estimate': 'Margin uses recorded purchase cost; input-tax credits are not calculated.' }, 'gst.margin_estimate', 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.'), 'Margin estimates use recorded purchase cost. Saved input-tax reviews can change acquisition costs.');
 assert.equal(translateUi('en', { 'nav.products': 'Products' }, 'nav.products', 'Products'), translateUi('en', {}, 'nav.products', 'Products'));
@@ -91,3 +110,33 @@ for (const file of fs.readdirSync('app/components/shop/screens').filter(file => 
   visit(ast);
 }
 console.log(`Translation coverage passed: ${Object.keys(web.en).length} web labels across ${languages.length} translated languages, mobile catalogs and interpolation.`);
+
+// Dashboard labels must use their current translation, even when an older
+// web text alias exists for the same English phrase.
+for (const language of ['en', ...languages]) {
+  const dictionary = JSON.parse(fs.readFileSync(`app/lib/shop/locales/${language}.json`, 'utf8'));
+  for (const [key, english] of Object.entries(web.en).filter(([key]) => key.startsWith('poweb.') || key.startsWith('billingweb.') || key.startsWith('settingsweb.') || key.startsWith('activityweb.') || key.startsWith('activity.') || key.startsWith('homeweb.') || key.startsWith('sellweb.') || key.startsWith('checkoutweb.') || key.startsWith('salesweb.') || key.startsWith('reports.') || key.startsWith('sales.summary.') || key.startsWith('reportweb.') || key.startsWith('staffweb.') || key.startsWith('customerweb.') || key.startsWith('customers.') || key.startsWith('supplierweb.') || key.startsWith('suppliers.') || key.startsWith('directoryUI.') || key.startsWith('buyweb.') || key.startsWith('buy_list.') || key.startsWith('modal.buy_list_item.') || key.startsWith('nudge.') || key.startsWith('recordsUI.') || key.startsWith('productsweb.') || key.startsWith('products.') || key.startsWith('modal.product_detail.') || key.startsWith('modal.add_batch.') || key.startsWith('stockUI.') || key.startsWith('adjust.') || key.startsWith('sale_detail.') || key.startsWith('sale_return.'))) {
+    const vars = Object.fromEntries([...english.matchAll(/\{\{(\w+)\}\}/g)].map(match=>[match[1],'2']));
+    assert.equal(translateUi(language, dictionary, key, english, vars), web[language][key].replace(/\{\{\w+\}\}/g, '2'), `${language}: dashboard copy ${key}`);
+  }
+  assert.equal(translateUi(language, dictionary, 'home.search_placeholder', web.en['home.search_placeholder']), web[language]['home.search_placeholder']);
+}
+
+// Product form translations must win over old server copy, including English-like
+// Hinglish labels. Stored units stay stable while display labels are localized.
+const {unitLabel, formatQty, UNITS}=loadTs('app/lib/shop/units.ts');
+assert.deepEqual(UNITS,['kg','g','L','mL','piece','packet','dozen','crate']);
+for (const language of ['en', ...languages]) {
+  const dictionary=JSON.parse(fs.readFileSync(`app/lib/shop/locales/${language}.json`,'utf8'));
+  const t=(key,fallback,vars)=>translateUi(language,{...dictionary,[key]:'outdated server label'},key,fallback,vars);
+  for(const [key,english] of Object.entries(web.en).filter(([key])=>key.startsWith('unit_picker.')||key.startsWith('gst.product_price_')||key.startsWith('productform.')||key.startsWith('modal.add_product.'))){
+    const vars=Object.fromEntries([...english.matchAll(/\{\{(\w+)\}\}/g)].map(m=>[m[1],'2']));
+    assert.equal(t(key,english,vars),web[language][key].replace(/\{\{\w+\}\}/g,'2'),`${language}: authoritative product copy ${key}`);
+  }
+  for(const [unit,symbol] of [['kg','kg'],['g','g'],['L','L'],['mL','mL']])assert.ok(unitLabel(unit,t).endsWith(`(${symbol})`),`${language}: unambiguous unit ${unit}`);
+  assert.equal(formatQty(0.25,'kg',{unitLabel:u=>unitLabel(u,t)}),`250 ${unitLabel('g',t)}`);
+  assert.equal(formatQty(1500,'mL',{unitLabel:u=>unitLabel(u,t)}),`1.5 ${unitLabel('L',t)}`);
+  assert.equal(formatQty(2,'piece',{unitLabel:u=>unitLabel(u,t)}),`2 ${unitLabel('piece',t)}`);
+  if(language==='hinglish')for(const [key,value] of Object.entries(web.hinglish).filter(([key])=>key.startsWith('modal.add_product.')||key.startsWith('unit_picker.')))assert.doesNotMatch(value,/[\u0900-\u097f]/,key);
+}
+assert.equal(formatQty(0.25,'kg'),'250 g','existing quantity callers keep their original behavior');

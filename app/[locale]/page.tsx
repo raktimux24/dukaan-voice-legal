@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { productAnswers } from '../content/productAnswers';
 import { faqPageSchema } from '../seo';
 import type { Metadata } from 'next';
@@ -41,12 +42,17 @@ export default async function LocalizedHomePage({ params }: LocaleParams) {
   const locale = getLocale(paramLocale);
   const localeMeta = getLocaleMeta(locale);
 
+  const html = getLocalizedHtml('home', locale as Locale);
+  // Raw HTML can be replaced while client effects survive a refresh. Remount
+  // their listeners and observers whenever the rendered content changes.
+  const contentRevision = createHash('sha256').update(html).digest('hex');
+
   return (
     <>
       <JsonLd data={[organizationSchema, websiteSchemaFor(locale), softwareApplicationSchemaFor(locale), ...(productAnswers(locale).length ? [faqPageSchema(productAnswers(locale))] : [])]} />
-      <div lang={localeMeta.hreflang} dangerouslySetInnerHTML={{ __html: getLocalizedHtml('home', locale as Locale) }} />
-      <HomeEffects />
-      <LanguageSelectEffects />
+      <div lang={localeMeta.hreflang} dangerouslySetInnerHTML={{ __html: html }} />
+      <HomeEffects key={contentRevision} />
+      <LanguageSelectEffects key={`language-${contentRevision}`} />
     </>
   );
 }

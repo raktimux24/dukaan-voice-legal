@@ -1,3 +1,4 @@
+import type {IssuedDocument} from './documents/contract';
 import type { Buyer, LineTax } from "./gst-core/gst";
 import type {
   PurchaseInput,
@@ -177,6 +178,7 @@ export interface BillingParty {
   updatedAt: string;
 }
 export interface FiscalDocument {
+ documentPresentation?:IssuedDocument|null;
   integrity?:
     | "verified"
     | "mismatch"
@@ -287,6 +289,7 @@ export interface GstMonitor {
   }[];
 }
 export interface GstHealth {
+  providerJobs?: Record<"queued"|"dispatching"|"uncertain"|"succeeded"|"rejected",number>;
   generatedAt: string;
   integrity: {
     scanned: number;
@@ -304,6 +307,7 @@ export interface GstHealth {
     missingInvoices: number;
     missingCreditNotes: number;
     unbalancedSales: number;
+    providerHistoryMismatches?: number;
   };
   allocations: {
     truncated: boolean;

@@ -365,3 +365,12 @@
 .billing-demo-grid figcaption { line-height: 1.6; }
 .billing-demo-grid a:focus-visible { outline: 3px solid #ff6b00; outline-offset: 4px; }
 @media (max-width: 640px) { .billing-demo-grid { grid-template-columns: 1fr; } }
+
+/* Shared account history stays below the selected shop's billing controls. */
+.portal-grid > .billing-history, .portal-grid > .billing-footer { grid-column: 1 / -1; min-width: 0; }
+.billing-refresh { margin-bottom: 20px; }
+.billing-confirm { position: fixed; inset: 0; margin: auto; color: #e9e6e0; background: #16161d; border: 1px solid #66503d; border-radius: 12px; width: min(540px, calc(100vw - 40px)); max-height: calc(100dvh - 48px); overflow: auto; padding: 28px; }
+.billing-confirm::backdrop { background: #06060bd9; backdrop-filter: blur(4px); }
+.billing-confirm h2, .billing-dashboard .billing-confirm h2 { font-size: 1.35em; margin: 0 0 16px; }
+.billing-confirm p { color: #c6c2bd; line-height: 1.7; }
+.billing-confirm .portal-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }

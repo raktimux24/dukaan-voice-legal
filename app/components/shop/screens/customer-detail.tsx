@@ -1,111 +1,38 @@
 'use client';
+import {useRef,useState} from 'react';
+import {useQuery,useQueryClient} from '@tanstack/react-query';
+import {useRouter,useSearchParams} from 'next/navigation';
+import Link from 'next/link';
+import {useShop} from '../context';
+import {PartyProfileCard} from '../party-profile';
 import {GstCustomerPayment} from '../gst-customer-payment';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-import { GstCollectionReview } from '../gst-collection-review';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { formatINR } from '../../../lib/shop/money';
-import { useShopDates } from '../use-shop-dates';
-import { normalizeIndianMobile } from '../../../lib/shop/phone';
-import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
-import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass, isDenied } from '../ui';
-
-export function CustomerDetailScreen({ customerId }: { customerId: string }) {
-  const uiText = useUiText();
-  const { formatWhen } = useShopDates();
-  const { api, shop, perms, premium, t } = useShop();
-  const queryClient = useQueryClient();
-  const enabled = !!shop && perms.canManageCustomers && premium;
-  const detail = useQuery({
-    queryKey: ['customer', shop?.id, customerId],
-    enabled,
-    queryFn: () => api.getCustomer(shop!.id, customerId),
-  });
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<unknown>(null);
-
-  if (!shop) return <Spinner />;
-  if (!perms.canManageCustomers) return <NoAccess what={uiText("Customers are for the owner and managers.")} />;
-  if (!premium) return <PremiumLock shopId={shop.id} feature="udhaar" />;
-  if (detail.isLoading) return <Spinner label={uiText("Loading customer")} />;
-  if (isDenied(detail.error)) return <NoAccess what={uiText("You cannot open this customer.")} />;
-  if (detail.error) return <Notice error={detail.error} />;
-  const customer = detail.data?.customer;
-  if (!customer) return <Card><p>{uiText("That customer was not found.")}</p></Card>;
-  const shownName = ready ? name : customer.name;
-  const shownPhone = ready ? phone : (customer.phone ?? '');
-
-  return (
-    <div className="shop-page">
-      <PageHeader
-        kicker={t('checkout.customer_title', 'Customer')}
-        title={customer.name}
-        description={customer.phone ?? undefined}
-        actions={
-          <>
-            {customer.phone && customer.balance > 0 ? (
-              <Button
-                tone="ghost"
-                onClick={() => {
-                  const message = `Namaste ${customer.name}, your balance at ${shop.name} is ${formatINR(customer.balance)}.`;
-                  window.location.href = `sms:${customer.phone}?body=${encodeURIComponent(message)}`;
-                }}
-              >
-                {t('customers.remind', 'Text reminder')}
-              </Button>
-            ) : null}
-            <Button href="/shop/customers" tone="quiet" size="sm">{t('customers.title', 'All customers')}</Button>
-          </>
-        }
-      />
-      <div className="dash-stats">
-        <div className={`shop-stat ${customer.balance > 0 ? 'shop-stat--warn' : 'shop-stat--ok'}`}>
-          <span className="shop-stat-n num">{formatINR(customer.balance)}</span>
-          <span className="shop-stat-l">{t('customers.outstanding', 'Udhaar outstanding')}</span>
-        </div>
-      </div>
-      <Notice error={error} />
-      <GstCustomerPayment customerId={customerId}/>
-      <Card>
-        <form
-          className="grid gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const normalized = normalizeIndianMobile(shownPhone);
-            if (normalized === 'invalid') {
-              setError(new Error('Enter a valid Indian mobile number.'));
-              return;
-            }
-            const body: Record<string, unknown> = {};
-            if (shownName.trim() !== customer.name) body.name = shownName.trim();
-            if ((normalized ?? null) !== customer.phone) body.phone = normalized;
-            if (!Object.keys(body).length) return;
-            setError(null);
-            void api.updateCustomer(shop.id, customerId, body).then(() => queryClient.invalidateQueries({ queryKey: ['customer', shop.id, customerId] })).catch(setError);
-          }}
-        >
-          <Field label={t('customers.name', 'Name')}><input className={inputClass} value={shownName} onChange={(event) => { setReady(true); setName(event.target.value); }} /></Field>
-          <Field label={t('pos_settings.shop_phone', 'Phone')}><input className={inputClass} value={shownPhone} onChange={(event) => { setReady(true); setPhone(event.target.value); }} /></Field>
-          <Button type="submit">{uiText("Save customer")}</Button>
-        </form>
-      </Card>
-      <GstCollectionReview customerId={customerId}/>
-      <Card>
-        <h2 className="font-semibold">{t('customers.ledger', 'Ledger')}</h2>
-        <div className="mt-3 grid gap-2 text-sm">
-          {(detail.data?.ledger ?? []).map((entry) => (
-            <div key={entry.id} className="flex justify-between gap-3 border-t border-line pt-2">
-              <span>{t(`customers.ledger_type.${entry.type}`, EN_FALLBACK[`customers.ledger_type.${entry.type}`] ?? EN_FALLBACK['customers.ledger_type.adjustment'])}{entry.saleNumber ? ` #${entry.saleNumber}` : ''} · {formatWhen(entry.createdAt)}</span>
-              <span>{formatINR(entry.amount)} → {formatINR(entry.balanceAfter)}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
+import {GstCollectionReview} from '../gst-collection-review';
+import {CheckoutCustomerHistory} from '../checkout-context';
+import {HomeNudge} from '../home-nudge';
+import {CustomerEditor} from '../customer-editor';
+import {CustomerNotes} from '../customer-notes';
+import {VoiceSheet} from '../voice-sheet';
+import {Button,NoAccess,Notice,PageHeader,PremiumLock,Spinner} from '../ui';
+import {useShopDates} from '../use-shop-dates';
+import {formatINR} from '../../../lib/shop/money';
+import {customerBalanceKey,customerBillLink} from '../../../lib/shop/customers';
+export function CustomerDetailScreen({customerId}:{customerId:string}){const {shop,userId}=useShop();return <Account key={`${shop?.id}:${userId}:${customerId}`} customerId={customerId}/>;}
+function Account({customerId}:{customerId:string}){
+ const {api,shop,userId,perms,premium,offline,t}=useShop(),qc=useQueryClient(),router=useRouter(),params=useSearchParams(),{formatWhen,formatDay}=useShopDates();
+ const [section,setSection]=useState(['actions','details'].includes(params.get('section')??'')?params.get('section')!:'ledger'),[edit,setEdit]=useState(false),[archive,setArchive]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null);const lock=useRef(false);
+ const enabled=!!shop&&perms.canManageCustomers&&premium;
+ const detail=useQuery({queryKey:['customer',shop?.id,customerId,userId],enabled,queryFn:()=>api.getCustomer(shop!.id,customerId)});
+ const nudges=useQuery({queryKey:['nudges',shop?.id,'customer',userId],enabled:enabled&&section==='details',queryFn:()=>api.getNudges(shop!.id,'customer')});
+ if(!shop)return <Spinner/>;if(!perms.canManageCustomers)return <NoAccess what={t(offline?'customerweb.offline':'customerweb.access',offline?'Reconnect to manage customer accounts.':'Customers are for owners and managers.')}/>;if(!premium)return <PremiumLock shopId={shop.id} feature="udhaar"/>;
+ const customer=detail.data?.customer,ledger=detail.data?.ledger??[];
+ return <div className="shop-page customer-workspace"><PageHeader back={{href:'/shop/customers',label:t('customers.title','Customers')}} kicker={t('checkout.customer_title','Customer')} title={customer?.name??t('customers.title','Customers')} description={customer?.phone??undefined} actions={<><Button tone="ghost" onClick={()=>void detail.refetch()}>{t('common.refresh','Refresh')}</Button>{customer?<Button disabled={offline} onClick={()=>setEdit(true)}>{t('common.edit','Edit')}</Button>:null}</>}/><Notice error={detail.error??error}/>{detail.isLoading?<Spinner/>:null}
+ {customer?<>
+ <div className="customer-overview"><div className={customer.balance>0?'is-owing':''}><small>{t(customerBalanceKey(customer.balance),customer.balance>0?'Owes':customer.balance<0?'Advance':'Settled')}</small><strong>{formatINR(Math.abs(customer.balance))}</strong></div><div><small>{t('directoryUI.month_bought','Purchased this month')}</small><strong>{customer.monthPurchaseTotal==null?'—':formatINR(customer.monthPurchaseTotal)}</strong></div><div><small>{t('directoryUI.last_purchase','Last purchase')}</small><strong className="customer-date">{formatDay(customer.lastSaleAt)}</strong></div></div>
+ {customer.balance>0?<CheckoutCustomerHistory customerId={customerId}/>:null}
+ <details className="customer-payment"><summary>{t('customers.record_payment','Record payment')} <span aria-hidden="true">＋</span></summary><GstCustomerPayment customerId={customerId} balance={customer.balance}/></details>
+ <div className="buy-heading"><div className="buy-tabs">{['ledger','actions','details'].map(key=><button key={key} aria-pressed={section===key} onClick={()=>setSection(key)}>{t(key==='ledger'?'customers.ledger':key==='actions'?'customerweb.actions':'customerweb.details',key==='ledger'?'Ledger':key==='actions'?'Actions':'Details')}</button>)}</div>{customer.balance>0?<Button tone="quiet" href={'/shop/customers/followups?customerId='+encodeURIComponent(customerId)}>{t('customers.remind','Text reminder')} ↗</Button>:null}</div>
+ {section==='ledger'?<section className="customer-ledger">{!ledger.length?<div className="buy-empty"><h2>{t('empty.ledger_title','No ledger entries')}</h2><p>{t('customers.no_ledger','Sales and payments will appear here.')}</p></div>:null}{ledger.map(e=>{const href=customerBillLink(e);const content=<><div><h3>{t('customers.ledger_type.'+e.type,e.type)}{e.saleNumber?' · #'+e.saleNumber:''}{e.method?' · '+t('pos.method.'+e.method,e.method):''}</h3><p>{formatWhen(e.effectiveAt??e.createdAt)}</p>{e.note?<small>{e.note}</small>:null}{href?<small>{t('customerweb.open_bill','Open bill details')} ↗</small>:null}</div><div><strong className={e.amount>0?'is-owing':''}>{e.amount>0?'+':e.amount<0?'−':''}{formatINR(Math.abs(e.amount))}</strong><small>{t('customers.balance_after','Balance {{amount}}',{amount:formatINR(e.balanceAfter)})}</small></div></>;return href?<Link className="customer-entry" href={href} key={e.id}>{content}</Link>:<article className="customer-entry" key={e.id}>{content}</article>;})}<p className="shop-hint">{t('customerweb.ledger_help','Recent account entries. Open Statements & credit controls for a full statement.')}</p><Button tone="quiet" href={'/shop/customers/'+encodeURIComponent(customerId)+'/statement'}>{t('credit.title','Statements & credit controls')} ↗</Button></section>:section==='actions'?<div className="customer-actions"><div className="supplier-links"><Button tone="ghost" href={'/shop/customers/'+encodeURIComponent(customerId)+'/statement'}>{t('credit.title','Statements & credit controls')} ↗</Button><Button tone="ghost" href={'/shop/customers/followups?customerId='+encodeURIComponent(customerId)}>{t('followups.title','Payment follow-ups')} ↗</Button></div><CustomerNotes customerId={customerId} kind="credits"/><CustomerNotes customerId={customerId} kind="debits"/><GstCollectionReview customerId={customerId}/></div>:<section className="customer-details"><div><h2>{customer.name}</h2>{customer.phone?<a className="home-text-link" href={'tel:'+customer.phone.replace(/[^+\d]/g,'')}>{customer.phone} ↗</a>:<p>{t('customers.no_phone','No phone number')}</p>}{customer.notes?<p>{customer.notes}</p>:null}</div><PartyProfileCard kind="customer" id={customerId}/><Notice error={nudges.error}/>{(nudges.data?.nudges??[]).filter(n=>n.status==='open'&&n.customerId===customerId).map(n=><HomeNudge nudge={n} key={n.id} surface="customer"/>)}<Button tone="danger" disabled={offline||!customer.isActive} onClick={()=>setArchive(true)}>{t(customer.isActive?'customers.archive':'suppliers.archived',customer.isActive?'Archive customer':'Archived')}</Button></section>}
+ {edit?<CustomerEditor customer={customer} onClose={()=>setEdit(false)} onSaved={()=>{setEdit(false);void detail.refetch();}}/>:null}
+ {archive?<VoiceSheet title={t('customers.archive_title','Archive customer?')} closeLabel={t('common.cancel','Cancel')} onClose={()=>{if(!busy)setArchive(false);}}><p>{t('customers.archive_body','This customer will no longer appear in the active list. Existing records are kept.')}</p><Notice error={error}/><div className="shop-actions"><Button tone="danger" disabled={busy||offline} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);setError(null);try{api.assertSession();await api.updateCustomer(shop.id,customerId,{isActive:false});api.assertSession();await Promise.all(['customers','customers-summary','customer'].map(k=>qc.invalidateQueries({queryKey:[k,shop.id]})));router.push('/shop/customers');}catch(e){setError(e);}finally{lock.current=false;setBusy(false);}}}>{t('customers.archive','Archive customer')}</Button><Button tone="ghost" disabled={busy} onClick={()=>setArchive(false)}>{t('common.cancel','Cancel')}</Button></div></VoiceSheet>:null}
+ </>:null}</div>;
 }

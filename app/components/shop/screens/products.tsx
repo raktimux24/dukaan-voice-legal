@@ -1,112 +1,498 @@
-'use client';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
-import { labeledL1 } from '../../../lib/shop/catalog';
-import { inventoryCsv, downloadText } from '../../../lib/shop/csv';
-import { formatINR } from '../../../lib/shop/money';
-import type { InventoryItem } from '../../../lib/shop/types';
-import { formatQty } from '../../../lib/shop/units';
-import { useShop } from '../context';
-import { useProductCovers } from '../product-photos';
-import { Button, Card, Chip, PageHeader, Pill, Spinner } from '../ui';
-
-function productFilterLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
-  if (id === 'all') return t('home.filter_all', fallback);
-  if (id === 'low_stock') return t('home.filter_low_stock', fallback);
-  if (id === 'out_of_stock') return t('home.filter_out_of_stock', fallback);
-  if (id === 'near_expiry') return t('home.filter_near_expiry', fallback);
-  if (id === 'unpriced') return t('home.filter_unpriced', fallback);
-  return fallback;
-}
-
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'low_stock', label: 'Low stock' },
-  { id: 'out_of_stock', label: 'Out of stock' },
-  { id: 'near_expiry', label: 'Near expiry' },
-  { id: 'unpriced', label: 'Unpriced' },
-] as const;
-
-function nearExpiry(item: InventoryItem) {
-  if (!item.nearestExpiryDate) return false;
-  return new Date(item.nearestExpiryDate).getTime() <= Date.now() + 60 * 24 * 60 * 60 * 1000;
-}
-
-function matches(item: InventoryItem, filter: string) {
-  if (item.product.isActive === false) return false;
-  if (item.product.trackStock === false && ['low_stock', 'out_of_stock', 'near_expiry'].includes(filter)) return false;
-  if (filter === 'low_stock') return item.stockStatus === 'LOW';
-  if (filter === 'out_of_stock') return item.stockStatus === 'OUT';
-  if (filter === 'near_expiry') return nearExpiry(item);
-  if (filter === 'unpriced') return item.product.sellingPrice == null;
-  return true;
-}
-
+"use client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useShop } from "../context";
+import { Button, Card, Field, Notice, PageHeader, Pill, Spinner } from "../ui";
+import { ProductImage } from "../product-image";
+import { labeledL1 } from "../../../lib/shop/catalog";
+import { formatINR } from "../../../lib/shop/money";
+import { formatQty } from "../../../lib/shop/units";
+import { inventoryCsv, downloadText } from "../../../lib/shop/csv";
+import {
+  PRODUCT_FILTERS,
+  PRODUCT_SORTS,
+  productFilters,
+  productListUrl,
+  filterProducts,
+  matchesProduct,
+  productExpiry,
+  type ProductFilters,
+} from "../../../lib/shop/products";
+import { useProductBulk } from "../../../lib/shop/product-bulk/workflow";
+import { bulkErrorKey } from "../../../lib/shop/product-bulk/client";
+import { useShopDates } from "../use-shop-dates";
 export function ProductsScreen() {
-  const uiText = useUiText();
-  const { api, shop, perms, hideCost, prefs, t } = useShop();
-  const params = useSearchParams();
-  const filter = params.get('filter') ?? 'all';
-  const [q, setQ] = useState('');
+  const { shop, userId } = useShop();
+  return <ProductsWorkspace key={`${shop?.id}:${userId}`} />;
+}
+function ProductsWorkspace() {
+  const { api, shop, userId, perms, offline, hideCost, prefs, t } = useShop(),
+    params = useSearchParams(),
+    router = useRouter(),
+    { formatDay } = useShopDates();
+  const [filters, setFilters] = useState(() =>
+      productFilters(new URLSearchParams(params.toString())),
+    ),
+    [selecting, setSelecting] = useState(false),
+    [selected, setSelected] = useState<string[]>([]);
+  const anchor = useRef<string | null>(null),
+    routed = useRef(""),
+    restored = useRef(false),
+    storageReady = useRef(false);
+  const scope = `${shop?.id}:${userId}`,
+    returnTo = productListUrl(filters),
+    selectionKey = "bulk-selection:" + scope;
   const catalog = useQuery({
-    queryKey: ['catalog', shop?.id, hideCost],
-    enabled: !!shop?.id,
+    queryKey: ["catalog", shop?.id, hideCost],
+    enabled: !!shop,
     queryFn: () => api.getAllInventory(shop!.id, hideCost),
   });
-  const covers = useProductCovers((catalog.data ?? []).filter((item) => item.product.isActive !== false).slice(0, 100).map((item) => item.productId));
-  const rows = useMemo(() => {
-    const text = q.trim().toLowerCase();
-    return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.includes(text)));
-  }, [catalog.data, filter, q]);
-
-  if (!shop) return <Spinner label={uiText("Loading products")} />;
-
+  const bulk = useProductBulk(
+    api.productBulk,
+    { shopId: shop?.id ?? "", actorId: userId ?? "" },
+    perms.canEditProducts,
+    () => crypto.randomUUID(),
+  );
+  const blocked = bulk.busy || !!bulk.pending || offline;
+  const rows = useMemo(
+    () => filterProducts(catalog.data ?? [], filters),
+    [catalog.data, filters],
+  );
+  const active = (catalog.data ?? []).filter(
+    (i) => i.product.isActive !== false,
+  );
+  const categories = [...new Set(active.map((i) => i.product.category))].sort();
+  const filterLabel = (id: string) =>
+    t(
+      "home.filter_" + id,
+      {
+        all: "All",
+        low_stock: "Low stock",
+        out_of_stock: "Out of stock",
+        near_expiry: "Near expiry",
+        unpriced: "Unpriced",
+      }[id] ?? id,
+    );
+  useEffect(() => {
+    try {
+      const ids = JSON.parse(sessionStorage.getItem(selectionKey) ?? "[]");
+      if (Array.isArray(ids)) {
+        setSelected(ids.filter((x) => typeof x === "string"));
+        setSelecting(ids.length > 0 && perms.canEditProducts);
+      }
+    } catch {}
+    storageReady.current = true;
+  }, [selectionKey, perms.canEditProducts]);
+  useEffect(() => {
+    if (storageReady.current)
+      try {
+        sessionStorage.setItem(selectionKey, JSON.stringify(selected));
+      } catch {}
+  }, [selected, selectionKey]);
+  useEffect(() => {
+    if (!catalog.data || restored.current) return;
+    restored.current = true;
+    try {
+      const y = Number(
+        sessionStorage.getItem("product-scroll:" + scope + ":" + returnTo),
+      );
+      if (y > 0) requestAnimationFrame(() => window.scrollTo(0, y));
+    } catch {}
+  }, [catalog.data, scope, returnTo]);
+  useEffect(() => {
+    const next = productFilters(new URLSearchParams(params.toString()));
+    setFilters((old) =>
+      JSON.stringify(old) === JSON.stringify(next) ? old : next,
+    );
+  }, [params]);
+  const change = (patch: Partial<ProductFilters>) => {
+    const next = { ...filters, ...patch };
+    setFilters(next);
+    router.replace(productListUrl(next), { scroll: false });
+  };
+  useEffect(() => {
+    if (bulk.job && routed.current !== bulk.job.id) {
+      routed.current = bulk.job.id;
+      router.push(
+        "/shop/products/bulk?" +
+          new URLSearchParams({ jobId: bulk.job.id, returnTo }),
+      );
+    }
+  }, [bulk.job?.id, returnTo, router]);
+  const selectRow = (id: string, shift = false) => {
+    if (blocked) return;
+    const a = rows.findIndex((i) => i.productId === anchor.current),
+      b = rows.findIndex((i) => i.productId === id),
+      ids =
+        shift && a >= 0
+          ? rows
+              .slice(Math.min(a, b), Math.max(a, b) + 1)
+              .map((i) => i.productId)
+          : [id];
+    setSelected((old) =>
+      old.includes(id)
+        ? old.filter((x) => !ids.includes(x))
+        : [...new Set([...old, ...ids])],
+    );
+    anchor.current = id;
+  };
+  const remember = () => {
+    try {
+      sessionStorage.setItem(
+        "product-scroll:" + scope + ":" + returnTo,
+        String(window.scrollY),
+      );
+    } catch {}
+  };
+  if (!shop) return <Spinner />;
   return (
-    <div className="shop-page">
+    <div className="shop-page products-workspace">
       <PageHeader
-        kicker={t('reports.stock.on_hand', 'Stock')}
-        title={t('products.title', 'Products')}
-        description={catalog.data ? `${rows.length} of ${catalog.data.filter((item) => item.product.isActive !== false).length} products` : undefined}
+        kicker={t("reports.stock.on_hand", "Stock")}
+        title={t("products.title", "Products")}
+        description={t(
+          "productsweb.intro",
+          "Know what is on the shelf. Keep every item ready to sell.",
+        )}
         actions={
           <>
-            <Button tone="ghost" onClick={() => downloadText(`products-${shop.name}.csv`, inventoryCsv(catalog.data ?? [], hideCost, prefs?.appLanguage))}>{t('reports.sales.export_csv', 'Export CSV')}</Button>
-            {perms.canEditProducts ? <Button href="/shop/products/new">{t('products.add', 'Add product')}</Button> : null}
+            <Button
+              tone="ghost"
+              disabled={catalog.isFetching}
+              onClick={() => void catalog.refetch()}
+            >
+              {t("common.refresh", "Refresh")}
+            </Button>
+            {perms.canEditProducts ? (
+              <Button href="/shop/products/new">
+                ＋ {t("products.add", "Add product")}
+              </Button>
+            ) : null}
           </>
         }
       />
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="pos-chips">
-          {FILTERS.filter((item) => item.id !== 'unpriced' || perms.canEditProducts).map((item) => (
-            <Chip key={item.id} active={filter === item.id} href={item.id === 'all' ? '/shop/products' : `/shop/products?filter=${item.id}`}>{productFilterLabel(item.id, item.label, t)}</Chip>
-          ))}
+      <section
+        className="products-overview"
+        aria-label={t("products.title", "Products")}
+      >
+        {PRODUCT_FILTERS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={filters.filter === id}
+            className={filters.filter === id ? "is-active" : ""}
+            onClick={() => change({ filter: id })}
+          >
+            <span>{filterLabel(id)}</span>
+            <strong>
+              {catalog.data
+                ? active.filter((i) => matchesProduct(i, id)).length
+                : "—"}
+            </strong>
+          </button>
+        ))}
+      </section>
+      <Card flush className="products-register">
+        <div className="products-register-head">
+          <div>
+            <h2>{t("productsweb.catalogue", "Your catalogue")}</h2>
+            <p aria-live="polite">
+              {t("productsweb.count", "{{shown}} of {{total}} products", {
+                shown: rows.length,
+                total: active.length,
+              })}
+            </p>
+          </div>
+          <details className="products-tools">
+            <summary>
+              {t("stockUI.tools", "Product tools")}{" "}
+              <span aria-hidden="true">＋</span>
+            </summary>
+            <div className="shop-actions">
+              <Button
+                tone="ghost"
+                disabled={!catalog.data || catalog.isError}
+                onClick={() =>
+                  downloadText(
+                    `products-${shop.name}.csv`,
+                    inventoryCsv(active, hideCost, prefs?.appLanguage),
+                  )
+                }
+              >
+                {t("reports.sales.export_csv", "Export CSV")}
+              </Button>
+              {perms.canEditProducts ? (
+                <>
+                  <Button
+                    tone="ghost"
+                    disabled={blocked}
+                    onClick={() => setSelecting((v) => !v)}
+                  >
+                    {t(
+                      selecting ? "bulk.finish_selection" : "bulk.select",
+                      "Select products",
+                    )}
+                  </Button>
+                  <Button tone="ghost" href="/shop/products/barcodes">
+                    {t("barcodes.title", "Product barcodes")}
+                  </Button>
+                  <Button tone="ghost" href="/shop/products/import">
+                    {t("imports.title", "Import products")}
+                  </Button>
+                  <Button tone="ghost" href="/shop/products/bulk">
+                    {t("bulk.history", "Recent bulk selections")}
+                  </Button>
+                </>
+              ) : null}
+            </div>
+          </details>
         </div>
-        <input className="shop-field sm:ml-auto sm:max-w-xs" placeholder={t('products.search', 'Filter by name or barcode')} value={q} onChange={(event) => setQ(event.target.value)} aria-label={t('products.search', 'Filter products')} />
-      </div>
-      {catalog.isLoading ? <Spinner label={uiText("Loading products")} /> : null}
-      <Card flush>
-        <div className="shop-list">
-          {rows.map((item) => (
-            <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
-              {covers.data?.[item.productId] ? <img className="product-photo" src={covers.data[item.productId]} alt="" /> : null}
-              <div className="shop-list-main">
-                <p className="shop-list-title">{item.product.name}</p>
-                <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {item.product.trackStock === false ? t('pos.no_stock_tracking', 'Not stock-tracked') : `${formatQty(item.quantity, item.unit)} ${t('reports.stock.on_hand', 'on hand')}`}</p>
-              </div>
-              <div className="shop-list-right flex items-center gap-4">
-                <p className="num">{item.product.sellingPrice == null ? <span className="text-muted">{t('home.filter_unpriced', 'Unpriced')}</span> : formatINR(item.product.sellingPrice)}</p>
-                {item.product.trackStock !== false ? <Pill tone={item.stockStatus === 'OUT' ? 'danger' : item.stockStatus === 'LOW' ? 'warn' : 'ok'}>
-                  {item.stockStatus === 'OUT' ? t('home.stat_out_of_stock', 'Out') : item.stockStatus === 'LOW' ? t('home.stat_low_stock', 'Low') : t('reports.stock.on_hand', 'In stock')}
-                </Pill> : null}
-              </div>
-            </Link>
-          ))}
-          {!catalog.isLoading && rows.length === 0 ? <p className="shop-list-empty">{t('products.empty_filtered', 'No products in this view.')}</p> : null}
+        <div className="products-search">
+          <Field
+            label={t(
+              "productsweb.search",
+              "Search by name, short code or barcode",
+            )}
+          >
+            <input
+              className="shop-field"
+              type="search"
+              value={filters.q}
+              maxLength={200}
+              onChange={(e) => change({ q: e.target.value })}
+            />
+          </Field>
+          <Field label={t("modal.add_product.category_label", "Category")}>
+            <select
+              className="shop-field"
+              value={filters.category}
+              onChange={(e) => change({ category: e.target.value })}
+            >
+              <option value="all">
+                {t("products.all_categories", "All categories")}
+              </option>
+              {categories.map((c) => (
+                <option value={c} key={c}>
+                  {labeledL1(c, (k) => t(k, k))}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t("productsweb.sort", "Sort by")}>
+            <select
+              className="shop-field"
+              value={filters.sort}
+              onChange={(e) =>
+                change({ sort: e.target.value as ProductFilters["sort"] })
+              }
+            >
+              {PRODUCT_SORTS.map((s) => (
+                <option value={s} key={s}>
+                  {t(
+                    "products.sort." + s,
+                    {
+                      name: "Name",
+                      recent: "Recently updated",
+                      stock: "Stock priority",
+                    }[s],
+                  )}
+                </option>
+              ))}
+            </select>
+          </Field>
         </div>
+        {selecting && perms.canEditProducts ? (
+          <div className="products-selection">
+            <strong>
+              {t("bulk.selected", "Selected: {{count}}", {
+                count: selected.length,
+              })}
+            </strong>
+            <div className="shop-actions">
+              <Button
+                tone="ghost"
+                disabled={blocked}
+                onClick={() => setSelected([])}
+              >
+                {t("bulk.clear", "Clear selection")}
+              </Button>
+              <Button
+                tone="ghost"
+                disabled={blocked || !rows.length}
+                onClick={() =>
+                  setSelected((old) => [
+                    ...new Set([...old, ...rows.map((i) => i.productId)]),
+                  ])
+                }
+              >
+                {t("bulk.select_page", "Select this view")}
+              </Button>
+              <Button
+                tone="ghost"
+                disabled={blocked || !rows.length}
+                onClick={() =>
+                  void bulk.start({
+                    matching: {
+                      query: filters.q,
+                      filter: filters.filter,
+                      ...(filters.category !== "all"
+                        ? { category: filters.category }
+                        : {}),
+                      nativeSearch: true,
+                    },
+                  })
+                }
+              >
+                {t("bulk.select_matching", "Select all matching")}
+              </Button>
+              <Button
+                disabled={blocked || !selected.length}
+                onClick={() => void bulk.start({ ids: selected })}
+              >
+                {t("bulk.edit_selected", "Edit {{count}} selected products", {
+                  count: selected.length,
+                })}
+              </Button>
+            </div>
+            {bulk.error ? (
+              <p role="alert">
+                {t(bulkErrorKey(bulk.error), bulkErrorKey(bulk.error))}
+              </p>
+            ) : null}
+            {bulk.pending && !bulk.busy ? (
+              <Button disabled={offline} onClick={() => void bulk.recover()}>
+                {t("bulk.recover", "Check result")}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+        <Notice error={catalog.error} />
+        {catalog.isPending ? (
+          <Spinner label={t("web.gst.loading_products", "Loading products")} />
+        ) : null}
+        <div className="products-columns" aria-hidden="true">
+          <span>{t("bill.item", "Item")}</span>
+          <span>{t("reports.stock.on_hand", "On hand")}</span>
+          <span>
+            {t("modal.product_detail.detail_selling_price", "Selling price")}
+          </span>
+        </div>
+        <div className="products-list">
+          {rows.map((item) => {
+            const expiry = productExpiry(item.nearestExpiryDate),
+              tracked = item.product.trackStock !== false;
+            return (
+              <div className="products-entry" key={item.id}>
+                {selecting && perms.canEditProducts ? (
+                  <input
+                    className="products-select"
+                    type="checkbox"
+                    checked={selected.includes(item.productId)}
+                    disabled={blocked}
+                    aria-label={item.product.name}
+                    onChange={() => {}}
+                    onClick={(e) => selectRow(item.productId, e.shiftKey)}
+                  />
+                ) : null}
+                <Link
+                  className="products-row"
+                  href={`/shop/products/${item.productId}?${new URLSearchParams({ returnTo })}`}
+                  onClick={(e) => {
+                    if (selecting && perms.canEditProducts) {
+                      e.preventDefault();
+                      selectRow(item.productId, e.shiftKey);
+                    } else remember();
+                  }}
+                >
+                  <div className="products-identity">
+                    <ProductImage
+                      image={item.product.media?.cover}
+                      name={item.product.name}
+                      size={52}
+                    />
+                    <div>
+                      <strong>{item.product.name}</strong>
+                      <small>
+                        {labeledL1(item.product.category, (k) => t(k, k))}
+                        {item.product.shortCode
+                          ? " · " + item.product.shortCode
+                          : ""}
+                      </small>
+                      {filters.sort === "recent" ? (
+                        <small>{formatDay(item.updatedAt)}</small>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="products-stock">
+                    <strong>
+                      {tracked
+                        ? formatQty(item.quantity, item.unit, {
+                            packSize: item.product.packSize,
+                            packLabel: item.product.packLabel,
+                          })
+                        : t("pos.no_stock_tracking", "Not stock-tracked")}
+                    </strong>
+                    {tracked && item.stockStatus !== "OK" ? (
+                      <Pill
+                        tone={item.stockStatus === "OUT" ? "danger" : "warn"}
+                      >
+                        {filterLabel(
+                          item.stockStatus === "OUT"
+                            ? "out_of_stock"
+                            : "low_stock",
+                        )}
+                      </Pill>
+                    ) : null}
+                    {tracked && expiry ? (
+                      <small
+                        className={expiry.expired ? "text-danger" : "text-warn"}
+                      >
+                        {expiry.expired
+                          ? t("productsweb.expired", "Expired")
+                          : t("productsweb.expires", "Expires {{date}}", {
+                              date: formatDay(item.nearestExpiryDate),
+                            })}
+                      </small>
+                    ) : null}
+                  </div>
+                  <div className="products-price">
+                    <strong>
+                      {item.product.sellingPrice == null
+                        ? t("home.unpriced", "Unpriced")
+                        : formatINR(item.product.sellingPrice)}
+                    </strong>
+                    {item.product.sellingPrice != null ? (
+                      <small>/ {item.unit}</small>
+                    ) : null}
+                  </div>
+                  <span className="products-arrow" aria-hidden="true">
+                    ↗
+                  </span>
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+        {!catalog.isPending && !catalog.isError && !rows.length ? (
+          <div className="products-empty">
+            <h3>{t("products.empty_filtered", "No products in this view.")}</h3>
+            <Button
+              tone="ghost"
+              onClick={() =>
+                change({ q: "", filter: "all", category: "all", sort: "name" })
+              }
+            >
+              {t("productsweb.reset", "Reset filters")}
+            </Button>
+            {!active.length && perms.canEditProducts ? (
+              <Button href="/shop/products/new">
+                {t("products.add", "Add product")}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </Card>
     </div>
   );

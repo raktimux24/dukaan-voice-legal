@@ -1,70 +1,26 @@
 'use client';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-import { useQuery } from '@tanstack/react-query';
+import {useState} from 'react';
+import {useQuery,useInfiniteQuery} from '@tanstack/react-query';
+import {useRouter} from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
-import { formatINR } from '../../../lib/shop/money';
-import { normalizeIndianMobile } from '../../../lib/shop/phone';
-import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PageHeader, PremiumLock, Spinner, inputClass } from '../ui';
-
-export function CustomersScreen() {
-  const uiText = useUiText();
-  const { api, shop, perms, premium, t } = useShop();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [error, setError] = useState<unknown>(null);
-  const enabled = !!shop && perms.canManageCustomers && premium;
-  const summary = useQuery({ queryKey: ['customers-summary', shop?.id], enabled, queryFn: () => api.getCustomerSummary(shop!.id) });
-  const list = useQuery({ queryKey: ['customers', shop?.id], enabled, queryFn: () => api.getCustomers(shop!.id, { limit: 100 }) });
-
-  if (!shop) return <Spinner />;
-  if (!perms.canManageCustomers) return <NoAccess what={uiText("Customers are for the owner and managers.")} />;
-  if (!premium) return <PremiumLock shopId={shop.id} feature="udhaar" />;
-
-  return (
-    <div className="shop-page">
-      <PageHeader kicker={t('customers.title', 'People')} title={t('customers.title', 'Customers')} description={t('customers.empty_subtitle', 'Profiles and the udhaar ledger. Credit sales at checkout land here.')} />
-      <div className="dash-stats" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-        <div className="shop-stat shop-stat--warn"><span className="shop-stat-n num">{summary.isLoading ? '…' : formatINR(summary.data?.outstandingTotal)}</span><span className="shop-stat-l">{t('customers.outstanding', 'Outstanding udhaar')}</span></div>
-        <div className="shop-stat"><span className="shop-stat-n num">{summary.data?.debtorCount ?? '…'}</span><span className="shop-stat-l">{t('customers.debtors', 'People with udhaar')}</span></div>
-        <div className="shop-stat shop-stat--ok"><span className="shop-stat-n num">{summary.data?.customerCount ?? '…'}</span><span className="shop-stat-l">{t('customers.total', 'Customers')}</span></div>
-      </div>
-      <Notice error={error ?? summary.error ?? list.error} />
-      <Card>
-        <form
-          className="grid gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const normalized = normalizeIndianMobile(phone);
-            if (normalized === 'invalid') {
-              setError(new Error('Enter a valid Indian mobile number.'));
-              return;
-            }
-            setError(null);
-            void api.createCustomer(shop.id, { name: name.trim(), phone: normalized, clientId: crypto.randomUUID() }).then(() => {
-              setName('');
-              setPhone('');
-              return list.refetch();
-            }).catch(setError);
-          }}
-        >
-          <Field label={t('customers.name', 'Name')}><input className={inputClass} value={name} onChange={(event) => setName(event.target.value)} required /></Field>
-          <Field label={t('pos_settings.shop_phone', 'Phone')}><input className={inputClass} value={phone} onChange={(event) => setPhone(event.target.value)} inputMode="tel" /></Field>
-          <Button type="submit" disabled={!name.trim()}>{t('checkout.add_customer', 'Add customer')}</Button>
-        </form>
-      </Card>
-      <div className="customer-directory">
-        {(list.data?.customers ?? []).map((customer) => (
-          <Link key={customer.id} href={`/shop/customers/${customer.id}`} className="shop-surface shop-card customer-directory-card">
-            <span className="shop-list-main"><span className="customer-directory-name">{customer.name}</span>{customer.phone && <span className="shop-list-meta customer-directory-phone">{customer.phone}</span>}</span>
-            <span className="customer-directory-balance num">{formatINR(customer.balance)}</span>
-            <span className="customer-directory-chevron" aria-hidden="true">›</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+import {useShop} from '../context';
+import {CustomerEditor} from '../customer-editor';
+import {Button,Field,NoAccess,Notice,PageHeader,PremiumLock,Spinner,inputClass} from '../ui';
+import {formatINR} from '../../../lib/shop/money';
+import {customerBalanceKey,nextCustomerPage} from '../../../lib/shop/customers';
+import {useShopDates} from '../use-shop-dates';
+export function CustomersScreen(){const {shop,userId}=useShop();return <Directory key={`${shop?.id}:${userId}`}/>;}
+function Directory(){const {api,shop,userId,perms,premium,offline,t}=useShop(),router=useRouter(),{formatDay}=useShopDates();const [q,setQ]=useState(''),[withBalance,setWithBalance]=useState(false),[adding,setAdding]=useState(false);const enabled=!!shop&&perms.canManageCustomers&&premium;
+ const summary=useQuery({queryKey:['customers-summary',shop?.id,userId],enabled,queryFn:()=>api.getCustomerSummary(shop!.id)});
+ const list=useInfiniteQuery({queryKey:['customers',shop?.id,userId,q,withBalance],enabled,initialPageParam:0,queryFn:({pageParam})=>api.getCustomers(shop!.id,{q:q.trim()||undefined,withBalance:withBalance?'1':undefined,limit:50,offset:pageParam}),getNextPageParam:nextCustomerPage});
+ if(!shop)return <Spinner/>;if(!perms.canManageCustomers)return <NoAccess what={t(offline?'customerweb.offline':'customerweb.access',offline?'Reconnect to manage customer accounts.':'Customers are for owners and managers.')}/>;if(!premium)return <PremiumLock shopId={shop.id} feature="udhaar"/>;
+ const rows=list.data?.pages.flatMap(p=>p.customers)??[];
+ return <div className="shop-page customer-workspace"><PageHeader kicker={t('customerweb.people','People')} title={t('customers.title','Customers')} description={t('customerweb.intro','Know your regulars. Keep purchases and payments in one place.')} actions={<><Button tone="ghost" onClick={()=>{void list.refetch();void summary.refetch();}}>{t('common.refresh','Refresh')}</Button><Button disabled={offline} onClick={()=>setAdding(true)}>{t('customers.add_title','Add customer')} +</Button></>}/>
+ <div className="customer-overview"><div><small>{t('customers.outstanding','Outstanding udhaar')}</small><strong>{summary.isSuccess?formatINR(summary.data.outstandingTotal):'—'}</strong></div><div><small>{t('customers.debtors','People with udhaar')}</small><strong>{summary.isSuccess?summary.data.debtorCount:'—'}</strong></div><div><small>{t('customers.total','Customers')}</small><strong>{summary.isSuccess?summary.data.customerCount:'—'}</strong></div></div>
+ <div className="buy-heading"><div className="buy-tabs"><button aria-pressed={!withBalance} onClick={()=>setWithBalance(false)}>{t('buy_list.filter_all','All')}</button><button aria-pressed={withBalance} onClick={()=>setWithBalance(true)}>{t('customers.with_balance','Open balances')}</button></div><div className="shop-actions"><Button tone="quiet" href="/shop/customers/followups">{t('followups.title','Payment follow-ups')} ↗</Button><Button tone="quiet" href="/shop/customers/import">{t('partiesImport.customer_title','Import customers')} ↗</Button></div></div>
+ <Field label={t('customers.search','Search by name or phone')}><input className={inputClass} type="search" value={q} onChange={e=>setQ(e.target.value)}/></Field><Notice error={summary.error??list.error}/>
+ {list.isLoading?<Spinner/>:null}{list.isSuccess&&!rows.length?<div className="buy-empty"><h2>{t(q.trim()||withBalance?'estimateFlow.no_match':'customers.empty_title','No customers found')}</h2><p>{!q.trim()&&!withBalance?t('customers.empty_subtitle','Add your first customer to start their account.'):''}</p></div>:null}
+ <div className="customer-ledger">{rows.map(c=><Link className="customer-row" href={'/shop/customers/'+encodeURIComponent(c.id)} key={c.id}><div className="customer-person"><span className="supplier-monogram" aria-hidden="true">{c.name.slice(0,1)}</span><div><h2>{c.name}</h2><p>{c.phone||t('customers.no_phone','No phone number')}</p>{c.lastSaleAt?<small>{t('customers.last_sale','Last purchase {{date}}',{date:formatDay(c.lastSaleAt)})}</small>:null}</div></div><div className="customer-month"><small>{t('directoryUI.month_bought','Purchased this month')}</small><strong>{c.monthPurchaseTotal==null?'—':formatINR(c.monthPurchaseTotal)}</strong></div><div className={'customer-balance '+(c.balance>0?'is-owing':'')}><small>{t(customerBalanceKey(c.balance),c.balance>0?'Owes':c.balance<0?'Advance':'Settled')}</small><strong>{formatINR(Math.abs(c.balance))}</strong></div><span aria-hidden="true">↗</span></Link>)}</div>
+ {list.hasNextPage?<Button tone="ghost" disabled={list.isFetchingNextPage} onClick={()=>void list.fetchNextPage()}>{t('purchase.more','Load more')}</Button>:null}
+ {adding?<CustomerEditor onClose={()=>setAdding(false)} onSaved={id=>{setAdding(false);router.push('/shop/customers/'+encodeURIComponent(id));}}/>:null}</div>;
 }

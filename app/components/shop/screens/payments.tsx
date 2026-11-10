@@ -1,145 +1,85 @@
 'use client';
-
-import { useGstText as useUiText } from "../gst-ui";
-
-
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { SettingsFields, Section, emptySettings, useGstText } from '../gst-ui';
-import type { GstSettings } from '../../../lib/shop/gst-types';
-import { validateSettings } from '../../../lib/shop/gst-core/gst';
-import { useState } from 'react';
-import { ReadState, useGstQuery } from '../gst-workspace';
 import { useShop } from '../context';
-import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, inputClass } from '../ui';
-
-const VPA = /^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/;
-const MAX_QR = 1_500_000;
+import { Button, Field, Glyph, Notice, PageHeader, Spinner } from '../ui';
+import { PaymentQr } from '../payment-qr';
+import { PaymentGst } from '../payment-gst';
+import { paymentDraft, paymentChanges, MAX_QR_ENCODED, type PaymentDraft } from '../../../lib/shop/payments/form';
+import type { PosSettings } from '../../../lib/shop/types';
 
 export function PaymentsScreen() {
-  const uiText = useUiText();
-  const { api, shop, perms, t } = useShop();
-  const queryClient = useQueryClient();
-  const text=useGstText();
-  const readiness = useGstQuery(['readiness'], () => api.gst.readiness(shop!.id), perms.canManageShop);
-  const [gstDraft,setGstDraft]=useState<GstSettings|null>(null);
-  const settings = useQuery({ queryKey: ['pos', shop?.id], enabled: !!shop && perms.canManageShop, queryFn: () => api.getPosSettings(shop!.id) });
-  const [error, setError] = useState<unknown>(null);
-  const [pending, setPending] = useState(false);
-  const [vpa, setVpa] = useState<string | null>(null);
-  const [payee, setPayee] = useState<string | null>(null);
-  const [phone, setPhone] = useState<string | null>(null);
-  const [address, setAddress] = useState<string | null>(null);
-  const [header, setHeader] = useState<string | null>(null);
-  const [footer, setFooter] = useState<string | null>(null);
-  const [method, setMethod] = useState<'cash' | 'upi' | null>(null);
-  const [hours, setHours] = useState<string | null>(null);
-  const [card, setCard] = useState<boolean | null>(null);
-
-  if (!shop) return <Spinner />;
-  if (!perms.canManageShop) return <NoAccess what={uiText("Only the owner can change payments.")} />;
-  if (settings.isLoading) return <Spinner label={uiText("Loading payments")} />;
-  if (!settings.data) return <><Notice error={settings.error}/><Button onClick={()=>void settings.refetch()}>{text('Retry')}</Button></>;
-  const current = settings.data;
-  const form = {
-    upiVpa: vpa ?? current.upiVpa ?? '',
-    upiPayeeName: payee ?? current.upiPayeeName ?? '',
-    shopPhone: phone ?? current.shopPhone ?? '',
-    shopAddress: address ?? current.shopAddress ?? '',
-    billHeader: header ?? current.billHeader ?? '',
-    billFooter: footer ?? current.billFooter ?? '',
-    defaultPaymentMethod: method ?? current.defaultPaymentMethod,
-    voidWindowHours: hours ?? String(current.voidWindowHours),
-    cardEnabled: card ?? current.cardEnabled,
-  };
-  const vpaInvalid = form.upiVpa.trim() !== '' && !VPA.test(form.upiVpa.trim().toLowerCase());
-  const hoursNumber = Number(form.voidWindowHours);
-  const hoursInvalid = !Number.isInteger(hoursNumber) || hoursNumber < 1 || hoursNumber > 720;
-
-  return (
-    <div className="shop-page">
-      <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('pos_settings.title', 'Payments & bills')} description={t('pos_settings.upi_explainer', 'The UPI ID and QR shown at checkout.')} />
-      <Notice error={error ?? settings.error} />
-        <form id="payment-preferences"
-          className="grid gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (vpaInvalid || hoursInvalid) return;
-            setPending(true);
-            setError(null);
-            void api.updatePosSettings(shop.id, {
-              upiVpa: form.upiVpa.trim().toLowerCase() || null,
-              upiPayeeName: form.upiPayeeName.trim() || null,
-              shopPhone: form.shopPhone.trim() || null,
-              shopAddress: form.shopAddress.trim() || null,
-              billHeader: form.billHeader.trim() || null,
-              billFooter: form.billFooter.trim() || null,
-              defaultPaymentMethod: form.defaultPaymentMethod,
-              voidWindowHours: hoursNumber,
-              cardEnabled: form.cardEnabled,
-            }).then(() => queryClient.invalidateQueries({ queryKey: ['pos', shop.id] })).catch(setError).finally(() => setPending(false));
-          }}
-        >
-          <Section title={t('pos_settings.upi_section', 'UPI payments')} summary={form.upiVpa || t('pos_settings.not_set', 'Not set')}>
-          <Field label={t('pos_settings.upi_id', 'UPI ID')}><input className={inputClass} value={form.upiVpa} onChange={(event) => setVpa(event.target.value)} placeholder={uiText("name@bank")} /></Field>
-          {vpaInvalid ? <p className="text-sm text-danger">{t('pos_settings.upi_id', 'Enter a UPI ID like name@bank.')}</p> : null}
-          <Field label={t('pos_settings.payee_name', 'Payee name')}><input className={inputClass} value={form.upiPayeeName} onChange={(event) => setPayee(event.target.value)} /></Field>
-        <h2 className="font-semibold">{t('pos_settings.upload_qr', 'UPI QR image')}</h2>
-        {current.upiQrImage ? <img src={current.upiQrImage} alt="Saved UPI QR" className="mt-3 w-40 rounded-lg bg-white p-2" /> : <p className="mt-2 text-sm text-muted">{uiText("No image uploaded. A VPA still generates a QR at checkout.")}</p>}
-        <input
-          className="mt-3 block text-sm"
-          type="file"
-          accept="image/*"
-          aria-label={uiText("Upload UPI QR")}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-              const imageBase64 = String(reader.result ?? '');
-              if (imageBase64.length > MAX_QR) {
-                setError(new Error('That QR image is too large. The limit is 1.5 MB of encoded data.'));
-                return;
-              }
-              setPending(true);
-              void api.uploadUpiQr(shop.id, imageBase64).then(() => queryClient.invalidateQueries({ queryKey: ['pos', shop.id] })).catch(setError).finally(() => setPending(false));
-            };
-            reader.readAsDataURL(file);
-          }}
-        />
-          </Section>
-          <Section title={t('pos_settings.bill_section', 'Bill details')} summary={form.billHeader || shop.name}>
-          <Field label={t('pos_settings.shop_phone', 'Bill phone')}><input className={inputClass} value={form.shopPhone} onChange={(event) => setPhone(event.target.value)} /></Field>
-          <Field label={t('pos_settings.shop_address', 'Bill address')}><input className={inputClass} value={form.shopAddress} onChange={(event) => setAddress(event.target.value)} /></Field>
-          <Field label={t('pos_settings.bill_header', 'Bill header')}><input className={inputClass} value={form.billHeader} onChange={(event) => setHeader(event.target.value)} /></Field>
-          <Field label={t('pos_settings.bill_footer', 'Bill footer')}><input className={inputClass} value={form.billFooter} onChange={(event) => setFooter(event.target.value)} /></Field>
-          </Section>
-          <Section title={t('pos_settings.defaults_section', 'Defaults')} summary={t(`pos.method.${form.defaultPaymentMethod}`, form.defaultPaymentMethod)}>
-          <Field label={t('pos_settings.defaults_section', 'Default payment')}>
-            <select className={inputClass} value={form.defaultPaymentMethod} onChange={(event) => setMethod(event.target.value as 'cash' | 'upi')}>
-              <option value="cash">{t('pos.method.cash', 'Cash')}</option>
-              <option value="upi">{t('pos.method.upi', 'UPI')}</option>
-            </select>
-          </Field>
-          <Field label={t('pos_settings.void_window', 'Void window (hours)', { hours: form.voidWindowHours || '—' })}><input className={inputClass} inputMode="numeric" value={form.voidWindowHours} onChange={(event) => setHours(event.target.value)} /></Field>
-          {hoursInvalid ? <p className="text-sm text-danger">{uiText("The void window must be between 1 and 720 hours.")}</p> : null}
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.cardEnabled} onChange={(event) => setCard(event.target.checked)} /> {uiText("Accept card")}</label>
-          </Section>
-
-        </form>
-
-      <Section title={t('pos_settings.gst_checks_section', 'GST checks')} summary={t('pos_settings.gst_checks_summary', 'Review billing readiness and product tax details')}>
-        <ReadState query={readiness}>
-          {readiness.data ? <><p className="shop-hint">{t('gst.core_readiness_notice', 'Checks cover saved setup, not filing or tax-policy approval.')}</p><p>{t(readiness.data.configurationReady ? 'gst.readiness_configured' : 'gst.readiness_incomplete', readiness.data.configurationReady ? 'GST setup reviewed' : 'GST setup needs attention')}</p><p>{t('gst.readiness_profile', 'Shop profile')}: {t(`gst.readiness_status.${readiness.data.profile.status}`, readiness.data.profile.status)}</p><p>{t('gst.readiness_catalog', '{n} of {total} products reviewed', {n: readiness.data.catalog.reviewed, total: readiness.data.catalog.total})}</p><p className="shop-hint">{t(readiness.data.catalog.taxProfilesRequired ? 'gst.readiness_required' : 'gst.readiness_optional', 'Confirm product tax details before GST billing.')}</p>{readiness.data.catalog.incomplete.slice(0,10).map(product => <p key={product.productId} className="text-warn">{product.name} · {t(`gst.readiness_product.${product.reason}`, product.reason)}</p>)}</> : null}
-        </ReadState>
-        <Button tone="quiet" onClick={() => void readiness.refetch()}>{text('Refresh report')}</Button>
-        <div className="shop-list"><Button tone="ghost" href="/shop/products/gst">{t('gst.bulk_title', 'Review product GST in bulk')}</Button><Button tone="ghost" href="/shop/settings/gst">{t('gst.health_title', 'GST records & invoice numbers')}</Button></div>
-      </Section>
-      <Section title={text('GST setup')} summary={t(`gst.registration.${current.gstSettings?.registration ?? 'unknown'}`, 'Set up later')}>
-        <Notice error={error}/><SettingsFields value={gstDraft??current.gstSettings??emptySettings()} onChange={setGstDraft}/>
-        <Button disabled={pending||current.gstSetupAvailable!==true} onClick={()=>{const config=gstDraft??current.gstSettings??emptySettings();try{if(config.registration==='unknown')throw Error(text('Choose your actual GST registration before saving.'));validateSettings({...config,version:config.version||crypto.randomUUID()});}catch(e){setError(e);return;}setPending(true);void api.updatePosSettings(shop.id,{gstSettings:config}).then(()=>{setGstDraft(null);void readiness.refetch(); return settings.refetch();}).catch(setError).finally(()=>setPending(false));}}>{text('Save GST settings')}</Button>
-        {current.gstSetupAvailable!==true?<p className="shop-hint">{text('GST setup is unavailable on this server.')}</p>:null}
-      </Section>
-      <button form="payment-preferences" type="submit" className="shop-btn shop-btn-primary" disabled={pending || vpaInvalid || hoursInvalid}>{pending ? t('common.saving', 'Saving…') : t('common.save', 'Save payments')}</button>
-    </div>
-  );
+  const { shop, userId, photoSessionId } = useShop();
+  if (!shop) return <Spinner/>;
+  return <PaymentsEditor key={`${userId}:${photoSessionId}:${shop.id}`}/>;
+}
+function PaymentsEditor() {
+  const { api, shop, userId, role, perms, offline, t } = useShop(), cache = useQueryClient();
+  const key = ['pos', shop!.id];
+  const settings = useQuery({ queryKey: ['payment-settings', userId, shop!.id], queryFn: () => api.getPosSettings(shop!.id), enabled: !!role && !offline, refetchOnMount: 'always', refetchOnWindowFocus: false, retry: false });
+  const [tab, setTab] = useState('payments'), [edits, setEdits] = useState<Partial<PaymentDraft>>({});
+  const [pending, setPending] = useState(false), [error, setError] = useState<unknown>(null), [message, setMessage] = useState('');
+  const busy = useRef(false), alive = useRef(true), fileInput = useRef<HTMLInputElement>(null), cameraInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {alive.current = true;return () => {alive.current = false;};}, []);
+  async function run(job: () => Promise<PosSettings>) {
+    if (busy.current || !perms.canManageShop || offline || settings.isFetching || settings.error || !alive.current) return false;
+    busy.current = true; setPending(true); setError(null); setMessage('');
+    try {
+      const next = await job();
+      if (!alive.current) return false;
+      cache.setQueryData(['payment-settings', userId, shop!.id], next);
+      cache.setQueryData(key, next);
+      void cache.invalidateQueries({ queryKey: ['gst', userId, shop!.id, 'settings'] });
+      setMessage(t('pos_settings.saved', 'Saved')); return true;
+    } catch (err) { if (alive.current) setError(err); return false; }
+    finally { busy.current = false; if (alive.current) setPending(false); }
+  }
+  async function upload(file?: File) {
+    if (!file) return;
+    let decoded: Awaited<ReturnType<typeof api.uploadUpiQr>> | undefined;
+    const ok = await run(async () => {
+      if (!/^image\/(png|jpeg|webp)$/i.test(file.type)) throw Error(t('payweb.image_type', 'Choose a PNG, JPEG or WebP image.'));
+      if (file.size > MAX_QR_ENCODED) throw Error(t('payweb.image_size', 'Choose a smaller image. The encoded upload limit is 1.5 MB.'));
+      const data = await new Promise<string>((resolve,reject) => {const reader=new FileReader();reader.onload=()=>resolve(String(reader.result??''));reader.onerror=()=>reject(Error(t('payweb.image_read', 'The image could not be read. Try another file.')));reader.readAsDataURL(file);});
+      if (!alive.current) throw Error('purchase_request_scope_changed');
+      if (data.length > MAX_QR_ENCODED) throw Error(t('payweb.image_size', 'Choose a smaller image. The encoded upload limit is 1.5 MB.'));
+      decoded = await api.uploadUpiQr(shop!.id, data);return decoded;
+    });
+    if (ok && decoded && alive.current) {
+      if (decoded.decoded?.isUpi) setEdits(old => {const next={...old};delete next.upiVpa;delete next.upiPayeeName;return next;});
+      setMessage(decoded.decoded?.isUpi ? t('pos_settings.qr_decoded','UPI ID found: {{vpa}}',{vpa:decoded.upiVpa??''}) : decoded.decoded?.found ? t('pos_settings.qr_not_upi', 'That QR is not a UPI payment code.') : t('pos_settings.qr_unreadable', 'Could not read a QR in that image. Try a clearer image or enter the UPI ID.'));
+    }
+  }
+  if (!settings.data) return <div className="shop-page payments-workspace"><PageHeader title={t('pos_settings.title','Payments & bills')} back={{href:'/shop/settings',label:t('settings.title','Settings')}}/>{offline ? <p role="status">{t('shop.offline_notice','Connect to manage payment and bill settings.')}</p> : settings.isPending ? <Spinner/> : <><Notice error={settings.error}/><Button disabled={settings.isFetching} onClick={()=>void settings.refetch()}>{t('common.retry','Try again')}</Button></>}</div>;
+  const current = settings.data, form = {...paymentDraft(current), ...edits}, changes = paymentChanges(current, form);
+  const canEdit = perms.canManageShop && !offline, disabled = !canEdit || pending || settings.isFetching || !!settings.error;
+  const dirty = Object.keys(edits).length > 0;
+  const patch = <K extends keyof PaymentDraft>(name: K, value: PaymentDraft[K]) => {setEdits(old=>({...old,[name]:value}));setMessage('');};
+  const invalid = changes.error ? {vpa:t('payweb.vpa_invalid','Enter a UPI ID such as shop@bank.'),phone:t('validation.phone_invalid','Enter a valid 10-digit mobile number'),hours:t('payweb.hours_invalid','Use a whole number between 1 and 720 hours.')}[changes.error] : '';
+  return <div className="shop-page payments-workspace">
+    <PageHeader kicker={t('settings.title','Settings')} title={t('pos_settings.title','Payments & bills')} description={t('payweb.intro','Set up how customers pay and what appears on their bills.')} back={{href:'/shop/settings',label:t('settings.title','Settings')}} actions={<Button tone="ghost" disabled={pending || dirty || settings.isFetching || offline} onClick={()=>void settings.refetch()}>{t('common.refresh','Refresh')}</Button>}/>
+    {!canEdit && <p className="shop-hint">{t('pos_settings.owner_only','Only the shop owner can change these settings.')}</p>}
+    <Notice error={error??settings.error}/>{(pending || message) && <p role="status" className="payments-feedback">{pending ? t('common.saving','Saving…') : message}</p>}
+    <div className="payments-summary"><div><span>{t('payweb.next_bill','Next sale number')}</span><strong>#{current.saleCounter+1}</strong></div><div><span>{t('payweb.payment_default','Default payment')}</span><strong>{t('pos.method.'+current.defaultPaymentMethod,current.defaultPaymentMethod)}</strong></div><div><span>{t('payweb.void_window','Cancellation window')}</span><strong>{t('payweb.hours','{n} hours',{n:current.voidWindowHours})}</strong></div></div>
+    <nav className="payments-tabs" aria-label={t('pos_settings.title','Payments & bills')}>{[['payments',t('shopux.payments','Payments')],['bills',t('pos_settings.bill_section','Bill details')],['gst','GST']].map(([id,label])=><button type="button" key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);setMessage('');}}>{label}</button>)}</nav>
+    <form onSubmit={event=>{event.preventDefault();if(changes.error){setTab(changes.error==='phone'?'bills':'payments');return;}if(!Object.keys(changes.patch).length)return;void run(()=>api.updatePosSettings(shop!.id,changes.patch)).then(ok=>{if(ok)setEdits({});});}}>
+      <div hidden={tab!=='payments'} className="payments-panel">
+        <div className="payments-grid"><section className="payments-section"><h2>{t('pos_settings.upi_section','UPI payments')}</h2><p className="shop-hint">{t('pos_settings.upi_explainer','Add your UPI QR or enter the UPI ID to generate a QR for each bill amount.')}</p><fieldset disabled={disabled}>
+          <Field localized label={t('pos_settings.upi_id','UPI ID')}><input className="shop-field" value={form.upiVpa} onChange={e=>patch('upiVpa',e.target.value)} autoCapitalize="none" spellCheck={false} maxLength={100} placeholder="shop@bank" aria-invalid={changes.error==='vpa'}/></Field>
+          <Field localized label={t('pos_settings.payee_name','Name shown to customers')}><input className="shop-field" value={form.upiPayeeName} onChange={e=>patch('upiPayeeName',e.target.value)} maxLength={100} placeholder={current.shopName}/></Field>
+          <div className="payments-upload"><Button tone="ghost" disabled={disabled} onClick={()=>fileInput.current?.click()}><Glyph name="qr"/>{t('pos_settings.upload_qr','Upload QR image')}</Button><Button tone="ghost" disabled={disabled} onClick={()=>cameraInput.current?.click()}>{t('pos_settings.photo_qr','Photo of QR')}</Button></div>
+          <input ref={fileInput} hidden type="file" accept="image/png,image/jpeg,image/webp" aria-label={t('pos_settings.upload_qr','Upload QR image')} onChange={e=>{void upload(e.target.files?.[0]);e.target.value='';}}/>
+          <input ref={cameraInput} hidden type="file" capture="environment" accept="image/png,image/jpeg,image/webp" aria-label={t('pos_settings.photo_qr','Photo of QR')} onChange={e=>{void upload(e.target.files?.[0]);e.target.value='';}}/>
+          <p className="shop-hint">{t('payweb.upload_note','Uploading or removing a QR image saves immediately. Other edits use Save changes.')}</p>
+          {current.upiQrImage && <Button tone="quiet" disabled={disabled} onClick={()=>void run(()=>api.updatePosSettings(shop!.id,{upiQrImage:null}))}>{t('pos_settings.remove_image','Remove saved image')}</Button>}
+        </fieldset></section><PaymentQr vpa={form.upiVpa} payee={form.upiPayeeName.trim()||current.shopName} image={current.upiQrImage}/></div>
+        <section className="payments-section payments-defaults"><h2>{t('pos_settings.defaults_section','Defaults')}</h2><fieldset disabled={disabled}><div className="form-grid is-2"><Field localized label={t('payweb.payment_default','Default payment')}><select className="shop-field" value={form.defaultPaymentMethod} onChange={e=>patch('defaultPaymentMethod',e.target.value as 'cash'|'upi')}><option value="cash">{t('pos.method.cash','Cash')}</option><option value="upi">{t('pos.method.upi','UPI')}</option></select></Field><Field localized label={t('payweb.void_hours','Cancellation window (hours)')}><input className="shop-field" value={form.voidWindowHours} onChange={e=>patch('voidWindowHours',e.target.value)} inputMode="numeric" aria-invalid={changes.error==='hours'}/></Field></div><label className="payments-toggle"><span>{t('payweb.cards','Accept card payments')}</span><input type="checkbox" checked={form.cardEnabled} onChange={e=>patch('cardEnabled',e.target.checked)}/></label></fieldset></section>
+      </div>
+      <div hidden={tab!=='bills'} className="payments-panel"><div className="payments-grid"><section className="payments-section"><h2>{t('pos_settings.bill_section','Bill details')}</h2><fieldset disabled={disabled}>{(['billHeader','shopPhone','shopAddress','billFooter'] as const).map((name,i)=><Field localized key={name} label={t(['pos_settings.bill_header','pos_settings.shop_phone','pos_settings.shop_address','pos_settings.bill_footer'][i],['Shop name on bill','Phone','Address','Footer line'][i])}>{name==='shopAddress'?<textarea className="shop-field" rows={3} value={form[name]} maxLength={300} onChange={e=>patch(name,e.target.value)}/>:<input className="shop-field" type={name==='shopPhone'?'tel':'text'} value={form[name]} maxLength={name==='billHeader'?200:name==='billFooter'?300:20} onChange={e=>patch(name,e.target.value)} aria-invalid={name==='shopPhone'&&changes.error==='phone'}/>}</Field>)}</fieldset></section>
+        <aside className="payments-bill-preview"><span>{t('payweb.bill_preview','Bill details preview')}</span><div className="payments-paper"><h3>{form.billHeader.trim()||current.shopName}</h3><p>{form.shopAddress}</p><p>{form.shopPhone}</p><div className="payments-paper-lines" aria-hidden="true"><i/><i/><i/></div><p>{form.billFooter||t('bill.thanks','Thank you!')}</p></div><p className="shop-hint">{t('payweb.bill_note','Text preview only. Choose receipt and invoice layouts in Branding & formats.')}</p></aside>
+      </div><Button tone="ghost" href="/shop/settings/payments/branding">{t('documents.title','Branding & formats')} ↗</Button></div>
+      {tab!=='gst' && canEdit && dirty && <div className="payments-savebar">{invalid?<p role="alert">{invalid}</p>:<span>{t('profileweb.unsaved','Unsaved changes')}</span>}<div className="shop-actions"><Button tone="ghost" disabled={pending} onClick={()=>{setEdits({});setError(null);}}>{t('common.cancel','Cancel')}</Button><Button type="submit" disabled={disabled || !!changes.error || !Object.keys(changes.patch).length}>{pending?t('common.saving','Saving…'):t('payweb.save','Save changes')}</Button></div></div>}
+    </form>
+    <div hidden={tab!=='gst'}><PaymentGst current={current} active={tab==='gst'} disabled={disabled} run={run}/></div>
+  </div>;
 }

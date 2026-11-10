@@ -1,3 +1,18 @@
+import {withRequestDeadline,RequestTimeoutError} from './request-deadline';
+import type {ProductMedia} from './product-images/contract';
+import {bindProductImages} from './product-images/client';
+import {bindCommerce} from './commerce/client';
+import {bindFollowups} from './followups/client';
+import {bindCredit} from './credit/client';
+import {bindCashbook} from './cashbook/client';
+import {bindEstimates} from './estimates/client';
+import {bindPurchaseOrders} from './purchase-orders/client';
+import {bindOpenings} from './openings/client';
+import {bindDocuments} from './documents/client';
+import {bindProductBulk} from './product-bulk/client';
+import {bindBarcodes} from './barcodes/client';
+import {bindPartyImports} from './party-imports/client';
+import {bindInventoryImports} from './imports/client';
 import {accountedSales,projectLocalStock,type BillingCatalog} from './local-stock';
 import {retainedRequests} from './gst-storage';
 import type { VoiceProcessResponse, VoiceConfirmRequest, VoiceConfirmResponse } from './voice-types';
@@ -6,7 +21,6 @@ import {attachCatalogTaxSnapshot,type CatalogTaxSnapshot} from './gst-core/gst-t
 import {createOfflineEvidence,type EvidenceScope} from './offline-evidence';
 import {retainEntitlement} from './offline-premium';
 import { bindGstApi } from './gst-api';
-import { bindProductImages } from './product-images';
 import type { ProductTax } from './gst-types';
 import type { Role } from './permissions';
 import { parseRole } from './permissions';
@@ -120,9 +134,10 @@ export async function apiSend<T>(path: string, getToken: TokenGetter, init?: Req
   assertCurrent();
   const token = await getToken(attempt > 0 ? { skipCache: true } : undefined);
   assertCurrent();
+  init?.signal?.throwIfAborted();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
-    signal: AbortSignal.timeout(60_000),
+    signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000),
     headers: {
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -194,6 +209,7 @@ export async function apiText(path: string, getToken: TokenGetter, assertCurrent
 }
 
 type ServerInventoryItem = {
+  reservedQuantity?:number;
   id: string;
   productId: string;
   shopId: string;
@@ -205,11 +221,13 @@ type ServerInventoryItem = {
   updatedBy: string | null;
   updatedByName: string;
   product: {
+    media?:import("./product-images/contract").ProductMedia|null;
     gstConfig?: ProductTax | null;
     id: string;
     shopId: string;
     name: string;
     barcode: string | null;
+    barcodeAliases?:string[];barcodeConflict?:boolean;
     category: string;
     subcategory?: string | null;
     unit: string;
@@ -236,6 +254,7 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     productId: item.productId,
     shopId: item.shopId,
     quantity: Number(item.quantity),
+    reservedQuantity:item.reservedQuantity??0,
     unit: item.unit,
     stockStatus: item.stockStatus,
     nearestExpiryDate: item.nearestExpiryDate || undefined,
@@ -243,11 +262,13 @@ function mapItem(item: ServerInventoryItem, hideCost: boolean): InventoryItem {
     updatedBy: item.updatedBy || '',
     updatedByName: item.updatedByName,
     product: {
+      media:item.product.media,
       gstConfig: item.product.gstConfig,
       id: item.product.id,
       shopId: item.product.shopId,
       name: item.product.name,
       barcode: item.product.barcode || undefined,
+      barcodeAliases:item.product.barcodeAliases,barcodeConflict:item.product.barcodeConflict,
       category: item.product.category,
       subcategory: item.product.subcategory ?? null,
       unit: item.product.unit,
@@ -283,12 +304,17 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     if(evidenceScope?.isSessionCurrent&&!evidenceScope.isSessionCurrent())throw new ApiError('Your sign-in changed. Refresh before trying again.',409,'auth_session_changed');
   };
   const send = <T>(path: string, init?: RequestInit) => apiSend<T>(path, getToken, init,0,undefined,assertCurrent);
+  const sendMedia = <T>(path:string,init?:RequestInit) => withRequestDeadline(signal=>send<T>(path,{...init,signal}),60_000,init?.signal).catch(error=>{assertCurrent();if(error instanceof RequestTimeoutError)throw new ApiError('The connection is taking too long. Try again.',408,'request_timeout');throw error;});
   const evidence=evidenceScope?createOfflineEvidence(evidenceScope):null;
   const readCatalog=async(shopId:string,hideCost:boolean)=>collectPages(async offset=>{
     const page=await send<{items:ServerInventoryItem[];hasMore:boolean}>(`/api/shops/${shopId}/inventory${queryString({limit:100,offset})}`);
     return {rows:(page.items??[]).map(item=>mapItem(item,hideCost)),hasMore:page.hasMore};
   });
   const validCatalog=(shopId:string)=>(value:unknown):value is InventoryItem[]=>Array.isArray(value)&&new Set(value.map(row=>row?.productId)).size===value.length&&value.every(row=>row&&row.shopId===shopId&&row.product?.shopId===shopId&&row.productId===row.product.id&&typeof row.id==='string'&&typeof row.product.name==='string'&&Number.isFinite(row.quantity)&&row.quantity>=0&&row.unit===row.product.unit);
+  const validBillingCatalog=(shopId:string)=>(value:unknown):value is BillingCatalog=>{
+    const row=value as BillingCatalog;
+    return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
+  };
   const readTax=async(shopId:string,productIds:string[],completeCatalog=false)=>{
     const load=()=>send<CatalogTaxSnapshot>(`/api/shops/${shopId}/inventory/tax-snapshot`,{method:'POST',body:JSON.stringify({productIds})});
     const validate=(value:unknown):value is CatalogTaxSnapshot=>{try{attachCatalogTaxSnapshot(productIds.map(id=>({product:{id}})),value as CatalogTaxSnapshot,shopId);return true;}catch{return false;}};
@@ -307,12 +333,25 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
 
   return {
     assertSession: assertCurrent,
+    documents:bindDocuments(send),
+    openings:bindOpenings(send),
+    purchaseOrders:bindPurchaseOrders(send),
+    commerce:bindCommerce(send),
+    productImages:bindProductImages(sendMedia),
+    estimates:bindEstimates(send),
+    cashbook:bindCashbook(send),
+    credit:bindCredit(send),
+    followups:bindFollowups(send),
+    productBulk:bindProductBulk(send),
+    barcodes:bindBarcodes(send),
+    imports:bindInventoryImports(send),
+    customerImports:bindPartyImports(send,'customer'),supplierImports:bindPartyImports(send,'supplier'),
     gst: bindGstApi(send,async path=>{const metadata:{id?:string;hash?:string}={};const content=await apiSend<string>(path,getToken,undefined,0,metadata,assertCurrent);if(!metadata.id||!metadata.hash)throw Error('The report receipt is missing. Refresh saved reports before trying again.');return {content,id:metadata.id,hash:metadata.hash};},evidence),
     getShops: async () => {
       const res = await send<{ shops: ShopRecord[] }>('/api/shops');
       return res.shops ?? [];
     },
-    createShop: (input: { name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
+    createShop: (input: { ownerName?: string; name: string; category: string; subtype?: string; phone: string; address: string; city: string; language?: string; gstSettings?: import('./gst-types').GstSettings }) =>
       send<{ shop: ShopRecord }>('/api/shops', { method: 'POST', body: JSON.stringify(input) }),
     getShop: (shopId: string) => send<{ shop: ShopRecord; role: string }>(`/api/shops/${shopId}`),
     updateShop: (shopId: string, input: Record<string, unknown>) =>
@@ -351,11 +390,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
           const items=await readCatalog(shopId,hideCost);online=true;
           return {format:'billing_catalog_v2',items,accountedRequestIds};
         };
-        const validate=(value:unknown):value is BillingCatalog=>{
-          const row=value as BillingCatalog;
-          return row?.format==='billing_catalog_v2'&&validCatalog(shopId)(row.items)&&Array.isArray(row.accountedRequestIds)&&row.accountedRequestIds.every(id=>typeof id==='string')&&new Set(row.accountedRequestIds).size===row.accountedRequestIds.length;
-        };
-        const snapshot=await evidence.read(shopId,'catalog-v2',load,validate,row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
+        const snapshot=await evidence.read(shopId,'catalog-v2',load,validBillingCatalog(shopId),row=>({...row,items:row.items.map(item=>({...item,product:{...item.product,purchasePrice:undefined}}))}));
         let rows:Awaited<ReturnType<typeof retainedRequests>>;
         try{rows=await retainedRequests(scope);}catch(error){if(!online||requireJournal)throw error;rows=[];}
         all=await projectLocalStock(snapshot,rows,scope);
@@ -363,6 +398,15 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       }else all=await readCatalog(shopId,hideCost);
       if(coherentTax){const snapshot=await readTax(shopId,all.map(item=>item.product.id),true);return attachCatalogTaxSnapshot(all,snapshot,shopId);}
       return all;
+    },
+    // Photos on a freshly reopened offline checkout cannot depend on Sell
+    // having populated its in-memory QueryClient. Keep this outside bill data.
+    getCachedProductMedia:async(shopId:string):Promise<Record<string,ProductMedia>>=>{
+      assertCurrent();
+      const snapshot=await evidence?.readSaved(shopId,'catalog-v2',validBillingCatalog(shopId));
+      const media:Record<string,ProductMedia>={};
+      for(const row of snapshot?.items??[])if(row.product.media)media[row.productId]=row.product.media;
+      return media;
     },
     getTaxSnapshot: readTax,
     getInventoryStats: async (shopId: string) => {
@@ -406,9 +450,9 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     createSale: (shopId: string, payload: CreateSalePayload) =>
       send<{ sale: Sale; deduplicated: boolean }>(`/api/shops/${shopId}/sales`, { method: 'POST', body: JSON.stringify(payload) }),
     getSales: (shopId: string, params: Record<string, string | number | undefined>) =>
-      send<{ sales: SaleListRow[]; total: number; hasMore: boolean; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
+      send<{ sales: SaleListRow[]; total: number; hasMore: boolean; nextCursor:string|null; queryVersion:number; capturedAt:string; limitedToDays: number | null }>(`/api/shops/${shopId}/sales${queryString(params)}`),
     getReturns: async (shopId: string, params: Record<string, string | number | undefined>) => {
-      const page = await send<{ refunds?: SaleReturnListRow[]; returns?: SaleReturnListRow[]; total: number; hasMore: boolean; limitedToDays: number | null; summary: ReturnsListSummary }>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);
+      const page = await send<{ refunds?: SaleReturnListRow[]; returns?: SaleReturnListRow[]; total: number; hasMore: boolean; nextCursor:string|null; queryVersion:number; capturedAt:string; limitedToDays: number | null; summary: ReturnsListSummary }>(`/api/shops/${shopId}/sales/refunds${queryString(params)}`);
       return { ...page, refunds: page.refunds ?? page.returns ?? [] };
     },
     getProductTaxAuthorizations: (shopId: string) => send<{ managers: ProductTaxAuthorizationEntry[] }>(`/api/shops/${shopId}/pos-settings/gst-product-confirmation-authorizations`),
@@ -478,7 +522,7 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send<VoiceConfirmResponse>(`/api/shops/${shopId}/voice/confirm`, {method:'POST',body:JSON.stringify({...request,ttsAsync:false})}),
     askVoice: (shopId: string, recording: {audio:string;fileName:string}, language?:string, voiceFeedbackEnabled=true) =>
       send<SpokenAnswer>(`/api/shops/${shopId}/analytics/ask-voice`, {method:'POST',body:JSON.stringify({...recording,language,voiceFeedbackEnabled,ttsAsync:false})}),
-    getBriefAudio: (shopId: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio`),
+    getBriefAudio: (shopId: string, language?: string) => send<{audioBase64:string;cached:boolean}>(`/api/shops/${shopId}/nudges/brief/audio${language?'?language='+encodeURIComponent(language):''}`),
 
     search: (shopId: string, q: string) =>
       send<{
@@ -511,9 +555,9 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       send<{ logs: AuditLogEntry[]; total: number; hasMore: boolean; limitedToDays?: number | null }>(
         `/api/shops/${shopId}/audit-log${queryString({ filter, limit: 50, offset })}`,
       ),
-    getAllAudit: async (shopId: string) => {
+    getAllAudit: async (shopId: string, filter = 'all') => {
       return collectPages(async offset => {
-        const page = await send<{logs: AuditLogEntry[]; hasMore: boolean}>(`/api/shops/${shopId}/audit-log${queryString({filter: 'all', limit: 100, offset})}`);
+        const page = await send<{logs: AuditLogEntry[]; hasMore: boolean}>(`/api/shops/${shopId}/audit-log${queryString({filter, limit: 100, offset})}`);
         return {rows: page.logs ?? [], hasMore: page.hasMore};
       });
     },
@@ -540,26 +584,27 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
       return res;
     },
 
-    getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' = 'home') =>
+    getUdhaarRisk: (shopId:string) => send<{profiles:import('./types').UdhaarRiskProfile[]}>(`/api/shops/${shopId}/nudges/udhaar-risk`),
+    getNudges: (shopId: string, surface: 'home' | 'checkout' | 'product' | 'buy_list' | 'customer' = 'home') =>
       send<{ nudges: Nudge[]; premium: boolean }>(`/api/shops/${shopId}/nudges?surface=${surface}`),
-    getBrief: (shopId: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief`),
-    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed') =>
-      send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface: 'home' }) }),
+    getBrief: (shopId: string, language?: string) => send<BriefResponse>(`/api/shops/${shopId}/nudges/brief${language?'?language='+encodeURIComponent(language):''}`),
+    runBrief: (shopId: string) => send(`/api/shops/${shopId}/nudges/run`,{method:'POST'}),
+    nudgeEvent: (shopId: string, id: string, event: 'shown' | 'tapped' | 'dismissed', surface:'home'|'product'|'checkout'|'buy_list'|'customer'|'brief'='home') =>
+      send(`/api/shops/${shopId}/nudges/${id}/event`, { method: 'POST', body: JSON.stringify({ event, surface }) }),
     actNudge: (shopId: string, id: string, body: Record<string, unknown> = {}) =>
-      send(`/api/shops/${shopId}/nudges/${id}/act`, { method: 'POST', body: JSON.stringify(body) }),
-    postDemand: (shopId: string, term: string) =>
-      send(`/api/shops/${shopId}/nudges/demand`, { method: 'POST', body: JSON.stringify({ term, source: 'search' }) }),
+      send<{ ok: boolean; already?: boolean; message?: string; phone?: string | null }>(`/api/shops/${shopId}/nudges/${id}/act`, { method: 'POST', body: JSON.stringify(body) }),
+    getDemandTerms: (shopId: string) =>
+      send<{ terms: import('./home').DemandTerm[] }>(`/api/shops/${shopId}/nudges/demand?days=7`),
+    postDemand: (shopId: string, term: string, source: 'search'|'manual' = 'search') =>
+      send(`/api/shops/${shopId}/nudges/demand`, { method: 'POST', body: JSON.stringify({ term, source }) }),
+
+    deleteDemandTerm: (shopId:string, term:string) => send(`/api/shops/${shopId}/nudges/demand?term=${encodeURIComponent(term)}`, {method:'DELETE'}),
 
     getAlerts: (shopId: string) => send<UnifiedAlerts>(`/api/shops/${shopId}/predictions/alerts`),
-    getPredictions: (shopId: string) => send<{ predictions: { id: string; title: string; description: string; severity: string }[] }>(`/api/shops/${shopId}/predictions`),
+    getPredictions: (shopId: string) => send<{ predictions: import('./types').AlertPrediction[] }>(`/api/shops/${shopId}/predictions`),
     dismissPrediction: (shopId: string, id: string) => send(`/api/shops/${shopId}/predictions/${id}/dismiss`, { method: 'PATCH' }),
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
-    getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number; totalStockValue: number; totalItemsMoved: number; totalAdds: number; totalRemoves: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
-    getProductHistory: (shopId: string, productId: string, days = 30) => send<{ snapshots: { date: string; quantity: number; stockStatus: string; stockValue: number }[] }>(`/api/shops/${shopId}/history/product/${encodeURIComponent(productId)}?days=${days}`),
-    captureHistory: (shopId: string) => send<{ productSnapshots: number; shopStats: boolean }>(`/api/shops/${shopId}/history/snapshot`, { method: 'POST', body: JSON.stringify({}) }),
-    getStreak: (shopId: string) => send<{ current: number; lastActiveAt: string | null; activeToday: boolean }>(`/api/shops/${shopId}/insights/streak`),
-    getStockMoved: (shopId: string) => send<{ amount: number; currency: 'INR'; period: 'month'; itemCount: number; removeCount: number; source?: 'sales' | 'legacy' }>(`/api/shops/${shopId}/insights/stock-moved`),
-    images: bindProductImages(send),
+    getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalStockValue?: number; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
 
     getEntitlement: (shopId: string) => {
       const load=()=>send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`);
