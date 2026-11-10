@@ -1,7 +1,12 @@
-body:has(.public-store) {
-  overflow-x: clip;
-  overflow-y: visible;
+html:has(.public-store) {
   height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+body:has(.public-store) {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
 }
 .public-store {
   --saffron: #ff6b00;
@@ -15,7 +20,7 @@ body:has(.public-store) {
   width: 100%;
   min-height: 100dvh;
   margin: 0;
-  padding: 0 0 max(48px, env(safe-area-inset-bottom));
+  padding: 0 0 max(120px, calc(72px + env(safe-area-inset-bottom)));
   background:
     radial-gradient(720px 280px at 0 -40px, rgba(255, 107, 0, 0.16), transparent 70%),
     var(--bg);
@@ -500,7 +505,14 @@ body:has(.public-store) {
 
 .store-checkout {
   scroll-margin-top: 84px;
-  padding: 28px 0 96px;
+  padding: 28px 0 160px;
+  overflow: visible;
+  max-height: none;
+}
+.store-checkout-grid,
+.store-checkout-flow {
+  overflow: visible;
+  max-height: none;
 }
 .store-checkout-intro {
   max-width: none;
@@ -601,7 +613,10 @@ body:has(.public-store) {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: visible;
+  max-height: none;
   padding: clamp(28px, 3vw, 44px);
+  padding-bottom: clamp(40px, 5vw, 64px);
 }
 .store-step.store-contact label:not(.store-choice),
 .store-contact .store-muted,
@@ -613,6 +628,8 @@ body:has(.public-store) {
 }
 .store-contact .store-button {
   width: 100%;
+  flex: none;
+  position: relative;
 }
 .store-contact-label {
   display: inline-flex;
