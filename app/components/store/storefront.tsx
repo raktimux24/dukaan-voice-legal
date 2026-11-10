@@ -73,6 +73,7 @@ export function Storefront() {
       { id: string; quantity: string; name?: string; unit?: string }[]
     >([]),
     [view, setView] = useState<"products" | "cart">("products"),
+    [cols, setCols] = useState<2 | 3 | 4>(3),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState(""),
@@ -254,9 +255,19 @@ export function Storefront() {
   const showCart = () => {
     setNotice("");
     setView("cart");
-    requestAnimationFrame(() =>
-      document.querySelector(".store-checkout")?.scrollIntoView({ block: "start" }),
-    );
+  };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [params.itemId, params.orderId, view]);
+  useEffect(() => {
+    const saved = Number(sessionStorage.getItem("store-cols:" + id));
+    if (saved === 2 || saved === 3 || saved === 4) setCols(saved);
+  }, [id]);
+  const chooseCols = (next: 2 | 3 | 4) => {
+    setCols(next);
+    try {
+      sessionStorage.setItem("store-cols:" + id, String(next));
+    } catch {}
   };
   const place = async () => {
     const request = pending ?? {
@@ -347,6 +358,12 @@ export function Storefront() {
           </span>
         </Link>
         <div className="store-top-actions">
+          {!params.orderId && cart.length > 0 && view === "products" ? (
+            <button type="button" className="store-cart-link" onClick={showCart}>
+              {tr("view_cart")}
+              <span>{cart.length}</span>
+            </button>
+          ) : null}
           <label className="store-lang">
           <span>{tr("language")}</span>
           <select
@@ -503,7 +520,9 @@ export function Storefront() {
         </section>
       ) : store ? (
         <>
-          {view === "products" ? (
+          {view === "products" && !params.itemId ? (
+          <div className="store-catalogue">
+          <header className="store-catalogue-head">
           <section className="store-hero">
             <p className="store-kicker">{tr("catalogue")}</p>
             <h1>{store.config.name}</h1>
@@ -526,7 +545,19 @@ export function Storefront() {
                 : ""}
             </p>
           </section>
-          ) : null}
+          <div className="store-layout" role="group" aria-label={tr("catalogue")}>
+            {([2, 3, 4] as const).map((n) => (
+              <button
+                key={n}
+                type="button"
+                aria-pressed={cols === n}
+                onClick={() => chooseCols(n)}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          </header>
           {pending ? (
             <div className="store-card">
               <p>{tr("saved_request")}</p>
@@ -549,16 +580,14 @@ export function Storefront() {
               </button>
             </div>
           ) : null}
-          {view === "products" ? (
-            <section className={"store-grid"+(params.itemId?" is-detail":"")}>
-              {(params.itemId ? (item ? [item] : []) : store.items).map((p) => (
-                <article key={p.id} className={"store-card store-product"+(cart.some((l)=>l.id===p.id)?" is-in-cart":"")}>
-                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>:<Link className="store-product-photo" href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
+            <section className={"store-grid is-cols-" + cols}>
+              {store.items.map((p) => (
+                <article key={p.id} className="store-card store-product">
+                  <Link className="store-product-photo" href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>
                   <div className="store-product-copy">
                   <h2>
                     <Link href={"/store/" + id + "/p/" + p.id}>{p.name}</Link>
                   </h2>
-                  {p.description ? <p>{p.description}</p> : null}
                   <p className="store-price">
                     {tr("price_unit", { price: p.price, unit: unit(p.unit) })}
                   </p>
@@ -581,11 +610,6 @@ export function Storefront() {
                   >
                     {tr("add_cart")}
                   </button>
-                  {cart.some((l) => l.id === p.id) ? (
-                    <button type="button" className="store-text-button" onClick={showCart}>
-                      {tr("view_cart")}
-                    </button>
-                  ) : null}
                   </div>
                 </article>
               ))}
@@ -611,7 +635,39 @@ export function Storefront() {
                 </button>
               ) : null}
             </section>
-          ) : (
+          </div>
+          ) : null}
+          {view === "products" && params.itemId ? (
+            <section className="store-detail">
+              <Link className="store-detail-back" href={"/store/" + id}>{tr("catalogue")}</Link>
+              {item ? (
+                <>
+                  <PublicProductGallery store={id} listing={item.id} name={item.name} media={item.media} images={item.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>
+                  <div className="store-detail-copy">
+                    <p className="store-kicker">{store.config.name}</p>
+                    <h1>{item.name}</h1>
+                    {item.description ? <p className="store-detail-note">{item.description}</p> : null}
+                    <p className="store-price">{tr("price_unit", { price: item.price, unit: unit(item.unit) })}</p>
+                    <p className={"store-pill" + (item.available ? "" : " store-pill-off")}>{tr(item.available ? "available" : "unavailable")}</p>
+                    {cart.find((l) => l.id === item.id) ? (
+                      <p className="store-detail-added">{tr("quantity")} · {cart.find((l) => l.id === item.id)?.quantity} {unit(item.unit)}</p>
+                    ) : null}
+                    <div className="store-detail-actions">
+                      <button
+                        disabled={!item.available || store.orderingAvailable === false || busy || !!pending}
+                        className="store-button primary"
+                        onClick={() => add(item)}
+                      >{tr("add_cart")}</button>
+                      {cart.some((l) => l.id === item.id) ? (
+                        <button type="button" className="store-button" onClick={showCart}>{tr("view_cart")}</button>
+                      ) : null}
+                    </div>
+                  </div>
+                </>
+              ) : !error ? <p>{tr("loading")}</p> : null}
+            </section>
+          ) : null}
+          {view === "cart" ? (
             <section className="store-checkout">
               <div className="store-checkout-intro">
                 <p className="store-kicker">{store.config.name}</p>
@@ -896,7 +952,7 @@ export function Storefront() {
                 <p className="store-empty">{tr("empty_cart")}</p>
               )}
             </section>
-          )}
+          ) : null}
         </>
       ) : !error ? (
         <p>{tr("loading")}</p>
