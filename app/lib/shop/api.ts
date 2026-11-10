@@ -604,7 +604,11 @@ export function bindApi(getToken: TokenGetter,evidenceScope?:EvidenceScope) {
     getPredictions: (shopId: string) => send<{ predictions: import('./types').AlertPrediction[] }>(`/api/shops/${shopId}/predictions`),
     dismissPrediction: (shopId: string, id: string) => send(`/api/shops/${shopId}/predictions/${id}/dismiss`, { method: 'PATCH' }),
     generatePredictions: (shopId: string) => send(`/api/shops/${shopId}/predictions/generate`, { method: 'POST', body: JSON.stringify({}) }),
-    getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalStockValue?: number; totalProducts: number; lowStockCount: number; outOfStockCount: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
+    getHistory: (shopId: string, days = 30) => send<{ stats: { date: string; totalStockValue?: number; totalProducts: number; lowStockCount: number; outOfStockCount: number; totalItemsMoved?: number; totalAdds?: number; totalRemoves?: number }[] }>(`/api/shops/${shopId}/history/stats?days=${days}`),
+    getProductHistory: (shopId: string, productId: string, days = 30) => send<{ snapshots: { date: string; quantity: number; stockStatus: string; stockValue: number }[] }>(`/api/shops/${shopId}/history/product/${encodeURIComponent(productId)}?days=${days}`),
+    captureHistory: (shopId: string) => send<{ productSnapshots: number; shopStats: boolean }>(`/api/shops/${shopId}/history/snapshot`, { method: 'POST', body: JSON.stringify({}) }),
+    getStreak: (shopId: string) => send<{ current: number; lastActiveAt: string | null; activeToday: boolean }>(`/api/shops/${shopId}/insights/streak`),
+    getStockMoved: (shopId: string) => send<{ amount: number; currency: 'INR'; period: 'month'; itemCount: number; removeCount: number; source?: 'sales' | 'legacy' }>(`/api/shops/${shopId}/insights/stock-moved`),
 
     getEntitlement: (shopId: string) => {
       const load=()=>send<import('../subscriptions').SubscriptionEntitlement>(`/api/subscriptions/entitlement?shopId=${encodeURIComponent(shopId)}`);
