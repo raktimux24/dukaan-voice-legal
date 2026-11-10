@@ -55,6 +55,8 @@ const ui = {
   Notice: ({ error }) =>
     error ? React.createElement("p", { role: "alert" }, error.message) : null,
   Spinner: ({ label }) => React.createElement("p", { role: "status" }, label),
+  PremiumLock: () => React.createElement("p", null, "Premium"),
+  isPremiumError: (error) => error?.status === 402 || error?.code === "premium_required",
   Button: ({ children, onClick, disabled, href }) =>
     href
       ? React.createElement("a", { href }, children)
@@ -183,6 +185,8 @@ function setup(role = "OWNER") {
     getBrief: (shop, language) => { calls.push(["brief-language", shop, language]); return read("brief"); },
     getNudges: () => read("nudges"),
     getAlerts: async () => ({ counts: { total: 0 } }),
+    getStreak: async () => ({ current: 2, lastActiveAt: null, activeToday: true }),
+    getStockMoved: async () => ({ amount: 100, currency: "INR", period: "month", itemCount: 1, removeCount: 1 }),
     getCustomerSummary: async () => ({ customerCount: 2 }),
     search: () => read("search"),
     getDemandTerms: () => read("demand"),

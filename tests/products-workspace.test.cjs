@@ -216,6 +216,8 @@ async function mount(t, component, props = {}, options = {}) {
       getAudit: async () => ({ logs: [] }),
       getBuyList: async () => [],
       getNudges: async () => ({ nudges: [] }),
+      getProductHistory: async () => ({ snapshots: [] }),
+      captureHistory: async () => ({ productSnapshots: 0, shopStats: true }),
       addBatch: async (_s, id, p) => calls.push(["batch", id, p]),
       updateProduct: async (_s, id, p) => calls.push(["price", id, p]),
       updateBuyList: async (_s, id, p) => calls.push(["stocked", id, p]),
