@@ -7,10 +7,10 @@ global.IS_REACT_ACT_ENVIRONMENT=true;
 const shopId='synthetic-refresh-shop',productId='synthetic-new-photo-product';
 const item={id:'synthetic-inventory',shopId,productId,quantity:0,unit:'piece',stockStatus:'OUT',product:{id:productId,name:'Synthetic photographed product',category:'staples',subcategory:null,unit:'piece',trackStock:true,minStockLevel:0,sellingPrice:null,media:{cover:null,count:0,version:0}}};
 let inventoryRead;
-const api={getAllInventory:()=>inventoryRead(),getBatches:async()=>[],getAudit:async()=>({logs:[]})};
+const api={getAllInventory:()=>inventoryRead(),getBatches:async()=>[],getAudit:async()=>({logs:[]}),getProductHistory:async()=>({snapshots:[]}),captureHistory:async()=>({productSnapshots:0,shopStats:true}),getProductSales:async()=>({days:30,units:0,revenue:0,bills:0,daysOfCover:null,lastSoldAt:null}),getBuyList:async()=>[],getNudges:async()=>({nudges:[]})};
 const context={api,shop:{id:shopId},perms:{canEditProducts:false,canSeeReports:false},hideCost:false,userId:'synthetic-actor',setNotice:()=>{},t:(_key,fallback)=>fallback};
 const shell=({children})=>React.createElement('div',null,children);
-const ui={Card:shell,Field:shell,Pill:shell,inputClass:'',isDenied:()=>false,PageHeader:({title})=>React.createElement('h1',null,title),Notice:({error})=>error?React.createElement('p',{role:'alert'},error.message):null,Spinner:({label})=>React.createElement('p',{role:'status'},label),Button:({children,onClick,disabled,href})=>href?React.createElement('a',{href},children):React.createElement('button',{onClick,disabled},children)};
+const ui={Card:shell,Field:shell,Pill:shell,inputClass:'',isDenied:()=>false,isPremiumError:()=>false,PremiumLock:()=>null,PageHeader:({title})=>React.createElement('h1',null,title),Notice:({error})=>error?React.createElement('p',{role:'alert'},error.message):null,Spinner:({label})=>React.createElement('p',{role:'status'},label),Button:({children,onClick,disabled,href})=>href?React.createElement('a',{href},children):React.createElement('button',{onClick,disabled},children)};
 const originalLoad=Module._load;
 Module._load=function(request,parent,isMain){
  if(request==='next/navigation')return {useRouter:()=>({push:()=>{}}),useSearchParams:()=>new URLSearchParams()};
