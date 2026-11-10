@@ -249,7 +249,14 @@ export function Storefront() {
           )
         : [...old, { id: p.id, quantity: "1", name: p.name, unit: p.unit }];
     });
+    setNotice(tr("view_cart"));
+  };
+  const showCart = () => {
     setNotice("");
+    setView("cart");
+    requestAnimationFrame(() =>
+      document.querySelector(".store-checkout")?.scrollIntoView({ block: "start" }),
+    );
   };
   const place = async () => {
     const request = pending ?? {
@@ -330,18 +337,28 @@ export function Storefront() {
       <header className="store-top">
         <Link href={"/store/" + id} className="store-brand">
           <BrandMark />
-          <span className="store-word">
-            Samaan<span>Bol</span>
+          <span className="store-brand-copy">
+            <span className="store-word">
+              Samaan<span>Bol</span>
+            </span>
+            {store?.config.name ? (
+              <span className="store-shop-name">{store.config.name}</span>
+            ) : null}
           </span>
         </Link>
         <div className="store-top-actions">
           {!params.orderId && cart.length > 0 ? (
             <button
               type="button"
-              className="store-cart-chip"
+              className={
+                "store-cart-chip" + (view === "products" ? " is-next" : "")
+              }
               onClick={() => {
-                setNotice("");
-                setView(view === "products" ? "cart" : "products");
+                if (view === "products") showCart();
+                else {
+                  setNotice("");
+                  setView("products");
+                }
               }}
             >
               {view === "products"
@@ -349,7 +366,7 @@ export function Storefront() {
                 : tr("back_products")}
             </button>
           ) : null}
-          <label>
+          <label className="store-lang">
           <span>{tr("language")}</span>
           <select
             aria-label={tr("language")}
@@ -518,7 +535,7 @@ export function Storefront() {
                 </li>
               ) : null}
             </ul>
-            {store.config.policy ? (
+            {store.config.policy && store.config.policy.trim().toLowerCase() !== "none" ? (
               <p className="store-policy">{store.config.policy}</p>
             ) : null}
             <p className="store-muted">
@@ -554,8 +571,9 @@ export function Storefront() {
           {view === "products" ? (
             <section className={"store-grid"+(params.itemId?" is-detail":"")}>
               {(params.itemId ? (item ? [item] : []) : store.items).map((p) => (
-                <article key={p.id} className="store-card store-product">
-                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>:<Link href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
+                <article key={p.id} className={"store-card store-product"+(cart.some((l)=>l.id===p.id)?" is-in-cart":"")}>
+                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>:<Link className="store-product-photo" href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
+                  <div className="store-product-copy">
                   <h2>
                     <Link href={"/store/" + id + "/p/" + p.id}>{p.name}</Link>
                   </h2>
@@ -582,6 +600,12 @@ export function Storefront() {
                   >
                     {tr("add_cart")}
                   </button>
+                  {cart.some((l) => l.id === p.id) ? (
+                    <button type="button" className="store-text-button" onClick={showCart}>
+                      {tr("view_cart")}
+                    </button>
+                  ) : null}
+                  </div>
                 </article>
               ))}
               {!params.itemId && store.more ? (
@@ -608,255 +632,288 @@ export function Storefront() {
             </section>
           ) : (
             <section className="store-checkout">
-              <h2>{tr("cart")}</h2>
+              <div className="store-checkout-intro">
+                <p className="store-kicker">{store.config.name}</p>
+                <h1>{tr("cart")}</h1>
+                <ol className="store-path">
+                  <li>
+                    <button type="button" onClick={() => setView("products")}>
+                      {tr("catalogue")}
+                    </button>
+                  </li>
+                  <li aria-current="step">{tr("cart")}</li>
+                  <li>{tr("review_order")}</li>
+                </ol>
+              </div>
               {cart.length ? (
-                cart.map((l) => {
-                  const p =
-                    cartProducts[l.id] ?? store.items.find((x) => x.id === l.id) ??
-                    (item?.id === l.id ? item : null);
-                  return (
-                    <div key={l.id} className="store-card">
-                      <PublicProductImage store={id} listing={l.id} name={p?.name??l.name??''} image={p?.media?.cover} compact/>
-                      <h3>{p?.name ?? l.name ?? tr("unavailable")}</h3>
-                      <label>
-                        {tr("quantity")}{" "}
-                        {p?.unit || l.unit ? unit(p?.unit ?? l.unit!) : ""}
-                        <input
-                          inputMode="decimal"
-                          aria-label={
-                            tr("quantity") +
-                            " " +
-                            (p?.name ?? l.name ?? tr("unavailable"))
-                          }
-                          value={l.quantity}
-                          disabled={!!pending || busy}
-                          onChange={(e) =>
-                            setCart(
-                              cart.map((x) =>
-                                x.id === l.id
-                                  ? { ...x, quantity: e.target.value }
-                                  : x,
-                              ),
-                            )
-                          }
-                        />
-                      </label>
-                      <button
-                        className="store-button"
-                        disabled={!!pending || busy}
-                        onClick={() =>
-                          setCart(cart.filter((x) => x.id !== l.id))
-                        }
-                      >
-                        {tr("remove")}
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <p>{tr("empty_cart")}</p>
-              )}
-              {cart.length > 0 && !pending ? (
-                <>
-                  <div className="store-card">
-                    <h3>{tr("fulfilment")}</h3>
-                    <div className="store-pills">
-                    {(["pickup", "delivery"] as const)
-                      .filter((k) => store.config[k])
-                      .map((k) => (
-                        <label className="store-choice" key={k}>
-                          <input
-                            type="radio"
-                            name="fulfilment"
-                            checked={fulfilment === k}
-                            onChange={() => setFulfilment(k)}
-                          />
-                          {tr(k)}
-                        </label>
-                      ))}
-                    </div>
-                    <h3>{tr("payment")}</h3>
-                    <div className="store-pills">
-                    {(["cash", "upi"] as const)
-                      .filter((k) => store.config[k])
-                      .map((k) => (
-                        <label className="store-choice" key={k}>
-                          <input
-                            type="radio"
-                            name="payment"
-                            checked={method === k}
-                            onChange={() => setMethod(k)}
-                          />
-                          {tr("pay_" + k)}
-                        </label>
-                      ))}
-                    </div>
-                    <p className="store-muted">{tr("payment_help")}</p>
-                    {(["name", "phone", "email"] as const).map((k) => (
-                      <label key={k}>
-                        {tr("contact_" + k)}
-                        <input
-                          value={customer[k]}
-                          autoComplete={
-                            k === "name"
-                              ? "name"
-                              : k === "phone"
-                                ? "tel"
-                                : "email"
-                          }
-                          inputMode={
-                            k === "phone"
-                              ? "tel"
-                              : k === "email"
-                                ? "email"
-                                : "text"
-                          }
-                          disabled={busy}
-                          maxLength={
-                            k === "name" ? 120 : k === "phone" ? 10 : 254
-                          }
-                          onChange={(e) =>
-                            k === "email"
-                              ? changeEmail(e.target.value)
-                              : setCustomer({
-                                  ...customer,
-                                  [k]: e.target.value,
-                                })
-                          }
-                        />
-                      </label>
-                    ))}
-                    {fulfilment === "delivery" ? (
-                      <label>
-                        {tr("delivery_address")}
-                        <textarea
-                          value={customer.address}
-                          maxLength={500}
-                          onChange={(e) =>
-                            setCustomer({
-                              ...customer,
-                              address: e.target.value,
-                            })
-                          }
-                        />
-                      </label>
-                    ) : null}
-                    <p className="store-muted">{tr("email_help")}</p>
-                    {verified ? (
-                      <p role="status">{tr("verified")}</p>
-                    ) : (
-                      <>
-                        <button
-                          className="store-button"
-                          disabled={
-                            busy ||
-                            store.orderingAvailable === false ||
-                            !customer.email
-                          }
-                          onClick={() =>
-                            void task(async () => {
-                              const c = await send<{ id: string }>(
-                                "/" + id + "/challenges",
-                                { email: customer.email, language: lang },
-                              );
-                              setChallenge(c.id);
-                              setToken(hexToken());
-                              setNotice(tr("code_sent"));
-                            })
-                          }
-                        >
-                          {tr("send_code")}
-                        </button>
-                        {challenge ? (
-                          <>
-                            <label>
-                              {tr("code")}
+                <div className="store-checkout-grid">
+                  <div className="store-checkout-flow">
+                    <article className="store-card store-step">
+                      {cart.map((l) => {
+                        const p =
+                          cartProducts[l.id] ?? store.items.find((x) => x.id === l.id) ??
+                          (item?.id === l.id ? item : null);
+                        return (
+                          <div key={l.id} className="store-line">
+                            <PublicProductImage store={id} listing={l.id} name={p?.name??l.name??''} image={p?.media?.cover} compact/>
+                            <div className="store-line-copy">
+                              <h3>{p?.name ?? l.name ?? tr("unavailable")}</h3>
+                              {p ? (
+                                <p className="store-price">
+                                  {tr("price_unit", { price: p.price, unit: unit(p.unit) })}
+                                </p>
+                              ) : null}
+                            </div>
+                            <label className="store-qty">
+                              <span>
+                                {tr("quantity")}
+                                {p?.unit || l.unit ? " · " + unit(p?.unit ?? l.unit!) : ""}
+                              </span>
                               <input
-                                inputMode="numeric"
-                                maxLength={6}
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
+                                inputMode="decimal"
+                                aria-label={
+                                  tr("quantity") +
+                                  " " +
+                                  (p?.name ?? l.name ?? tr("unavailable"))
+                                }
+                                value={l.quantity}
+                                disabled={!!pending || busy}
+                                onChange={(e) =>
+                                  setCart(
+                                    cart.map((x) =>
+                                      x.id === l.id
+                                        ? { ...x, quantity: e.target.value }
+                                        : x,
+                                    ),
+                                  )
+                                }
                               />
                             </label>
                             <button
-                              className="store-button"
-                              disabled={busy || code.length !== 6}
+                              className="store-text-button"
+                              disabled={!!pending || busy}
                               onClick={() =>
-                                void task(async () => {
-                                  await send("/" + id + "/verify", {
-                                    id: challenge,
-                                    code,
-                                    token,
-                                  });
-                                  setVerified(true);
-                                })
+                                setCart(cart.filter((x) => x.id !== l.id))
                               }
                             >
-                              {tr("verify_code")}
+                              {tr("remove")}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </article>
+                    {!pending ? (
+                      <>
+                        <article className="store-card store-step">
+                          <h2>{tr("fulfilment")}</h2>
+                          <div className="store-pills">
+                          {(["pickup", "delivery"] as const)
+                            .filter((k) => store.config[k])
+                            .map((k) => (
+                              <label className="store-choice" key={k}>
+                                <input
+                                  type="radio"
+                                  name="fulfilment"
+                                  checked={fulfilment === k}
+                                  onChange={() => setFulfilment(k)}
+                                />
+                                {tr(k)}
+                              </label>
+                            ))}
+                          </div>
+                          <h3>{tr("payment")}</h3>
+                          <div className="store-pills">
+                          {(["cash", "upi"] as const)
+                            .filter((k) => store.config[k])
+                            .map((k) => (
+                              <label className="store-choice" key={k}>
+                                <input
+                                  type="radio"
+                                  name="payment"
+                                  checked={method === k}
+                                  onChange={() => setMethod(k)}
+                                />
+                                {tr("pay_" + k)}
+                              </label>
+                            ))}
+                          </div>
+                          <p className="store-muted">{tr("payment_help")}</p>
+                        </article>
+                        <article className="store-card store-step">
+                          {(["name", "phone", "email"] as const).map((k) => (
+                            <label key={k}>
+                              {tr("contact_" + k)}
+                              <input
+                                value={customer[k]}
+                                autoComplete={
+                                  k === "name"
+                                    ? "name"
+                                    : k === "phone"
+                                      ? "tel"
+                                      : "email"
+                                }
+                                inputMode={
+                                  k === "phone"
+                                    ? "tel"
+                                    : k === "email"
+                                      ? "email"
+                                      : "text"
+                                }
+                                disabled={busy}
+                                maxLength={
+                                  k === "name" ? 120 : k === "phone" ? 10 : 254
+                                }
+                                onChange={(e) =>
+                                  k === "email"
+                                    ? changeEmail(e.target.value)
+                                    : setCustomer({
+                                        ...customer,
+                                        [k]: e.target.value,
+                                      })
+                                }
+                              />
+                            </label>
+                          ))}
+                          {fulfilment === "delivery" ? (
+                            <label>
+                              {tr("delivery_address")}
+                              <textarea
+                                value={customer.address}
+                                maxLength={500}
+                                onChange={(e) =>
+                                  setCustomer({
+                                    ...customer,
+                                    address: e.target.value,
+                                  })
+                                }
+                              />
+                            </label>
+                          ) : null}
+                          <p className="store-muted">{tr("email_help")}</p>
+                          {verified ? (
+                            <p role="status">{tr("verified")}</p>
+                          ) : (
+                            <>
+                              <button
+                                className="store-button"
+                                disabled={
+                                  busy ||
+                                  store.orderingAvailable === false ||
+                                  !customer.email
+                                }
+                                onClick={() =>
+                                  void task(async () => {
+                                    const c = await send<{ id: string }>(
+                                      "/" + id + "/challenges",
+                                      { email: customer.email, language: lang },
+                                    );
+                                    setChallenge(c.id);
+                                    setToken(hexToken());
+                                    setNotice(tr("code_sent"));
+                                  })
+                                }
+                              >
+                                {tr("send_code")}
+                              </button>
+                              {challenge ? (
+                                <>
+                                  <label>
+                                    {tr("code")}
+                                    <input
+                                      inputMode="numeric"
+                                      maxLength={6}
+                                      value={code}
+                                      onChange={(e) => setCode(e.target.value)}
+                                    />
+                                  </label>
+                                  <button
+                                    className="store-button"
+                                    disabled={busy || code.length !== 6}
+                                    onClick={() =>
+                                      void task(async () => {
+                                        await send("/" + id + "/verify", {
+                                          id: challenge,
+                                          code,
+                                          token,
+                                        });
+                                        setVerified(true);
+                                      })
+                                    }
+                                  >
+                                    {tr("verify_code")}
+                                  </button>
+                                </>
+                              ) : null}
+                            </>
+                          )}
+                        </article>
+                      </>
+                    ) : null}
+                  </div>
+                  {!pending ? (
+                    <aside className="store-review">
+                      <article className="store-card store-step">
+                        <h2>{tr("review_order")}</h2>
+                        {store.config.policy && store.config.policy.trim().toLowerCase() !== "none" ? <p>{store.config.policy}</p> : null}
+                        <p className="store-muted">{tr("review_help")}</p>
+                        <button
+                          className="store-button primary"
+                          disabled={busy}
+                          onClick={() =>
+                            void task(async () => {
+                              const q = await send<Quote>("/" + id + "/quote", {
+                                items: cart,
+                                fulfilment,
+                              });
+                              setQuote(q);
+                              setReviewed(false);
+                            })
+                          }
+                        >
+                          {tr("review_order")}
+                        </button>
+                        {quote ? (
+                          <>
+                            <p>
+                              {tr("tax")} · ₹{quote.tax}
+                            </p>
+                            <p className="store-total">
+                              {tr("total_amount", { amount: quote.total })}
+                            </p>
+                            <label className="store-choice">
+                              <input
+                                type="checkbox"
+                                checked={reviewed}
+                                onChange={(e) => setReviewed(e.target.checked)}
+                              />
+                              {tr("request_review")}
+                            </label>
+                            <button
+                              className="store-button primary"
+                              disabled={
+                                busy ||
+                                store.orderingAvailable === false ||
+                                !verified ||
+                                !reviewed ||
+                                !customer.name.trim() ||
+                                !/^[6-9]\d{9}$/.test(customer.phone) ||
+                                (fulfilment === "delivery" &&
+                                  !customer.address.trim())
+                              }
+                              onClick={() => void task(place)}
+                            >
+                              {tr("place_order")}
                             </button>
                           </>
                         ) : null}
-                      </>
-                    )}
-                  </div>
-                  <div className="store-card">
-                    <h3>{tr("review_order")}</h3>
-                    <p>{store.config.policy}</p>
-                    <p className="store-muted">{tr("review_help")}</p>
-                    <button
-                      className="store-button"
-                      disabled={busy}
-                      onClick={() =>
-                        void task(async () => {
-                          const q = await send<Quote>("/" + id + "/quote", {
-                            items: cart,
-                            fulfilment,
-                          });
-                          setQuote(q);
-                          setReviewed(false);
-                        })
-                      }
-                    >
-                      {tr("review_order")}
-                    </button>
-                    {quote ? (
-                      <>
-                        <p>
-                          {tr("tax")} · ₹{quote.tax}
-                        </p>
-                        <p className="store-total">
-                          {tr("total_amount", { amount: quote.total })}
-                        </p>
-                        <label className="store-choice">
-                          <input
-                            type="checkbox"
-                            checked={reviewed}
-                            onChange={(e) => setReviewed(e.target.checked)}
-                          />
-                          {tr("request_review")}
-                        </label>
-                        <button
-                          className="store-button primary"
-                          disabled={
-                            busy ||
-                            store.orderingAvailable === false ||
-                            !verified ||
-                            !reviewed ||
-                            !customer.name.trim() ||
-                            !/^[6-9]\d{9}$/.test(customer.phone) ||
-                            (fulfilment === "delivery" &&
-                              !customer.address.trim())
-                          }
-                          onClick={() => void task(place)}
-                        >
-                          {tr("place_order")}
-                        </button>
-                      </>
-                    ) : null}
-                    <p className="store-muted">{tr("order_privacy")}</p>
-                  </div>
-                </>
-              ) : null}
+                        <p className="store-muted">{tr("order_privacy")}</p>
+                      </article>
+                    </aside>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="store-empty">{tr("empty_cart")}</p>
+              )}
             </section>
           )}
         </>
