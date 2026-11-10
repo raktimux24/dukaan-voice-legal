@@ -932,8 +932,8 @@ export function Storefront() {
                           {tr("review_order")}
                         </button>
                         {quote ? (
-                          <>
-                            <p>
+                          <div className="store-quote">
+                            <p className="store-quote-tax">
                               {tr("tax")} · ₹{quote.tax}
                             </p>
                             <p className="store-total">
@@ -963,7 +963,7 @@ export function Storefront() {
                             >
                               {tr("place_order")}
                             </button>
-                          </>
+                          </div>
                         ) : null}
                         <p className="store-muted">{tr("order_privacy")}</p>
                       </article>
