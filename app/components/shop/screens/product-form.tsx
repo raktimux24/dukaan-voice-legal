@@ -10,12 +10,13 @@ import { EN_FALLBACK } from '../../../lib/shop/en-fallback';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { enabledL1, isAllowedL2, l2ForL1, labeledL1, labeledL2, l2ItemType, remapProductL1 } from '../../../lib/shop/catalog';
 import { formatINR } from '../../../lib/shop/money';
 import { UNITS, formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { SupplierField } from '../supplier-field';
+import { ProductPhotoEditor, type PhotoEditorHandle } from '../product-photos';
 import { Button, Card, Field, NoAccess, Notice, PageHeader, Spinner, cx, inputClass } from '../ui';
 
 type Draft = {
@@ -84,6 +85,8 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const [error, setError] = useState<unknown>(null);
   const [pending, setPending] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const photosRef = useRef<PhotoEditorHandle>(null);
+  const [photosDirty, setPhotosDirty] = useState(false);
   const initial = useMemo(() => {
     if (!shop) return null;
     const first = l1[0];
@@ -128,7 +131,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
   const netSelling=priceBreakdown?.net??selling;
   const marginPct = netSelling != null && cost != null && netSelling > 0 ? ((netSelling - cost) / netSelling) * 100 : null;
   const opening = Number(form.initialStock || 0);
-  const canSave = !pending && !!form.name.trim() && !!form.subcategory && dirty && !pos.isPending && !pos.error;
+  const canSave = !pending && !!form.name.trim() && !!form.subcategory && (dirty || photosDirty) && !pos.isPending && !pos.error;
 
   const handleSubmit = async (addAnother = false) => {
     if (!isAllowedL2(shop.category, shop.subtype, form.category, form.subcategory)) {
@@ -160,7 +163,8 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
     setError(null);
     try {
       if (productId) {
-        await api.updateProduct(shop.id, productId, body);
+        if (dirty) await api.updateProduct(shop.id, productId, body);
+        await photosRef.current?.save(productId);
         await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
         router.push(`/shop/products/${productId}`);
         return;
@@ -171,6 +175,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       if (form.purchaseDate) body.purchaseDate = form.purchaseDate;
       if (form.batchNumber) body.batchNumber = form.batchNumber;
       const created = await api.addProduct(shop.id, body);
+      await photosRef.current?.save(created.product.id);
       if (buyListItemId) await api.updateBuyList(shop.id, buyListItemId, { status: 'stocked', productId: created.product.id });
       await queryClient.invalidateQueries({ queryKey: ['catalog', shop.id] });
       if (onCreated) {
@@ -179,7 +184,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       }
       if (addAnother) {
         setNotice(t('modal.add_product.toast_added', '{{name}} added to inventory', { name: created.product.name }));
-        setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);
+        setDraft(blank(form.category, form.subcategory, { unit: form.unit }));setGstDraft(undefined);setBuyingDiscount('');setAutoMrp(false);photosRef.current?.reset();
         window.scrollTo({ top: 0 });
         return;
       }
@@ -215,6 +220,7 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
         actions={<Button href={onCancel ? undefined : productId ? `/shop/products/${productId}` : '/shop/products'} onClick={onCancel} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}
       />
       <Notice error={error} />
+      {perms.canEditProducts ? <ProductPhotoEditor ref={photosRef} productId={productId} name={form.name} onDirty={setPhotosDirty} /> : null}
 
       <div className="form-layout">
         <div className="form-stack">

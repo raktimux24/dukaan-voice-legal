@@ -14,7 +14,8 @@ import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
 import { SupplierField } from '../supplier-field';
 import { ProductTaxHistory } from '../product-tax-history';
-import { Button, Card, Field, Notice, PageHeader, Pill, Spinner, inputClass, isDenied } from '../ui';
+import { ProductGalleryView } from '../product-photos';
+import { Button, Card, Field, Notice, PageHeader, Pill, PremiumLock, Spinner, inputClass, isDenied, isPremiumError } from '../ui';
 
 const REASONS: AdjustmentReason[] = ['damaged', 'expired', 'theft', 'correction', 'returned_to_supplier', 'personal_use', 'other'];
 
@@ -72,6 +73,13 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
     queryFn: () => api.getBuyList(shop!.id),
   });
   const [panel, setPanel] = useState<'adjust' | 'batch' | null>(params.get('batch') === '1' ? 'batch' : null);
+  const historyDays = 30;
+  const history = useQuery({
+    queryKey: ['product-history', shop?.id, productId, historyDays],
+    enabled: !!shop,
+    retry: false,
+    queryFn: () => api.getProductHistory(shop!.id, productId, historyDays),
+  });
   const [removeQty, setRemoveQty] = useState('');
   const [reason, setReason] = useState<AdjustmentReason>('correction');
   const [note, setNote] = useState('');
@@ -143,6 +151,7 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
         actions={perms.canEditProducts ? <Button href={`/shop/products/${productId}/edit`} tone="ghost">{t('common.edit', 'Edit details')}</Button> : null}
       />
       <Notice error={error ?? (batches.error && !isDenied(batches.error) ? batches.error : null)} />
+      <ProductGalleryView productId={productId} name={product.name} />
 
       <div className="product-hero">
         <p className="product-qty">{tracksStock ? formatQty(item.quantity, item.unit, { packSize: product.packSize, packLabel: product.packLabel }) : t('pos.no_stock_tracking', 'No stock tracking')}</p>
@@ -250,6 +259,25 @@ export function ProductDetailScreen({ productId }: { productId: string }) {
           </form>
         </Card>
       ) : null}
+
+      <Card>
+        <div className="product-batch-head">
+          <h2 className="shop-section-title">{t('modal.analytics.value_trend_title', 'Stock history')}</h2>
+          {perms.canEditProducts ? <Button tone="ghost" size="sm" disabled={pending} onClick={() => void run(async () => { await api.captureHistory(shop.id); await queryClient.invalidateQueries({ queryKey: ['product-history', shop.id, productId] }); await queryClient.invalidateQueries({ queryKey: ['shop-history'] }); setNotice(uiText('Today’s stock snapshot is saved.')); })}>{uiText('Save today’s snapshot')}</Button> : null}
+        </div>
+        {isPremiumError(history.error) ? <PremiumLock feature="history" /> : null}
+        {history.error && !isPremiumError(history.error) ? <Notice error={history.error} /> : null}
+        {history.isLoading ? <p className="shop-list-empty">{uiText('Loading stock history')}</p> : null}
+        {!history.isLoading && !history.error && (history.data?.snapshots.length ?? 0) === 0 ? <p className="shop-list-empty">{uiText('No daily snapshots for this product yet.')}</p> : null}
+        <div className="shop-list">
+          {(history.data?.snapshots ?? []).slice(-14).map((row) => (
+            <div key={row.date} className="shop-list-row">
+              <div className="shop-list-main"><p className="shop-list-title">{formatDay(row.date)}</p><p className="shop-list-meta">{row.stockStatus}</p></div>
+              <p className="num">{formatQty(row.quantity, item.unit)}{hideCost ? '' : ` · ${formatINR(row.stockValue)}`}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       {tracksStock || (batches.data?.length ?? 0) > 0 ? <Card flush>
         <div className="card-intro product-batch-head">

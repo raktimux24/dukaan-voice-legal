@@ -310,6 +310,41 @@ function StockView({ report, showCost }: { report: StockReport; showCost: boolea
   );
 }
 
+function StockHistory({ history, loading, error, showCost, premium, limited }: { history: { date: string; totalProducts: number; lowStockCount: number; outOfStockCount: number; totalStockValue: number; totalItemsMoved: number }[]; loading: boolean; error: unknown; showCost: boolean; premium: boolean; limited: boolean }) {
+  const { t } = useShop();
+  const uiText = useUiText();
+  if (isPremiumError(error)) return <PremiumLock feature="history" />;
+  const values = history.map((day) => day.totalStockValue);
+  const max = Math.max(...values, 1);
+  const latest = history.at(-1);
+  return (
+    <Card>
+      <h2 className="shop-section-title">{t('modal.analytics.value_trend_title', 'Stock value trend')}</h2>
+      <p className="shop-section-sub">{uiText('Daily snapshots of products, low stock, and stock that moved.')}</p>
+      {limited ? <p className="text-sm text-muted">{t('subscription.gate.history.body', 'Free shops see the last 7 days. Premium keeps the longer ranges.')}</p> : null}
+      {loading ? <Spinner /> : null}
+      {error && !isPremiumError(error) ? <Notice error={error} /> : null}
+      {!loading && history.length === 0 ? <p className="shop-list-empty">{uiText('No stock snapshots yet. Save one from a product page.')}</p> : null}
+      {history.length > 1 && showCost ? (
+        <div className="chart-bars" role="img" aria-label={t('modal.analytics.value_trend_title', 'Stock value trend')}>
+          {history.map((day) => (
+            <div key={day.date} className="chart-col">
+              <div className="chart-pair"><span style={{ height: `${Math.max(6, (day.totalStockValue / max) * 100)}%` }} /></div>
+              <small>{formatShortDay(day.date)}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {latest ? (
+        <p className="text-sm text-muted">
+          {formatShortDay(latest.date)} · {latest.totalProducts} {t('products.title', 'Products').toLowerCase()} · {latest.lowStockCount} {t('home.stat_low_stock', 'low')} · {latest.outOfStockCount} {t('home.stat_out_of_stock', 'out')}
+          {showCost ? ` · ${formatINR(latest.totalStockValue)}` : ''} · {latest.totalItemsMoved} {uiText('moved')}
+        </p>
+      ) : null}
+    </Card>
+  );
+}
+
 export function ReportsScreen() {
   const uiText = useUiText();
   const { api, shop, userId, perms, premium, prefs, hideCost, t } = useShop();
@@ -330,6 +365,8 @@ export function ReportsScreen() {
   const sales = useQuery({ queryKey: ['report-sales', shop?.id, salesPeriod], enabled: enabled && tab === 'sales', queryFn: () => api.getSalesReport(shop!.id, salesPeriod) });
   const stock = useQuery({ queryKey: ['report-stock', shop?.id, stockPeriod], enabled: enabled && tab === 'stock', queryFn: () => api.getStockReport(shop!.id, stockPeriod) });
   const top = useQuery({ queryKey: ['top', shop?.id, salesPeriod, premium ? topBy : 'quantity'], enabled: enabled && tab === 'sales', queryFn: () => api.getTopProducts(shop!.id, { period: salesPeriod, by: premium ? topBy : 'quantity', limit: 8 }) });
+  const historyDays = !premium || stockPeriod === '7d' ? 7 : stockPeriod === '90d' ? 90 : 30;
+  const history = useQuery({ queryKey: ['shop-history', shop?.id, historyDays], enabled: enabled && tab === 'stock', queryFn: () => api.getHistory(shop!.id, historyDays) });
 
   if (!shop) return <Spinner />;
   if (!perms.canSeeReports) return <NoAccess what={uiText("Reports are for the owner and managers.")} />;
@@ -372,6 +409,7 @@ export function ReportsScreen() {
       {tab === 'stock' && stock.isLoading ? <Spinner label={uiText("Loading stock")} /> : null}
       {tab === 'sales' && sales.data && !isPremiumError(sales.error) ? <SalesView report={sales.data} showCost={showCost} /> : null}
       {tab === 'stock' && stock.data && !isPremiumError(stock.error) ? <StockView report={stock.data} showCost={showCost} /> : null}
+      {tab === 'stock' ? <StockHistory history={history.data?.stats ?? []} loading={history.isLoading} error={history.error} showCost={showCost} premium={premium} limited={!premium && stockPeriod !== '7d'} /> : null}
       {tab === 'sales' ? (
         <Card>
           <div className="shop-toolbar">

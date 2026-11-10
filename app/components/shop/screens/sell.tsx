@@ -54,6 +54,7 @@ export function SellScreen() {
   const [error, setError] = useState<unknown>(null);
   const [priceDraft, setPriceDraft] = useState<Record<string, string>>({});
   const [cameraOn, setCameraOn] = useState(false);
+  const [scanMode, setScanMode] = useState<'bill' | 'stock'>('bill');
   const [picker, setPicker] = useState<{ productId: string; value: number } | null>(null);
 
   const items = useMemo(() => (catalog.data ?? []).filter((item) => item.product.isActive !== false), [catalog.data]);
@@ -122,9 +123,23 @@ export function SellScreen() {
     setError(null);
     try {
       const hit = await api.lookupBarcode(shop.id, code, hideCost);
-      if (hit.found && hit.item && hit.item.product.isActive !== false) {
-        if (isWeightOrVolume(hit.item.unit) || (hit.item.product.packSize ?? 0) > 0) choose(hit.item);
-        else add(hit.item);
+      const item = hit.found && hit.item && hit.item.product.isActive !== false ? hit.item : null;
+      if (scanMode === 'stock' && perms.canEditProducts) {
+        setQuery('');
+        if (item) {
+          router.push(`/shop/products/${item.productId}?batch=1`);
+          return;
+        }
+        if (code.startsWith('SB-')) {
+          setNotice(t('barcodes.error.not_found', 'This code is unavailable in this shop.'));
+          return;
+        }
+        router.push(`/shop/products/new?barcode=${encodeURIComponent(code)}`);
+        return;
+      }
+      if (item) {
+        if (isWeightOrVolume(item.unit) || (item.product.packSize ?? 0) > 0) choose(item);
+        else add(item);
         setQuery('');
         return;
       }
@@ -245,6 +260,13 @@ export function SellScreen() {
             <Button tone="ghost" size="sm" onClick={() => setCameraOn((value) => !value)}>{cameraOn ? t('common.close', 'Close camera') : t('scanner.scan_barcode', 'Scan with camera')}</Button>
           </div>
         </div>
+        {perms.canEditProducts ? (
+          <div className="shop-seg" role="tablist" aria-label={t('scanner.scan_barcode', 'Scan')}>
+            <button type="button" role="tab" aria-selected={scanMode === 'bill'} className={scanMode === 'bill' ? 'is-active' : undefined} onClick={() => setScanMode('bill')}>{t('scanner.tab_sell', 'Sell')}</button>
+            <button type="button" role="tab" aria-selected={scanMode === 'stock'} className={scanMode === 'stock' ? 'is-active' : undefined} onClick={() => setScanMode('stock')}>{t('scanner.tab_stock', 'Add stock')}</button>
+          </div>
+        ) : null}
+        <p className="text-sm text-muted">{scanMode === 'stock' ? t('scanner.stock_hint', 'Scan a product to add stock') : t('scanner.cart_hint', 'Scan items — each scan adds one')}</p>
 
         {cartApi.pending ? (
           <Card tight className="flex flex-wrap items-center justify-between gap-3">

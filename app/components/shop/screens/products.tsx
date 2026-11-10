@@ -12,6 +12,7 @@ import { formatINR } from '../../../lib/shop/money';
 import type { InventoryItem } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
+import { useProductCovers } from '../product-photos';
 import { Button, Card, Chip, PageHeader, Pill, Spinner } from '../ui';
 
 function productFilterLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
@@ -57,6 +58,7 @@ export function ProductsScreen() {
     enabled: !!shop?.id,
     queryFn: () => api.getAllInventory(shop!.id, hideCost),
   });
+  const covers = useProductCovers((catalog.data ?? []).filter((item) => item.product.isActive !== false).slice(0, 100).map((item) => item.productId));
   const rows = useMemo(() => {
     const text = q.trim().toLowerCase();
     return (catalog.data ?? []).filter((item) => matches(item, filter) && (!text || item.product.name.toLowerCase().includes(text) || item.product.barcode?.includes(text)));
@@ -90,6 +92,7 @@ export function ProductsScreen() {
         <div className="shop-list">
           {rows.map((item) => (
             <Link key={item.id} href={`/shop/products/${item.productId}`} className="shop-list-row">
+              {covers.data?.[item.productId] ? <img className="product-photo" src={covers.data[item.productId]} alt="" /> : null}
               <div className="shop-list-main">
                 <p className="shop-list-title">{item.product.name}</p>
                 <p className="shop-list-meta">{labeledL1(item.product.category, (key) => t(key, key))} · {item.product.trackStock === false ? t('pos.no_stock_tracking', 'Not stock-tracked') : `${formatQty(item.quantity, item.unit)} ${t('reports.stock.on_hand', 'on hand')}`}</p>

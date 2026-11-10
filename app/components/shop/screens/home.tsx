@@ -10,7 +10,7 @@ import { useShopDates } from '../use-shop-dates';
 import type { InventoryItem, SalesSummary } from '../../../lib/shop/types';
 import { formatQty } from '../../../lib/shop/units';
 import { useShop } from '../context';
-import { Button, Card, PageHeader, Pill, SectionHead, Spinner } from '../ui';
+import { Button, Card, Notice, PageHeader, Pill, PremiumLock, SectionHead, Spinner, isPremiumError } from '../ui';
 
 const METHOD_COLORS: Record<string, string> = {
   cash: '#32d583',
@@ -103,6 +103,8 @@ export function HomeScreen() {
   });
   const nudges = useQuery({ queryKey: ['nudges', shopId], enabled: !!shopId, queryFn: () => api.getNudges(shopId) });
   const alerts = useQuery({ queryKey: ['alerts', shopId], enabled: !!shopId, queryFn: () => api.getAlerts(shopId) });
+  const streak = useQuery({ queryKey: ['streak', shopId], enabled: !!shopId, retry: false, queryFn: () => api.getStreak(shopId) });
+  const moved = useQuery({ queryKey: ['stock-moved', shopId], enabled: !!shopId && perms.canSeeCost, retry: false, queryFn: () => api.getStockMoved(shopId) });
   const search = useQuery({
     queryKey: ['search', shopId, debounced],
     enabled: !!shopId && debounced.length > 1,
@@ -155,6 +157,28 @@ export function HomeScreen() {
           </>
         }
       />
+
+      {isPremiumError(streak.error) || isPremiumError(moved.error) ? <PremiumLock feature="insights" /> : null}
+      {streak.data || moved.data ? (
+        <div className="dash-stats">
+          {streak.data ? (
+            <div className="shop-stat">
+              <span className="shop-stat-n num">{streak.data.current}</span>
+              <span className="shop-stat-l">{streak.data.current === 1 ? t('home.streak.label_one', '{{count}}-day streak', { count: streak.data.current }) : streak.data.current === 0 ? t('home.streak.label_zero', 'Start your streak today') : t('home.streak.label_one', '{{count}}-day streak', { count: streak.data.current })}</span>
+              <span className="text-xs text-muted">{streak.data.activeToday ? t('home.streak.active_today', 'Active today') : t('home.streak.inactive_today', "Don't break it")}</span>
+            </div>
+          ) : null}
+          {moved.data ? (
+            <div className="shop-stat">
+              <span className="shop-stat-n num">{formatINR(moved.data.amount)}</span>
+              <span className="shop-stat-l">{t('home.stock_moved.title', 'Sold this month')}</span>
+              <span className="text-xs text-muted">{t('home.stock_moved.subtitle_items', '{{count}} items · {{bills}} bills', { count: moved.data.itemCount, bills: moved.data.removeCount })}{moved.data.source === 'legacy' ? ` · ${t('home.stock_moved.legacy_note', 'Estimated from stock removed (at cost)')}` : ''}</span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      {streak.error && !isPremiumError(streak.error) ? <Notice error={streak.error} /> : null}
+      {moved.error && !isPremiumError(moved.error) ? <Notice error={moved.error} /> : null}
 
       <input
         className="shop-field is-lg"
