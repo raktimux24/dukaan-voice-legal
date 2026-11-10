@@ -41,6 +41,26 @@ const hexToken = () =>
   Array.from(crypto.getRandomValues(new Uint8Array(32)), (v) =>
     v.toString(16).padStart(2, "0"),
   ).join("");
+function GridIcon({ cols }: { cols: 2 | 3 | 4 }) {
+  if (cols === 4)
+    return (
+      <svg viewBox="0 0 18 18" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="6" height="6" rx="1.2" />
+        <rect x="10.5" y="1.5" width="6" height="6" rx="1.2" />
+        <rect x="1.5" y="10.5" width="6" height="6" rx="1.2" />
+        <rect x="10.5" y="10.5" width="6" height="6" rx="1.2" />
+      </svg>
+    );
+  const bars = cols === 2 ? [1.5, 9.75] : [1.5, 7.25, 13];
+  const width = cols === 2 ? 6.75 : 3.5;
+  return (
+    <svg viewBox="0 0 18 18" aria-hidden="true">
+      {bars.map((x) => (
+        <rect key={x} x={x} y="1.5" width={width} height="15" rx="1.2" />
+      ))}
+    </svg>
+  );
+}
 function BrandMark() {
   return (
     <span
@@ -73,6 +93,7 @@ export function Storefront() {
       { id: string; quantity: string; name?: string; unit?: string }[]
     >([]),
     [view, setView] = useState<"products" | "cart">("products"),
+    [cols, setCols] = useState<2 | 3 | 4>(3),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState(""),
@@ -249,9 +270,31 @@ export function Storefront() {
           )
         : [...old, { id: p.id, quantity: "1", name: p.name, unit: p.unit }];
     });
-    setNotice("");
+    setNotice(tr("view_cart"));
   };
+  const showCart = () => {
+    setNotice("");
+    setView("cart");
+  };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [params.itemId, params.orderId, view]);
+  useEffect(() => {
+    const saved = Number(sessionStorage.getItem("store-cols:" + id));
+    if (saved === 2 || saved === 3 || saved === 4) setCols(saved);
+  }, [id]);
+  const chooseCols = (next: 2 | 3 | 4) => {
+    setCols(next);
+    try {
+      sessionStorage.setItem("store-cols:" + id, String(next));
+    } catch {}
+  };
+  const contactReady =
+    customer.name.trim().length > 0 &&
+    customer.phone.trim().length > 0 &&
+    customer.email.trim().length > 0;
   const place = async () => {
+    if (!pending && !contactReady) return;
     const request = pending ?? {
       clientId: crypto.randomUUID(),
       challengeId: challenge,
@@ -330,26 +373,23 @@ export function Storefront() {
       <header className="store-top">
         <Link href={"/store/" + id} className="store-brand">
           <BrandMark />
-          <span className="store-word">
-            Samaan<span>Bol</span>
+          <span className="store-brand-copy">
+            <span className="store-word">
+              Samaan<span>Bol</span>
+            </span>
+            {store?.config.name ? (
+              <span className="store-shop-name">{store.config.name}</span>
+            ) : null}
           </span>
         </Link>
         <div className="store-top-actions">
-          {!params.orderId && cart.length > 0 ? (
-            <button
-              type="button"
-              className="store-cart-chip"
-              onClick={() => {
-                setNotice("");
-                setView(view === "products" ? "cart" : "products");
-              }}
-            >
-              {view === "products"
-                ? tr("view_cart") + " · " + cart.length
-                : tr("back_products")}
+          {!params.orderId && cart.length > 0 && view === "products" ? (
+            <button type="button" className="store-cart-link" onClick={showCart}>
+              {tr("view_cart")}
+              <span>{cart.length}</span>
             </button>
           ) : null}
-          <label>
+          <label className="store-lang">
           <span>{tr("language")}</span>
           <select
             aria-label={tr("language")}
@@ -505,7 +545,9 @@ export function Storefront() {
         </section>
       ) : store ? (
         <>
-          {view === "products" ? (
+          {view === "products" && !params.itemId ? (
+          <div className="store-catalogue">
+          <header className="store-catalogue-head">
           <section className="store-hero">
             <p className="store-kicker">{tr("catalogue")}</p>
             <h1>{store.config.name}</h1>
@@ -518,7 +560,7 @@ export function Storefront() {
                 </li>
               ) : null}
             </ul>
-            {store.config.policy ? (
+            {store.config.policy && store.config.policy.trim().toLowerCase() !== "none" ? (
               <p className="store-policy">{store.config.policy}</p>
             ) : null}
             <p className="store-muted">
@@ -528,7 +570,21 @@ export function Storefront() {
                 : ""}
             </p>
           </section>
-          ) : null}
+          <div className="store-layout" role="tablist" aria-label={tr("catalogue")}>
+            {([2, 3, 4] as const).map((n) => (
+              <button
+                key={n}
+                type="button"
+                role="tab"
+                aria-selected={cols === n}
+                aria-label={String(n)}
+                onClick={() => chooseCols(n)}
+              >
+                <GridIcon cols={n} />
+              </button>
+            ))}
+          </div>
+          </header>
           {pending ? (
             <div className="store-card">
               <p>{tr("saved_request")}</p>
@@ -551,15 +607,14 @@ export function Storefront() {
               </button>
             </div>
           ) : null}
-          {view === "products" ? (
-            <section className={"store-grid"+(params.itemId?" is-detail":"")}>
-              {(params.itemId ? (item ? [item] : []) : store.items).map((p) => (
+            <section className={"store-grid is-cols-" + cols}>
+              {store.items.map((p) => (
                 <article key={p.id} className="store-card store-product">
-                  {params.itemId?<PublicProductGallery store={id} listing={p.id} name={p.name} media={p.media} images={p.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>:<Link href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>}
+                  <Link className="store-product-photo" href={"/store/"+id+"/p/"+p.id} aria-label={p.name}><PublicProductImage store={id} listing={p.id} name={p.name} image={p.media?.cover}/></Link>
+                  <div className="store-product-copy">
                   <h2>
                     <Link href={"/store/" + id + "/p/" + p.id}>{p.name}</Link>
                   </h2>
-                  {p.description ? <p>{p.description}</p> : null}
                   <p className="store-price">
                     {tr("price_unit", { price: p.price, unit: unit(p.unit) })}
                   </p>
@@ -582,6 +637,7 @@ export function Storefront() {
                   >
                     {tr("add_cart")}
                   </button>
+                  </div>
                 </article>
               ))}
               {!params.itemId && store.more ? (
@@ -606,259 +662,329 @@ export function Storefront() {
                 </button>
               ) : null}
             </section>
-          ) : (
-            <section className="store-checkout">
-              <h2>{tr("cart")}</h2>
-              {cart.length ? (
-                cart.map((l) => {
-                  const p =
-                    cartProducts[l.id] ?? store.items.find((x) => x.id === l.id) ??
-                    (item?.id === l.id ? item : null);
-                  return (
-                    <div key={l.id} className="store-card">
-                      <PublicProductImage store={id} listing={l.id} name={p?.name??l.name??''} image={p?.media?.cover} compact/>
-                      <h3>{p?.name ?? l.name ?? tr("unavailable")}</h3>
-                      <label>
-                        {tr("quantity")}{" "}
-                        {p?.unit || l.unit ? unit(p?.unit ?? l.unit!) : ""}
-                        <input
-                          inputMode="decimal"
-                          aria-label={
-                            tr("quantity") +
-                            " " +
-                            (p?.name ?? l.name ?? tr("unavailable"))
-                          }
-                          value={l.quantity}
-                          disabled={!!pending || busy}
-                          onChange={(e) =>
-                            setCart(
-                              cart.map((x) =>
-                                x.id === l.id
-                                  ? { ...x, quantity: e.target.value }
-                                  : x,
-                              ),
-                            )
-                          }
-                        />
-                      </label>
-                      <button
-                        className="store-button"
-                        disabled={!!pending || busy}
-                        onClick={() =>
-                          setCart(cart.filter((x) => x.id !== l.id))
-                        }
-                      >
-                        {tr("remove")}
-                      </button>
-                    </div>
-                  );
-                })
-              ) : (
-                <p>{tr("empty_cart")}</p>
-              )}
-              {cart.length > 0 && !pending ? (
+          </div>
+          ) : null}
+          {view === "products" && params.itemId ? (
+            <section className="store-detail">
+              <Link className="store-detail-back" href={"/store/" + id}>{tr("catalogue")}</Link>
+              {item ? (
                 <>
-                  <div className="store-card">
-                    <h3>{tr("fulfilment")}</h3>
-                    <div className="store-pills">
-                    {(["pickup", "delivery"] as const)
-                      .filter((k) => store.config[k])
-                      .map((k) => (
-                        <label className="store-choice" key={k}>
-                          <input
-                            type="radio"
-                            name="fulfilment"
-                            checked={fulfilment === k}
-                            onChange={() => setFulfilment(k)}
-                          />
-                          {tr(k)}
-                        </label>
-                      ))}
-                    </div>
-                    <h3>{tr("payment")}</h3>
-                    <div className="store-pills">
-                    {(["cash", "upi"] as const)
-                      .filter((k) => store.config[k])
-                      .map((k) => (
-                        <label className="store-choice" key={k}>
-                          <input
-                            type="radio"
-                            name="payment"
-                            checked={method === k}
-                            onChange={() => setMethod(k)}
-                          />
-                          {tr("pay_" + k)}
-                        </label>
-                      ))}
-                    </div>
-                    <p className="store-muted">{tr("payment_help")}</p>
-                    {(["name", "phone", "email"] as const).map((k) => (
-                      <label key={k}>
-                        {tr("contact_" + k)}
-                        <input
-                          value={customer[k]}
-                          autoComplete={
-                            k === "name"
-                              ? "name"
-                              : k === "phone"
-                                ? "tel"
-                                : "email"
-                          }
-                          inputMode={
-                            k === "phone"
-                              ? "tel"
-                              : k === "email"
-                                ? "email"
-                                : "text"
-                          }
-                          disabled={busy}
-                          maxLength={
-                            k === "name" ? 120 : k === "phone" ? 10 : 254
-                          }
-                          onChange={(e) =>
-                            k === "email"
-                              ? changeEmail(e.target.value)
-                              : setCustomer({
-                                  ...customer,
-                                  [k]: e.target.value,
-                                })
-                          }
-                        />
-                      </label>
-                    ))}
-                    {fulfilment === "delivery" ? (
-                      <label>
-                        {tr("delivery_address")}
-                        <textarea
-                          value={customer.address}
-                          maxLength={500}
-                          onChange={(e) =>
-                            setCustomer({
-                              ...customer,
-                              address: e.target.value,
-                            })
-                          }
-                        />
-                      </label>
+                  <PublicProductGallery store={id} listing={item.id} name={item.name} media={item.media} images={item.images} closeLabel={translateUi(lang, {}, "common.close", "Close")} photoLabels={{loading:translateUi(lang,{},"product_images.loading","Loading photos…"),failed:translateUi(lang,{},"product_images.load_failed","The photo could not be loaded. Try again."),retry:translateUi(lang,{},"product_images.retry","Retry")}}/>
+                  <div className="store-detail-copy">
+                    <p className="store-kicker">{store.config.name}</p>
+                    <h1>{item.name}</h1>
+                    {item.description ? <p className="store-detail-note">{item.description}</p> : null}
+                    <p className="store-price">{tr("price_unit", { price: item.price, unit: unit(item.unit) })}</p>
+                    <p className={"store-pill" + (item.available ? "" : " store-pill-off")}>{tr(item.available ? "available" : "unavailable")}</p>
+                    {cart.find((l) => l.id === item.id) ? (
+                      <p className="store-detail-added">{tr("quantity")} · {cart.find((l) => l.id === item.id)?.quantity} {unit(item.unit)}</p>
                     ) : null}
-                    <p className="store-muted">{tr("email_help")}</p>
-                    {verified ? (
-                      <p role="status">{tr("verified")}</p>
-                    ) : (
-                      <>
-                        <button
-                          className="store-button"
-                          disabled={
-                            busy ||
-                            store.orderingAvailable === false ||
-                            !customer.email
-                          }
-                          onClick={() =>
-                            void task(async () => {
-                              const c = await send<{ id: string }>(
-                                "/" + id + "/challenges",
-                                { email: customer.email, language: lang },
-                              );
-                              setChallenge(c.id);
-                              setToken(hexToken());
-                              setNotice(tr("code_sent"));
-                            })
-                          }
-                        >
-                          {tr("send_code")}
-                        </button>
-                        {challenge ? (
-                          <>
-                            <label>
-                              {tr("code")}
+                    <div className="store-detail-actions">
+                      <button
+                        disabled={!item.available || store.orderingAvailable === false || busy || !!pending}
+                        className="store-button primary"
+                        onClick={() => add(item)}
+                      >{tr("add_cart")}</button>
+                      {cart.some((l) => l.id === item.id) ? (
+                        <button type="button" className="store-button" onClick={showCart}>{tr("view_cart")}</button>
+                      ) : null}
+                    </div>
+                  </div>
+                </>
+              ) : !error ? <p>{tr("loading")}</p> : null}
+            </section>
+          ) : null}
+          {view === "cart" ? (
+            <section className="store-checkout">
+              <div className="store-checkout-intro">
+                <p className="store-kicker">{store.config.name}</p>
+                <h1>{tr("cart")}</h1>
+                <ol className="store-path">
+                  <li>
+                    <button type="button" onClick={() => setView("products")}>
+                      {tr("catalogue")}
+                    </button>
+                  </li>
+                  <li aria-current="step">{tr("cart")}</li>
+                  <li>{tr("review_order")}</li>
+                </ol>
+              </div>
+              {cart.length ? (
+                <div className="store-checkout-grid">
+                  <div className="store-checkout-flow">
+                    <article className="store-card store-step">
+                      {cart.map((l) => {
+                        const p =
+                          cartProducts[l.id] ?? store.items.find((x) => x.id === l.id) ??
+                          (item?.id === l.id ? item : null);
+                        return (
+                          <div key={l.id} className="store-line">
+                            <PublicProductImage store={id} listing={l.id} name={p?.name??l.name??''} image={p?.media?.cover} compact/>
+                            <div className="store-line-copy">
+                              <h3>{p?.name ?? l.name ?? tr("unavailable")}</h3>
+                              {p ? (
+                                <p className="store-price">
+                                  {tr("price_unit", { price: p.price, unit: unit(p.unit) })}
+                                </p>
+                              ) : null}
+                            </div>
+                            <label className="store-qty">
+                              <span>
+                                {tr("quantity")}
+                                {p?.unit || l.unit ? " · " + unit(p?.unit ?? l.unit!) : ""}
+                              </span>
                               <input
-                                inputMode="numeric"
-                                maxLength={6}
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
+                                inputMode="decimal"
+                                aria-label={
+                                  tr("quantity") +
+                                  " " +
+                                  (p?.name ?? l.name ?? tr("unavailable"))
+                                }
+                                value={l.quantity}
+                                disabled={!!pending || busy}
+                                onChange={(e) =>
+                                  setCart(
+                                    cart.map((x) =>
+                                      x.id === l.id
+                                        ? { ...x, quantity: e.target.value }
+                                        : x,
+                                    ),
+                                  )
+                                }
                               />
                             </label>
                             <button
-                              className="store-button"
-                              disabled={busy || code.length !== 6}
+                              className="store-text-button"
+                              disabled={!!pending || busy}
                               onClick={() =>
-                                void task(async () => {
-                                  await send("/" + id + "/verify", {
-                                    id: challenge,
-                                    code,
-                                    token,
-                                  });
-                                  setVerified(true);
-                                })
+                                setCart(cart.filter((x) => x.id !== l.id))
                               }
                             >
-                              {tr("verify_code")}
+                              {tr("remove")}
                             </button>
-                          </>
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                  <div className="store-card">
-                    <h3>{tr("review_order")}</h3>
-                    <p>{store.config.policy}</p>
-                    <p className="store-muted">{tr("review_help")}</p>
-                    <button
-                      className="store-button"
-                      disabled={busy}
-                      onClick={() =>
-                        void task(async () => {
-                          const q = await send<Quote>("/" + id + "/quote", {
-                            items: cart,
-                            fulfilment,
-                          });
-                          setQuote(q);
-                          setReviewed(false);
-                        })
-                      }
-                    >
-                      {tr("review_order")}
-                    </button>
-                    {quote ? (
+                          </div>
+                        );
+                      })}
+                    </article>
+                    {!pending ? (
                       <>
-                        <p>
-                          {tr("tax")} · ₹{quote.tax}
-                        </p>
-                        <p className="store-total">
-                          {tr("total_amount", { amount: quote.total })}
-                        </p>
-                        <label className="store-choice">
-                          <input
-                            type="checkbox"
-                            checked={reviewed}
-                            onChange={(e) => setReviewed(e.target.checked)}
-                          />
-                          {tr("request_review")}
-                        </label>
-                        <button
-                          className="store-button primary"
-                          disabled={
-                            busy ||
-                            store.orderingAvailable === false ||
-                            !verified ||
-                            !reviewed ||
-                            !customer.name.trim() ||
-                            !/^[6-9]\d{9}$/.test(customer.phone) ||
-                            (fulfilment === "delivery" &&
-                              !customer.address.trim())
-                          }
-                          onClick={() => void task(place)}
-                        >
-                          {tr("place_order")}
-                        </button>
+                        <article className="store-card store-step">
+                          <h2>{tr("fulfilment")}</h2>
+                          <div className="store-pills">
+                          {(["pickup", "delivery"] as const)
+                            .filter((k) => store.config[k])
+                            .map((k) => (
+                              <label className="store-choice" key={k}>
+                                <input
+                                  type="radio"
+                                  name="fulfilment"
+                                  checked={fulfilment === k}
+                                  onChange={() => setFulfilment(k)}
+                                />
+                                {tr(k)}
+                              </label>
+                            ))}
+                          </div>
+                          <h3>{tr("payment")}</h3>
+                          <div className="store-pills">
+                          {(["cash", "upi"] as const)
+                            .filter((k) => store.config[k])
+                            .map((k) => (
+                              <label className="store-choice" key={k}>
+                                <input
+                                  type="radio"
+                                  name="payment"
+                                  checked={method === k}
+                                  onChange={() => setMethod(k)}
+                                />
+                                {tr("pay_" + k)}
+                              </label>
+                            ))}
+                          </div>
+                          <p className="store-muted">{tr("payment_help")}</p>
+                        </article>
+                        <article className="store-card store-step store-contact">
+                          {(["name", "phone", "email"] as const).map((k) => (
+                            <label key={k}>
+                              <span className="store-contact-label">
+                                {tr("contact_" + k)}
+                                <abbr className="store-required" title="required">*</abbr>
+                              </span>
+                              <input
+                                required
+                                aria-required="true"
+                                value={customer[k]}
+                                autoComplete={
+                                  k === "name"
+                                    ? "name"
+                                    : k === "phone"
+                                      ? "tel"
+                                      : "email"
+                                }
+                                inputMode={
+                                  k === "phone"
+                                    ? "tel"
+                                    : k === "email"
+                                      ? "email"
+                                      : "text"
+                                }
+                                disabled={busy}
+                                maxLength={
+                                  k === "name" ? 120 : k === "phone" ? 10 : 254
+                                }
+                                onChange={(e) =>
+                                  k === "email"
+                                    ? changeEmail(e.target.value)
+                                    : setCustomer({
+                                        ...customer,
+                                        [k]: e.target.value,
+                                      })
+                                }
+                              />
+                            </label>
+                          ))}
+                          {fulfilment === "delivery" ? (
+                            <label>
+                              {tr("delivery_address")}
+                              <textarea
+                                value={customer.address}
+                                maxLength={500}
+                                onChange={(e) =>
+                                  setCustomer({
+                                    ...customer,
+                                    address: e.target.value,
+                                  })
+                                }
+                              />
+                            </label>
+                          ) : null}
+                          <p className="store-muted">{tr("email_help")}</p>
+                          {verified ? (
+                            <p role="status">{tr("verified")}</p>
+                          ) : (
+                            <>
+                              <button
+                                className="store-button"
+                                disabled={
+                                  busy ||
+                                  store.orderingAvailable === false ||
+                                  !customer.email
+                                }
+                                onClick={() =>
+                                  void task(async () => {
+                                    const c = await send<{ id: string }>(
+                                      "/" + id + "/challenges",
+                                      { email: customer.email, language: lang },
+                                    );
+                                    setChallenge(c.id);
+                                    setToken(hexToken());
+                                    setNotice(tr("code_sent"));
+                                  })
+                                }
+                              >
+                                {tr("send_code")}
+                              </button>
+                              {challenge ? (
+                                <>
+                                  <label>
+                                    {tr("code")}
+                                    <input
+                                      inputMode="numeric"
+                                      maxLength={6}
+                                      value={code}
+                                      onChange={(e) => setCode(e.target.value)}
+                                    />
+                                  </label>
+                                  <button
+                                    className="store-button"
+                                    disabled={busy || code.length !== 6}
+                                    onClick={() =>
+                                      void task(async () => {
+                                        await send("/" + id + "/verify", {
+                                          id: challenge,
+                                          code,
+                                          token,
+                                        });
+                                        setVerified(true);
+                                      })
+                                    }
+                                  >
+                                    {tr("verify_code")}
+                                  </button>
+                                </>
+                              ) : null}
+                            </>
+                          )}
+                        </article>
                       </>
                     ) : null}
-                    <p className="store-muted">{tr("order_privacy")}</p>
                   </div>
-                </>
-              ) : null}
+                  {!pending ? (
+                    <aside className="store-review">
+                      <article className="store-card store-step">
+                        <h2>{tr("review_order")}</h2>
+                        {store.config.policy && store.config.policy.trim().toLowerCase() !== "none" ? <p>{store.config.policy}</p> : null}
+                        <p className="store-muted">{tr("review_help")}</p>
+                        <button
+                          className="store-button primary"
+                          disabled={busy}
+                          onClick={() =>
+                            void task(async () => {
+                              const q = await send<Quote>("/" + id + "/quote", {
+                                items: cart,
+                                fulfilment,
+                              });
+                              setQuote(q);
+                              setReviewed(false);
+                            })
+                          }
+                        >
+                          {tr("review_order")}
+                        </button>
+                        {quote ? (
+                          <div className="store-quote">
+                            <p className="store-quote-tax">
+                              {tr("tax")} · ₹{quote.tax}
+                            </p>
+                            <p className="store-total">
+                              {tr("total_amount", { amount: quote.total })}
+                            </p>
+                            <label className="store-choice">
+                              <input
+                                type="checkbox"
+                                checked={reviewed}
+                                onChange={(e) => setReviewed(e.target.checked)}
+                              />
+                              {tr("request_review")}
+                            </label>
+                            <button
+                              className="store-button primary"
+                              disabled={
+                                busy ||
+                                store.orderingAvailable === false ||
+                                !verified ||
+                                !reviewed ||
+                                !contactReady ||
+                                !/^[6-9]\d{9}$/.test(customer.phone) ||
+                                (fulfilment === "delivery" &&
+                                  !customer.address.trim())
+                              }
+                              onClick={() => void task(place)}
+                            >
+                              {tr("place_order")}
+                            </button>
+                          </div>
+                        ) : null}
+                        <p className="store-muted">{tr("order_privacy")}</p>
+                      </article>
+                    </aside>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="store-empty">{tr("empty_cart")}</p>
+              )}
             </section>
-          )}
+          ) : null}
         </>
       ) : !error ? (
         <p>{tr("loading")}</p>
