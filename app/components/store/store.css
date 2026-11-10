@@ -7,10 +7,10 @@
   --card: #15151c;
   --elevated: #1e1e26;
   --bg: #0a0a0f;
+  width: 100%;
   min-height: 100dvh;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 32px) max(48px, env(safe-area-inset-bottom));
+  margin: 0;
+  padding: 0 0 max(48px, env(safe-area-inset-bottom));
   background:
     radial-gradient(720px 280px at 0 -40px, rgba(255, 107, 0, 0.16), transparent 70%),
     var(--bg);
@@ -19,7 +19,28 @@
   font-size: 15px;
   line-height: 1.5;
   overflow-wrap: break-word;
-  overflow-x: clip;
+}
+.public-store > :not(.store-top):not(.store-toast) {
+  width: min(1120px, calc(100% - 48px));
+  margin-inline: auto;
+}
+.store-cart-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px 20px;
+  border: 1px solid #2a2a34;
+  border-radius: 16px;
+  background: #15151c;
+}
+.store-cart-bar .store-kicker {
+  margin-bottom: 4px;
+}
+.store-cart-bar .store-button {
+  flex: none;
+  margin: 0;
 }
 .public-store,
 .public-store *,
@@ -72,9 +93,10 @@
   display: flex;
   align-items: center;
   gap: 12px 16px;
+  width: 100%;
   min-height: 68px;
   margin: 0;
-  padding: 10px 0;
+  padding: 10px max(24px, calc((100% - 1120px) / 2));
   background: rgba(10, 10, 15, 0.92);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(16px);
@@ -232,7 +254,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-top: 2px solid var(--saffron);
   padding: 0;
 }
 .store-product-photo,
@@ -313,15 +334,15 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
-.store-card label,
-.store-step label {
+.store-card label:not(.store-choice),
+.store-step label:not(.store-choice) {
   display: grid;
   gap: 8px;
   margin: 14px 0 0;
   color: #d7d7e0;
   font-size: 14px;
 }
-.public-store input,
+.public-store input:not([type="radio"]):not([type="checkbox"]),
 .public-store textarea,
 .public-store select {
   width: 100%;
@@ -360,15 +381,37 @@
   margin-top: 12px;
 }
 .store-pills .store-choice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+  margin: 0;
   padding: 10px 14px;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--elevated);
+  border-radius: 12px;
+  background: #15151c;
 }
 .store-pills .store-choice:has(input:checked) {
   border-color: var(--saffron);
-  background: rgba(255, 107, 0, 0.12);
-  color: #fff;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--ink);
+}
+.public-store input[type="radio"],
+.public-store input[type="checkbox"] {
+  appearance: auto;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  max-width: 18px;
+  min-height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  accent-color: #ff6b00;
+  flex: none;
 }
 
 .store-checkout {
@@ -427,8 +470,7 @@
   top: 84px;
 }
 .store-step {
-  padding: 18px;
-  border-top: 2px solid var(--saffron);
+  padding: 20px;
 }
 .store-step > h2 {
   margin-bottom: 4px;
@@ -480,8 +522,7 @@
 }
 .store-confirm .store-card {
   margin-top: 14px;
-  padding: 18px;
-  border-top: 2px solid #ff9857;
+  padding: 20px;
 }
 .store-message,
 .store-toast {
@@ -671,8 +712,13 @@
     max-width: none;
   }
   .store-checkout .store-button,
-  .store-confirm .store-button {
+  .store-confirm .store-button,
+  .store-cart-bar .store-button {
     width: 100%;
+  }
+  .store-cart-bar {
+    align-items: stretch;
+    flex-direction: column;
   }
   .store-hero {
     padding-top: 24px;

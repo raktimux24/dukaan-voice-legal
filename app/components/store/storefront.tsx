@@ -347,25 +347,6 @@ export function Storefront() {
           </span>
         </Link>
         <div className="store-top-actions">
-          {!params.orderId && cart.length > 0 ? (
-            <button
-              type="button"
-              className={
-                "store-cart-chip" + (view === "products" ? " is-next" : "")
-              }
-              onClick={() => {
-                if (view === "products") showCart();
-                else {
-                  setNotice("");
-                  setView("products");
-                }
-              }}
-            >
-              {view === "products"
-                ? tr("view_cart") + " · " + cart.length
-                : tr("back_products")}
-            </button>
-          ) : null}
           <label className="store-lang">
           <span>{tr("language")}</span>
           <select
@@ -545,6 +526,19 @@ export function Storefront() {
                 : ""}
             </p>
           </section>
+          ) : null}
+          {view === "products" && !params.orderId && cart.length > 0 ? (
+            <section className="store-cart-bar" aria-label={tr("cart")}>
+              <div>
+                <p className="store-kicker">{tr("cart")}</p>
+                <p>
+                  {tr("view_cart")} · {cart.length}
+                </p>
+              </div>
+              <button type="button" className="store-button primary" onClick={showCart}>
+                {tr("view_cart")}
+              </button>
+            </section>
           ) : null}
           {pending ? (
             <div className="store-card">
