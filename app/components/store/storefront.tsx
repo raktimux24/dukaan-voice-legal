@@ -798,7 +798,7 @@ export function Storefront() {
                           </div>
                           <p className="store-muted">{tr("payment_help")}</p>
                         </article>
-                        <article className="store-card store-step">
+                        <article className="store-card store-step store-contact">
                           {(["name", "phone", "email"] as const).map((k) => (
                             <label key={k}>
                               {tr("contact_" + k)}

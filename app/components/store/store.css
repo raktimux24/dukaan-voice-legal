@@ -597,6 +597,23 @@ body:has(.public-store) {
 .store-step {
   padding: 20px;
 }
+.store-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: clamp(28px, 3vw, 44px);
+}
+.store-step.store-contact label:not(.store-choice),
+.store-contact .store-muted,
+.store-contact .store-button {
+  margin: 0;
+}
+.store-contact .store-muted {
+  line-height: 1.6;
+}
+.store-contact .store-button {
+  width: 100%;
+}
 .store-step > h2 {
   margin-bottom: 4px;
 }
