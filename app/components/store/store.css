@@ -1,3 +1,8 @@
+body:has(.public-store) {
+  overflow-x: clip;
+  overflow-y: visible;
+  height: auto;
+}
 .public-store {
   --saffron: #ff6b00;
   --saffron-dark: #e85d00;
@@ -495,7 +500,7 @@
 
 .store-checkout {
   scroll-margin-top: 84px;
-  padding: 28px 0 8px;
+  padding: 28px 0 96px;
 }
 .store-checkout-intro {
   max-width: none;
