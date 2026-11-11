@@ -4,6 +4,7 @@ import { getShopWorkflowsHtml } from './shopWorkflows';
 import { refineHomeSections } from './landingRefinement';
 import { completeLandingSections } from './landingCompletion';
 import { refineLandingOpening } from './landingOpening';
+import { redesignLanding } from './landingRedesign';
 import offerCorrections from './offerCorrections.json';
 import { productAnswers, productAnswersHtml } from './productAnswers';
 import { privacyHtml } from './privacy';
@@ -238,7 +239,7 @@ function adaptHome(html: string, locale: Locale) {
       : 'ଏହି ୱେବସାଇଟ୍ ଓଡ଼ିଆରେ ପଢ଼ିପାରିବେ। ଆପ୍‌ରେ ଓଡ଼ିଆ ଭଏସ୍ ବିକଳ୍ପ ଏବେ ଉପଲବ୍ଧ ନାହିଁ। ହିନ୍ଦୀ, Hinglish କିମ୍ବା ଅନ୍ୟ ସମର୍ଥିତ ଭାଷା ବାଛନ୍ତୁ।';
     acquisitionHtml = acquisitionHtml.replace('<div class="hero-actions"', `<p class="language-support-note">${note}</p><div class="hero-actions"`);
   }
-  return refineLandingOpening(completeLandingSections(refineHomeSections(acquisitionHtml, locale), locale), locale).replace(
+  return redesignLanding(refineLandingOpening(completeLandingSections(refineHomeSections(acquisitionHtml, locale), locale), locale), locale).replace(
     '</ul>\n      <button class="mobile-menu-btn"',
     `</ul>\n      ${switcher}\n      <button class="mobile-menu-btn"`,
   );

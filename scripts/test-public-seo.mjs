@@ -31,6 +31,7 @@ try {
   const browserCopy = require('./content/browserPreviewCopy.json');
   const homePricingCopy = require('./content/homePricingCopy.json');
   const webAppCopy = require('./content/webAppCopy.json');
+  const redesignCopy = require('./content/landingRedesignCopy.json');
   const { planCopy } = require('./lib/subscriptions.js');
   const { faqPageSchema, pageMetadata, softwareApplicationSchemaFor, pricingOfferSchema } = require('./seo.js');
   const sitemap = require('./sitemap.js').default();
@@ -40,9 +41,21 @@ try {
     const document = new JSDOM(html).window.document;
     assert.equal(document.querySelectorAll('h1').length, 1, `${code}: one clear page title`);
     assert.deepEqual([...document.querySelectorAll('#hero-title > span')].map(el => el.textContent), openingCopy[code].headline, `${code}: localized hero headline`);
-    assert.equal(document.querySelector('.counter-hero-conditions').textContent, openingCopy[code].conditions, `${code}: visible voice and Premium conditions`);
+    // Voice and udhaar conditions now sit once, beside the plans, not in the hero.
+    assert.ok(!document.querySelector('.counter-hero-conditions'), `${code}: hero stays free of plan conditions`);
+    assert.ok(homePricingCopy[code].premiumFeatures.every(item => document.querySelector('#home-plans').textContent.includes(item)), `${code}: voice and udhaar listed under Premium`);
     assert.equal(document.querySelector('.counter-hero-actions .btn-primary').getAttribute('href'), '/shop', `${code}: hero shop action`);
     assert.equal(document.querySelectorAll('.counter-app-links a').length, 2, `${code}: phone download options`);
+    const heroActions = document.querySelector('[data-device-cta]');
+    assert.ok(heroActions.dataset.ios.startsWith('https://apps.apple.com') && heroActions.dataset.android.startsWith('https://play.google.com'), `${code}: phones get their own store as the main action`);
+    assert.equal(heroActions.dataset.appLabel, redesignCopy[code].getApp, `${code}: translated app action`);
+    assert.equal(document.querySelector('.lr-qr img').getAttribute('src'), '/get-app-qr.svg', `${code}: desktop QR to the app`);
+    const demo = document.querySelector('[data-hero-demo]');
+    assert.ok(demo.hasAttribute('data-voice-motion'), `${code}: hero demo pauses with the motion controls`);
+    assert.equal(demo.querySelector('[data-demo-total]').textContent, '₹295', `${code}: demo bill adds up (₹250 + ₹45)`);
+    assert.equal(document.querySelectorAll('.lr-proof li').length, 4, `${code}: proof strip`);
+    assert.deepEqual([...document.querySelectorAll('main > section')].map(el => el.id).filter(Boolean), ['how', 'shop-workflows', 'ai', 'web', 'languages', 'home-plans', 'questions', 'download'], `${code}: section order`);
+    assert.ok(!document.querySelector('#features') && !document.querySelector('#comparison'), `${code}: repeated sections removed`);
     assert.equal(document.querySelector('.counter-hero-scene figcaption').textContent, offerCopy[code].exampleLabel, `${code}: illustrative hero identified`);
     assert.equal(document.querySelector('.counter-bill-note').textContent, openingCopy[code].payment, `${code}: human payment confirmation`);
     assert.equal(document.querySelectorAll('#questions .answers-group').length, 3, `${code}: FAQ topic groups`);
@@ -51,11 +64,11 @@ try {
     assert.equal(document.querySelector('[data-motion-toggle]').getAttribute('aria-label'), openingCopy[code].pause, `${code}: localized motion control`);
     if (code === 'pa' || code === 'or') assert.ok(document.querySelector('.hero .language-support-note'), `${code}: reading-only language condition visible in hero`);
     const workflows = document.querySelector('#shop-workflows');
-    assert.equal(workflows.querySelectorAll('.workflow-chapter').length, 3, `${code}: three task groups`);
-    assert.equal(workflows.querySelectorAll('.workflow-art').length, 3, `${code}: illustrated groups`);
-    assert.equal(workflows.querySelectorAll('details > summary').length, 9, `${code}: all workflows keyboard-discoverable`);
+    assert.equal(workflows.querySelectorAll('.lr-tile--feature').length, 9, `${code}: nine tiles`);
+    assert.equal(workflows.querySelectorAll('.lr-tile--feature .lr-mini').length, 9, `${code}: each tile shows its screen`);
+    assert.equal(workflows.querySelectorAll('details > summary').length, 9, `${code}: every requirement keyboard-discoverable`);
     for (const [title, body, note] of workflowCopy[code].cards) {
-      assert.ok([...workflows.querySelectorAll('h4')].some(el => el.textContent === title), `${code}: workflow title retained`);
+      assert.ok([...workflows.querySelectorAll('h3')].some(el => el.textContent === title), `${code}: workflow title retained`);
       assert.ok([...workflows.querySelectorAll('.workflow-detail-body > p')].some(el => el.textContent === body), `${code}: workflow explanation retained`);
       assert.ok([...workflows.querySelectorAll('.shop-workflow-note')].some(el => el.textContent === note), `${code}: full availability note retained`);
     }
@@ -66,11 +79,16 @@ try {
     assert.ok(!voiceLinks.some(el => ['pa-IN', 'or-IN'].includes(el.getAttribute('lang'))), `${code}: no unsupported voice promotion`);
     assert.equal(document.querySelector('.language-coming-note').textContent, completionCopy[code].comingSoonNote, `${code}: upcoming app support distinct from current website reading`);
     assert.equal(document.querySelectorAll('.language-specimen[aria-current="page"]').length, 1, `${code}: current website language identified`);
-    assert.equal(document.querySelectorAll('.comparison-sheet tbody tr').length, 4, `${code}: four matched comparisons`);
-    assert.ok(document.querySelector('.comparison-sheet').textContent.includes(completionCopy[code].rows[1][2]), `${code}: credit comparison includes Premium`);
+    assert.ok(voiceLinks.every(el => el.querySelector('.lr-specimen-said')?.textContent.length > 4), `${code}: each voice language shows a spoken sale`);
+    assert.equal(document.querySelectorAll('.lr-ask-card').length, 4, `${code}: four day-end answers`);
+    assert.deepEqual([...document.querySelectorAll('.lr-ask-a > strong')].map(el => el.textContent), redesignCopy[code].answers, `${code}: translated answers`);
     const pricingSummary = document.querySelector('#home-plans');
     assert.equal(document.querySelectorAll('#home-plans').length, 1, `${code}: one homepage pricing summary`);
-    assert.equal(pricingSummary.nextElementSibling.id, 'download', `${code}: pricing immediately precedes final CTA`);
+    assert.equal(pricingSummary.nextElementSibling.id, 'questions', `${code}: answers follow pricing`);
+    assert.equal(document.querySelector('#questions').nextElementSibling.id, 'download', `${code}: the page closes on the setup action`);
+    assert.ok(pricingSummary.querySelector('.lr-save').textContent.includes('33'), `${code}: yearly saving matches ₹499 × 12 vs ₹3,999`);
+    assert.ok(pricingSummary.querySelector('.lr-plan-value').textContent.includes('₹11'), `${code}: yearly price per day`);
+    assert.equal(document.querySelectorAll('.lr-footer-langs a').length, 11, `${code}: every website language in the footer`);
     assert.ok([...document.querySelectorAll('main > section')].indexOf(document.querySelector('#web')) < [...document.querySelectorAll('main > section')].indexOf(pricingSummary), `${code}: pricing follows product demo`);
     assert.equal(pricingSummary.querySelector('.home-plan--free .home-plan-price strong').textContent, '₹0', `${code}: free plan shown explicitly`);
     assert.equal(pricingSummary.querySelector('.home-plan--premium .home-plan-price strong').textContent, planCopy.monthly.price, `${code}: monthly price matches pricing page`);
@@ -89,10 +107,10 @@ try {
     // its concise copy, and the feature conditions that readers rely on.
     assert.equal((html.match(/class="step-example step-example--/g) || []).length, 3, `${code}: three sale illustrations`);
     assert.equal((html.match(/class="payment-method"/g) || []).length, 3, `${code}: three payment examples`);
-    for (const body of [...sectionCopy[code].steps, ...sectionCopy[code].features, ...sectionCopy[code].web, sectionCopy[code].language]) {
+    for (const body of [...sectionCopy[code].steps, ...sectionCopy[code].web.slice(0, 3)]) {
       assert.ok(html.includes(`<p>${body}</p>`), `${code}: concise section copy rendered`);
     }
-    assert.ok(sectionCopy[code].features[0].includes('Premium'), `${code}: voice entitlement retained`);
+    assert.equal(document.querySelectorAll('#web .web-card').length, 3, `${code}: plan admin left to Billing, not the demo`);
     assert.ok(sectionCopy[code].steps[1].includes('Premium'), `${code}: credit entitlement retained`);
     assert.equal(document.querySelector('.web-demo-note').textContent, offerCopy[code].exampleLabel, `${code}: example data labelled`);
     const preview = document.querySelector('[data-shop-preview]');
@@ -108,9 +126,9 @@ try {
     assert.equal(preview.querySelector('.preview-stock-note').textContent, browserCopy[code].stockNote, `${code}: physical-count condition`);
     assert.ok(!html.includes('>undefined<'), `${code}: no missing card copy`);
     assert.equal(answers.length, 8, `${code}: eight FAQ topics`);
-    const workflow = html.match(/<section class="shop-workflows"[\s\S]*?<\/section>/)?.[0];
+    const workflow = html.match(/<section class="shop-workflows[^"]*"[\s\S]*?<\/section>/)?.[0];
     assert.ok(workflow, `${code}: expanded shop workflows rendered`);
-    assert.equal((workflow.match(/<article class="shop-workflow">/g) || []).length, 9, `${code}: all nine workflow cards`);
+    assert.equal((workflow.match(/<article class="shop-workflow lr-tile/g) || []).length, 9, `${code}: all nine workflow cards`);
     assert.ok(workflow.includes(`href="${localizedPath(code, 'pricing')}"`), `${code}: localized pricing CTA`);
     if (code !== 'en') {
       assert.equal(workflowCopy[code].cards.length, 9, `${code}: translated workflow coverage`);
