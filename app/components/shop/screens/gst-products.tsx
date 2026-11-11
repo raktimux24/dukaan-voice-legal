@@ -3,7 +3,8 @@ import {ProductImageById} from "../product-image";
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useShop } from "../context";
-import { Button, Card, PageHeader, Notice, Pill } from "../ui";
+import { Button, Card, Chip, PageHeader, Notice, Pill } from "../ui";
+import { useSearchParams } from "next/navigation";
 import { TaxHistoryRows, TaxHistoryRefresh, useProductTaxHistory } from "../product-tax-history";
 import {
   TaxFields,
@@ -49,12 +50,17 @@ export function GstProductsScreen() {
     [selected, setSelected] = useState<string[]>([]),
     [config, setConfig] = useState<ProductTax | null>(null),
     [content, setContent] = useState(""),
-    [confirmed, setConfirmed] = useState(false);
+    [confirmed, setConfirmed] = useState(false),
+    params = useSearchParams(),
+    [missingOnly, setMissingOnly] = useState(params.get("filter") === "missing"),
+    [applied, setApplied] = useState(0);
   const retained = useRef<{ clientId: string; content: string } | null>(null);
   const rows =
     q.data?.filter((r) =>
-      r.product.name.toLowerCase().includes(search.toLowerCase()),
+      r.product.name.toLowerCase().includes(search.toLowerCase()) &&
+      (!missingOnly || !r.product.gstConfig),
     ) ?? [];
+  const missingCount = q.data?.filter((r) => !r.product.gstConfig).length ?? 0;
   return (
     <GstAccess>
       <div className="shop-page gst-workspace gst-product-workspace">
@@ -154,10 +160,22 @@ export function GstProductsScreen() {
               value={search}
               onChange={setSearch}
             />
+            <div className="gst-product-filters" role="group" aria-label={text("Search products")}>
+              <Chip active={!missingOnly} onClick={() => setMissingOnly(false)}>{t("common.all", "All")}</Chip>
+              <Chip active={missingOnly} onClick={() => setMissingOnly(true)}>{text("Tax details missing")} · {missingCount}</Chip>
+            </div>
             <p className="shop-hint">
               {selected.length}/100 · {text("products selected")}
+              {rows.length ? <>
+                {" "}·{" "}
+                <button type="button" className="shop-section-link gst-select-shown" disabled={action.busy} onClick={() => setSelected([...new Set([...selected, ...rows.map((r) => r.productId)])].slice(0, 100))}>
+                  {t("gstweb.select_shown", "Select shown (up to 100)")}
+                </button>
+              </> : null}
             </p>
-            <ReadState query={q} empty={!rows.length}>
+            <p className="shop-hint">{t("gstweb.hsn_hint", "HSN is the tax code printed on your supplier’s bill for the same item.")}</p>
+            {applied ? <p role="status" className="gst-action-success">{t("gstweb.bulk_saved", "GST saved for {n} products.", { n: applied })}</p> : null}
+            <ReadState query={q} empty={!rows.length} emptyText={missingOnly ? t("gstweb.none_missing", "Every product has tax details.") : undefined}>
               {rows.map((row) => (
                 <label key={row.productId} className="gst-choice">
                   <input
@@ -195,7 +213,9 @@ export function GstProductsScreen() {
               onClick={() =>
                 void action.run(async () => {
                   validateProductTax(config!);
+                  setApplied(0);
                   await api.gst.bulkTax(shop!.id, selected, config!);
+                  setApplied(selected.length);
                   setSelected([]);
                   await q.refetch();
                 })

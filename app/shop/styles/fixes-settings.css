@@ -1,1 +1,70 @@
 /* Web app review fixes: settings area. New rules for this area go here, scoped under .shop-root. */
+
+/* A1: tabs now use role=tab + aria-selected; keep the old pressed look. */
+.shop-root .settings-nav [role=tab][aria-selected=true]{color:#ff9857;border-color:#ff6b00;background:rgba(255,107,0,.035)}
+.shop-root .payments-tabs [role=tab][aria-selected=true],
+.shop-root .branding-tabs [role=tab][aria-selected=true]{border-color:var(--color-saffron);color:#ff9857}
+.shop-root .gst-workspace-tabs [role=tab][aria-selected=true]{border-color:#ff6b00;color:#ff9857}
+.shop-root [role=tablist] [role=tab]:focus-visible{outline:2px solid var(--color-saffron);outline-offset:2px}
+.shop-root [role=tablist] [role=tab]:disabled{cursor:not-allowed;opacity:.6}
+/* S4: the section numbers are gone; the arrow is the only span left in each settings tab. */
+.shop-root .settings-nav [role=tab]>span:first-child{font-size:inherit;color:inherit;margin-left:auto}
+@media(max-width:600px){.shop-root .settings-nav [role=tab]>span{display:none}}
+
+/* S5: one compact line for who and where, instead of a tall strip. */
+.shop-root .settings-identity{padding:12px 0;gap:16px}
+.shop-root .settings-identity .settings-avatar{width:36px;height:36px;font-size:16px}
+.shop-root .settings-identity strong{font-size:16px}
+@media(max-width:600px){.shop-root .settings-identity{gap:8px}.shop-root .settings-shop-context{padding-left:52px}}
+
+/* S9: Shop profile's delete control looks like the Account danger zone. */
+.shop-root .profile-danger{border-top:1px solid #694039;padding-top:8px}
+.shop-root .profile-danger>summary{color:#e7a095;display:flex;align-items:center;gap:10px}
+.shop-root .profile-danger>summary::before{content:"!";display:grid;place-items:center;width:22px;height:22px;border:1px solid #e7a095;border-radius:50%;font-size:13px;font-weight:600;flex-shrink:0}
+.shop-root .profile-danger>summary:focus-visible,.shop-root .settings-danger>summary:focus-visible{outline:2px solid var(--color-saffron);outline-offset:2px}
+
+/* S13 / G7 / G8: payments and GST setup notes. */
+.shop-root .payments-bill-qr-hint{margin-top:8px}
+.shop-root .payments-bill-qr-hint a{display:inline-flex;align-items:center;min-height:40px}
+.shop-root .payments-lock-warning,.shop-root .gst-revoke-warning{border-left:2px solid var(--color-warn);padding:8px 12px;color:var(--color-ink);font-size:14px;line-height:1.6;background:rgba(255,181,71,.06)}
+.shop-root .payments-incomplete{display:grid;gap:4px;font-size:14px}
+.shop-root .payments-incomplete a{color:#ff9857;text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:40px}
+
+/* C2: online store tabs keep whole words ("Products" no longer splits). */
+.shop-root .commerce-workspace .retail-section-tabs button{overflow-wrap:normal;word-break:normal;flex:1 1 auto;min-width:min-content;padding-inline:16px}
+.shop-root .retail-section-tabs [role=tab]:focus-visible{outline:2px solid var(--color-saffron);outline-offset:2px}
+
+/* G2: GST records month card, mirrors the mobile GST records screen. */
+.shop-root .gst-month-card{display:grid;gap:14px;padding:20px;border:1px solid var(--color-line);border-radius:16px;background:var(--color-card)}
+.shop-root .gst-month-head{display:flex;align-items:center;gap:8px}
+.shop-root .gst-month-head h2{flex:1;font:600 20px 'DM Sans',sans-serif;margin:0}
+.shop-root .gst-month-arrow{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--color-elevated);color:var(--color-ink);font-size:22px;line-height:1}
+.shop-root .gst-month-arrow:disabled{opacity:.35;cursor:not-allowed}
+.shop-root .gst-month-arrow:focus-visible,.shop-root .gst-month-status:focus-visible,.shop-root .gst-hub-row:focus-visible{outline:2px solid var(--color-saffron);outline-offset:2px}
+.shop-root .gst-month-figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0}
+.shop-root .gst-month-figures dt{font-size:13px;color:var(--color-muted)}
+.shop-root .gst-month-figures dd{margin:2px 0 0;font:700 28px 'DM Sans',sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.shop-root .gst-month-figures .is-strong dd{color:#ff9857}
+.shop-root .gst-month-empty,.shop-root .gst-month-failed p{color:var(--color-muted)}
+.shop-root .gst-month-failed{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.shop-root .gst-month-status{display:flex;align-items:center;gap:10px;min-height:44px;padding-top:12px;border-top:1px solid var(--color-line)}
+.shop-root .gst-month-status>span:first-child{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:13px;font-weight:700;flex-shrink:0}
+.shop-root .gst-month-status.is-ok>span:first-child{color:#0c0c10;background:var(--color-ok)}
+.shop-root .gst-month-status.is-warn>span:first-child{color:#0c0c10;background:var(--color-warn)}
+.shop-root .gst-month-status.is-warn b{color:var(--color-warn)}
+.shop-root .gst-month-status small{display:block;font-size:13px;color:var(--color-muted)}
+.shop-root .gst-month-card>.shop-btn{justify-self:start}
+.shop-root .gst-hub-heading{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--color-muted);margin:0 0 8px 4px}
+.shop-root .gst-attention{border-color:rgba(255,181,71,.35)}
+.shop-root .gst-navigation .gst-hub-row{display:flex;align-items:center;gap:12px}
+.shop-root .gst-navigation .gst-hub-row>span:first-child{flex:1;min-width:0}
+.shop-root .gst-hub-count{min-width:28px;padding:3px 8px;border-radius:999px;background:var(--color-elevated);color:var(--color-muted);font-size:13px;font-weight:600;text-align:center}
+.shop-root .gst-hub-count.is-warn{background:rgba(255,181,71,.15);color:var(--color-warn)}
+
+/* G9 / G11: product GST filters, select shown, and success lines. */
+.shop-root .gst-product-filters{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.shop-root .gst-select-shown{min-height:40px;color:#ff9857;text-decoration:underline;text-underline-offset:3px}
+.shop-root .gst-select-shown:disabled{opacity:.5}
+.shop-root .gst-action-success{border-left:2px solid var(--color-ok);padding:8px 12px;font-size:14px;color:var(--color-ink)}
+
+@media (prefers-reduced-motion: reduce){.shop-root .gst-month-card *,.shop-root [role=tablist] [role=tab]{transition:none}}

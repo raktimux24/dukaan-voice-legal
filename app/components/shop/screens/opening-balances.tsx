@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
 import { PageHeader, Card, Button, Field, IllustratedEmpty, Spinner } from "../ui";
+import { TabList } from "../settings-tabs";
 import { useOpenings } from "../../../lib/shop/openings/workflow";
 import { OpeningView, type OpeningUi } from "../../../lib/shop/openings/view";
 import {
@@ -19,7 +20,7 @@ const storage: OpeningStorage = {
 };
 export const openingWebUi: OpeningUi = {
   ProductPhoto:props=><ProductImageById {...props} size={36}/>,
-  Tabs: ({items,value,onChange,disabled}) => <div className="shop-seg retail-section-tabs" role="group">{items.map(item=><button key={item.key} type="button" className={value===item.key?'is-active':undefined} aria-pressed={value===item.key} disabled={disabled} onClick={()=>onChange(item.key)}>{item.label}</button>)}</div>,
+  Tabs: ({items,value,onChange,disabled}) => <TabList className="shop-seg retail-section-tabs" items={items.map(item=>[item.key,item.label] as const)} value={value} disabled={disabled} onChange={onChange}/>,
   Disclosure: ({label,children}) => <details className="retail-details"><summary>{label}</summary><div>{children}</div></details>,
   SavedSetup: ({ status, details, onPress, disabled }) => <button type="button" className="opening-saved" onClick={onPress} disabled={disabled}><span><strong>{status}</strong><small>{details}</small></span><span aria-hidden="true">→</span></button>,
   Steps: ({ labels, current, disabled, onSelect }) => <Card className="opening-stack"><h2 className="shop-section-title">{labels[current]}</h2><nav className="opening-steps" aria-label={labels[current]}>{labels.map((label, index) => <button type="button" key={label} aria-label={label} aria-current={index === current ? 'step' : undefined} disabled={disabled || index === 4} onClick={() => onSelect(index)}><span>{index + 1}</span><small>{label}</small></button>)}</nav></Card>,
@@ -183,9 +184,9 @@ function Editor() {
     <div className="shop-page opening-page opening-workspace">
       <PageHeader
         title={t("opening.title")}
-        back={{ href: "/shop/settings", label: t("nav.settings"), disabled: w.busy || !!w.pending, onClick: () => {
+        back={{ href: "/shop/settings?section=data", label: t("nav.settings"), disabled: w.busy || !!w.pending, onClick: () => {
           if (w.busy || w.pending) return;
-          const leave = () => router.push(onboarding ? '/shop' : '/shop/settings');
+          const leave = () => router.push(onboarding ? '/shop' : '/shop/settings?section=data');
           if (w.view === 'edit' && w.session) void w.saveAndLeave(leave);
           else leave();
         } }}

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DeletionControl } from "../deletion-control";
+import { TabList, syncQuery } from "../settings-tabs";
 import { BrowserNotifications } from "../browser-notifications";
 import { downloadText, inventoryCsv } from "../../../lib/shop/csv";
 import { activityCsv } from "../../../lib/shop/activity";
@@ -36,15 +37,23 @@ import {
   inputClass,
 } from "../ui";
 
+// Same names as the mobile settings list where the web label differs.
+const DESTINATION_LABELS: Record<string, [string, string]> = {
+  "/shop/settings/gst": ["web.gst.gst_records", "GST records"],
+};
 function SettingsDestination({ item }: { item: SettingsLink }) {
   const { t } = useShop();
+  const [key, fallback] = DESTINATION_LABELS[item.href] ?? [
+    item.key,
+    item.fallback,
+  ];
   return (
     <Link href={item.href} className="settings-destination">
       <span aria-hidden="true">
         <Glyph name={item.icon} />
       </span>
-      <strong>{t(item.key, item.fallback)}</strong>
-      <span aria-hidden="true">↗</span>
+      <strong>{t(key, fallback)}</strong>
+      <span aria-hidden="true">→</span>
     </Link>
   );
 }
@@ -165,7 +174,10 @@ function SettingsWorkspace() {
     void run("preference", () => savePrefs(patch), "settingsweb.saved");
   const values = preferenceValues(prefs),
     disabled = !!busy || offline,
-    links = settingsLinks(perms, offline),
+    // Customers has its own place in the sidebar, and mobile does not list it under settings.
+    links = settingsLinks(perms, offline).filter(
+      (item) => item.href !== "/shop/customers",
+    ),
     imports = settingsImports(perms, offline);
   if (!shop || !isLoaded) return <Spinner />;
   const plan = !entitlement
@@ -250,41 +262,54 @@ function SettingsWorkspace() {
         </p>
       ) : null}
       <div className="settings-layout">
-        <nav
+        <TabList
           className="settings-nav"
-          aria-label={t("settingsweb.navigation", "Settings sections")}
-        >
-          {SETTINGS_SECTIONS.map((id, i) => (
-            <button
-              type="button"
-              key={id}
-              aria-pressed={section === id}
-              aria-controls={"settings-panel-" + id}
-              onClick={() => {
-                setSection(id);
-                setError(null);
-                setStatus(null);
-              }}
-            >
-              <span aria-hidden="true">0{i + 1}</span>
-              {t(
-                "settingsweb." + id,
-                {
-                  preferences: "Preferences",
-                  shop: "Shop",
-                  data: "Data",
-                  account: "Account",
-                }[id],
-              )}
+          label={t("settingsweb.navigation", "Settings sections")}
+          idPrefix="settings"
+          vertical
+          value={section}
+          items={SETTINGS_SECTIONS.map(
+            (id) =>
+              [
+                id,
+                t(
+                  "settingsweb." + id,
+                  {
+                    preferences: "Preferences",
+                    shop: "Shop",
+                    data: "Data",
+                    account: "Account",
+                  }[id],
+                ),
+              ] as const,
+          )}
+          renderLabel={(_, label) => (
+            <>
+              {label}
               <span aria-hidden="true">→</span>
-            </button>
-          ))}
-        </nav>
-        <div className="settings-panel" id={"settings-panel-" + section}>
+            </>
+          )}
+          onChange={(id) => {
+            const next = settingsSection(id);
+            setSection(next);
+            setError(null);
+            setStatus(null);
+            // Keep the section in the address so "← Settings" and reloads return here.
+            syncQuery("section", next === "preferences" ? null : next);
+          }}
+        />
+        <div
+          className="settings-panel"
+          id={"settings-panel-" + section}
+          role="tabpanel"
+          aria-labelledby={"settings-tab-" + section}
+        >
           <Notice error={error} />
           {busy ? (
             <p className="settings-status" role="status">
-              {t("common.loading", "Loading…")}
+              {busy === "preference"
+                ? t("common.saving", "Saving…")
+                : t("common.loading", "Loading…")}
             </p>
           ) : status ? (
             <p className="settings-status" role="status">
@@ -419,7 +444,7 @@ function SettingsWorkspace() {
                 </Field>
                 {!offline ? (
                   <Link className="settings-text-link" href="/shop/onboarding">
-                    {t("settingsweb.join", "Create or join another shop")} ↗
+                    {t("settingsweb.join", "Create or join another shop")} →
                   </Link>
                 ) : null}
                 <div className="settings-destinations">
@@ -524,7 +549,7 @@ function SettingsWorkspace() {
                         className="settings-text-link"
                         href="/shop/settings/subscription"
                       >
-                        {t("settingsweb.view_plan", "View plan")} ↗
+                        {t("settingsweb.view_plan", "View plan")} →
                       </Link>
                     )}
                   </div>
