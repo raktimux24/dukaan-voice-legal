@@ -28,6 +28,9 @@ export function CustomerAttach({ gst = false, presentation = "inline", buyerDeta
   const revision=useRef(0);
   useEffect(()=>{revision.current++;setPicking(false);return()=>{revision.current++;};},[shop?.id,userId,open]);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const firstField = useRef<HTMLInputElement>(null);
+  // Runs after the dialog opens, so the cursor lands in the first field rather than on Close.
+  useEffect(() => { if (open) firstField.current?.focus(); }, [open]);
   const customers = useQuery({
     queryKey: ["customer-search", shop?.id, q],
     enabled:
@@ -117,6 +120,7 @@ export function CustomerAttach({ gst = false, presentation = "inline", buyerDeta
             <>
               <Field label={t("checkout.pick_customer", "Find a customer")}>
                 <input
+                  ref={firstField}
                   className={inputClass}
                   placeholder={t("customers.search", "Name or phone")}
                   value={q}
@@ -159,6 +163,13 @@ export function CustomerAttach({ gst = false, presentation = "inline", buyerDeta
                       </button>
                     ))}
                 </div>
+              ) : customers.isSuccess && q.trim().length > 1 && !gst ? (
+                <div className="customer-no-match" role="status">
+                  <p>{t("checkoutweb.no_customer_match", "No saved customer matches “{{q}}”.", { q: q.trim() })}</p>
+                  <Button tone="ghost" size="sm" onClick={() => { const typed = q.trim(); if (/^[+\d][\d\s-]{5,}$/.test(typed)) setPhone(typed); else setName(typed); }}>
+                    {t("checkoutweb.add_typed_customer", "Add “{{q}}” as new", { q: q.trim() })}
+                  </Button>
+                </div>
               ) : null}
             </>
           ) : null}
@@ -190,6 +201,7 @@ export function CustomerAttach({ gst = false, presentation = "inline", buyerDeta
           <div className="form-grid is-2">
             <Field label={t("customers.add_title", "New customer")}>
               <input
+                ref={gst || (premium && perms.canManageCustomers) ? undefined : firstField}
                 className={inputClass}
                 placeholder={t("customers.name", "Name")}
                 value={name}

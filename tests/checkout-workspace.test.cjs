@@ -63,6 +63,12 @@ test('UPI QR can only request its positive verified portion',()=>{
 test('cash defaults to exact, presets replace the amount, and payload keeps the reviewed value',async t=>{
  setup();await mount(t);assert.equal(confirm().disabled,false);const cash=document.querySelector('.checkout-tender input');assert.equal(cash.value,'');await click(button('₹200.00'));assert.equal(cash.value,'200');await click(button('₹200.00'));assert.equal(cash.value,'200');assert(document.querySelector('.checkout-change').textContent.includes('₹74.50'));await click(confirm());assert.deepEqual(calls.find(c=>c[0]==='issue')[1].payments,[{method:'cash',amount:125.5,tendered:200}]);
 });
+test('cash chips round up like the app, and Ctrl+Enter confirms only a ready bill',async t=>{
+ setup();await mount(t);const chips=[...document.querySelectorAll('.tender-chips button')].map(el=>el.textContent.trim());assert.deepEqual(chips,['Exact','₹130.00','₹150.00','₹200.00','₹500.00']);
+ assert.equal(document.activeElement,document.querySelector('.checkout-tender input'));
+ await act(async()=>document.querySelector('.checkout-tender input').dispatchEvent(new window.KeyboardEvent('keydown',{key:'Enter',bubbles:true})));await settle();assert(!calls.some(c=>c[0]==='issue'));
+ await act(async()=>document.querySelector('.checkout-tender input').dispatchEvent(new window.KeyboardEvent('keydown',{key:'Enter',ctrlKey:true,bubbles:true})));await settle();assert.equal(calls.filter(c=>c[0]==='issue').length,1);
+});
 test('negative/invalid cash and discount inputs cannot record a bill or corrupt the draft',async t=>{
  setup();await mount(t);await fill(document.querySelector('.checkout-tender input'),'-1');assert(confirm().disabled);await click(confirm());assert(!calls.some(c=>c[0]==='issue'));await fill(document.querySelector('.checkout-tender input'),'');const discount=document.querySelector('.checkout-adjustments input');await fill(discount,'1e2');assert(confirm().disabled);assert.equal(current().billDiscount,0);await fill(discount,'10.25');assert.equal(current().billDiscount,10.25);assert(document.querySelector('[data-checkout-total]').textContent.includes('115.25'));assert.equal(confirm().disabled,false);
 });
