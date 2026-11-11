@@ -55,7 +55,7 @@ function ShopProfile() {
   }
   const blank = t('shopux.not_added', 'Not added');
   return <div className="shop-page profile-workspace">
-    <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settingsweb.shop_profile', 'Shop profile')} description={t('profileweb.intro', 'Your business details and everyday inventory preferences.')}
+    <PageHeader back={{ href: '/shop/settings?section=shop', label: t('settings.title', 'Settings') }} kicker={t('settings.title', 'Settings')} title={t('settingsweb.shop_profile', 'Shop profile')} description={t('profileweb.intro', 'Your business details and everyday inventory preferences.')}
       actions={!draft && canEdit ? <button ref={editButton} type="button" className="shop-btn shop-btn-primary" onClick={edit}>{t('common.edit', 'Edit')}</button> : undefined}/>
     <Notice error={error}/>
     {fresh.error && <div className="profile-refresh-warning"><Notice error={fresh.error}/><Button tone="ghost" disabled={offline || fresh.isFetching || !!draft} onClick={() => void fresh.refetch()}>{t('common.retry', 'Try again')}</Button></div>}
