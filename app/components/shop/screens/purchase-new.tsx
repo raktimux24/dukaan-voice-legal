@@ -221,7 +221,6 @@ function PurchaseNewContent() {
           description={text(
             "Choose a supplier, enter the original invoice and confirm how each product affects stock.",
           )}
-          actions={<Button href="/shop/purchases?list=1" tone="ghost">{poText("shopux.recorded_invoices", "Recorded invoices")}</Button>}
         />
         <StepRail current={step - 1} labels={[poText("shopux.step_supplier", "Supplier"), poText("shopux.step_invoice", "Invoice"), poText("shopux.step_products", "Products")]} />
         {stepNote ? <Notice error={new Error(stepNote)} /> : null}
@@ -370,7 +369,7 @@ function PurchaseNewContent() {
           </Section> : null}
           {step === 3 ? <><Section
             title={"3 · " + text("Products and stock")}
-            summary={`${lines.length} ${text("products")}`}
+            summary={`${poText("products.title", "Products")} · ${lines.length}`}
             open
           >
             <ReadState query={catalog}>
@@ -388,6 +387,9 @@ function PurchaseNewContent() {
                 onChange={(id) => {
                   const row = catalog.data?.find((r) => r.productId === id);
                   if (!row || lines.length >= 100) return;
+                  // Same default as mobile: an out-of-stock product receives the
+                  // invoiced stock; anything else starts as invoice-only.
+                  const receive = row.product.trackStock !== false && row.quantity <= 0;
                   setReviewed(false);
                   setLines([
                     ...lines,
@@ -407,8 +409,8 @@ function PurchaseNewContent() {
                         ...(row.product.gstConfig ?? emptyTax()),
                         reviewed: false,
                       },
-                      receiveStock: false,
-                      stockMode: "invoice_only",
+                      receiveStock: receive,
+                      stockMode: receive ? "receive" : "invoice_only",
                     },
                   ]);
                 }}
@@ -552,6 +554,11 @@ function PurchaseNewContent() {
               )}
             </p>
             <Notice error={validation} />
+            {lines.length ? <p className="purchase-stock-summary" aria-live="polite">{poText("gst.purchase_stock_summary", EN_FALLBACK["gst.purchase_stock_summary"], {
+              stock: lines.filter((l) => l.stockMode === "receive").map((l) => `${l.name}: +${l.quantity} ${unitLabel(catalog.data?.find((row) => row.productId === l.productId)?.unit ?? "piece", poText)}`).join("; ") || poText("gst.ui.none_6eef66", "None"),
+              linked: lines.filter((l) => l.stockMode === "link").length,
+              invoiceOnly: lines.filter((l) => l.stockMode === "invoice_only").length,
+            })}</p> : null}
             <Check
               label={text(
                 "I have reviewed the invoice, tax details and stock actions.",
@@ -562,6 +569,7 @@ function PurchaseNewContent() {
           </Card></> : null}
         </fieldset>
         <div className="shop-actions invoice-compose-footer">
+        {step > 1 ? <Button tone="ghost" onClick={() => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); }}>{text("Back")}</Button> : null}
         {step < 3 ? <Button disabled={offline || !purchaseAccess(pos.data,!!pos.error).writable || action.busy || !!retained.current} onClick={() => {
           if (step === 1 && !supplier) { setStepNote(poText("shopux.supplier_need", "Choose a supplier before continuing.")); return; }
           if (step === 2 && (!invoiceNumber.trim() || !invoiceDate || !declared.trim())) { setStepNote(poText("shopux.invoice_need", "Enter the invoice number, date and total before continuing.")); return; }
@@ -605,7 +613,6 @@ function PurchaseNewContent() {
         >
           {text(action.busy ? "Recording invoice" : "Record supplier invoice")}
         </Button>}
-        {step > 1 ? <Button tone="ghost" onClick={() => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); }}>{text("Back")}</Button> : null}
         </div>
       </div>
     </GstAccess>
