@@ -28,7 +28,7 @@ export function applyPrivacyDisclosures(html: string, locale: string) {
   section('s5', retention.retention);
   section('s7', copy.sharing);
   html = html.replace(/(<details id="s3">[\s\S]*?<div class="section-content">)/, start => start + paragraph(copy.providers));
-  html = html.replace(/(<details id="s9">[\s\S]*?)(<\/div>\s*<\/details>)/, (_match, start, end) => start + paragraph(copy.partial) + '<p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>' + end);
+  html = html.replace(/(<details id="s9">[\s\S]*?)(<\/div>\s*<\/details>)/, (_match, start, end) => start + paragraph(copy.partial) + '<p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>' + end);
   html = html.replace(/<p class="effective">[\s\S]*?<\/p>/, `<p class="effective">${escape(copy.updated)}</p>`);
   return applyProductPhotoPrivacy(html.replace('<div class="container">', `<div class="container" ${marker}>`),locale);
 }

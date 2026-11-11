@@ -18,6 +18,6 @@ export function AccountDeletionPage(){
  {select}
  <Card className="grid gap-4 utility-status">
  {completed?<><p role="status">{t('deletion.deleted')}</p><a href="/">{t('nav.home')}</a></>:isLoaded&&isSignedIn&&user?<DeletionControl key={user.id} kind="account" language={language} isCurrent={() => !!user && clerk.user?.id === user.id} t={t} removeRecords={()=>api.deleteAccount()} removeIdentity={()=>user.delete()} onDeleted={()=>setCompleted(true)}/>:
- <><p>{t('settings.delete_account_message')}</p><a href={DELETION_SUPPORT_URL}>{t('deletion.support')} · meetslimshady07@gmail.com</a><a href="/privacy-policy#s6">{t('settings.privacy_policy')}</a>{isLoaded?<SignIn routing="hash" forceRedirectUrl="/delete-account"/>:<p>{t('common.loading')}</p>}</>}
+ <><p>{t('settings.delete_account_message')}</p><a href={DELETION_SUPPORT_URL}>{t('deletion.support')} · samaan-bol@outlook.com</a><a href="/privacy-policy#s6">{t('settings.privacy_policy')}</a>{isLoaded?<SignIn routing="hash" forceRedirectUrl="/delete-account"/>:<p>{t('common.loading')}</p>}</>}
  </Card></div></main>;
 }

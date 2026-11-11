@@ -51,6 +51,6 @@ export function DeletionView({kind, ui, t, removeRecords, removeIdentity, isCurr
       <Button label={t('deletion.support')} onPress={support} disabled={busy} />
       <Button label={t('settings.privacy_policy')} onPress={policy} disabled={busy} />
     </Box>
-    <Text>meetslimshady07@gmail.com</Text>
+    <Text>samaan-bol@outlook.com</Text>
   </Box>;
 }

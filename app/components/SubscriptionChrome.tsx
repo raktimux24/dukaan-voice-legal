@@ -7,7 +7,7 @@ import { languageSwitcher } from '../content/localized';
 import { appStoreUrl, playStoreUrl } from '../seo';
 
 export const appStoreLinkUrl = appStoreUrl;
-export const supportEmail = 'meetslimshady07@gmail.com';
+export const supportEmail = 'samaan-bol@outlook.com';
 
 const stencilSvg = (id: string) =>
   `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><mask id="${id}"><rect x="0" y="0" width="100" height="100" fill="white"/><rect x="24" y="18" width="52" height="8" rx="4" fill="black"/><rect x="38" y="18" width="24" height="36" rx="12" fill="black"/><path d="M 28 42 A 22 22 0 0 0 72 42" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"/><rect x="46" y="72" width="8" height="10" rx="4" fill="black"/><rect x="36" y="32" width="28" height="4" fill="white"/><rect x="36" y="44" width="28" height="4" fill="white"/></mask></defs><circle cx="50" cy="50" r="50" fill="#ea580c" mask="url(#${id})"/></svg>`;

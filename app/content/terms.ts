@@ -190,7 +190,7 @@ export const termsHtml = `<div class="reading-progress" id="readingProgress"></d
       <summary><h2>15. Contact Us</h2></summary>
       <div class="section-content">
         <p>If you have any questions about these Terms, please contact us at:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 

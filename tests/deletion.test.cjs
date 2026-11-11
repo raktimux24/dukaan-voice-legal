@@ -13,7 +13,7 @@ test('every published legal locale serves corrected retention, deletion, contact
   assert.ok(text.includes(copy.deletion),language+': complete deletion disclosure');
   assert.ok(privacy.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').includes(copy.retention),language+': retention disclosure');
   assert.ok(privacy.includes(privacyNotices[language].updated)&&terms.includes(copy.updated),language+': effective date');
-  assert.ok(section.includes('mailto:meetslimshady07@gmail.com'),language+': support');
+  assert.ok(section.includes('mailto:samaan-bol@outlook.com'),language+': support');
   assert.ok(section.includes('href="/delete-account"'),language+': no-shop deletion entry');
   assert.ok(terms.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').includes(copy.deletion),language+': terms aligned');
  }
