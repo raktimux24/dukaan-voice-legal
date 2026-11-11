@@ -458,7 +458,7 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
       <aside className="auth-story">
         <p className="auth-pitch">{t('auth.shell.tagline', 'Your shop. All together.')}</p>
         <div className="auth-scene" aria-hidden="true">
-          <img src="/illustrations/kirana-hero.webp" alt="" width={1536} height={1024} fetchPriority="high" />
+          <img src="/illustrations/auth-shop-opening.webp" alt="" width={789} height={717} fetchPriority="high" />
           <div className="auth-sale">
             <div className="auth-said">
               <span className="auth-mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="2" width="6" height="13" rx="3" /><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3" /></svg></span>
