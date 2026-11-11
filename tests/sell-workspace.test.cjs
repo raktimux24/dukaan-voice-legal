@@ -103,13 +103,19 @@ test('unresolved submitted bills retain their cart and pending request while Sel
  assert(button('Browse products').disabled);assert(document.querySelector('input[type=search]').disabled);assert(button('Clear bill').disabled);assert(document.querySelector('.bill-line-controls').disabled);await click(button('Browse products'));assert.equal(readCart().lines[0].quantity,1);assert.equal(cart.readPending(context.userId,shop).clientId,'pending');
 });
 test('lower current stock is flagged and checkout waits for the shortfall confirmation',async t=>{
- setup('OWNER',[{...item,quantity:1}]);cart.writeCart(context.userId,shop,{...empty(),lines:[{...line,quantity:3}]});await mount(t);assert(document.querySelector('.sell-stock-warning'));window.confirm=()=>false;await click(button('Review & charge →'));assert.equal(calls.some(c=>c[0]==='navigate'),false);
- window.confirm=()=>true;await click(button('Review & charge →'));assert(calls.some(c=>c[0]==='navigate'&&c[1]==='/shop/sell/checkout'));
+ setup('OWNER',[{...item,quantity:1}]);cart.writeCart(context.userId,shop,{...empty(),lines:[{...line,quantity:3}]});await mount(t);assert(document.querySelector('.sell-stock-warning'));await click(button('Review & charge →'));assert(document.querySelector('[role=dialog]'));await click(button('Keep editing'));assert.equal(calls.some(c=>c[0]==='navigate'),false);assert.equal(document.querySelector('[role=dialog]'),null);
+ await click(button('Review & charge →'));await click(button('Charge anyway'));assert(calls.some(c=>c[0]==='navigate'&&c[1]==='/shop/sell/checkout'));
  assert.equal(sellStockShortfalls({...empty(),lines:[{...line,trackStock:false,quantity:99}]},[item]).length,0);
 });
 test('a weighted barcode hit outside the current catalogue can be reviewed and retains scan provenance',async t=>{
  setup('OWNER',[item]);scanItem={...weight,quantity:6,reservedQuantity:2};await mount(t);await click(button('Camera'));await click(button('Synthetic scan'));assert(document.querySelector('[role=dialog]'));
  await fill(document.querySelector('.pos-picker-step input'),'9');await click([...document.querySelectorAll('.sell-quantity-picker button')].at(-1));assert.equal(readCart().lines[0].quantity,4);assert.equal(readCart().inputMethod,'scan');
+});
+
+test('the search box has focus when the counter opens, and clearing the bill asks in the app first',async t=>{
+ setup();cart.writeCart(context.userId,shop,{...empty(),lines:[line]});await mount(t);assert.equal(document.activeElement,document.querySelector('input[type=search]'));
+ await click(button('Clear bill'));assert(document.querySelector('[role=dialog]'));await click(button('Keep editing'));assert.equal(readCart().lines.length,1);
+ await click(button('Clear bill'));await click(button('Clear cart'));assert.equal(readCart().lines.length,0);
 });
 
 test('search result uses the same translated unit for quantity and price',async t=>{

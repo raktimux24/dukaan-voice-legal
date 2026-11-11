@@ -341,7 +341,7 @@ export function SalesScreen() {
                 ) : null}
               </span>
               <span className="sales-entry-arrow" aria-hidden="true">
-                ↗
+                ›
               </span>
             </Link>
           ))}
@@ -369,6 +369,15 @@ export function SalesScreen() {
             <p className="shop-section-sub">
               {t("mobile.observations.earlier_bills", "")}
             </p>
+            {filters.q.trim() && filters.period !== "all" ? (
+              <Button
+                onClick={() => change({ period: "all", from: "", to: "" })}
+              >
+                {t("salesweb.search_all_dates", "Search all dates for “{{q}}”", {
+                  q: filters.q.trim(),
+                })}
+              </Button>
+            ) : null}
             <Button
               tone="ghost"
               onClick={() =>
