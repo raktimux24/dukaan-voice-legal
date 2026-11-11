@@ -192,6 +192,7 @@ function SalesView({
           )}
         </p>
       ) : null}
+      {children}
       <div className="report-two-col">
         <Panel
           title={label(
@@ -208,6 +209,10 @@ function SalesView({
           {report.period === "today" && report.premium ? (
             <ReportChart
               money
+              empty={t(
+                "reportweb.today_empty",
+                "No sales yet today. The first bill will show here.",
+              )}
               columns={s.byHour.map((v, h) => ({
                 label: hour(h),
                 values: [v],
@@ -251,7 +256,6 @@ function SalesView({
           ) : null}
         </Panel>
       </div>
-      {children}
       <details className="report-disclosure">
         <summary>
           <span>
@@ -395,7 +399,7 @@ function SalesView({
         <div className="report-cash">
           <strong>{formatINR(s.cashInDrawer)}</strong>
           <Button tone="quiet" href="/shop/cashbook">
-            {label("cashbook.title")} ↗
+            {label("cashbook.title")} →
           </Button>
         </div>
       </Panel>
@@ -559,7 +563,7 @@ function StockView({
             ))}
           </div>
           <Button href="/shop/products?filter=near_expiry" tone="quiet">
-            {t("reportweb.review_stock", "Review stock")} ↗
+            {t("reportweb.review_stock", "Review stock")} →
           </Button>
         </Panel>
       </div>
@@ -633,7 +637,7 @@ function StockView({
                             n: item.daysRemaining,
                           })}
                     </b>
-                    <span aria-hidden="true">↗</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
                 ))
               ) : (
@@ -666,7 +670,7 @@ function ReportsWorkspace() {
     label = useLabels(),
     params = useSearchParams();
   const [tab, setTab] = useState(() => reportTab(params.get("tab")));
-  const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("today"),
+  const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("7d"),
     [stockPeriod, setStockPeriod] = useState<StockPeriod>("7d");
   const [topBy, setTopBy] = useState<"quantity" | "revenue">("quantity");
   const [question, setQuestion] = useState(""),
@@ -828,12 +832,7 @@ function ReportsWorkspace() {
                   : t("reportweb.export", "Export CSV")}{" "}
                 ↓
               </Button>
-            ) : (
-              <Button tone="ghost" href="/shop/settings/subscription">
-                {t("reportweb.export", "Export CSV")} ·{" "}
-                {label("subscription.status.active")} ↗
-              </Button>
-            )}
+            ) : null}
           </>
         }
       />
@@ -853,25 +852,36 @@ function ReportsWorkspace() {
             </button>
           ))}
         </div>
-        <Field label={t("reportweb.period", "Report period")}>
-          <select
-            className={inputClass}
-            value={selected}
-            onChange={(e) => {
-              tab === "sales"
-                ? setSalesPeriod(e.target.value as SalesPeriod)
-                : setStockPeriod(e.target.value as StockPeriod);
-              setExported(false);
-            }}
-          >
-            {(tab === "sales" ? SALES_PERIODS : STOCK_PERIODS).map((p) => (
-              <option key={p} value={p}>
-                {periodLabel(p, label)}
-                {effectiveReportPeriod(p, premium) !== p ? " · Premium" : ""}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <div
+          className="report-tabs report-periods"
+          role="group"
+          aria-label={t("reportweb.period", "Report period")}
+        >
+          {(tab === "sales" ? SALES_PERIODS : STOCK_PERIODS).map((p) => (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={selected === p}
+              onClick={() => {
+                tab === "sales"
+                  ? setSalesPeriod(p as SalesPeriod)
+                  : setStockPeriod(p as StockPeriod);
+                setExported(false);
+              }}
+            >
+              {periodLabel(p, label)}
+              {effectiveReportPeriod(p, premium) !== p ? (
+                <>
+                  <span aria-hidden="true"> 🔒</span>
+                  <span className="sr-only">
+                    {" · "}
+                    {label("subscription.status.active")}
+                  </span>
+                </>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="report-caption">
         <span>
@@ -893,7 +903,7 @@ function ReportsWorkspace() {
           </p>
 
           <Button tone="quiet" href="/shop/settings/subscription">
-            {t("reportweb.plans", "View plans")} ↗
+            {t("reportweb.plans", "View plans")} →
           </Button>
         </div>
       ) : null}
@@ -933,7 +943,7 @@ function ReportsWorkspace() {
                     </div>
                   ) : null}
                   <Button href="/shop/sales" tone="quiet">
-                    {t("reportweb.view_sales", "View sales")} ↗
+                    {t("reportweb.view_sales", "View sales")} →
                   </Button>
                 </div>
                 {top.isLoading ? (
@@ -962,7 +972,7 @@ function ReportsWorkspace() {
                             <Link
                               href={`/shop/products/${encodeURIComponent(p.productId)}`}
                             >
-                              {p.name} ↗
+                              {p.name} →
                             </Link>
                           ) : (
                             <strong>{p.name}</strong>
@@ -1047,7 +1057,7 @@ function ReportsWorkspace() {
                 )}
               </p>
               <Button tone="quiet" href="/shop/settings/subscription">
-                {t("reportweb.plans", "View plans")} ↗
+                {t("reportweb.plans", "View plans")} →
               </Button>
             </div>
           ) : null}
@@ -1136,7 +1146,7 @@ function ReportsWorkspace() {
                           void ask(label(`modal.analytics.sample_${k}`))
                         }
                       >
-                        {label(`modal.analytics.sample_${k}`)} ↗
+                        {label(`modal.analytics.sample_${k}`)} →
                       </button>
                     ))}
                   </div>

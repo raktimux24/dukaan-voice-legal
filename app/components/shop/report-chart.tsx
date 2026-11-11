@@ -5,10 +5,12 @@ export function ReportChart({
   columns,
   series,
   money = false,
+  empty,
 }: {
   columns: { label: string; values: number[] }[];
   series: string[];
   money?: boolean;
+  empty?: string;
 }) {
   const { t } = useShop();
   const scale = reportChartScale(columns.flatMap((c) => c.values));
@@ -17,8 +19,31 @@ export function ReportChart({
       maximumFractionDigits: 2,
       ...(money ? { style: "currency", currency: "INR" } : {}),
     }).format(n);
+  const values = columns.flatMap((c) => c.values);
+  if (!values.some((n) => Number.isFinite(n) && n !== 0))
+    return (
+      <p className="shop-hint report-chart-empty">
+        {empty ??
+          t("reportweb.chart_empty", "Nothing recorded in this period yet.")}
+      </p>
+    );
+  // Name the highest bar so the chart reads without hovering.
+  let peak: { label: string; value: number } | null = null;
+  if (series.length === 1)
+    for (const c of columns)
+      for (const v of c.values)
+        if (Number.isFinite(v) && (!peak || v > peak.value))
+          peak = { label: c.label, value: v };
   return (
     <div className="report-chart">
+      {peak && peak.value > 0 ? (
+        <p className="report-chart-peak">
+          {t("reportweb.peak", "Highest: {{label}} · {{value}}", {
+            label: peak.label,
+            value: format(peak.value),
+          })}
+        </p>
+      ) : null}
       <div className="report-chart-plot" aria-hidden="true">
         <div
           className="report-chart-zero"
