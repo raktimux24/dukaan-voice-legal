@@ -443,9 +443,6 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
 
   return (
     <div className="auth-screen" lang={language === 'hinglish' ? 'hi-Latn' : language}>
-      <div className="auth-art" aria-hidden="true">
-        <img src="/illustrations/auth-receipt-sculpture.webp" alt="" width={1536} height={1024} fetchPriority="high" />
-      </div>
       <header className="auth-header">
         <a className="auth-brand" href={home} aria-label="Samaan Bol">
           <img src="/logo1.svg" width={36} height={36} alt="" />
@@ -458,6 +455,24 @@ export function AuthScreen({ redirectUrl }: { redirectUrl: string }) {
           </svg>
         </a>
       </header>
+      <aside className="auth-story">
+        <p className="auth-pitch">{t('auth.shell.tagline', 'Your shop. All together.')}</p>
+        <div className="auth-scene" aria-hidden="true">
+          <img src="/illustrations/kirana-hero.webp" alt="" width={1536} height={1024} fetchPriority="high" />
+          <div className="auth-sale">
+            <div className="auth-said">
+              <span className="auth-mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="2" width="6" height="13" rx="3" /><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3" /></svg></span>
+              <p lang="hi">“चावल 5 किलो, चीनी 1 किलो”</p>
+              <span className="auth-wave">{[6, 12, 18, 9, 15, 7].map((height, index) => <i key={index} style={{ height }} />)}</span>
+            </div>
+            <div className="auth-receipt">
+              <p><span>5 kg × ₹50</span><b>₹250</b></p>
+              <p><span>1 kg × ₹45</span><b>₹45</b></p>
+              <p className="auth-receipt-total"><span /><b>₹295</b></p>
+            </div>
+          </div>
+        </div>
+      </aside>
       <main className="auth-panel">
         {view === 'sign-in' ? (
           <form noValidate onSubmit={(event) => void handleSignIn(event)}>

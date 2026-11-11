@@ -4472,3 +4472,83 @@ button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04
 .commerce-workspace{max-width:1120px}.commerce-workspace .retail-section-tabs{margin-bottom:12px}.commerce-workspace>.opening-stack>.opening-stack>.shop-surface:first-child{border-top:2px solid #ff9857}.commerce-workspace .opening-stack>.shop-surface{border-radius:6px}.commerce-workspace .opening-stack>label{max-width:720px}.commerce-workspace .opening-actions{gap:12px;flex-wrap:wrap}.commerce-workspace .shop-btn{min-width:0;max-width:100%;white-space:normal}.commerce-workspace .opening-text{overflow-wrap:anywhere}.commerce-workspace .shop-section-link{color:#ff9857}
 
 .utility-root{min-height:100dvh;padding:clamp(24px,6vw,80px) 20px;background:radial-gradient(ellipse at top right,rgba(255,107,0,.06),transparent 50%),#0d0d12}.utility-workspace{max-width:760px;margin:auto;gap:28px}.utility-top{display:flex;justify-content:space-between;align-items:center;gap:24px}.utility-top .logo{font:600 24px var(--font-dm-sans),sans-serif;color:#f5f5f4;white-space:nowrap}.utility-top .logo span{color:#ff6b00}.utility-language{max-width:260px}.utility-status{padding:clamp(24px,5vw,48px);border-radius:6px;border-top:2px solid #ff9857;display:grid;gap:24px}.utility-symbol{color:#ff9857;display:grid;place-items:center;width:56px;height:56px;background:#ff6b0012;border:1px solid #ff6b0033;border-radius:50%}.utility-symbol svg{width:26px;height:26px}.utility-workspace .shop-actions{flex-wrap:wrap}.utility-workspace .shop-btn{white-space:normal;min-width:0;max-width:100%;overflow-wrap:anywhere}.utility-workspace .shop-page-desc{max-width:100%}.utility-workspace a{overflow-wrap:anywhere}@media(max-width:480px){.utility-top{align-items:start;flex-direction:column}.utility-language{max-width:100%;width:100%}.utility-status .shop-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
+
+/* ------------------------------------------------------------------ */
+/* Sign-in: the landing page's counter scene beside a shop-style card. */
+/* ------------------------------------------------------------------ */
+.shop-root .auth-screen {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  column-gap: 48px;
+  background:
+    radial-gradient(900px 520px at 18% 38%, rgba(255, 107, 0, .10), transparent 70%),
+    var(--color-shop, #0a0a0f);
+  color: var(--color-ink, #eaeae6);
+}
+.shop-root .auth-header, .shop-root .auth-footer { grid-column: 1 / -1; }
+.shop-root .auth-story {
+  grid-column: 1; grid-row: 2;
+  align-self: center; justify-self: end;
+  width: min(100%, 560px);
+  min-width: 0;
+}
+.shop-root .auth-pitch {
+  margin: 0 0 8px;
+  font-family: var(--font-dm-sans), Inter, sans-serif;
+  font-size: clamp(30px, 3.2vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.03em;
+  text-wrap: balance;
+  color: var(--color-ink, #eaeae6);
+}
+.shop-root .auth-scene { position: relative; padding-bottom: 86px; }
+.shop-root .auth-scene > img { display: block; width: 88%; height: auto; margin-left: -3%; }
+.shop-root .auth-sale {
+  position: absolute; right: 0; bottom: 0;
+  width: min(290px, 60%);
+  padding: 12px;
+  border: 1px solid var(--color-line, #2a2a34);
+  border-radius: 16px;
+  background: rgba(21, 21, 28, .92);
+  box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .8);
+  backdrop-filter: blur(12px);
+}
+.shop-root .auth-said { display: flex; align-items: center; gap: 10px; padding: 2px 4px 10px; }
+.shop-root .auth-said p { flex: 1; min-width: 0; margin: 0; font-size: 14px; line-height: 1.4; color: var(--color-ink, #eaeae6); }
+.shop-root .auth-mic { flex: 0 0 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--color-saffron, #ff6b00); color: #160c05; }
+.shop-root .auth-mic svg { width: 14px; height: 14px; }
+.shop-root .auth-wave { display: flex; align-items: center; gap: 2px; }
+.shop-root .auth-wave i { width: 2px; border-radius: 2px; background: #ff934b; }
+.shop-root .auth-receipt { position: relative; padding: 12px 14px 10px; background: #eee7db; color: #2b241e; border-radius: 4px 4px 0 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.shop-root .auth-receipt::after { content: ''; position: absolute; inset: auto 0 -5px; height: 5px; background: linear-gradient(135deg, #eee7db 25%, transparent 25%) 0 0 / 10px 10px, linear-gradient(225deg, #eee7db 25%, transparent 25%) 0 0 / 10px 10px; }
+.shop-root .auth-receipt p { display: flex; justify-content: space-between; margin: 0; padding: 4px 0; color: #655a50; }
+.shop-root .auth-receipt b { font-weight: 500; color: #2b241e; }
+.shop-root .auth-receipt .auth-receipt-total { margin-top: 4px; padding-top: 8px; border-top: 1px dashed #b6aa9c; }
+.shop-root .auth-receipt .auth-receipt-total b { font-size: 20px; font-weight: 600; letter-spacing: -.03em; }
+
+.shop-root .auth-panel {
+  grid-column: 2; justify-self: start;
+  width: min(100%, 430px);
+  padding: 32px;
+  border: 1px solid var(--color-line, #2a2a34);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--color-card, #15151c);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8);
+}
+.shop-root .auth-heading h1, .shop-root .auth-done h1 { font-family: var(--font-dm-sans), Inter, sans-serif; letter-spacing: -.02em; }
+.shop-root .auth-control { border-color: var(--color-line, #2a2a34); background: var(--color-elevated, #1e1e26); border-radius: var(--radius-sm, 10px); }
+.shop-root .auth-submit { border-radius: var(--radius-sm, 10px); }
+.shop-root .auth-social { border-color: var(--color-line, #2a2a34); background: transparent; border-radius: var(--radius-sm, 10px); }
+.shop-root .auth-social:hover:not(:disabled) { background: var(--color-elevated, #1e1e26); border-color: #3a3a46; }
+.shop-root .auth-signature { display: none; }
+
+@media (max-width: 960px) {
+  .shop-root .auth-screen { grid-template-columns: minmax(0, 1fr); background: radial-gradient(520px 360px at 50% 0%, rgba(255, 107, 0, .12), transparent 70%), var(--color-shop, #0a0a0f); }
+  .shop-root .auth-story { display: none; }
+  .shop-root .auth-panel { grid-column: 1; justify-self: center; }
+  .shop-root .auth-signature { display: flex; }
+}
+@media (max-width: 480px) {
+  .shop-root .auth-panel { padding: 24px 20px; }
+}
