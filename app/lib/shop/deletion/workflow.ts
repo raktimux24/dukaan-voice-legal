@@ -17,7 +17,7 @@ export async function performDeletion(removeRecords: () => Promise<unknown>, rem
   await removeIdentity?.();
 }
 
-export const DELETION_SUPPORT_URL = 'mailto:meetslimshady07@gmail.com';
+export const DELETION_SUPPORT_URL = 'mailto:samaan-bol@outlook.com';
 export function deletionSupportUrl(title: string) {
   return DELETION_SUPPORT_URL + '?subject=' + encodeURIComponent('Samaan Bol — ' + title);
 }

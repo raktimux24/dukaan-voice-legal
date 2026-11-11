@@ -727,7 +727,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>मोबाइल या वेब पर Settings → Delete Account इस्तेमाल करें। हटाने से पहले रिकॉर्ड रखने की जाँच होती है।</p>
 <p>रिकॉर्ड रखना ज़रूरी हो तो अपने आप खाता हटाना रुक जाता है; खाता, दुकान के रिकॉर्ड और साइन-इन पहचान बने रहते हैं। बंद करने की समीक्षा और गैर-ज़रूरी डेटा हटाने के लिए सहायता को लिखें।</p>
 <p>अनुमति होने पर योग्य खाता व अपनी दुकानों का डेटा और साझा दुकानों की सदस्यता हटती है, फिर Clerk की साइन-इन पहचान हटती है। केवल दुकान हटाने से खाता चालू रहता है।</p>
-<p>हटाना स्थायी है; पहले डेटा एक्सपोर्ट करें। कोई चरण विफल या अनिश्चित हो तो हटाने की पुष्टि नहीं है—साइन इन रहकर फिर कोशिश करें या सहायता लें।</p><p><a href="/delete-account">खाता हटाना</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>हटाना स्थायी है; पहले डेटा एक्सपोर्ट करें। कोई चरण विफल या अनिश्चित हो तो हटाने की पुष्टि नहीं है—साइन इन रहकर फिर कोशिश करें या सहायता लें।</p><p><a href="/delete-account">खाता हटाना</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -775,7 +775,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. हमसे संपर्क करें</h2></summary>
       <div class="section-content">
         <p>यदि इस गोपनीयता नीति या आपके डेटा के बारे में आपके कोई प्रश्न हैं, तो कृपया हमसे यहां संपर्क करें:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -973,7 +973,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. हमसे संपर्क करें</h2></summary>
       <div class="section-content">
         <p>यदि इन शर्तों के बारे में आपके कोई प्रश्न हैं, तो कृपया हमसे यहां संपर्क करें:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -1703,7 +1703,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>মোবাইল বা ওয়েবে Settings → Delete Account ব্যবহার করুন। আগে রেকর্ড রাখার প্রয়োজন যাচাই হয়।</p>
 <p>রেকর্ড রাখা জরুরি হলে নিজে মোছা বন্ধ থাকে; অ্যাকাউন্ট, দোকানের রেকর্ড ও সাইন-ইন পরিচয় থেকে যায়। বন্ধ করার পর্যালোচনা ও অপ্রয়োজনীয় তথ্য মোছার জন্য সহায়তায় লিখুন।</p>
 <p>অনুমতি থাকলে যোগ্য অ্যাকাউন্ট ও নিজস্ব দোকানের তথ্য এবং শেয়ার করা দোকানের সদস্যপদ মুছে, তারপর Clerk সাইন-ইন পরিচয় মোছা হয়। শুধু দোকান মুছলে অ্যাকাউন্ট সক্রিয় থাকে।</p>
-<p>মোছা স্থায়ী; আগে তথ্য এক্সপোর্ট করুন। কোনো ধাপ ব্যর্থ বা অনিশ্চিত হলে মোছা নিশ্চিত নয়—সাইন ইন থেকে আবার চেষ্টা করুন বা সহায়তা নিন।</p><p><a href="/delete-account">অ্যাকাউন্ট মুছে ফেলা</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>মোছা স্থায়ী; আগে তথ্য এক্সপোর্ট করুন। কোনো ধাপ ব্যর্থ বা অনিশ্চিত হলে মোছা নিশ্চিত নয়—সাইন ইন থেকে আবার চেষ্টা করুন বা সহায়তা নিন।</p><p><a href="/delete-account">অ্যাকাউন্ট মুছে ফেলা</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -1751,7 +1751,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. আমাদের সাথে যোগাযোগ করুন</h2></summary>
       <div class="section-content">
         <p>এই গোপনীয়তা নীতি বা আপনার ডেটা সম্পর্কে আপনার কোন প্রশ্ন থাকলে, অনুগ্রহ করে আমাদের সাথে এখানে যোগাযোগ করুন:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -1949,7 +1949,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. আমাদের সাথে যোগাযোগ করুন</h2></summary>
       <div class="section-content">
         <p>এই শর্তাবলী সম্পর্কে আপনার কোন প্রশ্ন থাকলে, অনুগ্রহ করে আমাদের সাথে এখানে যোগাযোগ করুন:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -2678,7 +2678,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>மொபைல் அல்லது இணையத்தில் Settings → Delete Account பயன்படுத்துங்கள். முதலில் பதிவு வைத்திருப்புத் தேவை சரிபார்க்கப்படும்.</p>
 <p>தேவை இருந்தால் சுய நீக்கம் தடுக்கப்படும்; கணக்கு, கடைப் பதிவுகள், உள்நுழைவு அடையாளம் தொடரும். மூடல் ஆய்வுக்கும் தேவையற்ற தரவு நீக்கத்திற்கும் ஆதரவைத் தொடர்புகொள்ளுங்கள்.</p>
 <p>அனுமதி இருந்தால் தகுதியுள்ள கணக்கு, சொந்தக் கடைத் தரவு, பகிர்ந்த கடை உறுப்பினர் உரிமை நீக்கப்பட்டு, பின்னர் Clerk உள்நுழைவு அடையாளம் நீக்கப்படும். கடையை மட்டும் நீக்கினால் கணக்கு தொடரும்.</p>
-<p>நீக்கம் நிரந்தரம்; முதலில் தரவை ஏற்றுமதி செய்யுங்கள். ஒரு படி தோல்வியடைந்தாலோ முடிவு தெரியாவிட்டாலோ நீக்கம் உறுதியாகாது—உள்நுழைந்தபடி மீண்டும் முயலுங்கள் அல்லது ஆதரவை நாடுங்கள்.</p><p><a href="/delete-account">கணக்கு நீக்கம்</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>நீக்கம் நிரந்தரம்; முதலில் தரவை ஏற்றுமதி செய்யுங்கள். ஒரு படி தோல்வியடைந்தாலோ முடிவு தெரியாவிட்டாலோ நீக்கம் உறுதியாகாது—உள்நுழைந்தபடி மீண்டும் முயலுங்கள் அல்லது ஆதரவை நாடுங்கள்.</p><p><a href="/delete-account">கணக்கு நீக்கம்</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -2726,7 +2726,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. எங்களை தொடர்பு கொள்ளவும்</h2></summary>
       <div class="section-content">
         <p>இந்தத் தனியுரிமைக் கொள்கை அல்லது உங்கள் தரவு குறித்து ஏதேனும் கேள்விகள் இருந்தால், தயவுசெய்து எங்களை இங்கு தொடர்பு கொள்ளவும்:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -2924,7 +2924,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. எங்களை தொடர்பு கொள்ளவும்</h2></summary>
       <div class="section-content">
         <p>இந்த விதிமுறைகளைப் பற்றி ஏதேனும் கேள்விகள் இருந்தால், தயவுசெய்து எங்களை இங்கு தொடர்பு கொள்ளவும்:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -3653,7 +3653,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>మొబైల్ లేదా వెబ్‌లో Settings → Delete Account వాడండి. ముందుగా రికార్డుల నిలుపుదల అవసరాన్ని తనిఖీ చేస్తాము.</p>
 <p>అవసరం ఉంటే స్వీయ తొలగింపు ఆగుతుంది; ఖాతా, దుకాణ రికార్డులు, సైన్-ఇన్ గుర్తింపు ఉంటాయి. మూసివేత సమీక్ష, అవసరం లేని డేటా తొలగింపు కోసం సహాయాన్ని సంప్రదించండి.</p>
 <p>అనుమతి ఉంటే అర్హమైన ఖాతా, సొంత దుకాణ డేటా, భాగస్వామ్య సభ్యత్వాలు తొలగి, తరువాత Clerk సైన్-ఇన్ గుర్తింపు తొలగుతుంది. దుకాణం మాత్రమే తొలగిస్తే ఖాతా కొనసాగుతుంది.</p>
-<p>తొలగింపు శాశ్వతం; ముందుగా డేటాను ఎగుమతి చేయండి. దశ విఫలమైనా ఫలితం తెలియకపోయినా తొలగింపు నిర్ధారణ కాదు—సైన్ ఇన్‌లోనే ఉండి మళ్లీ ప్రయత్నించండి లేదా సహాయం కోరండి.</p><p><a href="/delete-account">ఖాతా తొలగింపు</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>తొలగింపు శాశ్వతం; ముందుగా డేటాను ఎగుమతి చేయండి. దశ విఫలమైనా ఫలితం తెలియకపోయినా తొలగింపు నిర్ధారణ కాదు—సైన్ ఇన్‌లోనే ఉండి మళ్లీ ప్రయత్నించండి లేదా సహాయం కోరండి.</p><p><a href="/delete-account">ఖాతా తొలగింపు</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -3701,7 +3701,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. మమ్మల్ని సంప్రదించండి</h2></summary>
       <div class="section-content">
         <p>మీకు ఈ గోప్యతా విధానం లేదా మీ డేటా గురించి ఏవైనా ప్రశ్నలు ఉంటే, దయచేసి మమ్మల్ని ఇక్కడ సంప్రదించండి:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -3899,7 +3899,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. మమ్మల్ని సంప్రదించండి</h2></summary>
       <div class="section-content">
         <p>ఈ నిబంధనల గురించి మీకు ఏవైనా సందేహాలు ఉంటే, దయచేసి మమ్మల్ని ఇక్కడ సంప్రదించండి:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -4629,7 +4629,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>मोबाइल किंवा वेबवर Settings → Delete Account वापरा. आधी रेकॉर्ड जतन करण्याची गरज तपासली जाते.</p>
 <p>गरज असल्यास स्वतः हटवणे थांबते; खाते, दुकानाचे रेकॉर्ड आणि साइन-इन ओळख टिकते. खाते बंद करण्याचे पुनरावलोकन व अनावश्यक डेटा हटवण्यासाठी सहाय्याशी संपर्क करा.</p>
 <p>परवानगी असल्यास पात्र खाते व स्वतःच्या दुकानांचा डेटा, सामायिक सदस्यत्व हटते आणि नंतर Clerk साइन-इन ओळख हटते. फक्त दुकान हटवल्यास खाते सुरू राहते.</p>
-<p>हटवणे कायमचे आहे; आधी डेटा एक्सपोर्ट करा. एखादी पायरी अयशस्वी किंवा अनिश्चित असल्यास हटवल्याची खात्री नाही—साइन इन राहून पुन्हा प्रयत्न करा किंवा सहाय्य घ्या.</p><p><a href="/delete-account">खाते हटवणे</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>हटवणे कायमचे आहे; आधी डेटा एक्सपोर्ट करा. एखादी पायरी अयशस्वी किंवा अनिश्चित असल्यास हटवल्याची खात्री नाही—साइन इन राहून पुन्हा प्रयत्न करा किंवा सहाय्य घ्या.</p><p><a href="/delete-account">खाते हटवणे</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -4677,7 +4677,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. आमच्याशी संपर्क साधा</h2></summary>
       <div class="section-content">
         <p>तुम्हाला या गोपनीयता धोरणाबद्दल किंवा तुमच्या डेटाबद्दल काही प्रश्न असल्यास, कृपया आमच्याशी येथे संपर्क साधा:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -4875,7 +4875,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. आमच्याशी संपर्क साधा</h2></summary>
       <div class="section-content">
         <p>तुम्हाला या अटींबद्दल काही प्रश्न असल्यास, कृपया आमच्याशी येथे संपर्क साधा:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -5604,7 +5604,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>ಮೊಬೈಲ್ ಅಥವಾ ವೆಬ್‌ನಲ್ಲಿ Settings → Delete Account ಬಳಸಿ. ಮೊದಲು ದಾಖಲೆ ಉಳಿಸುವಿಕೆ ಪರಿಶೀಲನೆ ನಡೆಯುತ್ತದೆ.</p>
 <p>ಅಗತ್ಯ ಇದ್ದರೆ ಸ್ವಯಂ ಅಳಿಸುವಿಕೆ ನಿಲ್ಲುತ್ತದೆ; ಖಾತೆ, ಅಂಗಡಿ ದಾಖಲೆಗಳು ಮತ್ತು ಸೈನ್-ಇನ್ ಗುರುತು ಉಳಿಯುತ್ತವೆ. ಮುಚ್ಚುವಿಕೆ ಪರಿಶೀಲನೆ ಮತ್ತು ಅನಗತ್ಯ ಡೇಟಾ ತೆಗೆಯಲು ಬೆಂಬಲ ಸಂಪರ್ಕಿಸಿ.</p>
 <p>ಅನುಮತಿ ಇದ್ದರೆ ಅರ್ಹ ಖಾತೆ, ಸ್ವಂತ ಅಂಗಡಿ ಡೇಟಾ, ಹಂಚಿದ ಅಂಗಡಿ ಸದಸ್ಯತ್ವ ಅಳಿಸಿ ನಂತರ Clerk ಸೈನ್-ಇನ್ ಗುರುತನ್ನು ಅಳಿಸುತ್ತೇವೆ. ಅಂಗಡಿ ಮಾತ್ರ ಅಳಿಸಿದರೆ ಖಾತೆ ಸಕ್ರಿಯವಾಗಿರುತ್ತದೆ.</p>
-<p>ಅಳಿಸುವಿಕೆ ಶಾಶ್ವತ; ಮೊದಲು ಡೇಟಾ ರಫ್ತು ಮಾಡಿ. ಹಂತ ವಿಫಲವಾದರೆ ಅಥವಾ ಫಲಿತಾಂಶ ತಿಳಿಯದಿದ್ದರೆ ಅಳಿಸುವಿಕೆ ಖಚಿತವಲ್ಲ—ಸೈನ್ ಇನ್‌ನಲ್ಲೇ ಇದ್ದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಬೆಂಬಲ ಪಡೆಯಿರಿ.</p><p><a href="/delete-account">ಖಾತೆ ಅಳಿಸುವಿಕೆ</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>ಅಳಿಸುವಿಕೆ ಶಾಶ್ವತ; ಮೊದಲು ಡೇಟಾ ರಫ್ತು ಮಾಡಿ. ಹಂತ ವಿಫಲವಾದರೆ ಅಥವಾ ಫಲಿತಾಂಶ ತಿಳಿಯದಿದ್ದರೆ ಅಳಿಸುವಿಕೆ ಖಚಿತವಲ್ಲ—ಸೈನ್ ಇನ್‌ನಲ್ಲೇ ಇದ್ದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಬೆಂಬಲ ಪಡೆಯಿರಿ.</p><p><a href="/delete-account">ಖಾತೆ ಅಳಿಸುವಿಕೆ</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -5652,7 +5652,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ</h2></summary>
       <div class="section-content">
         <p>ಈ ಗೌಪ್ಯತೆ ನೀತಿ ಅಥವಾ ನಿಮ್ಮ ಡೇಟಾದ ಕುರಿತು ನೀವು ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳನ್ನು ಹೊಂದಿದ್ದರೆ, ದಯವಿಟ್ಟು ನಮ್ಮನ್ನು ಇಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -5850,7 +5850,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ</h2></summary>
       <div class="section-content">
         <p>ಈ ನಿಯಮಗಳ ಕುರಿತು ನೀವು ಯಾವುದೇ ಪ್ರಶ್ನೆಗಳನ್ನು ಹೊಂದಿದ್ದರೆ, ದಯವಿಟ್ಟು ನಮ್ಮನ್ನು ಇಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -6580,7 +6580,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>મોબાઇલ કે વેબ પર Settings → Delete Account વાપરો. પહેલાં રેકોર્ડ રાખવાની જરૂરિયાત તપાસાય છે.</p>
 <p>જરૂરી હોય તો સ્વયં કાઢી નાખવું અટકે છે; ખાતું, દુકાનના રેકોર્ડ અને સાઇન-ઇન ઓળખ રહે છે. બંધ કરવાની સમીક્ષા અને બિનજરૂરી ડેટા દૂર કરવા સહાયનો સંપર્ક કરો.</p>
 <p>મંજૂરી હોય તો પાત્ર ખાતા અને પોતાની દુકાનોનો ડેટા, સહિયારી સભ્યતા દૂર થાય છે, પછી Clerk સાઇન-ઇન ઓળખ દૂર થાય છે. ફક્ત દુકાન કાઢવાથી ખાતું ચાલુ રહે છે.</p>
-<p>કાઢી નાખવું કાયમી છે; પહેલાં ડેટા એક્સપોર્ટ કરો. કોઈ પગલું નિષ્ફળ કે અનિશ્ચિત હોય તો કાઢ્યાની પુષ્ટિ નથી—સાઇન ઇન રહી ફરી પ્રયાસ કરો અથવા સહાય લો.</p><p><a href="/delete-account">એકાઉન્ટ કાઢી નાખવું</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>કાઢી નાખવું કાયમી છે; પહેલાં ડેટા એક્સપોર્ટ કરો. કોઈ પગલું નિષ્ફળ કે અનિશ્ચિત હોય તો કાઢ્યાની પુષ્ટિ નથી—સાઇન ઇન રહી ફરી પ્રયાસ કરો અથવા સહાય લો.</p><p><a href="/delete-account">એકાઉન્ટ કાઢી નાખવું</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -6628,7 +6628,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. અમારો સંપર્ક કરો</h2></summary>
       <div class="section-content">
         <p>જો તમને આ ગોપનીયતા નીતિ અથવા તમારા ડેટા વિશે કોઈ પ્રશ્નો હોય, તો કૃપા કરીને અમારો અહીં સંપર્ક કરો:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -6826,7 +6826,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. અમારો સંપર્ક કરો</h2></summary>
       <div class="section-content">
         <p>જો તમને આ શરતો વિશે કોઈ પ્રશ્નો હોય, તો કૃપા કરીને અમારો અહીં સંપર્ક કરો:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -7555,7 +7555,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>മൊബൈലിലോ വെബിലോ Settings → Delete Account ഉപയോഗിക്കുക. ആദ്യം രേഖകൾ സൂക്ഷിക്കേണ്ടതുണ്ടോ എന്ന് പരിശോധിക്കും.</p>
 <p>ആവശ്യമെങ്കിൽ സ്വയം ഇല്ലാതാക്കൽ തടയും; അക്കൗണ്ട്, കടയുടെ രേഖകൾ, സൈൻ-ഇൻ തിരിച്ചറിയൽ എന്നിവ തുടരും. അടച്ചുപൂട്ടൽ അവലോകനത്തിനും ആവശ്യമില്ലാത്ത ഡാറ്റ നീക്കുന്നതിനും സഹായവുമായി ബന്ധപ്പെടുക.</p>
 <p>അനുവദനീയമാണെങ്കിൽ അർഹമായ അക്കൗണ്ട്, സ്വന്തം കടകളിലെ ഡാറ്റ, പങ്കിട്ട കടകളിലെ അംഗത്വം നീക്കി, തുടർന്ന് Clerk സൈൻ-ഇൻ തിരിച്ചറിയൽ ഇല്ലാതാക്കും. കട മാത്രം നീക്കിയാൽ അക്കൗണ്ട് തുടരും.</p>
-<p>ഇല്ലാതാക്കൽ സ്ഥിരമാണ്; ആദ്യം ഡാറ്റ എക്സ്പോർട്ട് ചെയ്യുക. ഒരു ഘട്ടം പരാജയപ്പെട്ടാലോ ഫലം അറിയാതെയിരുന്നാലോ ഇല്ലാതാക്കൽ സ്ഥിരീകരിച്ചിട്ടില്ല—സൈൻ ഇൻ നിലനിർത്തി വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ സഹായം തേടുക.</p><p><a href="/delete-account">അക്കൗണ്ട് ഇല്ലാതാക്കൽ</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>ഇല്ലാതാക്കൽ സ്ഥിരമാണ്; ആദ്യം ഡാറ്റ എക്സ്പോർട്ട് ചെയ്യുക. ഒരു ഘട്ടം പരാജയപ്പെട്ടാലോ ഫലം അറിയാതെയിരുന്നാലോ ഇല്ലാതാക്കൽ സ്ഥിരീകരിച്ചിട്ടില്ല—സൈൻ ഇൻ നിലനിർത്തി വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ സഹായം തേടുക.</p><p><a href="/delete-account">അക്കൗണ്ട് ഇല്ലാതാക്കൽ</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -7603,7 +7603,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. ഞങ്ങളെ ബന്ധപ്പെടുക</h2></summary>
       <div class="section-content">
         <p>ഈ സ്വകാര്യതാ നയത്തെക്കുറിച്ചോ നിങ്ങളുടെ ഡാറ്റയെക്കുറിച്ചോ നിങ്ങൾക്ക് എന്തെങ്കിലും ചോദ്യങ്ങളുണ്ടെങ്കിൽ, ദയവായി ഞങ്ങളെ ബന്ധപ്പെടുക:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -7801,7 +7801,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. ഞങ്ങളെ ബന്ധപ്പെടുക</h2></summary>
       <div class="section-content">
         <p>ഈ നിബന്ധനകളെക്കുറിച്ച് നിങ്ങൾക്ക് എന്തെങ്കിലും ചോദ്യങ്ങളുണ്ടെങ്കിൽ, ദയവായി ഞങ്ങളെ ബന്ധപ്പെടുക:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -8531,7 +8531,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>ਮੋਬਾਈਲ ਜਾਂ ਵੈੱਬ ਉੱਤੇ Settings → Delete Account ਵਰਤੋ। ਪਹਿਲਾਂ ਰਿਕਾਰਡ ਰੱਖਣ ਦੀ ਲੋੜ ਜਾਂਚੀ ਜਾਂਦੀ ਹੈ।</p>
 <p>ਲੋੜ ਹੋਣ ਤੇ ਆਪਣੇ ਆਪ ਮਿਟਾਉਣਾ ਰੁਕਦਾ ਹੈ; ਖਾਤਾ, ਦੁਕਾਨ ਦੇ ਰਿਕਾਰਡ ਅਤੇ ਸਾਈਨ-ਇਨ ਪਛਾਣ ਰਹਿੰਦੇ ਹਨ। ਬੰਦ ਕਰਨ ਦੀ ਸਮੀਖਿਆ ਅਤੇ ਗੈਰਜ਼ਰੂਰੀ ਡਾਟਾ ਹਟਾਉਣ ਲਈ ਸਹਾਇਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।</p>
 <p>ਇਜਾਜ਼ਤ ਹੋਣ ਤੇ ਯੋਗ ਖਾਤੇ, ਆਪਣੀਆਂ ਦੁਕਾਨਾਂ ਦਾ ਡਾਟਾ ਅਤੇ ਸਾਂਝੀ ਮੈਂਬਰਸ਼ਿਪ ਹਟਦੇ ਹਨ, ਫਿਰ Clerk ਸਾਈਨ-ਇਨ ਪਛਾਣ ਮਿਟਦੀ ਹੈ। ਸਿਰਫ਼ ਦੁਕਾਨ ਮਿਟਾਉਣ ਨਾਲ ਖਾਤਾ ਚਾਲੂ ਰਹਿੰਦਾ ਹੈ।</p>
-<p>ਮਿਟਾਉਣਾ ਪੱਕਾ ਹੈ; ਪਹਿਲਾਂ ਡਾਟਾ ਐਕਸਪੋਰਟ ਕਰੋ। ਕੋਈ ਪੜਾਅ ਅਸਫਲ ਜਾਂ ਅਨਿਸ਼ਚਿਤ ਹੋਵੇ ਤਾਂ ਮਿਟਾਉਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ—ਸਾਈਨ ਇਨ ਰਹਿ ਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਸਹਾਇਤਾ ਲਵੋ।</p><p><a href="/delete-account">ਖਾਤਾ ਮਿਟਾਉਣਾ</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>ਮਿਟਾਉਣਾ ਪੱਕਾ ਹੈ; ਪਹਿਲਾਂ ਡਾਟਾ ਐਕਸਪੋਰਟ ਕਰੋ। ਕੋਈ ਪੜਾਅ ਅਸਫਲ ਜਾਂ ਅਨਿਸ਼ਚਿਤ ਹੋਵੇ ਤਾਂ ਮਿਟਾਉਣ ਦੀ ਪੁਸ਼ਟੀ ਨਹੀਂ—ਸਾਈਨ ਇਨ ਰਹਿ ਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਸਹਾਇਤਾ ਲਵੋ।</p><p><a href="/delete-account">ਖਾਤਾ ਮਿਟਾਉਣਾ</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -8579,7 +8579,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11. ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰੋ</h2></summary>
       <div class="section-content">
         <p>ਜੇਕਰ ਤੁਹਾਡੇ ਕੋਲ ਇਸ ਗੋਪਨੀਯਤਾ ਨੀਤੀ ਜਾਂ ਤੁਹਾਡੇ ਡੇਟਾ ਬਾਰੇ ਕੋਈ ਸਵਾਲ ਹਨ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਸਾਡੇ ਨਾਲ ਇੱਥੇ ਸੰਪਰਕ ਕਰੋ:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -8777,7 +8777,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>15. ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰੋ</h2></summary>
       <div class="section-content">
         <p>ਜੇਕਰ ਇਹਨਾਂ ਨਿਯਮਾਂ ਬਾਰੇ ਤੁਹਾਡੇ ਕੋਈ ਸਵਾਲ ਹਨ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਸਾਡੇ ਨਾਲ ਇੱਥੇ ਸੰਪਰਕ ਕਰੋ:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -9506,7 +9506,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
 <p>ମୋବାଇଲ୍ କିମ୍ବା ୱେବରେ Settings → Delete Account ବ୍ୟବହାର କରନ୍ତୁ। ପ୍ରଥମେ ରେକର୍ଡ ରଖିବା ଆବଶ୍ୟକତା ଯାଞ୍ଚ ହୁଏ।</p>
 <p>ଆବଶ୍ୟକ ହେଲେ ନିଜେ ହଟାଇବା ବନ୍ଦ ରହେ; ଖାତା, ଦୋକାନ ରେକର୍ଡ ଓ ସାଇନ୍-ଇନ୍ ପରିଚୟ ରହେ। ବନ୍ଦ କରିବା ସମୀକ୍ଷା ଓ ଅନାବଶ୍ୟକ ତଥ୍ୟ ହଟାଇବା ପାଇଁ ସହାୟତାକୁ ଲେଖନ୍ତୁ।</p>
 <p>ଅନୁମତି ଥିଲେ ଯୋଗ୍ୟ ଖାତା, ନିଜ ଦୋକାନର ତଥ୍ୟ ଓ ସାଝା ସଦସ୍ୟତା ହଟେ, ପରେ Clerk ସାଇନ୍-ଇନ୍ ପରିଚୟ ହଟେ। କେବଳ ଦୋକାନ ହଟାଇଲେ ଖାତା ଚାଲୁ ରହେ।</p>
-<p>ହଟାଇବା ସ୍ଥାୟୀ; ପ୍ରଥମେ ତଥ୍ୟ ଏକ୍ସପୋର୍ଟ କରନ୍ତୁ। ପଦକ୍ଷେପ ବିଫଳ ବା ଫଳ ଅନିଶ୍ଚିତ ହେଲେ ହଟିବା ନିଶ୍ଚିତ ନୁହେଁ—ସାଇନ୍ ଇନ୍ ରହି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ସହାୟତା ନିଅନ୍ତୁ।</p><p><a href="/delete-account">6। ଖାତା ବିଲୋପ</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>ହଟାଇବା ସ୍ଥାୟୀ; ପ୍ରଥମେ ତଥ୍ୟ ଏକ୍ସପୋର୍ଟ କରନ୍ତୁ। ପଦକ୍ଷେପ ବିଫଳ ବା ଫଳ ଅନିଶ୍ଚିତ ହେଲେ ହଟିବା ନିଶ୍ଚିତ ନୁହେଁ—ସାଇନ୍ ଇନ୍ ରହି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ କିମ୍ବା ସହାୟତା ନିଅନ୍ତୁ।</p><p><a href="/delete-account">6। ଖାତା ବିଲୋପ</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -9554,7 +9554,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>11 ଆମ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ |</h2></summary>
       <div class="section-content">
         <p>ଏହି ଗୋପନୀୟତା ନୀତି କିମ୍ବା ଆପଣଙ୍କର ତଥ୍ୟ ବିଷୟରେ ଯଦି ଆପଣଙ୍କର କିଛି ପ୍ରଶ୍ନ ଅଛି, ଦୟାକରି ଆମ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ:</p>
-        <p><strong>27Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>27Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
@@ -9752,7 +9752,7 @@ export const translatedHtml: Partial<Record<Locale, LocalizedPageHtml>> = {
       <summary><h2>ଆମ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ |</h2></summary>
       <div class="section-content">
         <p>ଯଦି ଏହି ସର୍ତ୍ତାବଳୀ ବିଷୟରେ ଆପଣଙ୍କର କିଛି ପ୍ରଶ୍ନ ଅଛି, ଦୟାକରି ଆମ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ:</p>
-        <p><strong>27Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>27Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 

@@ -138,7 +138,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
 <p>Use Settings → Delete Account on mobile or web. We check record retention before deletion.</p>
 <p>If retention is required, self-service deletion is blocked and your account, shop records and sign-in identity remain. Contact support to request a closure review and removal of data that does not need to be retained.</p>
 <p>Where deletion is allowed, eligible account and owned-shop data and shared-shop memberships are removed, then your Clerk sign-in identity is deleted. Deleting only a shop leaves your account active.</p>
-<p>Allowed deletion is permanent; export needed data first. If a step fails or its result is uncertain, deletion is not confirmed—stay signed in and retry or contact support.</p><p><a href="/delete-account">Account Deletion</a></p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+<p>Allowed deletion is permanent; export needed data first. If a step fails or its result is uncertain, deletion is not confirmed—stay signed in and retry or contact support.</p><p><a href="/delete-account">Account Deletion</a></p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
 </div>
     </details>
 
@@ -166,7 +166,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
           <li><strong>Control preferences:</strong> Modify your language, display, and voice settings at any time</li>
           <li><strong>Withdraw from shops:</strong> Leave any shop you are a member of</li>
         </ul>
-      <p>You can email support to request removal of data that is not required, without deleting the whole account. We review the request against fiscal, accounting, dispute and legal retention obligations. Required records and their necessary identity links may remain; this is not an automatic deletion promise.</p><p><a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p></div>
+      <p>You can email support to request removal of data that is not required, without deleting the whole account. We review the request against fiscal, accounting, dispute and legal retention obligations. Required records and their necessary identity links may remain; this is not an automatic deletion promise.</p><p><a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p></div>
     </details>
 
     <details id="s10">
@@ -180,7 +180,7 @@ export const privacyHtml = `<div class="reading-progress" id="readingProgress"><
       <summary><h2>11. Contact Us</h2></summary>
       <div class="section-content">
         <p>If you have any questions about this Privacy Policy or your data, please contact us at:</p>
-        <p><strong>Email:</strong> <a href="mailto:meetslimshady07@gmail.com">meetslimshady07@gmail.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:samaan-bol@outlook.com">samaan-bol@outlook.com</a></p>
       </div>
     </details>
 
