@@ -1,7 +1,7 @@
 "use client";
 
 import { useGstText as useUiText } from "./gst-ui";
-import { useState, useRef, type ReactNode } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import {
   useQuery,
   useInfiniteQuery,
@@ -10,7 +10,7 @@ import {
 import { useShop } from "./context";
 import { Button, Card, Notice, Spinner, NoAccess } from "./ui";
 import { TextField, useGstText } from "./gst-ui";
-import { financialScope, assertScope } from "../../lib/shop/gst-storage";
+import { financialScope, assertScope, retainedRequests } from "../../lib/shop/gst-storage";
 import { gstReviewRejection } from "../../lib/shop/gst-core/gst-review-rejection";
 import {
   currentReportMonth,
@@ -59,10 +59,13 @@ export function useGstPages<T>(
 export function ReadState({
   query,
   empty,
+  emptyText,
   children,
 }: {
   query: { isPending: boolean; error: unknown; refetch: () => unknown };
   empty?: boolean;
+  /** What this page's empty list means, and what to do next. */
+  emptyText?: ReactNode;
   children: ReactNode;
 }) {
   const text = useGstText();
@@ -76,7 +79,7 @@ export function ReadState({
         </Button>
       </Card>
     );
-  if (empty) return <Card>{text("No records for this selection.")}</Card>;
+  if (empty) return <Card>{emptyText ?? text("No records for this selection.")}</Card>;
   return <>{children}</>;
 }
 export function More({
@@ -99,7 +102,30 @@ export function More({
     </Button>
   ) : null;
 }
-export function useGstAction() {
+/** Whether this browser holds a GST request still waiting for its outcome. If the check fails, assume it does. */
+function usePendingRequest(check: boolean) {
+  const { shop } = useShop();
+  const [pending, setPending] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!check || !shop) return;
+    let active = true;
+    void (async () => {
+      try {
+        const rows = await retainedRequests(financialScope(shop.id));
+        if (active) setPending(rows.some((row) => row.state === "pending"));
+      } catch {
+        if (active) setPending(true);
+      }
+    })();
+    return () => {
+      active = false;
+      setPending(null);
+    };
+  }, [check, shop]);
+  return pending !== false;
+}
+/** `successText`, when given, is shown after the action completes so the owner sees it worked. */
+export function useGstAction(successText?: string) {
   const { shop, userId } = useShop();
   const text = useGstText();
   const client = useQueryClient();
@@ -107,6 +133,8 @@ export function useGstAction() {
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState(false);
   const running = useRef(false);
+  // Point at recovery only when a saved request is waiting; a plain failure shows the error alone.
+  const recoverable = usePendingRequest(!!error);
   return {
     error,
     busy,
@@ -132,10 +160,12 @@ export function useGstAction() {
     notice: error ? (
       <Card>
         <Notice error={error} />
-        {!gstReviewRejection('turnover',error) && !gstReviewRejection('period',error) ? <Button href="/shop/settings/gst/recovery" tone="quiet">
+        {recoverable && !gstReviewRejection('turnover',error) && !gstReviewRejection('period',error) ? <Button href="/shop/settings/gst/recovery" tone="quiet">
           {text("Keep any saved request and review recovery")}
         </Button> : null}
       </Card>
+    ) : success && successText ? (
+      <p role="status" className="gst-action-success">{successText}</p>
     ) : null,
   };
 }

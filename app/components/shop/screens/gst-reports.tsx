@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useShop } from "../context";
+import { TabList } from "../settings-tabs";
 import { Button, Card, PageHeader, Pill, Notice } from "../ui";
 import {
   Section,
@@ -56,7 +57,7 @@ export function GstExportsScreen() {
         : undefined,
     );
   const params = useSearchParams();
-  const [tab,setTab]=useState(params.get("kind")?"prepare":"history"),[historyKind,setHistoryKind]=useState("all");
+  const [tab,setTab]=useState(params.get("tab")==="history"?"history":"prepare"),[historyKind,setHistoryKind]=useState("all");
   const [kind, setKind] = useState(
       ["sales", "purchases", "numbering"].includes(params.get("kind") ?? "") ? params.get("kind")! : "sales",
     ),
@@ -155,13 +156,13 @@ export function GstExportsScreen() {
     <GstAccess>
       <div className="shop-page gst-workspace gst-export-workspace">
         <PageHeader
-          title={text("GST export history")}
+          title={t("recordsUI.hub.reports", "Reports")}
           back={{ href: base, label: text("GST records") }}
           description={text(
             "Prepare a register for a period or reopen its exact saved file. Reports are for filing elsewhere.",
           )}
         />
-        <div className="gst-workspace-tabs" role="group">{['history','prepare'].map(key=><button key={key} disabled={action.busy||!!pending.current} aria-pressed={tab===key} onClick={()=>setTab(key)}>{t('recordsUI.'+key,key)}</button>)}</div>
+        <TabList className="gst-workspace-tabs" label={t("recordsUI.hub.reports", "Reports")} disabled={action.busy||!!pending.current} value={tab} onChange={setTab} items={['prepare','history'].map(key=>[key,t('recordsUI.'+key,key)] as const)}/>
         {tab==='prepare'?<Card className="stack-form gst-export-prepare">
           <div className="form-grid is-2">
             <SelectField
@@ -230,13 +231,13 @@ export function GstExportsScreen() {
         <Section title={text("More reports & review tools")}>
           <div className="gst-navigation">
             <Link className="gst-nav-row" href={base + "/turnover"}>
-              {text("Business turnover review")} ↗
+              {text("Business turnover review")} →
             </Link>
             <Link className="gst-nav-row" href={base + "/periods"}>
-              {text("GST period review")} ↗
+              {text("GST period review")} →
             </Link>
             <Link className="gst-nav-row" href={base + "/numbers"}>
-              {text("Invoice number register")} ↗
+              {text("Invoice number register")} →
             </Link>
           </div>
           <p className="shop-hint">
@@ -254,7 +255,7 @@ export function GstExportsScreen() {
         </Section>
         {tab==='history'?<><div className="gst-export-toolbar"><SelectField label={text('Register')} value={historyKind} onChange={setHistoryKind} options={[["all",t('common.all','All')],["sales",text('Sales')],["purchases",text('Purchases')],["numbering",text('Invoice numbers')]]}/><Button tone="ghost" disabled={q.isFetching} onClick={()=>void q.refetch()}>{text('Refresh report')}</Button></div>
         <h2 className="shop-section-title">{text("Saved reports")}</h2>
-        <ReadState query={q} empty={!rows.length}>
+        <ReadState query={q} empty={!rows.length} emptyText={t("gstweb.empty.reports", "No saved reports yet. Open Prepare to make this month’s sales register.")}>
           <div className="gst-table-wrap">
             <table className="gst-table gst-mobile-records">
               <thead>
