@@ -1,1 +1,85 @@
 /* Web app review fixes: selling area. New rules for this area go here, scoped under .shop-root. */
+
+/* Sell: the line that was just added or changed flashes once (S05). */
+@keyframes sell-line-added {
+  0% { background-color: rgba(255, 107, 0, 0.22); }
+  100% { background-color: transparent; }
+}
+.shop-root .sale-workspace .bill-line.is-just-added { animation: sell-line-added 700ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .shop-root .sale-workspace .bill-line.is-just-added { animation: none; box-shadow: inset 3px 0 0 #ff9854; }
+}
+
+/* Sell: bigger targets on bill lines and input methods; nothing under 12px (S11, S37). */
+.shop-root .sale-column-head,
+.shop-root .sale-workspace .bill-line { grid-template-columns: minmax(150px, 1fr) 148px 120px 106px 44px; }
+.shop-root .sale-workspace .bill-qty button { width: 40px; height: 44px; }
+.shop-root .sale-workspace .bill-remove { min-height: 44px; min-width: 44px; }
+.shop-root .sale-input-methods > button,
+.shop-root .sale-input-methods > a { min-height: 40px; font-size: 13px; }
+.shop-root .sale-tax-summary { font-size: 12px; }
+@media (max-width: 1199px) and (min-width: 900px) {
+  .shop-root .sale-column-head,
+  .shop-root .sale-workspace .bill-line { grid-template-columns: minmax(120px, 1fr) 134px 96px 88px 44px; }
+  .shop-root .sale-workspace .bill-qty button { width: 36px; }
+}
+@media (max-width: 700px) {
+  /* Keep the existing two-column phone layout. */
+  .shop-root .sale-workspace .bill-line { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .shop-root .sale-workspace .bill-qty button { width: 44px; }
+}
+
+/* Sell: the unconfirmed-bill banner (S01) and in-app confirmations (S12). */
+.shop-root .sell-pending > div { display: grid; gap: 4px; }
+.shop-root .sell-pending strong { font-weight: 600; color: #ffd7bd; }
+.shop-root .sell-pending p { color: #d6d1cf; }
+.shop-root .sell-confirm { display: grid; gap: 20px; }
+.shop-root .sell-confirm p { font-size: 15px; line-height: 1.5; color: #d6d1cf; }
+
+/* Checkout: calm loading, the GST/round-off line, shortcut hint, QR retry (S17, S19, S20, S22). */
+.shop-root .checkout-amount strong.is-loading { color: #8d8a93; }
+@keyframes checkout-amount-wait { 50% { opacity: 0.45; } }
+.shop-root .checkout-amount strong.is-loading { animation: checkout-amount-wait 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .shop-root .checkout-amount strong.is-loading { animation: none; }
+}
+.shop-root .checkout-amount .checkout-amount-note { margin: 8px 0 0; font-size: 13px; color: #c5c2bd; }
+.shop-root .checkout-shortcut { display: flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 12px; color: #aaa8b0; }
+.shop-root .checkout-qr-failed { display: grid; gap: 10px; justify-items: start; }
+.shop-root .checkout-qr-failed img { max-width: 180px; width: 100%; height: auto; border-radius: 5px; background: #fff; padding: 8px; }
+.shop-root .checkout-step { font-size: 12px; }
+.shop-root .checkout-tender .tender-chips .shop-btn { min-height: 40px; }
+
+/* Bill page right after charging (S24, S25). */
+.shop-root .sale-success {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px;
+  margin-bottom: 20px; padding: 20px 24px;
+  border: 1px solid #2f6b4a; border-radius: 5px; background: rgba(46, 160, 98, 0.08);
+}
+.shop-root .sale-success-mark {
+  display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%;
+  background: #2ea062; color: #0d1f15; font-size: 22px; font-weight: 700;
+}
+.shop-root .sale-success-copy { flex: 1 1 220px; min-width: 0; }
+.shop-root .sale-success-copy h2 { font: 600 clamp(24px, 3vw, 32px)/1.15 var(--font-dm-sans), sans-serif; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.shop-root .sale-success-copy p { margin-top: 4px; font-size: 14px; color: #c9d8cf; }
+.shop-root .sale-success-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.shop-root .sale-success-actions .shop-btn { min-height: 44px; }
+.shop-root .sale-success-actions .shop-kbd { margin-left: 8px; }
+.shop-root .sale-success-actions .shop-btn:focus-visible { outline: 2px solid #ff9854; outline-offset: 3px; }
+
+/* Returns: steppers and "All" (S28). */
+.shop-root .sale-return-stepper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.shop-root .sale-return-stepper button {
+  min-width: 44px; min-height: 44px; padding: 0 12px;
+  border: 1px solid #3c3b42; border-radius: 5px; font-size: 16px; color: #e9e6e3; cursor: pointer;
+}
+.shop-root .sale-return-stepper .sale-return-all { font-size: 13px; color: #ff9854; }
+.shop-root .sale-return-stepper button:disabled { opacity: 0.4; cursor: default; }
+.shop-root .sale-return-stepper button:focus-visible { outline: 2px solid #ff9854; outline-offset: 2px; }
+
+/* Refunds: the reason shows on its own, without the raw request id (S33). */
+.shop-root .refund-reason { margin-top: 8px; font-size: 13px; color: #c5c2bd; }
+
+/* Customer search with no match (S16). */
+.shop-root .customer-no-match { display: grid; gap: 8px; justify-items: start; font-size: 13px; color: #c5c2bd; }
