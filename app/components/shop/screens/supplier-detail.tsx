@@ -127,7 +127,7 @@ function History({ name }: { name: string }) {
                   "/shop/suppliers/records/" + encodeURIComponent(supplierId)
                 }
               >
-                {t("directoryUI.business_details", "Business details")} ↗
+                {t("directoryUI.business_details", "Business details")} ›
               </Button>
             ) : null}
           </div>
@@ -244,7 +244,7 @@ function History({ name }: { name: string }) {
                           unit: it.unit,
                         },
                       )}{" "}
-                      ↗
+                      ›
                     </Link>
                   ) : null}
                 </article>

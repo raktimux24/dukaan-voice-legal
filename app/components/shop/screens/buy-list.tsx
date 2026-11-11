@@ -125,7 +125,7 @@ function BuyWorkspace() {
   return (
     <div className="shop-page buy-workspace">
       <PageHeader
-        kicker={t("reports.stock.on_hand", "Stock")}
+        kicker={t("poweb.kicker", "Purchasing")}
         title={t("buy_list.title", "Buy list")}
         description={t(
           "buyweb.intro",
@@ -176,7 +176,7 @@ function BuyWorkspace() {
           ))}
         </div>
         <Button tone="ghost" href="/shop/purchase-orders">
-          {t("po.title", "Purchase orders")} ↗
+          {t("po.title", "Purchase orders")} ›
         </Button>
       </div>
       {section === "list" ? (
@@ -300,7 +300,7 @@ function BuyWorkspace() {
                             item.purchaseOrderId
                               ? "po.open"
                               : item.productId
-                                ? "modal.add_batch.title"
+                                ? "scanner.tab_stock"
                                 : "modal.add_product.title",
                             item.purchaseOrderId
                               ? "Open order"
@@ -448,7 +448,7 @@ function BuyWorkspace() {
                   tone="ghost"
                   href={"/shop/products/new?name=" + encodeURIComponent(d.term)}
                 >
-                  {t("modal.add_product.title", "Add product")} ↗
+                  {t("modal.add_product.title", "Add product")} ›
                 </Button>
                 <Button
                   tone="ghost"

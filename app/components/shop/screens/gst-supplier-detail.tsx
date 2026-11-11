@@ -153,7 +153,7 @@ function Record({ id }: { id: string }) {
                   "/shop/purchase-orders?supplierId=" + encodeURIComponent(id)
                 }
               >
-                {t("po.new", "New purchase order")} ↗
+                {t("po.new", "New purchase order")} ›
               </Button>
               <Button
                 tone="ghost"
@@ -163,14 +163,14 @@ function Record({ id }: { id: string }) {
                   "gst.ui.view_this_supplier_s_invoices_d417c6",
                   "View this supplier’s invoices",
                 )}{" "}
-                ↗
+                ›
               </Button>
               {identity.inventorySupplierName ? (
                 <Button
                   tone="quiet"
                   href={supplierHistoryUrl(identity.inventorySupplierName, id)}
                 >
-                  {t("suppliers.stock_history", "Stock supplier history")} ↗
+                  {t("suppliers.stock_history", "Stock supplier history")} ›
                 </Button>
               ) : null}
             </div>
