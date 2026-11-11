@@ -300,34 +300,6 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
         }
       />
 
-      <Card>
-        <div className="product-batch-head">
-          <h2 className="shop-section-title">{t("modal.analytics.value_trend_title", "Stock history")}</h2>
-          {perms.canEditProducts ? (
-            <Button tone="ghost" size="sm" disabled={snapshotBusy || offline} onClick={() => {
-              setSnapshotBusy(true);
-              setError(null);
-              void api.captureHistory(shop.id).then(async () => {
-                await queryClient.invalidateQueries({ queryKey: ["product-history", shop.id, productId] });
-                await queryClient.invalidateQueries({ queryKey: ["report-history"] });
-                setNotice(uiText("Today’s stock snapshot is saved."));
-              }).catch(setError).finally(() => setSnapshotBusy(false));
-            }}>{snapshotBusy ? t("common.loading", "Saving…") : uiText("Save today’s snapshot")}</Button>
-          ) : null}
-        </div>
-        {isPremiumError(history.error) ? <PremiumLock feature="history" /> : null}
-        {history.error && !isPremiumError(history.error) ? <Notice error={history.error} /> : null}
-        {history.isLoading ? <p className="shop-list-empty">{uiText("Loading stock history")}</p> : null}
-        {!history.isLoading && !history.error && (history.data?.snapshots.length ?? 0) === 0 ? <p className="shop-list-empty">{uiText("No daily snapshots for this product yet.")}</p> : null}
-        <div className="shop-list">
-          {(history.data?.snapshots ?? []).slice(-14).map((row) => (
-            <div key={row.date} className="shop-list-row">
-              <div className="shop-list-main"><p className="shop-list-title">{formatDay(row.date)}</p><p className="shop-list-meta">{row.stockStatus}</p></div>
-              <p className="num">{formatQty(row.quantity, item.unit)}{hideCost ? "" : ` · ${formatINR(row.stockValue)}`}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
       <section className="product-summary">
         <div className="product-summary-photo">
           <ProductGallery
@@ -424,7 +396,7 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
                 disabled={offline}
                 onClick={() => setPanel(panel === "batch" ? null : "batch")}
               >
-                {t("modal.product_detail.add_batch", "Receive stock")}
+                {t("scanner.tab_stock", "Add stock")}
               </Button>
             ) : null}
             {tracksStock && perms.canAdjustStock ? (
@@ -496,6 +468,34 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
           />
         </div>
       ) : null}
+      <Card>
+        <div className="product-batch-head">
+          <h2 className="shop-section-title">{t("modal.analytics.value_trend_title", "Stock history")}</h2>
+          {perms.canEditProducts ? (
+            <Button tone="ghost" size="sm" disabled={snapshotBusy || offline} onClick={() => {
+              setSnapshotBusy(true);
+              setError(null);
+              void api.captureHistory(shop.id).then(async () => {
+                await queryClient.invalidateQueries({ queryKey: ["product-history", shop.id, productId] });
+                await queryClient.invalidateQueries({ queryKey: ["report-history"] });
+                setNotice(uiText("Today’s stock snapshot is saved."));
+              }).catch(setError).finally(() => setSnapshotBusy(false));
+            }}>{snapshotBusy ? t("common.loading", "Saving…") : uiText("Save today’s snapshot")}</Button>
+          ) : null}
+        </div>
+        {isPremiumError(history.error) ? <PremiumLock feature="history" /> : null}
+        {history.error && !isPremiumError(history.error) ? <Notice error={history.error} /> : null}
+        {history.isLoading ? <p className="shop-list-empty">{uiText("Loading stock history")}</p> : null}
+        {!history.isLoading && !history.error && (history.data?.snapshots.length ?? 0) === 0 ? <p className="shop-list-empty">{uiText("No daily snapshots for this product yet.")}</p> : null}
+        <div className="shop-list">
+          {(history.data?.snapshots ?? []).slice(-14).map((row) => (
+            <div key={row.date} className="shop-list-row">
+              <div className="shop-list-main"><p className="shop-list-title">{formatDay(row.date)}</p><p className="shop-list-meta">{row.stockStatus}</p></div>
+              <p className="num">{formatQty(row.quantity, item.unit)}{hideCost ? "" : ` · ${formatINR(row.stockValue)}`}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
       {tracksStock || (batches.data?.length ?? 0) > 0 ? (
         <Card flush className="product-batches">
           <div className="card-intro product-batch-head">
@@ -510,6 +510,7 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
               >
                 <button
                   type="button"
+                  aria-pressed={!showAll}
                   className={!showAll ? "is-active" : undefined}
                   onClick={() => setShowAll(false)}
                 >
@@ -517,6 +518,7 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
                 </button>
                 <button
                   type="button"
+                  aria-pressed={showAll}
                   className={showAll ? "is-active" : undefined}
                   onClick={() => setShowAll(true)}
                 >

@@ -554,7 +554,7 @@ test("Helper detail hides costs, reports and product management while allowing e
       },
     },
   );
-  assert(!btn("Add Batch"));
+  assert(!btn("Add stock"));
   assert(btn("Adjust stock"));
   assert(!document.body.textContent.includes("Margin"));
   assert(!document.body.textContent.includes("Manage product"));

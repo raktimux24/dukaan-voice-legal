@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
-import { Button, Card, Field, Notice, PageHeader, Pill, Spinner } from "../ui";
+import { Button, Card, Field, IllustratedEmpty, Notice, PageHeader, Pill, Spinner } from "../ui";
 import { ProductImage } from "../product-image";
 import { labeledL1 } from "../../../lib/shop/catalog";
 import { formatINR } from "../../../lib/shop/money";
@@ -28,7 +28,7 @@ export function ProductsScreen() {
   return <ProductsWorkspace key={`${shop?.id}:${userId}`} />;
 }
 function ProductsWorkspace() {
-  const { api, shop, userId, perms, offline, hideCost, prefs, t } = useShop(),
+  const { api, shop, userId, perms, offline, hideCost, prefs, setNotice, t } = useShop(),
     params = useSearchParams(),
     router = useRouter(),
     { formatDay } = useShopDates();
@@ -60,6 +60,58 @@ function ProductsWorkspace() {
     () => filterProducts(catalog.data ?? [], filters),
     [catalog.data, filters],
   );
+  const queryClient = useQueryClient();
+  const shortfallView =
+    filters.filter === "low_stock" || filters.filter === "out_of_stock";
+  const buyList = useQuery({
+    queryKey: ["buy-list", shop?.id],
+    enabled: !!shop && perms.canEditProducts && shortfallView,
+    queryFn: () => api.getBuyList(shop!.id),
+  });
+  // Like the mobile alerts screen: add every shown low/out-of-stock product
+  // that is not already pending on the buy list, at its reorder level.
+  const shortfall = shortfallView
+    ? rows.filter(
+        (i) =>
+          i.product.trackStock !== false &&
+          !(buyList.data ?? []).some(
+            (row) => row.productId === i.productId && row.status === "pending",
+          ),
+      )
+    : [];
+  const [addingAll, setAddingAll] = useState(false),
+    [addAllError, setAddAllError] = useState<string | null>(null);
+  const addAllToBuyList = async () => {
+    if (!shop || addingAll) return;
+    setAddingAll(true);
+    setAddAllError(null);
+    let added = 0,
+      failed = 0;
+    for (const i of shortfall) {
+      try {
+        await api.addBuyListItem(shop.id, {
+          itemName: i.product.name,
+          quantity: i.product.minStockLevel > 0 ? i.product.minStockLevel : 1,
+          unit: i.unit,
+          category: i.product.category,
+          productId: i.productId,
+        });
+        added++;
+      } catch {
+        failed++;
+      }
+    }
+    await queryClient.invalidateQueries({ queryKey: ["buy-list", shop.id] });
+    if (added)
+      setNotice(
+        t("modal.alerts.dialog_added_message", "{{n}} item(s) added to Buy List", { n: added }),
+      );
+    if (failed)
+      setAddAllError(
+        t("modal.alerts.toast_buy_list_fail", "Failed to add to buy list"),
+      );
+    setAddingAll(false);
+  };
   const active = (catalog.data ?? []).filter(
     (i) => i.product.isActive !== false,
   );
@@ -159,16 +211,21 @@ function ProductsWorkspace() {
         actions={
           <>
             <Button
-              tone="ghost"
+              tone="quiet"
               disabled={catalog.isFetching}
               onClick={() => void catalog.refetch()}
             >
               {t("common.refresh", "Refresh")}
             </Button>
             {perms.canEditProducts ? (
-              <Button href="/shop/products/new">
-                ＋ {t("products.add", "Add product")}
-              </Button>
+              <>
+                <Button tone="ghost" href="/shop/products/import">
+                  {t("imports.title", "Import products")}
+                </Button>
+                <Button href="/shop/products/new">
+                  ＋ {t("modal.add_product.title", "Add product")}
+                </Button>
+              </>
             ) : null}
           </>
         }
@@ -237,9 +294,6 @@ function ProductsWorkspace() {
                   </Button>
                   <Button tone="ghost" href="/shop/products/barcodes">
                     {t("barcodes.title", "Product barcodes")}
-                  </Button>
-                  <Button tone="ghost" href="/shop/products/import">
-                    {t("imports.title", "Import products")}
                   </Button>
                   <Button tone="ghost" href="/shop/products/bulk">
                     {t("bulk.history", "Recent bulk selections")}
@@ -368,6 +422,21 @@ function ProductsWorkspace() {
             ) : null}
           </div>
         ) : null}
+        {perms.canEditProducts && shortfallView && buyList.data && (shortfall.length || addAllError) ? (
+          <div className="products-shortfall" role="status">
+            {shortfall.length ? (
+              <Button
+                disabled={addingAll || offline}
+                onClick={() => void addAllToBuyList()}
+              >
+                {t("modal.alerts.add_to_buy_list", "Add {{n}} item(s) to Buy List", {
+                  n: shortfall.length,
+                })}
+              </Button>
+            ) : null}
+            {addAllError ? <p role="alert">{addAllError}</p> : null}
+          </div>
+        ) : null}
         <Notice error={catalog.error} />
         {catalog.isPending ? (
           <Spinner label={t("web.gst.loading_products", "Loading products")} />
@@ -468,14 +537,30 @@ function ProductsWorkspace() {
                     ) : null}
                   </div>
                   <span className="products-arrow" aria-hidden="true">
-                    ↗
+                    ›
                   </span>
                 </Link>
               </div>
             );
           })}
         </div>
-        {!catalog.isPending && !catalog.isError && !rows.length ? (
+        {!catalog.isPending && !catalog.isError && !active.length && perms.canEditProducts ? (
+          <IllustratedEmpty
+            icon="package"
+            title={t("home.empty_title", "No products yet")}
+            body={t("home.empty_subtitle", "Add your first product to start tracking inventory")}
+            action={
+              <div className="shop-actions">
+                <Button href="/shop/products/new">
+                  {t("modal.add_product.title", "Add product")}
+                </Button>
+                <Button tone="ghost" href="/shop/products/import">
+                  {t("imports.title", "Import products")}
+                </Button>
+              </div>
+            }
+          />
+        ) : !catalog.isPending && !catalog.isError && !rows.length ? (
           <div className="products-empty">
             <h3>{t("products.empty_filtered", "No products in this view.")}</h3>
             <Button
