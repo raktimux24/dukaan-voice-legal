@@ -4552,3 +4552,8 @@ button.opening-record:hover { border-color:#ff9857;background:rgba(255,107,0,.04
 @media (max-width: 480px) {
   .shop-root .auth-panel { padding: 24px 20px; }
 }
+
+/* The sign-in drawing: a shopkeeper raising the shutter (near-square artwork). */
+.shop-root .auth-scene { padding-bottom: 40px; }
+.shop-root .auth-scene > img { width: 76%; margin: 12px 0 0 -2%; }
+.shop-root .auth-sale { width: min(280px, 54%); }

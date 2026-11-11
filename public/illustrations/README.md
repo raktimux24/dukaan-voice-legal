@@ -46,3 +46,7 @@ Lighting: dramatic soft grazing studio light, physically realistic ambient occlu
 Palette: nearly black #09090B background, graphite #171719, warm ivory #E8DFD1, Samaan Bol saffron #FF6B00. Darkness must dominate. Edges of background fade to exact near-black so art integrates seamlessly.
 Constraints: No text, no letters, no numbers, no logo, no UI, no form, no icons, no people, no banknotes, no coins, no purple/blue neon, no glowing sci-fi circuitry, no glass bubbles, no lens flare. Crisp, original, understated.
 ```
+
+## Sign-in illustration
+
+`auth-shop-opening.webp` (789 × 717, approximately 191 KiB) is an original, decorative illustration of a fictional shopkeeper raising the shop shutter, generated on 2026-11-12 with a GPT image model using `kirana-hero.webp` as the style reference. The solid black background was removed locally (edge flood fill to alpha) and the canvas cropped to the artwork. It replaces `auth-receipt-sculpture.webp` on the sign-in screen; that file is no longer used there.
