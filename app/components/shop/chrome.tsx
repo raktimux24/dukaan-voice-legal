@@ -90,7 +90,7 @@ const GROUPS: NavGroup[] = [
       { href: '/shop/products', label: 'Products', key: 'products.title', icon: 'products' },
       { href: '/shop/buy-list', label: 'Buy list', key: 'nav.buy_list', icon: 'buy', show: (p) => p.canEditProducts },
       { href: '/shop/purchase-orders', label: 'Purchase orders', key: 'po.title', icon: 'orders', show: (p) => p.canEditProducts },
-      { href: '/shop/purchases?list=1', label: 'Supplier invoices', key: 'gst.ui.supplier_invoices_30bf2e', icon: 'bills', show: (p) => p.canSeeCost },
+      { href: '/shop/purchases', label: 'Supplier invoices', key: 'gst.ui.supplier_invoices_30bf2e', icon: 'bills', show: (p) => p.canSeeCost },
       { href: '/shop/suppliers', label: 'Suppliers', key: 'suppliers.title', icon: 'suppliers', show: (p) => p.canSeeCost },
     ],
   },
@@ -130,31 +130,23 @@ function isActive(pathname: string, target: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Letter shortcuts must never fire while typing, inside a dialog, or from a barcode scanner burst. */
+/** Alt+V opens voice and Alt+N starts a sale. A modifier is required so a barcode scanner, which types plain characters, can never trigger them. */
 function useShellShortcuts(enabled: boolean, shortcuts: Record<string, string | null>) {
   const router = useRouter();
   const voice = shortcuts.v ?? null;
   const sale = shortcuts.n ?? null;
   useEffect(() => {
     if (!enabled) return;
-    let last = 0;
-    let timer = 0;
     const onKey = (event: KeyboardEvent) => {
-      const burst = event.timeStamp - last < 80;
-      last = event.timeStamp;
-      if (timer) { window.clearTimeout(timer); timer = 0; }
-      if (burst || event.defaultPrevented || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      const target = event.target as HTMLElement | null;
-      if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+      if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat || event.defaultPrevented) return;
       if (document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return;
-      const key = event.key.toLowerCase();
-      const href = key === 'v' ? voice : key === 'n' ? sale : null;
+      const href = event.code === 'KeyV' ? voice : event.code === 'KeyN' ? sale : null;
       if (!href) return;
-      // Wait briefly: scanners type the next character within a few ms, which cancels this.
-      timer = window.setTimeout(() => { timer = 0; router.push(href); }, 90);
+      event.preventDefault();
+      router.push(href);
     };
     window.addEventListener('keydown', onKey);
-    return () => { window.removeEventListener('keydown', onKey); window.clearTimeout(timer); };
+    return () => window.removeEventListener('keydown', onKey);
   }, [enabled, voice, sale, router]);
 }
 
@@ -283,13 +275,13 @@ export function ShopChrome({ children, onSignOut }: { children: ReactNode; onSig
           <div className="shop-topbar-actions">
             {/* The counter has its own voice button, which respects a bill that is still being saved. */}
             {showNav && !atCounter ? (
-              <Link href="/shop/voice" className="shop-topbar-voice" aria-label={voiceLabel} aria-keyshortcuts="V" title={`${voiceLabel} (V)`}>
+              <Link href="/shop/voice" className="shop-topbar-voice" aria-label={voiceLabel} aria-keyshortcuts="Alt+V" title={`${voiceLabel} (Alt+V)`}>
                 <Icon name="mic" />
               </Link>
             ) : null}
             {showNav ? <AlertsBell /> : null}
             {canStartSale ? (
-              <Button href="/shop/sell" icon="plus" shortcut="N" title={`${newSaleLabel} (N)`} className="shop-topbar-new">{newSaleLabel}</Button>
+              <Button href="/shop/sell" icon="plus" shortcut="Alt+N" title={`${newSaleLabel} (Alt+N)`} className="shop-topbar-new">{newSaleLabel}</Button>
             ) : null}
             <UserButton />
             <button type="button" className="text-sm text-muted hover:text-ink" onClick={onSignOut}>

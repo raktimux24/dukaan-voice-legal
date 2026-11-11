@@ -350,7 +350,7 @@ export function CheckoutScreen() {
     cartApi.draft.state!=='saved'?t('counter.draft_'+cartApi.draft.state,''):'';
   const methodIcons={cash:'wallet',upi:'qr',card:'card',credit:'user',split:'clipboard'} as const;
   const applyDiscount=(value:string)=>{setDiscountInput(value);const amount=value.trim()?checkoutMoney(value):0;if(amount!==null)cartApi.patch({billDiscount:amount});};
-  const confirmKey=(event:React.KeyboardEvent)=>{if(event.key!=='Enter'||!(event.ctrlKey||event.metaKey)||event.defaultPrevented)return;event.preventDefault();if(!busy&&perms.canSell&&canCharge&&!cartApi.pending)void handleCharge(false);};
+  const confirmKey=(event:React.KeyboardEvent)=>{if(event.key!=='Enter'||!(event.ctrlKey||event.metaKey)||event.defaultPrevented||event.repeat)return;event.preventDefault();if(!busy&&perms.canSell&&canCharge&&!cartApi.pending)void handleCharge(false);};
   const refreshBilling=()=>{void settings.refetch();if(taxRequired)void taxSnapshot.refetch();if(roundingEnabled)void rounding.refetch();if(missingMrp.length)void mrpSnapshot.refetch();};
   return (
     <div className="shop-page checkout-workspace" onKeyDown={confirmKey}>
