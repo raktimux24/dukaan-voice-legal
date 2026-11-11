@@ -316,7 +316,11 @@ function ActivityWorkspace() {
           <section className="activity-day" key={day.day}>
             <div className="activity-day-heading">
               <h2>{dayName(day.day)}</h2>
-              <span>{day.logs.length}</span>
+              <span>
+                {t("activityweb.day_count", "{{n}} entries", {
+                  n: day.logs.length,
+                })}
+              </span>
             </div>
             <ol className="activity-journal">
               {day.logs.map((log) => {
@@ -349,17 +353,19 @@ function ActivityWorkspace() {
                       <div className="activity-entry-foot">
                         <div className="activity-attribution">
                           <span>{who}</span>
-                          <span
-                            className={
-                              "activity-source " +
-                              (log.inputMethod === "voice" ? "is-voice" : "")
-                            }
-                          >
-                            {log.inputMethod === "voice" ? (
-                              <span aria-hidden="true">◖</span>
-                            ) : null}
-                            {activitySource(log.inputMethod, text)}
-                          </span>
+                          {log.inputMethod !== "manual" ? (
+                            <span
+                              className={
+                                "activity-source " +
+                                (log.inputMethod === "voice" ? "is-voice" : "")
+                              }
+                            >
+                              {log.inputMethod === "voice" ? (
+                                <span aria-hidden="true">◖</span>
+                              ) : null}
+                              {activitySource(log.inputMethod, text)}
+                            </span>
+                          ) : null}
                         </div>
                         {target ? (
                           <Link
@@ -367,7 +373,7 @@ function ActivityWorkspace() {
                             href={target.href}
                           >
                             {text(target.label)}{" "}
-                            <span aria-hidden="true">↗</span>
+                            <span aria-hidden="true">→</span>
                           </Link>
                         ) : null}
                       </div>
