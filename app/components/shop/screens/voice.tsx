@@ -11,18 +11,64 @@ import {useShop} from '../context';
 import {VoiceCapture,SpeechAudio} from '../voice-capture';
 import {useGstText} from '../gst-ui';
 import {Button,Card,Field,Notice,PremiumLock,Spinner,inputClass} from '../ui';
+import {ApiError} from '../../../lib/shop/api';
+import {SUPPORTED_LANGUAGES} from '../../../lib/shop/languages';
 import {readCart,writeCart} from '../../../lib/shop/cart';
 import {appendVoiceSale,confirmStockOnce,editVoiceEntity,voiceEntityValid,voiceSalePlan,type VoiceStockAttempt} from '../../../lib/shop/voice-review';
 import type {VoiceProcessResponse,VoiceConfirmResponse,VoiceEntityWithMatch} from '../../../lib/shop/voice-types';
+
+/** Same phrases as the mobile app (src/constants/voice-examples.ts): a sale, a delivery, a stock question. */
+const VOICE_EXAMPLES: Record<string, readonly [string, string, string]> = {
+  en: ['Sold 2 packets of Maggi', '5 kg rice came in', 'How much sugar is left?'],
+  hinglish: ['Maggi 2 packet becha', 'Chawal 5 kilo aaya hai', 'Cheeni kitni bachi hai?'],
+  hi: ['मैगी 2 पैकेट बेचा', 'चावल 5 किलो आया है', 'चीनी कितनी बची है?'],
+  bn: ['ম্যাগি 2 প্যাকেট বিক্রি করেছি', 'চাল 5 কেজি এসেছে', 'চিনি কতটা বাকি আছে?'],
+  ta: ['மேகி 2 பாக்கெட் விற்றேன்', 'அரிசி 5 கிலோ வந்தது', 'சர்க்கரை எவ்வளவு இருக்கு?'],
+  te: ['మ్యాగీ 2 ప్యాకెట్లు అమ్మాను', 'బియ్యం 5 కిలోలు వచ్చాయి', 'చక్కెర ఎంత మిగిలింది?'],
+  mr: ['मॅगी 2 पॅकेट विकले', 'तांदूळ 5 किलो आले', 'साखर किती उरली आहे?'],
+  kn: ['ಮ್ಯಾಗಿ 2 ಪ್ಯಾಕೆಟ್ ಮಾರಿದೆ', 'ಅಕ್ಕಿ 5 ಕಿಲೋ ಬಂದಿದೆ', 'ಸಕ್ಕರೆ ಎಷ್ಟು ಉಳಿದಿದೆ?'],
+  gu: ['મેગી 2 પેકેટ વેચ્યા', 'ચોખા 5 કિલો આવ્યા', 'ખાંડ કેટલી બાકી છે?'],
+  ml: ['മാഗി 2 പാക്കറ്റ് വിറ്റു', 'അരി 5 കിലോ വന്നു', 'പഞ്ചസാര എത്ര ബാക്കിയുണ്ട്?'],
+};
+
+/** Server voice codes (and browser failures) mapped to the app's own voice messages, never GST copy. */
+const VOICE_ERRORS: Record<string, readonly [string, string]> = {
+  voice_upstream: ['modal.voice.err.voice_upstream', 'Voice service is temporarily unavailable. Please try again shortly.'],
+  voice_busy: ['modal.voice.err.voice_busy', 'Voice service is busy. Please wait a moment and try again.'],
+  voice_timeout: ['modal.voice.err.voice_timeout', 'That took too long. Please try again.'],
+  voice_failed: ['modal.voice.err.voice_failed', "Couldn't process that. Please try again."],
+  not_understood: ['modal.voice.err.not_understood', "Couldn't understand the command. Please try again."],
+  network: ['modal.voice.err.network', "Can't reach the server. Check your internet connection."],
+  session: ['modal.voice.err.session', 'Your session expired. Please sign in again.'],
+};
+const VOICE_FALLBACK = VOICE_ERRORS.voice_failed;
+
+function voiceErrorCode(error: unknown): string | null {
+  if (error instanceof ApiError) {
+    if (VOICE_ERRORS[error.code]) return error.code;
+    if (error.status === 401) return 'session';
+    if (error.status === 429) return 'voice_busy';
+    if (error.status >= 500) return 'voice_upstream';
+    return null;
+  }
+  if (error instanceof TypeError) return 'network';
+  if (error instanceof Error) {
+    if (error.name === 'TimeoutError') return 'voice_timeout';
+    if (VOICE_ERRORS[error.message]) return error.message;
+  }
+  return null;
+}
 
 export function VoiceScreen({intercepted=false}:{intercepted?:boolean}){
   const {userId,shop,prefs,t}=useShop();
   const router=useRouter();
   const params=useSearchParams();
   const context=params.get('mode')==='sell'?'counter':'inventory';
-  return <VoiceSheet title={t('a11y.voice','Voice command')} closeLabel={t('common.close','Close')} onClose={()=>intercepted?router.back():router.replace(context==='counter'?'/shop/sell':'/shop')}><VoiceWorkspace key={`${userId}:${shop?.id}:${prefs?.voiceLanguage}:${context}`} context={context}/></VoiceSheet>;
+  // Like the mobile app, closing (or Done) returns to wherever voice was opened from.
+  const close=()=>intercepted?router.back():router.replace(context==='counter'?'/shop/sell':'/shop');
+  return <VoiceSheet title={t('a11y.voice','Voice command')} closeLabel={t('common.close','Close')} onClose={close}><VoiceWorkspace key={`${userId}:${shop?.id}:${prefs?.voiceLanguage}:${context}`} context={context} onDone={close}/></VoiceSheet>;
 }
-function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
+function VoiceWorkspace({context,onDone}:{context:'counter'|'inventory';onDone:()=>void}) {
   const {api,userId,shop,prefs,perms,premium,t,hideCost,offline}=useShop();
   const text=useGstText();const router=useRouter();const client=useQueryClient();
   const alive=useRef(true);const attempted=useRef(false);
@@ -81,20 +127,37 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
       }
     } finally {if(alive.current)setBusy(false);}
   };
+  const voiceLanguage=prefs?.voiceLanguage??'en';
+  const languageName=SUPPORTED_LANGUAGES.find(item=>item.code===voiceLanguage)?.label??voiceLanguage;
+  // After a command is heard, only map explicit voice codes; other save errors keep their own message.
+  const errorCode=response?(error instanceof ApiError&&VOICE_ERRORS[error.code]?error.code:error instanceof TypeError?'network':null):voiceErrorCode(error);
+  const examplesLang=voiceLanguage==='hinglish'?'hi-Latn':voiceLanguage;
   return <div className="shop-page shop-voice-content">
-    <nav className="voice-stages" aria-label={t('a11y.voice','Voice command')}>{[t('a11y.voice','Voice'),t('modal.voice.verify','Please verify'),t('modal.voice.done_title','Done!')].map((label,i)=><span key={i} aria-current={i===(result?2:response?1:0)?'step':undefined}><b>0{i+1}</b>{label}</span>)}</nav><p className="shop-hint">{t('modal.voice.verify_command','Please verify the command')}</p>{offline?<p role="status">{t('voiceweb.offline','Connect to the internet to use voice.')}</p>:null}
+    <nav className="voice-stages" aria-label={t('a11y.voice','Voice command')}>{[t('a11y.voice','Voice'),t('modal.voice.verify','Please verify'),t('modal.voice.done_title','Done!')].map((label,i)=><span key={i} aria-current={i===(result?2:response?1:0)?'step':undefined}><b>0{i+1}</b>{label}</span>)}</nav>
+    {response&&!result?<p className="shop-hint">{t('modal.voice.verify_command','Please verify the command')}</p>:null}{offline?<p role="status">{t('voiceweb.offline','Connect to the internet to use voice.')}</p>:null}
     {!premium?<PremiumLock feature="voice"/>:<>
-      <Notice error={error}/>
-      {!response?<Card className="voice-record-panel"><VoiceCapture disabled={busy||offline} onRecorded={async recording=>{
+      {/* Before a command is heard every failure is a voice failure; afterwards unknown save errors keep their own message. */}
+      <Notice error={errorCode?Error(errorCode):error} messages={VOICE_ERRORS} fallback={response?undefined:VOICE_FALLBACK}/>
+      {!response?<Card className="voice-record-panel">
+        <div className="voice-intro">
+          <p className="voice-intro-title">{t('homeweb.voice_prompt','Say what you sold, what came in, or ask about stock.')}</p>
+          <p className="shop-hint">{t('lang_picker.voice_language','Voice Language')}: <span lang={examplesLang}>{languageName}</span></p>
+        </div>
+        <VoiceCapture disabled={busy||offline} onRecorded={async recording=>{
         setError(null);setBusy(true);
-        try {const processed=await api.processVoice(shop.id,recording,prefs?.voiceLanguage??'en',context,prefs?.voiceFeedbackEnabled!==false);if(alive.current){if(processed.error)throw Error(processed.code??'voice_failed');setResponse(processed);setEntities(processed.entities);}}
+        try {const processed=await api.processVoice(shop.id,recording,voiceLanguage,context,prefs?.voiceFeedbackEnabled!==false);if(alive.current){if(processed.error)throw Error(processed.code??'voice_failed');setResponse(processed);setEntities(processed.entities);}}
         catch(caught){if(alive.current)setError(caught);throw caught;}finally{if(alive.current)setBusy(false);}
-      }}/></Card>:<>
+      }}/>
+        <div className="voice-examples">
+          <p className="shop-hint">{t('homeweb.voice_try_saying','Try saying')}</p>
+          <ul lang={examplesLang}>{(VOICE_EXAMPLES[voiceLanguage]??VOICE_EXAMPLES.en).map(phrase=><li key={phrase}>“{phrase}”</li>)}</ul>
+        </div>
+      </Card>:<>
         <Card className="voice-transcript"><p>{t('modal.voice.heard','Heard: "{{transcript}}"',{transcript:response.transcript})}</p>
-          <p className="shop-hint">{t(response.overallConfidence>80?'modal.voice.high_confidence':'modal.voice.verify',response.overallConfidence>80?'High Confidence':'Please verify')} · {Math.max(0,Math.min(100,response.overallConfidence))}%</p>{response.analyticsResult?<p>{response.analyticsResult.answer}</p>:null}
+          <p className="shop-hint">{t(response.overallConfidence>80?'modal.voice.high_confidence':'modal.voice.verify',response.overallConfidence>80?'High Confidence':'Please verify')}</p>{response.analyticsResult?<p>{response.analyticsResult.answer}</p>:null}
           <SpeechAudio base64={response.analyticsResult?.ttsAudioBase64??response.sale?.ttsAudioBase64??response.ttsAudioBase64} label={t('brief.listen','Listen')}/>
         </Card>
-        {!entities.length&&!response.analyticsResult?<Card><p>{t('modal.voice.err.not_understood',"Couldn't understand the command. Please try again.")}</p></Card>:null}
+        {!entities.length&&!response.analyticsResult?<Card><p><strong>{t('homeweb.voice_not_understood_title',"Didn't catch a command")}</strong></p><p className="shop-hint">{t('homeweb.voice_not_understood_body','Say the item, how much, and what happened.')}</p></Card>:null}
         {entities.map((entity,index)=><Card key={index} className="stack-form voice-review-line">
           <ProductImageById productId={entity.matchedProduct?.id} name={entity.matchedProduct?.name??entity.product} size={40}/>
           {!entity.matchedProduct?<p className="shop-hint">{entity.product}</p>:null}
@@ -112,10 +175,10 @@ function VoiceWorkspace({context}:{context:'counter'|'inventory'}) {
         {response.sale?.paymentHint?<p>{t('modal.voice.entity_payment','Payment')}: {t(`modal.voice.payment_hint.${response.sale.paymentHint}`,response.sale.paymentHint)}</p>:null}
         {catalog.error?<Notice error={catalog.error}/>:null}
         {retrySale?<Card><p>{t('voice.stock_saved','Stock changes are saved. Retry adding the sale to your cart; stock will not be updated again.')}</p></Card>:null}
-        {hasSales||mutations.length?<Button disabled={offline||!valid||busy||(attempted.current&&!retrySale)} onClick={()=>void confirm()}>{busy?t('common.loading','Loading...'):hasSales?t('modal.voice.to_checkout','Add to cart & checkout'):t('modal.voice.update_stock_not_sale','Update stock (not a sale)')}</Button>:null}
+        {hasSales||mutations.length?<Button disabled={offline||!valid||busy||(attempted.current&&!retrySale)} onClick={()=>void confirm()}>{busy?(hasSales?t('modal.voice.processing','Processing...'):t('modal.voice.confirming','Updating inventory...')):hasSales?t('modal.voice.to_checkout','Add to cart & checkout'):t('modal.voice.update_stock_not_sale','Update stock (not a sale)')}</Button>:null}
         {result?<Card>{result.results.map((row,index)=><p key={index}>{t('modal.voice.stock_change','{{product}}: {{old}} → {{new}}',{product:row.product,old:row.previousQuantity,new:row.newQuantity})} · {row.success?t('modal.voice.done_title','Done!'):t('modal.voice.error_title','Something went wrong')}</p>)}<SpeechAudio base64={result.ttsAudioBase64} label={t('brief.listen','Listen')}/></Card>:null}
         {uncertain?<Card><p>{t('voice.stock_outcome_unknown','The stock update could not be confirmed. Check your products and activity before trying the command again.')}</p><Button href="/shop/products" tone="ghost">{text('Products')}</Button></Card>:null}
-        {!attempted.current?<Button tone="ghost" onClick={()=>{setResponse(null);setEntities([]);setError(null);}}>{t('common.cancel','Cancel')}</Button>:<Button href="/shop/products" tone="ghost">{t('modal.voice.done_button','Done')}</Button>}
+        {!attempted.current?<Button tone="ghost" onClick={()=>{setResponse(null);setEntities([]);setError(null);}}>{t('common.cancel','Cancel')}</Button>:<Button tone="ghost" onClick={onDone}>{t('modal.voice.done_button','Done')}</Button>}
       </>}
     </>}
   </div>;

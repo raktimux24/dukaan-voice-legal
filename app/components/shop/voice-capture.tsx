@@ -2,14 +2,29 @@
 import {useEffect,useRef,useState} from 'react';
 import {BrowserAudioCapture,type RecordedAudio} from '../../lib/shop/browser-audio';
 import {useShop} from './context';
-import {Button} from './ui';
+import {Button,Glyph} from './ui';
 
+type CaptureError='mic'|'unsupported'|'recording'|null;
+
+function captureError(error:unknown):CaptureError{
+  const name=error instanceof Error?error.name:'';
+  const message=error instanceof Error?error.message:'';
+  if(message==='unsupported_audio')return 'unsupported';
+  if(['NotAllowedError','SecurityError','NotFoundError','NotReadableError','OverconstrainedError'].includes(name))return 'mic';
+  return 'recording';
+}
+
+/**
+ * Records one voice command. Processing errors are shown by the caller (one
+ * message, not two); this only explains problems with the microphone itself.
+ */
 export function VoiceCapture({disabled,onRecorded}: {disabled?:boolean;onRecorded:(audio:RecordedAudio)=>Promise<void>}) {
   const {userId,shop,t}=useShop();
   const capture=useRef<BrowserAudioCapture|null>(null);
+  const button=useRef<HTMLButtonElement>(null);
   const epoch=useRef(0);
   const [state,setState]=useState<'idle'|'starting'|'recording'|'sending'>('idle');
-  const [error,setError]=useState(false);
+  const [error,setError]=useState<CaptureError>(null);
   const [seconds,setSeconds]=useState(0);
   useEffect(()=>{
     if(state!=='recording')return;
@@ -17,31 +32,36 @@ export function VoiceCapture({disabled,onRecorded}: {disabled?:boolean;onRecorde
     return ()=>clearInterval(timer);
   },[state]);
   useEffect(()=>{
-    epoch.current++;setState('idle');setError(false);
+    epoch.current++;setState('idle');setError(null);
     return ()=>{epoch.current++;capture.current?.cancel();};
   },[userId,shop?.id]);
+  // Keyboard users land on the mic, not on Close: Enter or Space starts listening.
+  useEffect(()=>{const frame=requestAnimationFrame(()=>button.current?.focus());return ()=>cancelAnimationFrame(frame);},[]);
   const start=async()=>{
     const version=epoch.current;
-    setError(false);setState('starting');
+    setError(null);setState('starting');
     const controller=new BrowserAudioCapture();capture.current=controller;
     try {
       const started=await controller.start(audio=>{
         if(version!==epoch.current)return;
         setState('sending');
-        void onRecorded(audio).catch(()=>{if(version===epoch.current)setError(true);}).finally(()=>{if(version===epoch.current)setState('idle');});
-      },()=>{if(version===epoch.current){setError(true);setState('idle');}});
+        void onRecorded(audio).catch(()=>{}).finally(()=>{if(version===epoch.current){setState('idle');button.current?.focus();}});
+      },failure=>{if(version===epoch.current){setError(captureError(failure));setState('idle');}});
       if(started && version===epoch.current)setState('recording');
-    } catch {if(version===epoch.current){setError(true);setState('idle');}}
+    } catch(failure) {if(version===epoch.current){setError(captureError(failure));setState('idle');}}
   };
+  const busy=state==='starting'||state==='sending';
+  const label=state==='recording'?t('modal.voice.stop','Stop Recording'):busy?t('modal.voice.processing','Processing...'):t('homeweb.voice_tap_to_speak','Tap to speak');
   return <div className={'voice-capture-stage is-'+state}><div className="voice-wave" aria-hidden="true">{Array.from({length:17},(_,i)=><i key={i} style={{height:12+((i*13)%37),animationDelay:(i%5)*-.13+'s'}}/>)}</div>
     <div className="shop-actions">
-      <Button tone="primary" disabled={(disabled && state!=='recording') || state==='starting' || state==='sending'} onClick={()=>state==='recording'?capture.current?.stop():void start()}>
-        {state==='recording'?t('modal.voice.stop','Stop Recording'):state==='starting'||state==='sending'?t('modal.voice.processing','Processing...'):t('a11y.voice','Voice')}
-      </Button>
-      {state==='recording'||state==='starting'?<Button tone="ghost" onClick={()=>{epoch.current++;capture.current?.cancel();setState('idle');}}>{t('common.cancel','Cancel')}</Button>:null}
+      <button ref={button} type="button" data-autofocus className={'shop-btn shop-btn-primary is-lg has-icon voice-mic-button'+(state==='recording'?' is-recording':'')} aria-pressed={state==='recording'}
+        disabled={(disabled && state!=='recording') || busy} onClick={()=>state==='recording'?capture.current?.stop():void start()}>
+        <span className="shop-btn-icon" aria-hidden="true"><Glyph name="mic"/></span>{label}
+      </button>
+      {state==='recording'||state==='starting'?<Button tone="ghost" onClick={()=>{epoch.current++;capture.current?.cancel();setState('idle');button.current?.focus();}}>{t('common.cancel','Cancel')}</Button>:null}
     </div>
     {state==='recording'?<p role="status">{t('modal.analytics.listening','Listening... {{n}}s / 30s',{n:seconds})}</p>:null}
-    {error?<p role="alert" className="text-danger">{t('modal.analytics.toast_voice_fail','Failed to process voice')}</p>:null}
+    {error?<p role="alert" className="shop-notice">{error==='mic'?t('homeweb.voice_mic_blocked','Allow microphone access for this site in your browser, then try again.'):error==='unsupported'?t('homeweb.voice_mic_unsupported','This browser cannot record audio. Try the latest Chrome or Edge.'):t('modal.voice.err.voice_failed',"Couldn't process that. Please try again.")}</p>:null}
   </div>;
 }
 export function SpeechAudio({base64,label}: {base64?:string|null;label:string}) {
