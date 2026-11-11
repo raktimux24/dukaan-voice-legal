@@ -15,14 +15,15 @@ import { formatQty } from "../../../lib/shop/units";
 import { useShop } from "../context";
 import {
   Button,
+  EmptyState,
   Glyph,
   Notice,
   Pill,
   PremiumLock,
   SectionHead,
+  Skeleton,
   Spinner,
   isPremiumError,
-  type GlyphName,
 } from "../ui";
 
 import {
@@ -230,11 +231,6 @@ function HomeWorkspace() {
     queryFn: () => api.getAlerts(shopId),
     refetchInterval: live,
   });
-  const customers = useQuery({
-    queryKey: ["customer-summary", shopId],
-    enabled: !!shopId && perms.canManageCustomers,
-    queryFn: () => api.getCustomerSummary(shopId),
-  });
   const search = useQuery({
     queryKey: ["search", shopId, userId, debounced],
     enabled: !!shopId && debounced.length > 1,
@@ -286,7 +282,6 @@ function HomeWorkspace() {
       alerts,
       ...(perms.canEditProducts ? [opening] : []),
       ...(perms.canSeeReports ? [today, yesterday, brief, nudges] : []),
-      ...(perms.canManageCustomers ? [customers] : []),
       ...(debounced.length > 1 ? [search, demand] : []),
     ];
     await Promise.allSettled(reads.map((read) => read.refetch()));
@@ -344,8 +339,9 @@ function HomeWorkspace() {
   };
   const trial =
     role === "OWNER" && !trialDismissed ? homeTrialNotice(entitlement) : null;
+  // A day with no bills yet is not "-100% vs yesterday"; show the comparison once trading starts.
   const revenueDelta =
-    !today.isError && !yesterday.isError
+    !today.isError && !yesterday.isError && (today.data?.bills ?? 0) > 0
       ? delta(today.data?.revenue, yesterday.data?.revenue)
       : null;
   const attention = [
@@ -403,91 +399,26 @@ function HomeWorkspace() {
     !search.isError &&
     notedQuery !== query.trim();
   const matchedDemand = matchHomeDemand(demand.data?.terms, query);
-  const deskGroups: {
-    title: string;
-    links: { href: string; label: string; icon: GlyphName; count?: number }[];
-  }[] = [
-    {
-      title: t("homeweb.stock_buying", "Stock & buying"),
-      links: [
-        {
-          href: "/shop/products",
-          label: t("products.title", "Products"),
-          icon: "package",
-          count: stats.data?.total,
-        },
-        ...(perms.canEditProducts
-          ? [
-              {
-                href: "/shop/buy-list",
-                label: t("nav.buy_list", "Buy list"),
-                icon: "clipboard" as const,
-              },
-              {
-                href: "/shop/purchase-orders",
-                label: t("po.title", "Purchase orders"),
-                icon: "truck" as const,
-              },
-            ]
-          : []),
-        ...(perms.canSeeCost
-          ? [
-              {
-                href: "/shop/suppliers",
-                label: t("suppliers.title", "Suppliers"),
-                icon: "bag" as const,
-              },
-            ]
-          : []),
-      ],
-    },
-    {
-      title: t("homeweb.money_people", "Money & people"),
-      links: [
-        ...(perms.canSeeReports
-          ? [
-              {
-                href: "/shop/cashbook",
-                label: t("cashbook.title", "Expenses & cashbook"),
-                icon: "wallet" as const,
-              },
-            ]
-          : []),
-        ...(perms.canManageCustomers
-          ? [
-              {
-                href: "/shop/customers",
-                label: t("customers.title", "Customers"),
-                icon: "users" as const,
-                count: customers.data?.customerCount,
-              },
-            ]
-          : []),
-        ...(perms.canSeeReports
-          ? [
-              {
-                href: "/shop/reports",
-                label: t("reports.title", "Reports"),
-                icon: "landmark" as const,
-              },
-            ]
-          : []),
-        {
-          href: "/shop/sales",
-          label: t("sales.title", "Sales"),
-          icon: "receipt",
-        },
-      ],
-    },
-  ];
+  const streakLabel = streak.data
+    ? streak.data.current === 0
+      ? t("home.streak.label_zero", "Start your streak today")
+      : t("home.streak.label_one", "{{count}}-day streak", { count: streak.data.current })
+    : null;
   return (
     <div className="shop-page home-dashboard">
       <header className="home-heading">
         <div>
-          <p className="shop-kicker">
-            {t("homeweb.workspace", "YOUR SHOP, AT A GLANCE")}
-          </p>
-          <h1>{t("homeweb.title", "Your shop today")}</h1>
+          <div className="home-title-row">
+            <h1>{t("homeweb.title", "Your shop today")}</h1>
+            {streakLabel ? (
+              <span
+                className={`home-streak${streak.data?.activeToday ? " is-active" : ""}`}
+                title={streak.data?.activeToday ? t("home.streak.active_today", "Active today") : t("home.streak.inactive_today", "Don't break it")}
+              >
+                {streakLabel}
+              </span>
+            ) : null}
+          </div>
           <p>
             {t(
               "homeweb.subtitle",
@@ -505,33 +436,9 @@ function HomeWorkspace() {
               ? t("homeweb.refreshing", "Refreshing…")
               : t("homeweb.refresh", "Refresh")}
           </Button>
-          {perms.canSell ? (
-            <Button href="/shop/sell">
-              <span aria-hidden="true">＋</span>
-              {t("home.action_new_sale", "New sale")}
-            </Button>
-          ) : null}
         </div>
       </header>
       {isPremiumError(streak.error) || isPremiumError(moved.error) ? <PremiumLock feature="insights" /> : null}
-      {streak.data || moved.data ? (
-        <div className="dash-stats">
-          {streak.data ? (
-            <div className="shop-stat">
-              <span className="shop-stat-n num">{streak.data.current}</span>
-              <span className="shop-stat-l">{streak.data.current === 0 ? t("home.streak.label_zero", "Start your streak today") : t("home.streak.label_one", "{{count}}-day streak", { count: streak.data.current })}</span>
-              <span className="text-xs text-muted">{streak.data.activeToday ? t("home.streak.active_today", "Active today") : t("home.streak.inactive_today", "Don't break it")}</span>
-            </div>
-          ) : null}
-          {moved.data ? (
-            <div className="shop-stat">
-              <span className="shop-stat-n num">{formatINR(moved.data.amount)}</span>
-              <span className="shop-stat-l">{t("home.stock_moved.title", "Sold this month")}</span>
-              <span className="text-xs text-muted">{t("home.stock_moved.subtitle_items", "{{count}} items · {{bills}} bills", { count: moved.data.itemCount, bills: moved.data.removeCount })}{moved.data.source === "legacy" ? ` · ${t("home.stock_moved.legacy_note", "Estimated from stock removed (at cost)")}` : ""}</span>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
       {streak.error && !isPremiumError(streak.error) ? <Notice error={streak.error} /> : null}
       {moved.error && !isPremiumError(moved.error) ? <Notice error={moved.error} /> : null}
       <div className="home-command-bar">
@@ -583,10 +490,8 @@ function HomeWorkspace() {
           <Glyph name="qr" />
           {t("homeweb.scan_product", "Find by barcode")}
         </button>
-        <Link className="home-command" href="/shop/voice">
-          <span aria-hidden="true" className="home-voice-mark">
-            ▥
-          </span>
+        <Link className="home-command is-voice" href="/shop/voice">
+          <Glyph name="mic" />
           {t("a11y.voice", "Voice command")}
         </Link>
       </div>
@@ -654,7 +559,7 @@ function HomeWorkspace() {
         >
           <Glyph name="clipboard" />
           <span>{t("opening.title", "Opening balances & migration")}</span>
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">→</span>
         </Link>
       ) : null}
       {searching ? (
@@ -758,13 +663,13 @@ function HomeWorkspace() {
                   className="shop-list-row"
                 >
                   <span>{supplier.name}</span>
-                  <span aria-hidden="true">↗</span>
+                  <span aria-hidden="true">→</span>
                 </Link>
               ))}
             </>
           ) : null}
           {searchPending ? (
-            <Spinner label={t("common.loading", "Loading…")} />
+            <Skeleton variant="row" count={2} label={t("common.loading", "Loading…")} />
           ) : null}
           {readError(
             catalog.isError || (currentSearch && search.isError),
@@ -825,16 +730,16 @@ function HomeWorkspace() {
                   <h2>{t("homeweb.net_sales", "Net sales today")}</h2>
                   <Link href="/shop/sales" className="home-text-link">
                     {t("homeweb.view_sales", "View sales")}{" "}
-                    <span aria-hidden="true">↗</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
                 </div>
-                <p className="home-revenue-number num">
-                  {today.data
-                    ? formatINR(today.data.revenue)
-                    : today.isPending
-                      ? "…"
-                      : "—"}
-                </p>
+                {today.isPending ? (
+                  <Skeleton variant="stat" label={t("common.loading", "Loading…")} />
+                ) : (
+                  <p className="home-revenue-number num">
+                    {today.data ? formatINR(today.data.revenue) : "—"}
+                  </p>
+                )}
                 <div className="home-revenue-context">
                   <p>
                     {t(
@@ -898,9 +803,6 @@ function HomeWorkspace() {
               <section className="home-brief">
                 <div className="home-section-top">
                   <h2>{t("brief.home_card", "Daily brief")}</h2>
-                  <span className="home-brief-orbit" aria-hidden="true">
-                    ✳
-                  </span>
                 </div>
                 <p className="home-brief-copy">
                   {brief.data?.today?.evidence?.dayLine ||
@@ -932,10 +834,19 @@ function HomeWorkspace() {
                   </span>
                   <Link href="/shop/brief" className="home-text-link">
                     {t("homeweb.open_brief", "Read brief")}{" "}
-                    <span aria-hidden="true">↗</span>
+                    <span aria-hidden="true">→</span>
                   </Link>
                 </div>
               </section>
+            </div>
+          ) : null}
+          {moved.data ? (
+            <div className="dash-stats home-month">
+              <div className="shop-stat">
+                <span className="shop-stat-n num">{formatINR(moved.data.amount)}</span>
+                <span className="shop-stat-l">{t("home.stock_moved.title", "Sold this month")}</span>
+                <span className="text-xs text-muted">{t("home.stock_moved.subtitle_items", "{{count}} items · {{bills}} bills", { count: moved.data.itemCount, bills: moved.data.removeCount })}{moved.data.source === "legacy" ? ` · ${t("home.stock_moved.legacy_note", "Estimated from stock removed (at cost)")}` : ""}</span>
+              </div>
             </div>
           ) : null}
           <section className="home-attention">
@@ -946,7 +857,7 @@ function HomeWorkspace() {
                 {alerts.data?.counts.total ? (
                   <span className="home-count">{alerts.data.counts.total}</span>
                 ) : null}{" "}
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true">→</span>
               </Link>
             </div>
             <div className="home-attention-grid">
@@ -958,7 +869,7 @@ function HomeWorkspace() {
                 >
                   <strong className="num">{row.n ?? "—"}</strong>
                   <span>{row.label}</span>
-                  <span aria-hidden="true">↗</span>
+                  <span aria-hidden="true">→</span>
                 </Link>
               ))}
             </div>
@@ -966,53 +877,19 @@ function HomeWorkspace() {
               void stats.refetch();
             })}
           </section>
-          <section className="home-desk">
-            <div className="home-section-top">
-              <div>
-                <h2>{t("homeweb.desk", "The shop desk")}</h2>
-                <p>
-                  {t(
-                    "homeweb.desk_hint",
-                    "Everything you need to run the day.",
-                  )}
-                </p>
-              </div>
-              <div className="home-desk-actions">
-                <Link href="/shop/sell?scan=1" className="home-text-link">
-                  <Glyph name="qr" />
-                  {t("homeweb.scan_bill", "Scan to bill")}
-                </Link>
-                {perms.canEditProducts ? (
-                  <Link href="/shop/products/new" className="home-text-link">
-                    <span aria-hidden="true">＋</span>
-                    {t("products.add", "Add product")}
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-            <div className="home-desk-groups">
-              {deskGroups.map((group) => (
-                <div key={group.title}>
-                  <h3>{group.title}</h3>
-                  <div className="home-desk-links">
-                    {group.links.map((link) => (
-                      <Link key={link.href} href={link.href}>
-                        <Glyph name={link.icon} />
-                        <span>{link.label}</span>
-                        {"count" in link && link.count != null ? (
-                          <small className="num">{link.count}</small>
-                        ) : (
-                          <span aria-hidden="true" className="home-desk-arrow">
-                            ↗
-                          </span>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          {/* Every destination now lives in the sidebar (or More on a phone); keep only the two counter tasks. */}
+          <div className="home-shortcuts">
+            <Link href="/shop/sell?scan=1" className="home-text-link">
+              <Glyph name="qr" />
+              {t("homeweb.scan_bill", "Scan to bill")}
+            </Link>
+            {perms.canEditProducts ? (
+              <Link href="/shop/products/new" className="home-text-link">
+                <Glyph name="plus" />
+                {t("products.add", "Add product")}
+              </Link>
+            ) : null}
+          </div>
           <div className="home-ledgers">
             <section>
               <SectionHead
@@ -1075,19 +952,21 @@ function HomeWorkspace() {
                   </Link>
                 ))}
                 {recent.isPending ? (
-                  <Spinner label={uiText("Loading bills…")} />
+                  <Skeleton variant="row" count={3} label={uiText("Loading bills…")} />
                 ) : null}
                 {readError(recent.isError, () => {
                   void recent.refetch();
                 })}
                 {recent.isSuccess && !recent.data.sales.length ? (
-                  <div className="home-empty">
-                    <Glyph name="receipt" />
-                    <p>{uiText("No bills yet today.")}</p>
-                    <Link href="/shop/sell" className="home-text-link">
-                      {uiText("Start a sale")} ↗
-                    </Link>
-                  </div>
+                  <EmptyState
+                    icon="receipt"
+                    title={uiText("No bills yet today.")}
+                    action={perms.canSell ? (
+                      <Button href="/shop/sell" tone="ghost" size="sm">
+                        {uiText("Start a sale")}
+                      </Button>
+                    ) : undefined}
+                  />
                 ) : null}
               </div>
             </section>
@@ -1114,8 +993,9 @@ function HomeWorkspace() {
                     <div className="shop-list-main">
                       <p className="shop-list-title">{item.product.name}</p>
                       <p className="shop-list-meta">
-                        {formatQty(item.quantity, item.unit)}{" "}
-                        {t("reports.stock.on_hand", "on hand")}
+                        {t("homeweb.on_hand_qty", "{{qty}} in stock", {
+                          qty: formatQty(item.quantity, item.unit),
+                        })}
                       </p>
                     </div>
                     <Pill tone={stockTone(item)}>
@@ -1126,28 +1006,25 @@ function HomeWorkspace() {
                   </Link>
                 ))}
                 {catalog.isPending ? (
-                  <Spinner label={uiText("Checking stock…")} />
+                  <Skeleton variant="row" count={3} label={uiText("Checking stock…")} />
                 ) : null}
                 {readError(catalog.isError, () => {
                   void catalog.refetch();
                 })}
                 {catalog.isSuccess && !attentionItems.length ? (
-                  <div className="home-empty">
-                    <Glyph name="package" />
-                    <p>
-                      {catalog.data.length
+                  <EmptyState
+                    icon="package"
+                    title={
+                      catalog.data.length
                         ? uiText("Stock looks healthy.")
-                        : t("home.empty_title", "No products yet")}
-                    </p>
-                    {!catalog.data.length && perms.canEditProducts ? (
-                      <Link
-                        href="/shop/products/new"
-                        className="home-text-link"
-                      >
-                        {t("products.add", "Add product")} ↗
-                      </Link>
-                    ) : null}
-                  </div>
+                        : t("home.empty_title", "No products yet")
+                    }
+                    action={!catalog.data.length && perms.canEditProducts ? (
+                      <Button href="/shop/products/new" tone="ghost" size="sm" icon="plus">
+                        {t("products.add", "Add product")}
+                      </Button>
+                    ) : undefined}
+                  />
                 ) : null}
               </div>
             </section>

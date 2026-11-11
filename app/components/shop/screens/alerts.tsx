@@ -9,7 +9,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useShopDates } from '../use-shop-dates';
 import { formatQty,unitLabel } from '../../../lib/shop/units';
 import { useShop } from '../context';
-import { Button, Notice, PageHeader, Pill, PremiumLock, Spinner, isPremiumError } from '../ui';
+import { Button, Glyph, Notice, PageHeader, Pill, PremiumLock, Spinner, Tabs, isPremiumError } from '../ui';
 
 function alertTabLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
   if (id === 'all') return t('home.filter_all', fallback);
@@ -63,14 +63,16 @@ function AlertsWorkspace() {
     try{await api.addBuyListItem(shop.id,{itemName:name,quantity:quantity>0?quantity:1,unit,productId});await queryClient.invalidateQueries({queryKey:['buy-list',shop.id]});}
     catch(e){setError(e);}finally{active.current.delete(productId);setPending([...active.current]);}
   };
+  // A product already on the buy list is a status, not a disabled button: show it and link to the list.
+  const onList=(productId:string)=>listed.has(productId)?<Link href="/shop/buy-list" className="alert-listed"><Glyph name="check"/>{t('homeweb.alerts_on_list','On buy list')}</Link>:null;
+  const tabCount:Record<(typeof TABS)[number]['id'],number|undefined>={all:counts?.total,stock:counts?.stock,expiry:counts?.expiry,ai:premium?counts?.ai:undefined};
   const actionable=[...stock.map(x=>({id:x.productId,name:x.productName,quantity:x.minStockLevel,unit:x.unit})),...ai.filter(x=>x.isActionable&&x.productId).map(x=>({id:x.productId!,name:x.productName??x.title,quantity:x.metadata?.suggestedOrderQty??10,unit:x.productUnit??'kg'}))].filter((x,i,a)=>!listed.has(x.id)&&a.findIndex(y=>y.id===x.id)===i);
 
   return (
     <div className="shop-page alerts-workspace">
       <PageHeader
-        kicker={t('nav.home','Home')}
         back={{href:'/shop',label:t('nav.home','Home')}}
-        title={t('settings.section_notifications', 'Notifications')}
+        title={t('modal.alerts.title', 'Alerts')}
         description={`${t('home.stat_out_of_stock', 'Out of stock')}, ${t('home.stat_low_stock', 'running low')}, ${t('reports.stock.expiry', 'batches that are about to expire')}.`}
         actions={
           perms.canSeeReports && premium ? (
@@ -78,19 +80,10 @@ function AlertsWorkspace() {
           ) : null
         }
       />
-      <div className="shop-seg" role="tablist" aria-label={uiText("Notifications")}>
-        {TABS.map((item) => (
-          <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} className={tab === item.id ? 'is-active' : undefined} onClick={() => setTab(item.id)}>
-            {alertTabLabel(item.id, item.label, t)}
-            {item.id === 'all' && counts ? ` ${counts.total}` : null}
-            {item.id === 'stock' && counts ? ` ${counts.stock}` : null}
-            {item.id === 'expiry' && counts ? ` ${counts.expiry}` : null}
-          </button>
-        ))}
-      </div>
+      <Tabs label={t('modal.alerts.title', 'Alerts')} value={tab} onChange={setTab} items={TABS.map((item) => ({ id: item.id, label: alertTabLabel(item.id, item.label, t), count: tabCount[item.id] }))} />
       <Notice error={error ?? alerts.error ?? buyList.error ?? (tab==='ai'?predictions.error:null)} />
       {alerts.error?<Button onClick={()=>void alerts.refetch()}>{t('common.retry','Try again')}</Button>:null}
-      {perms.canEditProducts&&actionable.length?<div className="alerts-bulk"><p>{t('modal.alerts.add_to_buy_list','Add {{n}} item(s) to Buy List',{n:actionable.length})}</p><Button disabled={offline||pending.length>0||buyList.isPending||!!buyList.error} onClick={()=>void(async()=>{for(const row of actionable)await addToBuyList(row.id,row.name,row.quantity,row.unit)})()}>{t('nudge.action.add_to_buy_list','Add to buy list')}</Button></div>:null}
+      {perms.canEditProducts&&actionable.length?<div className="alerts-bulk"><p>{actionable.length===1?t('homeweb.alerts_bulk_one','1 item is not on your buy list yet: {{name}}',{name:actionable[0].name}):t('homeweb.alerts_bulk_other','{{n}} items are not on your buy list yet',{n:actionable.length})}</p><Button disabled={offline||pending.length>0||buyList.isPending||!!buyList.error} onClick={()=>void(async()=>{for(const row of actionable)await addToBuyList(row.id,row.name,row.quantity,row.unit)})()}>{t('nudge.action.add_to_buy_list','Add to buy list')}</Button></div>:null}
       {alerts.isLoading ? <Spinner label={uiText("Loading notifications")} /> : null}
 
       {(tab === 'all' || tab === 'stock') && stock.length > 0 ? (
@@ -104,9 +97,9 @@ function AlertsWorkspace() {
                   {row.tone === 'out' ? qty(0,row.unit) : qty(row.quantity, row.unit)} {uiText("· alert at")} {qty(row.minStockLevel, row.unit)}
                 </p>
               </div>
-              {perms.canEditProducts ? (
-                <Button size="sm" tone="ghost" disabled={offline||pending.includes(row.productId)||listed.has(row.productId)||buyList.isPending||!!buyList.error} onClick={() => addToBuyList(row.productId, row.productName, row.minStockLevel, row.unit)}>
-                  {t(listed.has(row.productId)?'modal.alerts.badge_added':'modal.alerts.badge_buy_list','Buy list')}
+              {perms.canEditProducts ? onList(row.productId) ?? (
+                <Button size="sm" tone="ghost" disabled={offline||pending.includes(row.productId)||buyList.isPending||!!buyList.error} onClick={() => addToBuyList(row.productId, row.productName, row.minStockLevel, row.unit)}>
+                  {t('modal.alerts.badge_buy_list','Buy list')}
                 </Button>
               ) : null}
             </article>
@@ -125,9 +118,9 @@ function AlertsWorkspace() {
               </div>
               <div className="alert-side">
                 <Pill tone={row.daysRemaining <= 7 ? 'danger' : 'warn'}>{row.daysRemaining <= 0 ? t('expiry.expired','Expired') : t('expiry.days_left','{{n}}d left',{n:row.daysRemaining})}</Pill>
-                {perms.canEditProducts ? (
-                  <Button size="sm" tone="ghost" disabled={offline||pending.includes(row.productId)||listed.has(row.productId)||buyList.isPending||!!buyList.error} onClick={() => addToBuyList(row.productId, row.productName, row.quantity, row.unit)}>
-                    {t(listed.has(row.productId)?'modal.alerts.badge_added':'modal.alerts.badge_buy_list','Buy list')}
+                {perms.canEditProducts ? onList(row.productId) ?? (
+                  <Button size="sm" tone="ghost" disabled={offline||pending.includes(row.productId)||buyList.isPending||!!buyList.error} onClick={() => addToBuyList(row.productId, row.productName, row.quantity, row.unit)}>
+                    {t('modal.alerts.badge_buy_list','Buy list')}
                   </Button>
                 ) : null}
               </div>
@@ -148,7 +141,7 @@ function AlertsWorkspace() {
                     <p className="shop-list-title flex items-center gap-3">{row.productId?<ProductImageById productId={row.productId} name={row.title} size={40}/>:null}{row.title}</p>
                     <p className="shop-list-meta">{row.description}</p>
                   </div>
-                  {row.isActionable&&row.productId&&perms.canEditProducts?<Button size="sm" tone="ghost" disabled={offline||pending.includes(row.productId)||listed.has(row.productId)} onClick={()=>void addToBuyList(row.productId!,row.productName??row.title,row.metadata?.suggestedOrderQty??10,row.productUnit??'kg')}>{t('nudge.action.add_to_buy_list','Add to buy list')}</Button>:null}
+                  {row.isActionable&&row.productId&&perms.canEditProducts?onList(row.productId)??<Button size="sm" tone="ghost" disabled={offline||pending.includes(row.productId)} onClick={()=>void addToBuyList(row.productId!,row.productName??row.title,row.metadata?.suggestedOrderQty??10,row.productUnit??'kg')}>{t('nudge.action.add_to_buy_list','Add to buy list')}</Button>:null}
                   <Button size="sm" tone="ghost" disabled={offline} onClick={() => void api.dismissPrediction(shop.id, row.id).then(() => {
                     void queryClient.invalidateQueries({ queryKey: ['predictions', shop.id] });
                     void queryClient.invalidateQueries({ queryKey: ['alerts', shop.id] });
