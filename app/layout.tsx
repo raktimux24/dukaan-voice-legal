@@ -5,6 +5,7 @@ import { Analytics } from './components/Analytics';
 import { getLocaleMeta, isLocale } from './i18n';
 import { defaultDescription, defaultTitle, pageMetadata } from './seo';
 import './styles/home.css';
+import './styles/landing-redesign.css';
 import './styles/legal-base.css';
 import './styles/subscription.css';
 

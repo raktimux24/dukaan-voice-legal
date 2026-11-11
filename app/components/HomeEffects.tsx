@@ -145,6 +145,84 @@ export function HomeEffects() {
     document.addEventListener('visibilitychange', updateMotion);
     updateMotion();
 
+    // Hero demo: type the spoken sale, add the bill lines, then show it shared.
+    // When motion is paused, reduced or off screen, the finished bill shows.
+    const demoTimers: number[] = [];
+    const demoResets: Array<() => void> = [];
+    document.querySelectorAll<HTMLElement>('[data-hero-demo]').forEach(demo => {
+      const spoken = demo.querySelector<HTMLElement>('[data-demo-spoken]');
+      const status = demo.querySelector<HTMLElement>('[data-demo-status]');
+      const total = demo.querySelector<HTMLElement>('[data-demo-total]');
+      if (!spoken || !status || !total) return;
+      const fullText = spoken.textContent ?? '';
+      const statusText = status.textContent ?? '';
+      const totalText = total.textContent ?? '';
+      const listening = status.dataset.listening ?? statusText;
+      const segmenter = typeof Intl !== 'undefined' && 'Segmenter' in Intl ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+      const glyphs = segmenter ? [...segmenter.segment(fullText)].map(part => part.segment) : Array.from(fullText);
+      const start = Number((totalText.match(/\d[\d,]*/)?.[0] ?? '0').replace(/,/g, ''));
+      const rice = 250;
+      let tick = 0;
+      const finished = () => {
+        demo.dataset.demo = 'off';
+        demo.removeAttribute('data-stage');
+        spoken.textContent = fullText;
+        status.textContent = statusText;
+        total.textContent = totalText;
+      };
+      const step = () => {
+        if (demo.dataset.running !== 'true') { finished(); tick = 0; return; }
+        demo.dataset.demo = 'on';
+        const t = tick++ % 84;
+        if (t < 26) {
+          demo.dataset.stage = '0';
+          status.textContent = listening;
+          spoken.textContent = glyphs.slice(0, Math.round((t / 22) * glyphs.length)).join('');
+          total.textContent = `₹${rice}`;
+        } else if (t < 35) {
+          demo.dataset.stage = '1';
+          status.textContent = statusText;
+          spoken.textContent = fullText;
+        } else if (t < 50) {
+          demo.dataset.stage = '2';
+          const progress = Math.min(1, (t - 35) / 7);
+          total.textContent = `₹${Math.round(rice + (start - rice) * progress)}`;
+        } else {
+          demo.dataset.stage = '3';
+          total.textContent = totalText;
+        }
+      };
+      demoTimers.push(window.setInterval(step, 100));
+      demoResets.push(finished);
+    });
+
+    // On a phone, the app is the main action; the browser shop stays one tap away.
+    const agent = navigator.userAgent;
+    const platform = /iPhone|iPad|iPod/i.test(agent) ? 'ios' : /Android/i.test(agent) ? 'android' : null;
+    const ctaResets: Array<() => void> = [];
+    if (platform) document.querySelectorAll<HTMLElement>('[data-device-cta]').forEach(group => {
+      const primary = group.querySelector<HTMLAnchorElement>('[data-cta-primary]');
+      const label = primary?.querySelector<HTMLElement>('[data-cta-label]');
+      const storeUrl = group.dataset[platform];
+      if (!primary || !label || !storeUrl || !group.dataset.appLabel) return;
+      const shopHref = primary.getAttribute('href') ?? '/shop';
+      const shopLabel = label.textContent ?? '';
+      const shopLink = document.createElement('a');
+      shopLink.href = shopHref;
+      shopLink.className = 'story-text-link';
+      shopLink.textContent = `${shopLabel} ↗`;
+      primary.href = storeUrl;
+      primary.dataset.storePlacement = 'hero';
+      label.textContent = group.dataset.appLabel;
+      primary.after(shopLink);
+      ctaResets.push(() => {
+        primary.href = shopHref;
+        delete primary.dataset.storePlacement;
+        label.textContent = shopLabel;
+        shopLink.remove();
+      });
+    });
+
     const rotateWords = document.querySelectorAll('.hero-rotate-word');
     let current = 0;
     const rotateInterval = !prefersReduced && rotateWords.length > 0 ? window.setInterval(() => {
@@ -198,6 +276,9 @@ export function HomeEffects() {
       document.removeEventListener('visibilitychange', updateMotion);
       anchorHandlers.forEach(([a, handler]) => a.removeEventListener('click', handler));
       if (rotateInterval) window.clearInterval(rotateInterval);
+      demoTimers.forEach(timer => window.clearInterval(timer));
+      demoResets.forEach(reset => reset());
+      ctaResets.forEach(reset => reset());
     };
   }, []);
 
