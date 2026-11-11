@@ -115,6 +115,30 @@ export function SellScreen() {
     if (query) highlightedProduct.current?.scrollIntoView?.({block:'nearest'});
   }, [highlight, query]);
 
+  const [ask, setAsk] = useState<'clear' | 'short' | null>(null);
+  const [flash, setFlash] = useState<{ productId: string; name: string; seq: number } | null>(null);
+  const counterOpen = !!shopId && !cartApi.pending && perms.canSell;
+  const sheetOpen = browseOpen || !!picker || !!priceFor || !!ask || cameraOn || usbOn;
+  // A USB barcode gun types into whatever has focus: start every visit on the search box.
+  useEffect(() => {
+    if (counterOpen && !sheetOpen) searchRef.current?.focus();
+    // Only on arrival and when the counter becomes usable; later moves keep their own focus.
+  }, [counterOpen]);
+  useEffect(() => {
+    if (!counterOpen || sheetOpen) return;
+    const refocus = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.key !== '/' && event.key !== 'F2') return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    document.addEventListener('keydown', refocus);
+    return () => document.removeEventListener('keydown', refocus);
+  }, [counterOpen, sheetOpen]);
+  const marked = (item: InventoryItem) => setFlash(current => ({ productId: item.productId, name: item.product.name, seq: (current?.seq ?? 0) + 1 }));
+
 
   if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
@@ -142,7 +166,7 @@ export function SellScreen() {
     if (result.message) setNotice(result.message === 'out_of_stock'
       ? t('pos.out_of_stock_toast', '{{name}} is out of stock', { name: item.product.name })
       : t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: item.quantity, unit: t(`unit_picker.${item.unit}`, item.unit), name: item.product.name }));
-    if (result.ok) setError(null);
+    if (result.ok) { setError(null); marked(item); }
   };
 
   const lookup = (code: string) => scanQueue.current(async()=> {
@@ -253,6 +277,7 @@ export function SellScreen() {
       : t('pos.capped_toast', 'Only {{n}} {{unit}} of {{name}} in stock', { n: item.quantity, unit: t(`unit_picker.${item.unit}`, item.unit), name: item.product.name }));
       if (!result.ok) return;
     }
+    marked(item);
     setPicker(null);
     setQuery('');
     (usbOn?usbRef.current:searchRef.current)?.focus();
@@ -277,15 +302,23 @@ export function SellScreen() {
 
   const clearBill = () => {
     if (lineCount === 0 || locked) return;
-    if (!window.confirm(t('pos.clear_cart_title','Remove everything from the cart?'))) return;
-    cartApi.clear();
-    searchRef.current?.focus();
+    setAsk('clear');
   };
 
   const checkout = () => {
     if (!lineCount) return;
-    if (!locked && shortfalls.length && !window.confirm(t('pos.short_stock_body','Stock on record is lower than the cart for: {{names}}. You can still charge — stock will show 0 until you adjust it.',{names:shortfalls.map(line=>line.name).join(', ')}))) return;
+    if (!locked && shortfalls.length) { setAsk('short'); return; }
     router.push('/shop/sell/checkout');
+  };
+  const closeAsk = () => { setAsk(null); searchRef.current?.focus(); };
+  const confirmAsk = () => {
+    const kind = ask;
+    setAsk(null);
+    if (kind === 'clear') {
+      if (lineCount === 0 || locked) return;
+      cartApi.clear();
+      searchRef.current?.focus();
+    } else if (kind === 'short') router.push('/shop/sell/checkout');
   };
   const noteDemand = async () => {
     if(!canNote||noting||offline)return;
@@ -349,12 +382,11 @@ export function SellScreen() {
       <header className="sale-heading">
         <h1>{t('pos.title','Sell')}</h1>
         <div className="shop-actions">
-          <Button tone="quiet" size="sm" onClick={()=>{void posSettings.refetch();void catalog.refetch();}} disabled={catalog.isFetching}>{t('common.refresh','Refresh')}</Button>
           <Button href="/shop/estimates?from=sell" tone="quiet" size="sm">{t('estimates.mobile.title_short','Estimates')}</Button>
           {perms.canEditProducts?<Button href="/shop/products/new" tone="ghost" size="sm">＋ {t('products.add','Add product')}</Button>:null}
         </div>
       </header>
-      {cartApi.pending?<div className="sell-pending" role="status"><p>{uiText('A bill is waiting to finish.')}</p><Button href="/shop/sell/checkout" tone="quiet" size="sm">{uiText('Return to checkout')}</Button></div>:null}
+      {cartApi.pending?<div className="sell-pending" role="status"><div><strong>{t('sellweb.pending_title','The last bill is not confirmed yet')}</strong><p>{t('sellweb.pending_help','The internet may have dropped while it was saving. Open it and check it again before the next bill, so the customer is not charged twice.')}</p></div><Button href="/shop/sell/checkout" size="sm">{t('sellweb.pending_action','Check the saved bill')}</Button></div>:null}
       <section className="sale-sheet" aria-label={uiText('Current bill')}>
         <div className="sale-sheet-heading">
           <h2>{t('bill.bill','Bill')} <span className="sale-count num">{lineCount}</span></h2>
@@ -391,11 +423,13 @@ export function SellScreen() {
           {lineCount>0?<div className="sale-column-head" aria-hidden="true"><span>{t('sellweb.item','Item')}</span><span>{t('sellweb.qty_label','Quantity')}</span><span>{t('sellweb.unit_price','Unit price')}</span><span>{t('sellweb.amount','Amount')}</span><span/></div>:null}
           <div className="bill-lines">
             {!lineCount?<div className="bill-empty"><Glyph name="receipt"/><h3>{t('pos.cart_empty','Nothing on the bill yet.')}</h3><p>{t('sellweb.start_help','Search above, scan a barcode or browse your products.')}</p><Button tone="ghost" onClick={openBrowse} disabled={locked}>{t('sellweb.browse','Browse products')}</Button></div>
-            :cartApi.cart.lines.map(line=><BillLine key={line.key} line={line} disabled={locked} canEditPrice={perms.canSell}
+            :cartApi.cart.lines.map((line,index)=><BillLine key={line.key} line={line} disabled={locked} canEditPrice={perms.canSell}
+              flash={flash&&flash.productId===line.productId&&cartApi.cart.lines.findIndex(row=>row.productId===line.productId)===index?flash.seq:0}
               shortfall={shortfalls.some(row=>row.key===line.key)} available={items.find(item=>item.productId===line.productId)?.quantity??line.available}
               onQuantity={qty=>{if(locked)return;const result=cartApi.setQuantity(line.key,qty);if(result.capped)setNotice(t('pos.capped_toast','Only {{n}} {{unit}} of {{name}} in stock',{n:line.available??0,unit:t(`unit_picker.${line.unit}`,line.unit),name:line.name}))}}
               onPrice={price=>{if(!locked)cartApi.setPrice(line.key,price)}} onRemove={()=>{if(!locked)cartApi.removeLine(line.key)}}/>) }
           </div>
+          <p className="sr-only" aria-live="polite">{flash?t('sellweb.added','Added {{name}}',{name:flash.name}):''}</p>
           {suggestions.length&&!locked?<div className="sell-suggestions"><p>{t('modal.product_detail.bought_with','Often bought with')}</p><div className="pos-chips">{suggestions.map(nudge=><Chip key={nudge.id} onClick={()=>{const match=items.find(item=>item.productId===nudge.productId);if(match)choose(match)}}>{nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={24}/>:null}{nudge.title}</Chip>)}</div></div>:null}
           {lineCount>0?<div className="sale-bill-actions"><Button tone="quiet" size="sm" onClick={openBrowse} disabled={locked}>＋ {t('sellweb.add_items','Add items')}</Button><div>
             {!locked?<Link href="/shop/estimates?fromCart=1&from=sell">{t('estimates.save_cart','Save cart as estimate')}</Link>:null}
@@ -404,7 +438,7 @@ export function SellScreen() {
         </div>
         <footer className="sale-checkout">
           <div className="sale-total">
-            <span>{t('sellweb.estimated_total','Estimated total')}</span><strong className={cx('num',reviewTax&&'is-review')}>{amountLabel}</strong>
+            <span>{t('pos.total','Total')}</span><strong className={cx('num',reviewTax&&'is-review')}>{amountLabel}</strong>
             {(totals.discount>0||totals.tax&&!reviewTax)?<div className="sale-tax-summary"><span>{t('bill.subtotal','Subtotal')} {formatINR(totals.subtotal)}</span>{totals.discount>0?<span>{t('bill.discount','Discount')} −{formatINR(totals.discount)}</span>:null}{totals.tax&&!reviewTax?<span>{uiText(taxContext?.priceMode==='inclusive'?'GST included':'GST added')} {formatINR(totals.tax.tax)}</span>:null}</div>:null}
           </div>
           <div className="sale-checkout-action"><p>{t('sellweb.checkout_help','Review payment, discounts and tax at checkout.')}</p><Button size="lg" disabled={!lineCount} onClick={checkout}>{locked?uiText('Return to checkout'):t('sellweb.review_charge','Review & charge')}<span aria-hidden="true"> →</span></Button></div>
@@ -418,6 +452,10 @@ export function SellScreen() {
         <div className="sale-catalogue-foot"><span>{t('bill.bill','Bill')} · {lineCount}<strong className="num">{amountLabel}</strong></span><Button onClick={closeBrowse}>{t('sellweb.back_to_bill','Back to bill')} →</Button></div>
       </div></VoiceSheet>:null}
       {picker?<VoiceSheet title={t('sellweb.quantity','Choose quantity')} closeLabel={t('common.close','Close')} onClose={()=>{setPicker(null);searchRef.current?.focus();}}><QtyPicker key={picker.productId} item={picker.item} value={picker.value} onChange={value=>setPicker({...picker,value})} onAdd={commitPicker}/></VoiceSheet>:null}
+      {ask?<VoiceSheet title={ask==='clear'?t('pos.clear_cart_title','Remove everything from the cart?'):t('pos.short_stock_title','Not enough stock')} closeLabel={t('common.close','Close')} onClose={closeAsk}><div className="sell-confirm">
+        <p>{ask==='clear'?t('sellweb.clear_body','{{n}} items will be removed from this bill.',{n:lineCount}):t('pos.short_stock_body','Stock on record is lower than the cart for: {{names}}. You can still charge — stock will show 0 until you adjust it.',{names:shortfalls.map(line=>line.name).join(', ')})}</p>
+        <div className="shop-actions"><Button tone={ask==='clear'?'danger':'primary'} onClick={confirmAsk}>{ask==='clear'?t('pos.clear_cart','Clear cart'):t('sellweb.charge_anyway','Charge anyway')}</Button><Button tone="ghost" onClick={closeAsk}>{t('sellweb.keep_editing','Keep editing')}</Button></div>
+      </div></VoiceSheet>:null}
       {priceFor?<VoiceSheet title={t('pos.set_price_title','Set a selling price')} closeLabel={t('common.close','Close')} onClose={()=>{if(!priceBusy)setPriceFor(null)}}><form className="sell-price-form" onSubmit={event=>{event.preventDefault();void savePrice(priceFor)}}><div className="pos-picker-product"><ProductImage image={priceFor.product.media?.cover} name={priceFor.product.name}/><h3>{priceFor.product.name}</h3></div><Notice error={error}/><label>{t('sellweb.unit_price','Unit price')}<input className={inputClass} autoFocus inputMode="decimal" value={priceDraft[priceFor.productId]??''} onChange={event=>setPriceDraft({...priceDraft,[priceFor.productId]:event.target.value})}/></label><Button type="submit" disabled={priceBusy||sellAmount(priceDraft[priceFor.productId]??'')===null}>{t('pos.save_price_add','Save price & add')}</Button></form></VoiceSheet>:null}
     </div>
   );
@@ -499,10 +537,12 @@ function BillLine({
   shortfall,
   available,
   canEditPrice,
+  flash,
   onQuantity,
   onPrice,
   onRemove,
 }: {
+  flash: number;
   line: CartLine;
   disabled: boolean;
   shortfall: boolean;
@@ -516,6 +556,15 @@ function BillLine({
   const [qtyDraft, setQtyDraft] = useState<string | null>(null);
   const [priceDraft, setPriceDraft] = useState<string | null>(null);
   const step = stepFor(line.unit);
+  const row = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = row.current;
+    if (!flash || !element) return;
+    element.classList.remove('is-just-added');
+    void element.offsetWidth;
+    element.classList.add('is-just-added');
+    element.scrollIntoView?.({ block: 'nearest' });
+  }, [flash]);
 
   const commitQty = () => {
     if (qtyDraft == null) return;
@@ -532,7 +581,7 @@ function BillLine({
   };
 
   return (
-    <div className="bill-line">
+    <div className="bill-line" ref={row}>
       <div className="bill-line-name"><ProductImageById productId={line.productId} name={line.name} size={42}/><div><span>{line.name}</span><small>{t(`unit_picker.${line.unit}`,line.unit)}</small>{shortfall?<p className="sell-stock-warning">{t('pos.short_stock_line','Only {{n}} {{unit}} in stock',{n:available??0,unit:t(`unit_picker.${line.unit}`,line.unit)})}</p>:null}{line.listPrice!=null&&line.price<line.listPrice?<p className="sell-price-was">{t('pos.was','was {{price}}',{price:formatINR(line.listPrice)})}</p>:null}</div></div>
       <p className="bill-line-total num">{formatINR(lineGross(line) - lineDiscount(line))}</p>
       <fieldset className="bill-line-controls" disabled={disabled}>
