@@ -83,7 +83,7 @@ function Directory() {
   return (
     <div className="shop-page supplier-workspace">
       <PageHeader
-        kicker={t("reports.stock.on_hand", "Stock")}
+        kicker={t("poweb.kicker", "Purchasing")}
         title={t("suppliers.title", "Suppliers")}
         description={t(
           "supplierweb.intro",
@@ -136,7 +136,7 @@ function Directory() {
         </div>
         {perms.canEditProducts ? (
           <Button tone="quiet" href="/shop/suppliers/import">
-            {t("partiesImport.supplier_title", "Import suppliers")} ↗
+            {t("partiesImport.supplier_title", "Import suppliers")} ›
           </Button>
         ) : null}
       </div>
@@ -181,7 +181,7 @@ function Directory() {
                       </p>
                       <small>{s.identity.address}</small>
                     </div>
-                    <span aria-hidden="true">↗</span>
+                    <span aria-hidden="true">›</span>
                   </Link>
                   <div className="supplier-row-metrics">
                     <div>
@@ -215,7 +215,7 @@ function Directory() {
                       {t("suppliers.stock_history", "Stock supplier history")}{" "}
                       <span>
                         {t("directoryUI.last_purchase", "Last purchase")} ·{" "}
-                        {formatDay(receipt.lastAt)} ↗
+                        {formatDay(receipt.lastAt)} ›
                       </span>
                     </Link>
                   ) : null}
@@ -259,7 +259,7 @@ function Directory() {
                         {formatDay(row.lastAt)}
                       </p>
                     </div>
-                    <span aria-hidden="true">↗</span>
+                    <span aria-hidden="true">›</span>
                   </Link>
                   <div className="supplier-row-metrics">
                     <div>
@@ -326,7 +326,7 @@ function Directory() {
                     size={44}
                   />
                   <h2>{row.name}</h2>
-                  <span>↗</span>
+                  <span>›</span>
                 </Link>
                 <p className="shop-hint">
                   {t(
