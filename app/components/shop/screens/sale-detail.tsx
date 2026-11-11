@@ -25,7 +25,11 @@ import { ApiError } from "../../../lib/shop/api";
 import { formatINR } from "../../../lib/shop/money";
 import { useShopDates } from "../use-shop-dates";
 import { formatQty } from "../../../lib/shop/units";
-import { shareBill, type ShareBillInput } from "../../../lib/shop/share-bill";
+import {
+  billPlainText,
+  shareBill,
+  type ShareBillInput,
+} from "../../../lib/shop/share-bill";
 import { recoverFinancialRequest } from "../../../lib/shop/gst-recovery";
 import {
   financialScope,
@@ -111,7 +115,16 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
     };
   }, []);
   const [printing, setPrinting] = useState(false);
+  const newSale = useRef<HTMLAnchorElement>(null),
+    newSaleFocused = useRef(false);
   const sale = saleQuery.data;
+  const justRecorded = !!params.get("recorded");
+  useEffect(() => {
+    // After charging, Enter starts the next bill.
+    if (!justRecorded || newSaleFocused.current || !newSale.current) return;
+    newSaleFocused.current = true;
+    newSale.current.focus();
+  });
 
   const balance = useQuery({
     queryKey: ["saleReturnCapacity", shop?.id, userId, saleId],
@@ -200,8 +213,7 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
     );
   };
 
-  const share = async () => {
-    const payload: ShareBillInput = {
+  const billPayload = (): ShareBillInput => ({
       shopName: pos?.shopName || shop.name,
       address: pos?.shopAddress,
       phone: pos?.shopPhone,
@@ -247,7 +259,9 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
         total: t("bill.total", "Total"),
         thanks: t("bill.thanks", "Thank you"),
       },
-    };
+    });
+  const share = async () => {
+    const payload = billPayload();
     if (sale.gstSnapshot || sale.mixedGstSnapshot) {
       setError(
         new Error(
@@ -282,6 +296,38 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
     }
   };
 
+  // Same as the app: straight into the customer's chat when the bill has a valid
+  // Indian mobile number, otherwise WhatsApp asks who to send it to.
+  const sendWhatsApp = () => {
+    if (sale.gstSnapshot || sale.mixedGstSnapshot) return;
+    setError(null);
+    try {
+      api.assertSession();
+      assertScope(financialScope(shop.id));
+    } catch (caught) {
+      setError(caught);
+      return;
+    }
+    const digits = (sale.customer?.phone ?? "")
+      .replace(/\D/g, "")
+      .replace(/^91(?=\d{10}$)/, "");
+    const to = /^[6-9]\d{9}$/.test(digits) ? "91" + digits : "";
+    // "noopener" would make window.open return null, so detach the opener by hand
+    // and fall back to the share sheet only when a pop-up blocker stopped it.
+    const opened = window.open(
+      `https://wa.me/${to}?text=${encodeURIComponent(billPlainText(billPayload()))}`,
+      "_blank",
+    );
+    if (opened) opened.opener = null;
+    else void share();
+  };
+  const paidNow = sale.payments
+    .filter((payment) => payment.kind !== "refund" && payment.method !== "credit")
+    .reduce((sum, payment) => sum + payment.amount, 0);
+  const changeGiven = sale.payments.reduce(
+    (sum, payment) => sum + (payment.changeGiven ?? 0),
+    0,
+  );
   const status = saleCollectionStatus(sale),
     fiscal = !!(sale.gstSnapshot || sale.mixedGstSnapshot);
   const identifier =
@@ -307,7 +353,7 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
         title={t("counter.bill_number", "", { number: identifier })}
         description={formatWhen(sale.soldAt)}
         actions={
-          <>
+          recorded ? null : (
             <Button
               tone="ghost"
               disabled={saleQuery.isFetching || offline}
@@ -315,15 +361,55 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
             >
               {t("counter.refresh", "Refresh")}
             </Button>
-            {recorded ? (
-              <Button href="/shop/sell">
-                {t("sale_complete.new_sale", "New sale")}
-              </Button>
-            ) : null}
-          </>
+          )
         }
       />
       <Notice error={error} />
+      {recorded ? (
+        <section className="sale-success" aria-labelledby="sale-success-title">
+          <span className="sale-success-mark" aria-hidden="true">
+            ✓
+          </span>
+          <div className="sale-success-copy">
+            <h2 id="sale-success-title" className="num">
+              {paidNow > 0
+                ? t("salesweb.paid_amount", "Paid {{amount}}", {
+                    amount: formatINR(paidNow),
+                  })
+                : t("salesweb.recorded_amount", "Bill recorded · {{amount}}", {
+                    amount: formatINR(sale.total),
+                  })}
+            </h2>
+            <p>
+              {methods.join(" + ")}
+              {changeGiven > 0
+                ? " · " +
+                  t("salesweb.change_given", "Change {{amount}}", {
+                    amount: formatINR(changeGiven),
+                  })
+                : ""}
+            </p>
+          </div>
+          <div className="sale-success-actions">
+            {!fiscal && !sale.documentPresentation ? (
+              <Button tone="ghost" onClick={sendWhatsApp}>
+                {t("whatsapp_receipt.send", "Send on WhatsApp")}
+                {sale.customer?.name ? " · " + sale.customer.name : ""}
+              </Button>
+            ) : null}
+            <Link
+              ref={newSale}
+              href="/shop/sell"
+              className="shop-btn shop-btn-primary"
+            >
+              {t("sale_complete.new_sale", "New sale")}
+              <kbd className="shop-kbd" aria-hidden="true">
+                {uiText("Enter")}
+              </kbd>
+            </Link>
+          </div>
+        </section>
+      ) : null}
       <section className="sale-detail-sheet">
         <header className="sale-detail-hero">
           <div>
@@ -505,7 +591,10 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
                   : undefined))
               : item.lineTotal;
             const costVisible =
-              !hideCost && sale.showCost === true && item.costTotal != null;
+              !hideCost &&
+              sale.showCost === true &&
+              item.costTotal != null &&
+              recorded !== "new";
             return (
               <div className="sale-detail-item" key={item.id}>
                 <ProductImageById
@@ -537,7 +626,7 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
                       })}
                     </p>
                   ) : null}
-                  {item.batches?.length ? (
+                  {item.batches?.length && recorded !== "new" ? (
                     <details className="sale-provenance">
                       <summary>
                         {t("mobile.audit.stock_provenance", "Stock provenance")}
@@ -828,7 +917,7 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
               />
             </details>
           ) : null}
-          {!fiscal ? (
+          {!fiscal && withinWindow ? (
             <details className="sale-detail-disclosure sale-void">
               <summary>{t("sale_detail.void", "Void bill")}</summary>
               <div className="stack-form">
