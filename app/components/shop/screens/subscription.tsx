@@ -12,8 +12,8 @@ export function SubscriptionScreen() {
   const locale = getLocale(language === 'hinglish' ? 'hi' : language);
   return (
     <div className="shop-page billing-workspace">
-      <PageHeader back={{ href: '/shop/settings', label: t('settings.title', 'Settings') }}
-        kicker={shop.name} title={t('billingweb.heading', 'Billing')}
+      <PageHeader back={{ href: '/shop/settings?section=shop', label: t('settings.title', 'Settings') }}
+        kicker={shop.name} title={t('subscription.section_title', 'Subscription')}
         description={t('billingweb.intro', 'Plan, payments and invoices for this shop.')} />
       {offline ? <p role="status">{t('settingsweb.offline', 'Reconnect to change settings or download records.')}</p> :
         <div className="shop-billing">

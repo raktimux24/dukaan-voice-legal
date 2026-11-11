@@ -1,0 +1,40 @@
+/* Web app review fixes: money area. New rules for this area go here, scoped under .shop-root. */
+
+/* Customers list: search with a placeholder and a stated order (F07, F08) */
+.shop-root .customer-search{display:grid;gap:6px}
+.shop-root .customer-search .shop-hint{margin:0;font-size:13px;color:#A0A0A8}
+
+/* Customers list: balance is the one big figure; this month's purchases step back (F09, F43) */
+.shop-root .customer-row .customer-month strong{font-size:15px;color:#c9c9cf}
+.shop-root .customer-person p,.shop-root .customer-person small,.shop-root .customer-month small,.shop-root .customer-balance small{font-size:13px}
+
+/* Customers list: Record payment / reminder on owing rows (F06) */
+.shop-root .customer-row-wrap{border-bottom:1px solid var(--customer-line)}
+.shop-root .customer-row-wrap>.customer-row{border-bottom:0}
+.shop-root .customer-row-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:-10px;padding:0 0 18px 62px}
+@media(max-width:600px){.shop-root .customer-row-actions{padding-left:0}.shop-root .customer-row-actions>.shop-btn{flex:1 1 auto}}
+
+/* Customer detail: the payment panel reads as the main action when money is owed (F01) */
+.shop-root .customer-payment.is-owing>summary{color:#f4f1ec;font-size:17px;min-height:44px;align-items:center}
+.shop-root .customer-payment.is-owing[open]>summary>span{display:none}
+
+/* Staff: counts in one line instead of a band (F34) */
+.shop-root .staff-counts{margin:0;padding:14px 0;border-block:1px solid var(--staff-line);color:#c9c9cf;font-size:14px;font-variant-numeric:tabular-nums}
+.shop-root .staff-row-role{display:flex;align-items:center}
+
+/* Activity: readable labels (F37, F43) */
+.shop-root .activity-day-heading>span{font-size:13px;color:#a8a29c}
+.shop-root .activity-source{font-size:12px}
+.shop-root .activity-entry-details{font-size:13px}
+.shop-root .activity-entry-details summary{min-height:40px}
+
+/* Cashbook: underline tabs that never wrap, matching Customers and Reports (F25) */
+.shop-root .cashbook-workspace .retail-section-tabs{display:flex;width:100%;max-width:none;background:#101014;border:0;border-bottom:1px solid var(--color-line,#303038);padding:0;gap:24px;border-radius:0;overflow-x:auto}
+.shop-root .cashbook-workspace .retail-section-tabs button{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal;padding:14px 0;border-radius:0;background:none;box-shadow:none;border-bottom:2px solid transparent}
+.shop-root .cashbook-workspace .retail-section-tabs button.is-active{color:#ff9857;background:none;border-bottom-color:#ff6b00}
+
+/* Reports: period chips (F28), empty and peak captions on charts (F27, F32) */
+.shop-root .report-periods button{padding:10px 14px;white-space:nowrap}
+.shop-root .report-chart-empty{margin:0;padding:36px 0;text-align:center;font-size:14px}
+.shop-root .report-chart-peak{margin:0 0 8px;font-size:13px;color:#c9c9cf;font-variant-numeric:tabular-nums}
+@media(max-width:700px){.shop-root .report-controls .report-periods button{flex:1 1 auto}}

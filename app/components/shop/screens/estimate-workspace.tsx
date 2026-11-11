@@ -497,6 +497,7 @@ function EstimateDialog({
 }
 export function EstimateList({ items, blocked, open }: EstimateListProps) {
   const { t, money, date } = useText(),
+    { t: translate } = useShop(),
     [search, setSearch] = useState(""),
     [filter, setFilter] = useState("all");
   const filtered = items.filter(
@@ -514,6 +515,7 @@ export function EstimateList({ items, blocked, open }: EstimateListProps) {
           <input
             className="shop-field"
             type="search"
+            placeholder={translate("estimates.web.search_placeholder", "Customer name or estimate number")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -549,7 +551,7 @@ export function EstimateList({ items, blocked, open }: EstimateListProps) {
                   {p.draft.customerName || t("estimates.mobile.walk_in")}
                 </strong>
                 <span className="estimate-muted">
-                  {p.number || t("estimates.status.draft")} ·{" "}
+                  {p.number ? p.number + " · " : ""}
                   {date(p.updatedAt)} ·{" "}
                   {t("estimates.mobile.selected", { count: p.lines.length })}
                 </span>
@@ -738,7 +740,31 @@ export function EstimateShare({
       <p className="estimate-muted">{t("estimates.share_prepared")}</p>
       <pre className="estimate-share-text">{text}</pre>
       <div className="opening-actions">
+        {typeof navigator.share === "function" && (
+          <Button
+            onClick={() =>
+              void navigator
+                .share({ title: number, text })
+                .then(() => setStatus("documents.shared"))
+                .catch(() => setStatus("estimates.share_cancelled"))
+            }
+          >
+            {t("estimates.web.choose_app")}
+          </Button>
+        )}
         <Button
+          tone={typeof navigator.share === "function" ? "ghost" : "primary"}
+          onClick={() =>
+            void navigator.clipboard
+              .writeText(text)
+              .then(() => setStatus("estimates.web.copied"))
+              .catch(() => setStatus("estimates.share_cancelled"))
+          }
+        >
+          {t("estimates.web.copy")}
+        </Button>
+        <Button
+          tone="ghost"
           onClick={() => {
             const url = URL.createObjectURL(
                 new Blob([text], { type: "text/plain;charset=utf-8" }),
@@ -755,30 +781,6 @@ export function EstimateShare({
         >
           {t("estimates.web.download")}
         </Button>
-        <Button
-          tone="ghost"
-          onClick={() =>
-            void navigator.clipboard
-              .writeText(text)
-              .then(() => setStatus("estimates.web.copied"))
-              .catch(() => setStatus("estimates.share_cancelled"))
-          }
-        >
-          {t("estimates.web.copy")}
-        </Button>
-        {typeof navigator.share === "function" && (
-          <Button
-            tone="ghost"
-            onClick={() =>
-              void navigator
-                .share({ title: number, text })
-                .then(() => setStatus("documents.shared"))
-                .catch(() => setStatus("estimates.share_cancelled"))
-            }
-          >
-            {t("estimates.web.choose_app")}
-          </Button>
-        )}
       </div>
       {status && <p role="status">{t(status)}</p>}
     </EstimateDialog>

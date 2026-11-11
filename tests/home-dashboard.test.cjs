@@ -55,6 +55,9 @@ const ui = {
   Notice: ({ error }) =>
     error ? React.createElement("p", { role: "alert" }, error.message) : null,
   Spinner: ({ label }) => React.createElement("p", { role: "status" }, label),
+  Skeleton: ({ label }) => React.createElement("p", { role: "status" }, label),
+  EmptyState: ({ title, body, action }) =>
+    React.createElement("div", null, title, body, action),
   PremiumLock: () => React.createElement("p", null, "Premium"),
   isPremiumError: (error) => error?.status === 402 || error?.code === "premium_required",
   Button: ({ children, onClick, disabled, href }) =>

@@ -1,0 +1,119 @@
+/* Web app review fixes: shell area. New rules for this area go here, scoped under .shop-root. */
+
+/* ---- Skip link (S9) ---- */
+.shop-root .shop-skip { position: absolute; left: 12px; top: -100px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: #ff6b00; color: #1a1a1a; font-weight: 600; font-size: 14px; }
+.shop-root .shop-skip:focus { top: 12px; }
+.shop-root .shop-main:focus { outline: none; }
+
+/* ---- Rail: always reachable on short screens (S5) ---- */
+.shop-root .shop-rail { overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #2a2a34 transparent; }
+.shop-root .shop-rail > * { flex-shrink: 0; }
+.shop-root .shop-rail-shop { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding: 8px 10px; min-height: 44px; }
+.shop-root .shop-rail-shop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-root .shop-rail-shop .shop-role { margin-top: 0; flex-shrink: 0; }
+.shop-root .shop-rail-switch { flex: 1; min-width: 0; }
+.shop-root .shop-rail-switch select { width: 100%; margin: 0; border: 0; background: transparent; padding: 4px 0; min-height: 32px; font-family: var(--font-dm-sans), Inter, sans-serif; font-size: 15px; font-weight: 600; text-overflow: ellipsis; cursor: pointer; }
+.shop-root .shop-rail-switch select option { background: #1e1e26; }
+.shop-root .shop-nav-link { min-height: 40px; }
+@media (min-width: 900px) and (max-height: 760px) {
+  .shop-root .shop-rail { padding-top: 14px; }
+  .shop-root .shop-nav-link { padding-block: 7px; min-height: 36px; }
+}
+
+/* ---- Top bar: voice and New sale on every page (S1, S4) ---- */
+.shop-root .shop-topbar-voice { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid rgba(255, 107, 0, 0.55); border-radius: 999px; background: rgba(255, 107, 0, 0.08); color: #ff8a33; }
+.shop-root .shop-topbar-voice svg { width: 20px; height: 20px; }
+.shop-root .shop-topbar-voice:hover { background: rgba(255, 107, 0, 0.16); color: #ffb27a; }
+.shop-root .shop-topbar .shop-topbar-new { min-height: 40px; }
+
+/* ---- More sheet for phones (S7) ---- */
+.shop-root .shop-tabs { grid-template-columns: repeat(5, 1fr); }
+.shop-root .shop-tabs button.shop-tab { width: 100%; }
+.shop-root .shop-more-nav { display: grid; gap: 4px; }
+.shop-root .shop-more-nav .shop-nav-link { min-height: 48px; font-size: 15px; }
+
+/* ---- Button with a leading icon (D3) ---- */
+.shop-root .shop-btn.has-icon { gap: 8px; }
+.shop-root .shop-btn-icon { display: inline-grid; place-items: center; width: 18px; height: 18px; flex: 0 0 18px; }
+.shop-root .shop-btn-icon svg { width: 18px; height: 18px; }
+
+/* ---- Shared primitives: Tabs, StatRow, EmptyState, Skeleton (D4, D5, D7, D8) ---- */
+.shop-root .shop-tabbar { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #2a2a34; scrollbar-width: none; }
+.shop-root .shop-tabbar-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; color: #aaa8b0; font-size: 14px; font-weight: 500; white-space: nowrap; }
+.shop-root .shop-tabbar-tab:hover { color: #eaeae6; }
+.shop-root .shop-tabbar-tab.is-active { color: #ff8a33; border-color: #ff6b00; }
+.shop-root .shop-tabbar-count { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: rgba(255, 107, 0, 0.14); color: #ffb27a; font-size: 12px; font-variant-numeric: tabular-nums; text-align: center; }
+.shop-root .shop-tabbar-count.is-zero { background: #1e1e26; color: #8a8a90; }
+.shop-root .shop-tabbar-tab:not(.is-active) .shop-tabbar-count:not(.is-zero) { background: #26262f; color: #d0ced4; }
+
+.shop-root .shop-statrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0; border-block: 1px solid #2a2a34; }
+.shop-root .shop-statrow-item { display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; border-right: 1px solid #2a2a34; min-width: 0; }
+.shop-root .shop-statrow-item:last-child { border-right: 0; }
+.shop-root .shop-statrow-item:first-child { padding-left: 0; }
+.shop-root .shop-statrow dt { font-size: 13px; color: #aaa8b0; }
+.shop-root .shop-statrow dd { margin: 0; font: 600 28px/1.15 var(--font-dm-sans), Inter, sans-serif; color: #eaeae6; overflow-wrap: anywhere; }
+.shop-root .shop-statrow dd.is-ok { color: #32d583; }
+.shop-root .shop-statrow dd.is-warn { color: #ffb547; }
+.shop-root .shop-statrow dd.is-danger { color: #ff8a80; }
+.shop-root .shop-statrow dd.is-saffron { color: #ff8a33; }
+.shop-root .shop-statrow dd.shop-statrow-help { font: 400 12px/1.5 Inter, sans-serif; color: #8a8a90; }
+.shop-root .shop-statrow-item.is-link:hover dt { color: #eaeae6; }
+
+.shop-root .shop-emptystate { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 16px; text-align: center; }
+.shop-root .shop-emptystate-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 999px; background: rgba(255, 107, 0, 0.1); color: #ff8a33; margin-bottom: 4px; }
+.shop-root .shop-emptystate-icon svg { width: 22px; height: 22px; }
+.shop-root .shop-emptystate-title { font-size: 16px; font-weight: 600; color: #eaeae6; }
+.shop-root .shop-emptystate-body { font-size: 14px; color: #aaa8b0; max-width: 42ch; }
+.shop-root .shop-emptystate-action { margin-top: 8px; }
+
+.shop-root .shop-skeleton { display: grid; gap: 10px; }
+.shop-root .shop-skeleton-block { display: block; border-radius: 8px; background: linear-gradient(90deg, #1b1b22 0%, #24242c 50%, #1b1b22 100%); background-size: 200% 100%; animation: shop-skeleton 1.4s ease-in-out infinite; }
+.shop-root .shop-skeleton.is-line .shop-skeleton-block { height: 14px; }
+.shop-root .shop-skeleton.is-stat .shop-skeleton-block { height: 56px; max-width: 260px; margin-top: 10px; }
+.shop-root .shop-skeleton.is-row .shop-skeleton-block { height: 64px; }
+.shop-root .shop-skeleton.is-card .shop-skeleton-block { height: 140px; border-radius: 12px; }
+@keyframes shop-skeleton { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* ---- Voice (V1–V3) ---- */
+.shop-root .voice-intro { display: grid; gap: 6px; text-align: center; padding-top: 8px; }
+.shop-root .voice-intro-title { font-size: 17px; font-weight: 600; color: #eaeae6; }
+.shop-root .voice-mic-button { min-height: 52px; padding-inline: 24px; font-size: 16px; }
+.shop-root .voice-mic-button.is-recording { background: #e85a4f; border-color: #e85a4f; color: #fff; }
+.shop-root .voice-capture-stage.is-idle .voice-wave i,
+.shop-root .voice-capture-stage.is-starting .voice-wave i { background: #5a5a62; opacity: 0.3; }
+.shop-root .voice-examples { display: grid; gap: 8px; justify-items: center; text-align: center; padding-bottom: 8px; }
+.shop-root .voice-examples ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.shop-root .voice-examples li { padding: 6px 12px; border: 1px solid #30303b; border-radius: 999px; color: #d6d4da; font-size: 14px; }
+.shop-root .voice-stages b { font-size: 12px; }
+.shop-root .voice-line-action { font-size: 13px; }
+
+/* ---- Home (H1, H3, H5, H9) ---- */
+.shop-root .home-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.shop-root .home-streak { display: inline-flex; align-items: center; min-height: 28px; padding: 3px 12px; border: 1px solid #3a3a44; border-radius: 999px; color: #c9c6ce; font-size: 13px; font-weight: 500; }
+.shop-root .home-streak.is-active { border-color: rgba(255, 139, 61, 0.45); color: #ffb27a; }
+.shop-root .home-command.is-voice { color: #ffb27a; background: rgba(255, 107, 0, 0.08); }
+.shop-root .home-command.is-voice:hover { background: rgba(255, 107, 0, 0.16); }
+.shop-root .home-command.is-voice svg { color: #ff8b3d; }
+.shop-root .home-shortcuts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
+.shop-root .home-month { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
+.shop-root .home-revenue-context p,
+.shop-root .home-revenue-context .dash-delta,
+.shop-root .home-brief-footer > span,
+.shop-root .home-payments .dash-split-legend,
+.shop-root .home-ledger-list small,
+.shop-root .home-ledger-list .shop-list-meta,
+.shop-root .home-ledger-list .shop-pill,
+.shop-root .home-payments > p,
+.shop-root .home-text-link { font-size: 12px; }
+.shop-root .home-facts span,
+.shop-root .home-attention-item span,
+.shop-root .home-section-top p { font-size: 13px; }
+
+/* ---- Alerts (A2) ---- */
+.shop-root .alert-listed { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 12px; border: 1px solid rgba(50, 213, 131, 0.35); border-radius: 999px; color: #7ee2ad; font-size: 13px; white-space: nowrap; }
+.shop-root .alert-listed svg { width: 16px; height: 16px; }
+.shop-root .alert-listed:hover { background: rgba(50, 213, 131, 0.08); }
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-root .shop-skeleton-block { animation: none; }
+}

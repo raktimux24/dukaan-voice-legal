@@ -55,7 +55,7 @@ export function PurchasesScreen() {
       {range && allowed ? <ReadState query={q}>
         {filtered.length ? <div className="invoice-ledger">{filtered.map(row => <Link className="invoice-ledger-row" key={row.id} href={"/shop/purchases/"+row.id}>
           <span className="invoice-mark" aria-hidden="true">↙</span><span className="invoice-identity"><strong>{row.snapshot.supplier.name}</strong><small>{row.snapshot.invoiceNumber} · {date(row.issuedAt)}</small></span>
-          <span className="invoice-row-tax"><small>{text("Purchase tax")}</small>{formatINR(Number(row.taxAmount))}</span><span className="invoice-row-total"><small>{text("Invoice total")}</small><strong>{formatINR(Number(row.grossAmount))}</strong></span><span aria-hidden="true" className="invoice-row-arrow">↗</span>
+          <span className="invoice-row-tax"><small>{text("Purchase tax")}</small>{formatINR(Number(row.taxAmount))}</span><span className="invoice-row-total"><small>{text("Invoice total")}</small><strong>{formatINR(Number(row.grossAmount))}</strong></span><span aria-hidden="true" className="invoice-row-arrow">›</span>
         </Link>)}</div> : <IllustratedEmpty icon="receipt" title={search ? t("invoiceweb.no_match", "No matching invoices") : t("shopux.no_invoices", "No supplier invoices in this period")} body={search ? t("invoiceweb.try_search", "Try a supplier name or invoice number, or load more invoices.") : t("shopux.no_invoices_body", "Record a bill from a supplier, or widen the dates above.")} action={search ? <Button tone="ghost" onClick={() => setSearch("")}>{t("invoiceweb.clear", "Clear search")}</Button> : recordHref ? <Button href={recordHref}>{text("Record supplier invoice")}</Button> : undefined}/>}
         <More query={q}/>
       </ReadState> : null}

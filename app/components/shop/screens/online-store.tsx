@@ -33,7 +33,7 @@ function Editor() {
     <div className="shop-page retail-workspace commerce-workspace">
       <PageHeader
         title={t("commerce.title")}
-        back={{ href: "/shop/settings", label: t("nav.settings") }}
+        back={{ href: "/shop/settings?section=shop", label: t("nav.settings") }}
       />
       <CommerceView
         w={w}

@@ -38,7 +38,7 @@ export function PurchaseOrdersScreen({
 }
 
 function Editor({ compose }: { compose: boolean }) {
-  const { api, shop, userId, perms, offline, t: translate } = useShop();
+  const { api, shop, userId, perms, offline, setNotice, t: translate } = useShop();
   const router = useRouter();
   const params = useSearchParams();
   const opened = useRef("");
@@ -74,7 +74,7 @@ function Editor({ compose }: { compose: boolean }) {
           back={
             compose
               ? { href: "/shop/purchase-orders", label: t("po.all_orders") }
-              : { href: "/shop", label: t("nav.home") }
+              : { href: "/shop/buy-list", label: t("buy_list.title") }
           }
           actions={
             compose || !w.allowed ? undefined : (
@@ -104,7 +104,17 @@ function Editor({ compose }: { compose: boolean }) {
         share={async (text) => {
           if (navigator.share)
             await navigator.share({ title: t("po.title"), text });
-          else {
+          else if (navigator.clipboard?.writeText) {
+            // Desktop browsers rarely offer a share sheet: copy the order so it
+            // can be pasted into WhatsApp or email instead of saving a .txt file.
+            await navigator.clipboard.writeText(text);
+            setNotice(
+              translate(
+                "poweb.share_copied",
+                "Order copied. Paste it into WhatsApp or email to send it to the supplier.",
+              ),
+            );
+          } else {
             const url = URL.createObjectURL(
               new Blob([text], { type: "text/plain;charset=utf-8" }),
             );

@@ -41,7 +41,18 @@ import {checkoutCustomer} from '../../../lib/shop/checkout-customer';
 import {assertCartMrp,captureCartMrp,missingCartMrp,restoreCartMrp} from '../../../lib/shop/checkout-mrp';
 import { CustomerAttach } from '../customer-attach';
 
-const CHIPS = [10, 20, 50, 100, 200, 500, 2000];
+// Same as the app: the next round sums a customer is likely to hand over.
+// ₹87 → ₹90, ₹100, ₹500, ₹1,000; ₹640 → ₹650, ₹700, ₹1,000, ₹2,000.
+function quickCashOptions(total: number): number[] {
+  if (!Number.isFinite(total) || total <= 0) return [];
+  const out = new Set<number>();
+  for (const step of [10, 50, 100, 500, 1000, 2000]) {
+    if (step < total / 100) continue;
+    const value = Math.ceil(total / step) * step;
+    if (value > total) out.add(value);
+  }
+  return [...out].sort((a, b) => a - b).slice(0, 4);
+}
 
 
 const MODE_LABELS: Record<TenderMode, string> = { cash: 'Cash', upi: 'UPI', card: 'Card', credit: 'Udhaar', split: 'Split' };
@@ -143,15 +154,15 @@ export function CheckoutScreen() {
   }, [offlineSaved]);
 
   const gstContext:GstContext|null=settings.data?.gstSettings&&['regular','composition'].includes(settings.data.gstSettings.registration)?{settings:settings.data.gstSettings,priceMode:cartApi.cart.gstPriceMode??settings.data.gstSettings.priceMode,placeOfSupply:settings.data.gstSettings.stateCode,...cartApi.cart.buyer?{buyer:cartApi.cart.buyer}:{}}:null;
-  let gstError:unknown=null;let totals;let roundOff=0;
+  let gstError:unknown=null;let totals;let roundOff=0;let gstLoading=false;
   try{
     if(taxAdoptionError&&taxRequired)throw taxAdoptionError;
-    if(taxRequired){if(taxSnapshot.error||!taxSnapshot.data||adoptedSnapshot.current!==taxSnapshot.data)throw taxSnapshot.error??Error('Refreshing product tax details.');assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:cartApi.cart.lines},shop!.id,new Date().toISOString());}
+    if(taxRequired){if(taxSnapshot.error||!taxSnapshot.data||adoptedSnapshot.current!==taxSnapshot.data){gstLoading=!taxSnapshot.error;throw taxSnapshot.error??Error('Refreshing product tax details.');}assertCartTaxSnapshots({gstTaxSnapshotsRequired:true,lines:cartApi.cart.lines},shop!.id,new Date().toISOString());}
     if(gstContext?.settings.registration==='regular')for(const line of cartApi.cart.lines){if(line.gstRspSnapshot?.profiles.length&&!line.rsp){let active=false;try{cachedRspProductAt(line.gstRspSnapshot,shop!.id,line.productId,new Date().toISOString());active=true;}catch{/* An inactive review does not enable RSP. */}if(active)throw Error('Review package details below before charging this product.');}}
     if(cartApi.cart.lines.some(line=>line.rsp)&&settings.data?.gstRspBillingAvailable!==true)throw Error('RSP billing is unavailable for this shop.');
     totals=computeTotals(cartApi.cart,gstContext);if(gstContext)validateContext(gstContext,totals.total);
     if(!cartApi.pending){if(missingMrp.length&&mrpSnapshot.error)throw mrpSnapshot.error;assertCartMrp(cartApi.cart,totals,gstContext);}
-    if(roundingEnabled&&(rounding.error||!rounding.data||!roundingSelectionCurrent(rounding.data,previewNow)))throw rounding.error??Error('Loading the current rounding policy.');
+    if(roundingEnabled&&(rounding.error||!rounding.data||!roundingSelectionCurrent(rounding.data,previewNow))){gstLoading=!rounding.error;throw rounding.error??Error('Loading the current rounding policy.');}
     const payable=checkoutPayable(totals.total,shop?.id??'',gstContext,roundingEnabled,rounding.data?.selection?.policy,previewAt);
     roundOff=payable.roundOff;totals={...totals,total:payable.total};
   }catch(e){gstError=e;totals=computeTotals(cartApi.cart);}
@@ -171,6 +182,19 @@ export function CheckoutScreen() {
   const [estimateReviewed,setEstimateReviewed]=useState(false);
   const amountUnavailable=!!gstError||!settings.data||settings.isError||!!gstContext&&(settings.data.gstAvailable!==true||settings.data.gstProtocol!==2);
   const zeroRounded=!amountUnavailable&&total===0&&roundOff<0;
+  // Waiting for tax details is not a failure: show it calmly, and only report a problem
+  // when a read fails or it is still not ready after a few seconds.
+  const amountLoading=amountUnavailable&&!cartApi.pending&&!settings.isError&&!(gstContext&&(settings.data?.gstAvailable!==true||settings.data?.gstProtocol!==2))&&(gstLoading||!settings.data&&settings.isPending);
+  const [loadingSlow,setLoadingSlow]=useState(false);
+  useEffect(()=>{if(!amountLoading){setLoadingSlow(false);return;}const timer=setTimeout(()=>setLoadingSlow(true),8000);return()=>clearTimeout(timer);},[amountLoading]);
+  const calmLoading=amountLoading&&!loadingSlow;
+  const cashInput=useRef<HTMLInputElement>(null),cashFocused=useRef(false);
+  useEffect(()=>{
+    // Put the cursor in "Cash received" once, when it first appears, unless the cashier is already typing elsewhere.
+    const input=cashInput.current;if(cashFocused.current||!input)return;cashFocused.current=true;
+    if(!document.activeElement||document.activeElement===document.body)input.focus();
+  });
+  const macKeys=typeof navigator!=='undefined'&&/Mac|iPhone|iPad/.test(navigator.platform??'');
   const upiReady=!!(settings.data?.upiVpa||settings.data?.upiQrImage);
   const upiBlocked=upiPortion>0&&!upiReady&&upiRef.trim().length<4;
   const canCharge = perms.canSell && !cartApi.pending && discountValid && payment.valid && (total>0||zeroRounded) && (!commerceCheckout||collectionReviewed) && cartApi.draft.state==='saved' && creditReview.valid && (!cartApi.cart.estimateSource||estimateReviewed) && !amountUnavailable && !!mode && (mode!=='card'||!!settings.data?.cardEnabled) && !udhaarLocked && remainder===0 && !cashShort && !creditBlocked && !upiBlocked && cartApi.cart.lines.length>0;
@@ -308,9 +332,11 @@ export function CheckoutScreen() {
   const locked=busy||!!cartApi.pending||!perms.canSell;
   const reviewedLines=cartApi.pending?cartApi.pending.payload.items.map((item,index)=>({...item,key:String(index),name:item.name??t('bill.item','Item'),unit:item.unit??'',price:item.price??0,discount:item.discount??0,packSize:null,packLabel:null})):cartApi.cart.lines;
   const displayTotal=cartApi.pending?cartApi.pending.payload.payments.reduce((sum,p)=>sum+p.amount,0):total;
-  const amountLabel=amountUnavailable&&!cartApi.pending?t('checkout.amount_unavailable','Unavailable'):formatINR(displayTotal);
+  const amountLabel=calmLoading?'…':amountUnavailable&&!cartApi.pending?t('checkout.amount_unavailable','Unavailable'):formatINR(displayTotal);
+  const taxShown=!amountUnavailable&&!cartApi.pending?(totals.tax?.tax??(totals.mixed?Number(totals.mixed.tax??0):0)):0;
+  const amountExplain=!amountUnavailable&&!cartApi.pending&&(taxShown>0||roundingEnabled&&roundOff!==0)?[taxShown>0?tr('includes_gst','Includes GST {{amount}}',{amount:formatINR(taxShown)}):null,roundingEnabled&&roundOff!==0?tr('round_off_line','Round off {{amount}}',{amount:formatINR(roundOff)}):null].filter(Boolean).join(' · '):'';
   const finalLabel=zeroRounded?t('checkout.no_payment_due','No payment due'):mode==='credit'?tr('record_credit','Record udhaar'):tr('confirm_payment','Confirm payment');
-  const blockedReason=amountUnavailable?tr('review_setup','Review billing details to see the amount due.'):
+  const blockedReason=calmLoading?tr('getting_tax','Getting tax rates…'):amountUnavailable?tr('review_setup','Review billing details to see the amount due.'):
     !discountValid||!payment.valid?t('checkout.valid_money','Enter a valid amount with up to two decimal places.'):
     total<=0&&!zeroRounded?t('checkout.zero_total','Set a price before completing the bill.'):
     udhaarLocked?tr('premium_credit','Udhaar needs Premium access.'):
@@ -324,9 +350,10 @@ export function CheckoutScreen() {
     cartApi.draft.state!=='saved'?t('counter.draft_'+cartApi.draft.state,''):'';
   const methodIcons={cash:'wallet',upi:'qr',card:'card',credit:'user',split:'clipboard'} as const;
   const applyDiscount=(value:string)=>{setDiscountInput(value);const amount=value.trim()?checkoutMoney(value):0;if(amount!==null)cartApi.patch({billDiscount:amount});};
+  const confirmKey=(event:React.KeyboardEvent)=>{if(event.key!=='Enter'||!(event.ctrlKey||event.metaKey)||event.defaultPrevented||event.repeat)return;event.preventDefault();if(!busy&&perms.canSell&&canCharge&&!cartApi.pending)void handleCharge(false);};
   const refreshBilling=()=>{void settings.refetch();if(taxRequired)void taxSnapshot.refetch();if(roundingEnabled)void rounding.refetch();if(missingMrp.length)void mrpSnapshot.refetch();};
   return (
-    <div className="shop-page checkout-workspace">
+    <div className="shop-page checkout-workspace" onKeyDown={confirmKey}>
       <header className="checkout-heading">
         <div><Button href="/shop/sell" tone="quiet" size="sm">← {tr('back','Back to bill')}</Button><h1>{t('checkout.title','Checkout')}</h1></div>
         <p>{tr('intro','Check the amount. Choose payment. Finish the bill.')}</p>
@@ -336,10 +363,10 @@ export function CheckoutScreen() {
       {confirmOld?<Card><p>{uiText('This bill was started too long ago. Charging it now creates a new bill only after you confirm.')}</p><Button href="/shop/settings/gst/recovery">{uiText('Review saved bill')}</Button></Card>:null}
       <div className="checkout-sheet">
         <section className="checkout-amount" aria-label={t('checkout.amount_due','Amount due')}>
-          <div><p>{t('checkout.amount_due','Amount due')}</p><strong className="num" data-checkout-total>{amountLabel}</strong></div>
+          <div><p>{t('checkout.amount_due','Amount due')}</p><strong className={cx('num',calmLoading&&'is-loading')} data-checkout-total aria-busy={calmLoading||undefined}>{amountLabel}</strong>{calmLoading?<p className="checkout-amount-note" role="status">{tr('getting_tax','Getting tax rates…')}</p>:amountExplain?<p className="checkout-amount-note">{amountExplain}</p>:null}</div>
           <div className="checkout-amount-meta"><Glyph name="receipt"/><span>{tr('item_count','Items on this bill · {{n}}',{n:reviewedLines.length})}</span>{gstContext&&!amountUnavailable?<small>{text(gstContext.settings.registration==='composition'?'Bill of supply':gstContext.priceMode==='inclusive'?'GST included':'GST added')}</small>:null}</div>
         </section>
-        <details className="checkout-review">
+        <details className="checkout-review" open={reviewedLines.length<=5||undefined}>
           <summary>{tr('review_bill','Review items & totals')}<span aria-hidden="true">＋</span></summary>
           <div className="checkout-review-body">
             {reviewedLines.map(line=><div className="checkout-review-line" key={line.key}><span><strong>{line.name}</strong><small>{formatQty(line.quantity,line.unit,{packSize:line.packSize,packLabel:line.packLabel})} × {formatINR(line.price)}</small></span><span className="num">{formatINR(Math.max(0,roundPaise(line.price*line.quantity-line.discount)))}</span></div>)}
@@ -350,7 +377,7 @@ export function CheckoutScreen() {
         </details>
         {!cartApi.pending?<fieldset className="checkout-form" disabled={locked}>
           <legend className="sr-only">{t('checkout.payment_method','Payment method')}</legend>
-          {amountUnavailable&&!cartApi.pending?<div className="checkout-setup" role="alert"><Notice error={gstError??settings.error}/><p>{tr('review_setup','Review billing details to see the amount due.')}</p><Button tone="ghost" onClick={refreshBilling}>{tr('refresh_billing','Refresh billing details')}</Button></div>:null}
+          {amountUnavailable&&!cartApi.pending&&!calmLoading?<div className="checkout-setup" role="alert"><Notice error={gstError??settings.error}/><p>{tr('review_setup','Review billing details to see the amount due.')}</p><Button tone="ghost" onClick={refreshBilling}>{tr('refresh_billing','Refresh billing details')}</Button></div>:null}
           {!amountUnavailable&&!zeroRounded&&!cartApi.pending?<>
             <section className="checkout-payment">
               <h2><span className="checkout-step">01</span>{tr('how_paying','How is the customer paying?')}</h2>
@@ -359,11 +386,11 @@ export function CheckoutScreen() {
               </div>
               {mode==='split'?<div className="checkout-split"><div className="form-grid is-3">{(['cash','upi','credit'] as const).map(part=><Field key={part} label={t('pos.method.'+part,MODE_LABELS[part])}><div className="checkout-rest"><input className={inputClass} aria-label={t('pos.method.'+part,MODE_LABELS[part])} inputMode="decimal" placeholder="0.00" value={split[part]} onChange={e=>setSplit(current=>({...current,[part]:e.target.value}))}/><button type="button" disabled={!payment.valid||remainder<=0} onClick={()=>setSplit(current=>({...current,[part]:String(roundPaise((checkoutMoney(current[part])??0)+remainder))}))}>{t('checkout.rest','Rest')}</button></div></Field>)}</div><p role="status" className={cx('shop-hint',payment.valid&&remainder===0?'text-ok':'text-warn')}>{!payment.valid?t('checkout.valid_money','Enter a valid amount with up to two decimal places.'):remainder===0?t('checkout.split_ok','Fully assigned'):t(remainder>0?'checkout.split_remaining':'checkout.split_over','{{amount}}',{amount:formatINR(Math.abs(remainder))})}</p></div>:null}
               {(mode==='cash'||mode==='split'&&cashPortion>0)?<div className="checkout-tender">
-                <div><Field label={t('checkout.cash_received','Cash received')} hint={tr('exact_hint','Leave blank for the exact amount.')}><div className="shop-input-wrap"><span className="shop-input-prefix">₹</span><input className="shop-field is-lg num" inputMode="decimal" placeholder={cashPortion.toFixed(2)} value={currentTendered} onChange={e=>setTendered(e.target.value)}/></div></Field><div className="tender-chips"><Button tone="ghost" size="sm" onClick={()=>setTendered(cashPortion.toFixed(2))}>{t('checkout.exact','Exact')}</Button>{CHIPS.filter(chip=>chip>=cashPortion).slice(0,4).map(chip=><Button key={chip} tone="ghost" size="sm" onClick={()=>setTendered(String(chip))}>{formatINR(chip)}</Button>)}</div></div>
+                <div><Field label={t('checkout.cash_received','Cash received')} hint={tr('exact_hint','Leave blank for the exact amount.')}><div className="shop-input-wrap"><span className="shop-input-prefix">₹</span><input ref={cashInput} className="shop-field is-lg num" inputMode="decimal" placeholder={cashPortion.toFixed(2)} value={currentTendered} onChange={e=>setTendered(e.target.value)}/></div></Field><div className="tender-chips"><Button tone="ghost" size="sm" onClick={()=>setTendered(cashPortion.toFixed(2))}>{t('checkout.exact','Exact')}</Button>{quickCashOptions(cashPortion).map(chip=><Button key={chip} tone="ghost" size="sm" onClick={()=>setTendered(String(chip))}>{formatINR(chip)}</Button>)}</div></div>
                 <div className={cx('checkout-change',cashShort&&'is-short')} aria-live="polite"><span>{cashShort?tr('short','Still to receive'):t('checkout.change','Change to return')}</span><strong className="num">{payment.valid?formatINR(cashShort?roundPaise(cashPortion-tendered):payment.change):'—'}</strong><small>{tr('cash_due','Cash due: {{amount}}',{amount:formatINR(cashPortion)})}</small></div>
               </div>:null}
               {upiPortion>0&&payment.valid?<div className="checkout-upi">
-                {upiText?<UpiQr text={upiText} label={settings.data!.upiVpa!}/>:settings.data?.upiQrImage?<img src={settings.data.upiQrImage} alt={tr('qr_alt','Shop payment QR code')} width={180} height={180}/>:<div className="checkout-qr-empty"><Glyph name="qr"/><p>{tr('no_qr','No shop QR is set up.')}</p>{perms.canManageShop?<Link href="/shop/settings/payments">{t('checkout.setup_upi','Set up UPI')}</Link>:null}</div>}
+                {upiText?<UpiQr text={upiText} label={settings.data!.upiVpa!} fallbackImage={settings.data?.upiQrImage??null}/>:settings.data?.upiQrImage?<img src={settings.data.upiQrImage} alt={tr('qr_alt','Shop payment QR code')} width={180} height={180}/>:<div className="checkout-qr-empty"><Glyph name="qr"/><p>{tr('no_qr','No shop QR is set up.')}</p>{perms.canManageShop?<Link href="/shop/settings/payments">{t('checkout.setup_upi','Set up UPI')}</Link>:null}</div>}
                 <div><h3>{tr('upi_amount','Receive {{amount}} by UPI',{amount:formatINR(upiPortion)})}</h3><p className="shop-hint">{tr('upi_check','Check the payment in your UPI app before confirming this bill.')}</p>{!settings.data?.upiVpa&&settings.data?.upiQrImage?<p className="shop-hint">{tr('static_qr','Ask the customer to enter this amount when scanning.')}</p>:null}<Field label={t('checkout.upi_ref','UPI reference')} hint={upiReady?t('checkout.optional','Optional'):tr('upi_required','Add a UPI reference of at least 4 characters, or set up your shop’s QR.')}><input className={inputClass} value={upiRef} onChange={e=>setUpiRef(e.target.value)}/></Field></div>
               </div>:null}
               {mode==='card'?<div className="checkout-method-note"><Glyph name="card"/><p>{tr('card_help','Take {{amount}} on your card terminal, then confirm it here.',{amount:amountLabel})}</p></div>:null}
@@ -387,7 +414,7 @@ export function CheckoutScreen() {
         </fieldset>:null}
         <footer className="checkout-confirm">
           <div><span>{cartApi.pending?tr('saved_bill','Saved bill'):t('checkout.amount_due','Amount due')}</span><strong className="num">{amountLabel}</strong></div>
-          <div><Button size="lg" block disabled={busy||!perms.canSell||(!cartApi.pending&&!canCharge)} onClick={()=>void handleCharge(false)}>{busy?tr('confirming','Confirming…'):cartApi.pending?tr('retry','Check saved bill'):finalLabel}<span aria-hidden="true"> →</span></Button><p role="status">{!cartApi.pending&&blockedReason?blockedReason:mode==='credit'&&!cartApi.pending?tr('credit_help','This amount goes on the customer’s udhaar. No payment is collected now.'):zeroRounded?t('checkout.no_payment_due','No payment due'):cartApi.pending?tr('pending_title','This bill is waiting for confirmation'):tr('confirm_help','Confirm only after you have checked the payment.')}</p></div>
+          <div><Button size="lg" block disabled={busy||!perms.canSell||(!cartApi.pending&&!canCharge)} onClick={()=>void handleCharge(false)}>{busy?tr('confirming','Confirming…'):cartApi.pending?tr('retry','Check saved bill'):finalLabel}<span aria-hidden="true"> →</span></Button>{canCharge&&!busy?<p className="checkout-shortcut"><kbd className="shop-kbd">{macKeys?'⌘':tr('ctrl','Ctrl')}</kbd><kbd className="shop-kbd">{uiText('Enter')}</kbd> {tr('shortcut_confirm','confirms')}</p>:null}<p role="status">{!cartApi.pending&&blockedReason?blockedReason:mode==='credit'&&!cartApi.pending?tr('credit_help','This amount goes on the customer’s udhaar. No payment is collected now.'):zeroRounded?t('checkout.no_payment_due','No payment due'):cartApi.pending?tr('pending_title','This bill is waiting for confirmation'):tr('confirm_help','Confirm only after you have checked the payment.')}</p></div>
         </footer>
       </div>
       <details className="checkout-recovery" open={cartApi.draft.state==='error'||!!cartApi.pending||undefined}><summary>{t('counter.recovery','Saved requests & recovery')}</summary><CounterStatus cart={cartApi}/></details>
@@ -396,10 +423,11 @@ export function CheckoutScreen() {
 
 }
 
-function UpiQr({ text, label }: { text: string; label: string }) {
+function UpiQr({ text, label, fallbackImage }: { text: string; label: string; fallbackImage: string|null }) {
   const uiText = useUiText();
   const {t}=useShop();
   const [qrImage,setQrImage]=useState<{text:string;src:string}|null>(null);
+  const [attempt,setAttempt]=useState(0);
   const src=qrImage?.text===text?qrImage.src:null;
   useEffect(() => {
     let cancelled = false;setQrImage(null);
@@ -409,10 +437,13 @@ function UpiQr({ text, label }: { text: string; label: string }) {
     return () => {
       cancelled = true;
     };
-  }, [text]);
+  }, [text,attempt]);
   return (
     <div>
-      {src ? <img src={src} alt={uiText("UPI QR")} width={200} height={200} className="rounded-lg bg-white p-2" /> : <p className="text-muted">{src===null?uiText("Preparing QR…"):t('common.retry','Retry')}</p>}
+      {src ? <img src={src} alt={uiText("UPI QR")} width={200} height={200} className="rounded-lg bg-white p-2" /> : src===null ? <p className="text-muted" role="status">{uiText("Preparing QR…")}</p> : <div className="checkout-qr-failed">
+        {fallbackImage?<><img src={fallbackImage} alt={t('checkoutweb.qr_alt','Shop payment QR code')} width={180} height={180}/><p className="shop-hint">{t('checkoutweb.static_qr','Ask the customer to enter this amount when scanning.')}</p></>:<p className="text-muted" role="alert">{t('checkoutweb.qr_failed','The QR could not be shown.')}</p>}
+        <Button tone="ghost" size="sm" onClick={()=>setAttempt(n=>n+1)}>{t('checkoutweb.qr_again','Show QR again')}</Button>
+      </div>}
       <p className="mt-2 text-center text-sm text-muted">{label}</p>
     </div>
   );

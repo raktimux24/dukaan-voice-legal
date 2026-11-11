@@ -5,7 +5,7 @@ import { useShop } from "./context";
 import { Button, Field, Notice, inputClass } from "./ui";
 import { ProductImageById } from "./product-image";
 import { formatINR } from "../../lib/shop/money";
-import { formatQty } from "../../lib/shop/units";
+import { formatQty, r3, stepFor } from "../../lib/shop/units";
 import { ordinaryReturnPlan } from "../../lib/shop/sales";
 import { verifiedSaleBalance } from "../../lib/shop/sale-balance";
 import { planReturnSettlement } from "../../lib/shop/gst-core/sale-return-settlement";
@@ -38,7 +38,6 @@ export function SaleReturnEditor({
     [credit, setCredit] = useState(""),
     [reference, setReference] = useState(""),
     [reason, setReason] = useState(""),
-    [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState<unknown>(null);
   const saved = useQuery({
@@ -117,9 +116,10 @@ export function SaleReturnEditor({
       saved.isSuccess &&
       !invalid &&
       !!plan?.items.length &&
-      confirmed &&
       !sale.returnPlanningError;
-  const change = () => setConfirmed(false);
+  // Same as the app: steppers from 0 up to what is left, and one tap for all of it.
+  const setReturnQuantity = (id: string, quantity: number) =>
+    setQuantities({ ...quantities, [id]: quantity > 0 ? String(r3(quantity)) : "" });
   async function submit() {
     if (!allowed || !shop || !plan || busy || saved.data) return;
     setBusy(true);
@@ -135,7 +135,6 @@ export function SaleReturnEditor({
     try {
       await api.gst.returnSale(shop.id, sale.id, input, plan.total);
       setQuantities({});
-      setConfirmed(false);
       await onDone();
     } catch (e) {
       setError(e);
@@ -215,7 +214,6 @@ export function SaleReturnEditor({
                             ...restock,
                             [item.id]: e.target.checked,
                           });
-                          change();
                         }}
                       />
                       {t("sale_return.restock", "Return to stock")}
@@ -237,10 +235,53 @@ export function SaleReturnEditor({
                         ...quantities,
                         [item.id]: e.target.value,
                       });
-                      change();
                     }}
                   />
                 </Field>
+                {(() => {
+                  const remaining = r3(item.quantity - item.returnedQuantity),
+                    current = Number(quantities[item.id] || 0),
+                    known = Number.isFinite(current) ? current : 0,
+                    step = item.rspSnapshot ? 1 : Math.min(stepFor(item.unit), remaining);
+                  return (
+                    <div
+                      className="sale-return-stepper"
+                      role="group"
+                      aria-label={item.name}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`${t("a11y.decrease", "Decrease quantity")}: ${item.name}`}
+                        disabled={known <= 0}
+                        onClick={() =>
+                          setReturnQuantity(item.id, Math.max(0, r3(known - step)))
+                        }
+                      >
+                        −
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`${t("a11y.increase", "Increase quantity")}: ${item.name}`}
+                        disabled={known >= remaining}
+                        onClick={() =>
+                          setReturnQuantity(item.id, Math.min(remaining, r3(known + step)))
+                        }
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        className="sale-return-all"
+                        disabled={known === remaining}
+                        onClick={() => setReturnQuantity(item.id, remaining)}
+                      >
+                        {t("salesweb.return_all_of", "All {{quantity}}", {
+                          quantity: formatQty(remaining, item.unit),
+                        })}
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
         </div>
@@ -288,7 +329,6 @@ export function SaleReturnEditor({
                 placeholder="0"
                 onChange={(e) => {
                   setCredit(e.target.value);
-                  change();
                 }}
               />
             </Field>
@@ -299,7 +339,6 @@ export function SaleReturnEditor({
                 value={reference}
                 onChange={(e) => {
                   setReference(e.target.value);
-                  change();
                 }}
               />
             </Field>
@@ -316,7 +355,6 @@ export function SaleReturnEditor({
               placeholder={plan ? String(plan.total) : "0"}
               onChange={(e) => {
                 setOverride(e.target.value);
-                change();
               }}
             />
           </Field>
@@ -328,7 +366,6 @@ export function SaleReturnEditor({
               value={method}
               onChange={(e) => {
                 setMethod(e.target.value as typeof method);
-                change();
               }}
             >
               {(["cash", "upi", "card"] as const).map((m) => (
@@ -344,7 +381,6 @@ export function SaleReturnEditor({
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
-                change();
               }}
             />
           </Field>
@@ -370,17 +406,6 @@ export function SaleReturnEditor({
             )}
           </p>
         ) : null}
-        <label className="sale-check">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(e) => setConfirmed(e.target.checked)}
-          />
-          {t(
-            "salesweb.return_confirm",
-            "I have checked the items, restocking and refund.",
-          )}
-        </label>
         <Button disabled={!allowed || locked} onClick={() => void submit()}>
           {busy
             ? t("common.loading", "")

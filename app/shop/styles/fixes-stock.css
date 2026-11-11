@@ -1,0 +1,36 @@
+/* Web app review fixes: stock area. New rules for this area go here, scoped under .shop-root. */
+
+/* S16: inline reason next to the field that blocks saving a product. */
+.shop-root .product-form-field-error { display:block; margin-top:6px; font-size:13px; color:#ffaaa1; }
+.shop-root .product-form-workspace [aria-invalid="true"] { border-color:#ff8a80; }
+
+/* S13: the section index is plain in-page links, not a numbered stepper. */
+.shop-root .product-form-index a:focus-visible { outline:2px solid var(--color-saffron,#ff6b00); outline-offset:2px; border-radius:4px; }
+
+/* S7: "Add all to buy list" on the Low stock / Out of stock views. */
+.shop-root .products-shortfall { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:16px 24px; border-block:1px solid var(--border); background:rgba(255,107,0,.04); }
+.shop-root .products-shortfall .shop-btn { min-height:40px; }
+.shop-root .products-shortfall p { font-size:13px; color:#ffaaa1; }
+
+/* S25: the upload card is a drop target for an Excel / CSV file. */
+.shop-root .import-drop { border:2px dashed transparent; border-radius:18px; transition:border-color .15s ease, background-color .15s ease; }
+.shop-root .import-drop.is-dragging { border-color:var(--color-saffron,#ff6b00); background:rgba(255,107,0,.06); }
+@media (prefers-reduced-motion: reduce) { .shop-root .import-drop { transition:none; } }
+
+/* S32 / S4: invoice footer puts Back left of the primary action; stock summary above the review tick. */
+.shop-root .invoice-compose-footer { justify-content:flex-end; }
+.shop-root .purchase-stock-summary { margin:12px 0; font-size:14px; font-weight:600; overflow-wrap:anywhere; }
+
+/* S37: no meta text under 12px in this area; one focus colour on list rows. */
+.shop-root .products-row small,
+.shop-root .buy-badge,
+.shop-root .buy-ai,
+.shop-root .buy-quantity small,
+.shop-root .supplier-record-metrics small,
+.shop-root .supplier-item-price small,
+.shop-root .import-values dt { font-size:13px; }
+.shop-root .products-overview span { font-size:13px; }
+.shop-root .products-stock .shop-pill { font-size:12px; }
+.shop-root .products-row:focus-visible,
+.shop-root .products-overview button:focus-visible,
+.shop-root .buy-status button:focus-visible { outline:2px solid var(--color-saffron,#ff6b00); outline-offset:2px; }

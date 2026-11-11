@@ -29,6 +29,8 @@ export function Button({
   className,
   title,
   'aria-label': ariaLabel,
+  icon,
+  shortcut,
 }: {
   children: ReactNode;
   type?: 'button' | 'submit';
@@ -41,6 +43,10 @@ export function Button({
   className?: string;
   title?: string;
   'aria-label'?: string;
+  /** Optional leading icon. Icons always sit before the label. */
+  icon?: GlyphName;
+  /** Keyboard shortcut announced to assistive tech, e.g. "N". */
+  shortcut?: string;
 }) {
   const classes = cx(
     'shop-btn',
@@ -51,12 +57,14 @@ export function Button({
     size === 'sm' && 'is-sm',
     size === 'lg' && 'is-lg',
     block && 'is-block',
+    icon && 'has-icon',
     className,
   );
-  if (href) return <Link className={classes} href={href} title={title}>{children}</Link>;
+  const body = icon ? <><span className="shop-btn-icon" aria-hidden="true"><Glyph name={icon} /></span>{children}</> : children;
+  if (href) return <Link className={classes} href={href} title={title} aria-label={ariaLabel} aria-keyshortcuts={shortcut}>{body}</Link>;
   return (
-    <button aria-label={ariaLabel} className={classes} type={type} onClick={onClick} disabled={disabled} title={title}>
-      {children}
+    <button aria-label={ariaLabel} aria-keyshortcuts={shortcut} className={classes} type={type} onClick={onClick} disabled={disabled} title={title}>
+      {body}
     </button>
   );
 }
@@ -166,7 +174,8 @@ export function Kbd({ children }: { children: ReactNode }) {
 
 export type GlyphName =
   | 'search' | 'scan' | 'barcode' | 'mic' | 'alert' | 'store' | 'qr' | 'staff' | 'card' | 'wallet' | 'shield' | 'receipt' | 'clipboard'
-  | 'bag' | 'landmark' | 'users' | 'truck' | 'package' | 'download' | 'phone' | 'pin' | 'user' | 'languages';
+  | 'bag' | 'landmark' | 'users' | 'truck' | 'package' | 'download' | 'phone' | 'pin' | 'user' | 'languages'
+  | 'plus' | 'speaker' | 'more' | 'close' | 'check' | 'chevron';
 
 export function Glyph({ name }: { name: GlyphName }) {
   const svg = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.75, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, viewBox: '0 0 24 24', 'aria-hidden': true as const };
@@ -194,6 +203,12 @@ export function Glyph({ name }: { name: GlyphName }) {
     pin: <><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z" /><circle cx="12" cy="10" r="2.2" /></>,
     user: <><circle cx="12" cy="8" r="3.2" /><path d="M5 19a7 7 0 0 1 14 0" /></>,
     languages: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.8 3.8 5.8 3.8 9s-1.3 6.2-3.8 9c-2.5-2.8-3.8-5.8-3.8-9s1.3-6.2 3.8-9z" /></>,
+    plus: <><path d="M12 5v14M5 12h14" /></>,
+    speaker: <><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11" /></>,
+    more: <><circle cx="5" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="19" cy="12" r="1.2" /></>,
+    close: <><path d="M6 6l12 12M18 6 6 18" /></>,
+    check: <><path d="m5 12.5 4.5 4.5L19 7.5" /></>,
+    chevron: <><path d="m9 6 6 6-6 6" /></>,
   };
   return <svg {...svg}>{paths[name]}</svg>;
 }
@@ -278,11 +293,22 @@ export function Empty({ title, body, action }: { title: string; body: string; ac
   );
 }
 
-export function Notice({ error }: { error: unknown }) {
+/**
+ * Shows an error. By default unknown codes fall back to the GST copy used by
+ * the tax screens. Other areas pass `messages` (code -> [key, English]) and a
+ * neutral `fallback` so their errors never borrow GST wording. Codes missing
+ * from `messages` keep the default behaviour unless a `fallback` is given.
+ */
+export function Notice({ error, messages, fallback: areaFallback }: { error: unknown; messages?: Record<string, readonly [string, string]>; fallback?: readonly [string, string] }) {
   const context=useContext(ShopContext);
   if (!error) return null;
   const raw=error instanceof Error?error.message:'Something went wrong.';
   const code=error instanceof ApiError?error.code:raw;
+  const areaMessage = messages?.[code] ?? (error instanceof ApiError ? messages?.[`status_${error.status}`] : undefined) ?? areaFallback;
+  if (areaMessage) {
+    const [areaKey, areaText] = areaMessage;
+    return <p role="alert" className="shop-notice">{context ? context.t(areaKey, areaText) : areaText}</p>;
+  }
   const fallback=(EN_FALLBACK as Record<string,string>)['gst.error.'+code]??(/^[a-z]+(?:_[a-z0-9]+)+$/.test(code)?EN_FALLBACK['gst.error.action_failed']:undefined);
   const key=fallback?((EN_FALLBACK as Record<string,string>)['gst.error.'+code]?'gst.error.'+code:'gst.error.action_failed'):'web.gst.'+raw.toLowerCase().replace(/[^a-z0-9]+/g,'_');
   const message=context?context.t(key,fallback??raw):fallback??raw;
@@ -333,4 +359,138 @@ export function NoAccess({ what }: { what: string }) {
 export function Spinner({ label = 'Loading' }: { label?: string }) {
   const display = useOptionalUiText();
   return <p className="text-sm text-muted" role="status">{display(label)}…</p>;
+}
+
+/** Underline tabs for switching views of one page. Counts show as a small badge. */
+export function Tabs<T extends string>({
+  label,
+  items,
+  value,
+  onChange,
+}: {
+  label: string;
+  items: ReadonlyArray<{ id: T; label: ReactNode; count?: number | null }>;
+  value: T;
+  onChange: (id: T) => void;
+}) {
+  const move = (from: number, step: number) => {
+    const next = items[(from + step + items.length) % items.length];
+    if (!next) return;
+    onChange(next.id);
+    if (typeof document !== 'undefined') requestAnimationFrame(() => document.getElementById(`shop-tab-${next.id}`)?.focus());
+  };
+  return (
+    <div className="shop-tabbar" role="tablist" aria-label={label}>
+      {items.map((item, index) => (
+        <button
+          key={item.id}
+          id={`shop-tab-${item.id}`}
+          type="button"
+          role="tab"
+          aria-selected={value === item.id}
+          tabIndex={value === item.id ? 0 : -1}
+          className={cx('shop-tabbar-tab', value === item.id && 'is-active')}
+          onClick={() => onChange(item.id)}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowRight') { event.preventDefault(); move(index, 1); }
+            if (event.key === 'ArrowLeft') { event.preventDefault(); move(index, -1); }
+          }}
+        >
+          {item.label}
+          {item.count != null ? <span className={cx('shop-tabbar-count', item.count === 0 && 'is-zero')}>{item.count}</span> : null}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Two or three mutually exclusive modes (for example Sell / Add stock). Use Tabs for views. */
+export function SegmentedControl<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ReadonlyArray<{ id: T; label: ReactNode }>;
+  value: T;
+  onChange: (id: T) => void;
+}) {
+  return (
+    <div className="shop-seg shop-segmented" role="group" aria-label={label}>
+      {options.map((option) => (
+        <button key={option.id} type="button" aria-pressed={value === option.id} className={value === option.id ? 'is-active' : undefined} onClick={() => onChange(option.id)}>
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** One row of headline figures: label above value, optional help line, divider separated. */
+export function StatRow({
+  items,
+  label,
+}: {
+  label?: string;
+  items: ReadonlyArray<{ label: ReactNode; value: ReactNode; help?: ReactNode; tone?: 'ok' | 'warn' | 'danger' | 'saffron'; href?: string }>;
+}) {
+  return (
+    <dl className="shop-statrow" aria-label={label}>
+      {items.map((item, index) => {
+        const body = (
+          <>
+            <dt>{item.label}</dt>
+            <dd className={cx('num', item.tone && `is-${item.tone}`)}>{item.value}</dd>
+            {item.help ? <dd className="shop-statrow-help">{item.help}</dd> : null}
+          </>
+        );
+        return item.href ? (
+          <Link key={index} href={item.href} className="shop-statrow-item is-link">{body}</Link>
+        ) : (
+          <div key={index} className="shop-statrow-item">{body}</div>
+        );
+      })}
+    </dl>
+  );
+}
+
+/** The one empty state: tinted icon, short title, one line of help, one action. */
+export function EmptyState({
+  icon = 'package',
+  title,
+  body,
+  action,
+}: {
+  icon?: GlyphName;
+  title: ReactNode;
+  body?: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="shop-emptystate">
+      <span className="shop-emptystate-icon" aria-hidden="true"><Glyph name={icon} /></span>
+      <p className="shop-emptystate-title">{title}</p>
+      {body ? <p className="shop-emptystate-body">{body}</p> : null}
+      {action ? <div className="shop-emptystate-action">{action}</div> : null}
+    </div>
+  );
+}
+
+/** Placeholder shapes that match the final layout, in place of "Loading…" text. */
+export function Skeleton({
+  variant = 'row',
+  count = 1,
+  label = 'Loading',
+}: {
+  variant?: 'line' | 'stat' | 'row' | 'card';
+  count?: number;
+  label?: string;
+}) {
+  return (
+    <div className={cx('shop-skeleton', `is-${variant}`)} role="status" aria-busy="true">
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: Math.max(1, count) }, (_, index) => <span key={index} className="shop-skeleton-block" aria-hidden="true" />)}
+    </div>
+  );
 }

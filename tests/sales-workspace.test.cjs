@@ -63,13 +63,13 @@ const button = ({
     { href, onClick, disabled, type, className },
     children,
   );
+let searchQuery = "returnTo=%2Fshop%2Fsales%3Fperiod%3D7d";
 const original = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === "next/link") return { __esModule: true, default: plain("a") };
   if (request === "next/navigation")
     return {
-      useSearchParams: () =>
-        new URLSearchParams("returnTo=%2Fshop%2Fsales%3Fperiod%3D7d"),
+      useSearchParams: () => new URLSearchParams(searchQuery),
       useRouter: () => ({ replace: (url) => calls.push(["navigate", url]) }),
     };
   const file =
@@ -137,6 +137,7 @@ Module._load = function (request, parent, isMain) {
     return { SaleAdjustmentHistory: () => null };
   if (file.endsWith("/shop/share-bill"))
     return {
+      billPlainText: (p) => "Bill #" + p.saleNumber,
       shareBill: async (p) => {
         calls.push(["share", p]);
         return "downloaded";
@@ -467,6 +468,28 @@ test("bill details show current photos outside the printable receipt and payment
     document.querySelector(".sale-provenance").textContent.includes("ABC"),
   );
 });
+test("a just-recorded bill leads with the paid amount and the next sale, not audit detail", async (t) => {
+  setup({ customer: { id: "customer-1", name: "Asha", phone: "9876543210" } });
+  searchQuery = "recorded=new";
+  t.after(() => {
+    searchQuery = "returnTo=%2Fshop%2Fsales%3Fperiod%3D7d";
+  });
+  await mount(t, React.createElement(SaleDetailScreen, { saleId: "sale-1" }));
+  const success = document.querySelector(".sale-success");
+  assert(success);
+  assert.match(success.querySelector("h2").textContent, /^Paid /);
+  assert.equal(document.activeElement, success.querySelector('a[href="/shop/sell"]'));
+  assert(![...document.querySelectorAll("button")].some((b) => b.textContent === "Refresh"));
+  assert(!document.querySelector(".sale-provenance"));
+  assert(!document.body.textContent.includes("Cost & margin"));
+  let opened = null;
+  window.open = (url) => {
+    opened = url;
+    return {};
+  };
+  await click([...success.querySelectorAll("button")].find((b) => b.textContent.includes("WhatsApp")));
+  assert(opened.startsWith("https://wa.me/919876543210?text="));
+});
 test("helper never sees costs, customer account or management actions", async (t) => {
   setup({
     customerId: "customer-1",
@@ -491,12 +514,17 @@ test("void requires explicit confirmation and remains blocked offline", async (t
   await click(confirm);
   assert.equal(calls.filter((c) => c[0] === "void").length, 1);
 });
-test("void is unavailable after settings fail or when offline", async (t) => {
+test("void is hidden when its window cannot be checked, and blocked offline", async (t) => {
   setup();
-  context.offline = true;
   context.api.getPosSettings = async () => {
     throw Error("settings unavailable");
   };
+  await mount(t, React.createElement(SaleDetailScreen, { saleId: "sale-1" }));
+  assert.equal(document.querySelector(".sale-void"), null);
+});
+test("void stays blocked offline even inside its window", async (t) => {
+  setup();
+  context.offline = true;
   await mount(t, React.createElement(SaleDetailScreen, { saleId: "sale-1" }));
   await click(document.querySelector(".sale-void input[type=checkbox]"));
   assert(document.querySelector(".sale-void button").disabled);
@@ -524,7 +552,7 @@ test("ordinary return validates exact quantities, availability and decimal money
     ),
   );
 });
-test("return payload includes per-item restock and reviewed override, and requires confirmation", async (t) => {
+test("return payload includes per-item restock and reviewed override", async (t) => {
   const bill = setup();
   await mount(
     t,
@@ -542,16 +570,36 @@ test("return payload includes per-item restock and reviewed override, and requir
     document.querySelector(".sale-return-editor fieldset>label input"),
     "45.25",
   );
-  assert(returnButton().disabled);
-  await click(
-    document.querySelector(".sale-return-editor fieldset>.sale-check input"),
-  );
   assert.equal(returnButton().disabled, false);
   await click(returnButton());
   const sent = calls.find((c) => c[0] === "return");
   assert.equal(sent[1].items[0].restock, false);
   assert.equal(sent[1].refundAmount, 45.25);
   assert.equal(sent[2], 45.25);
+});
+test("return steppers stay between nothing and what is left, with one tap for all", async (t) => {
+  const bill = setup();
+  await mount(
+    t,
+    React.createElement(SaleReturnEditor, {
+      sale: bill,
+      onDone: async () => {},
+    }),
+  );
+  const quantity = document.querySelector(".sale-return-line input[inputmode]");
+  const [less, more, all] = document.querySelectorAll(".sale-return-stepper button");
+  assert(less.disabled);
+  assert(returnButton().disabled);
+  await click(more);
+  assert.equal(quantity.value, "0.25");
+  assert.equal(returnButton().disabled, false);
+  await click(all);
+  assert.equal(quantity.value, "2");
+  assert(more.disabled);
+  await fill(quantity, "0.25");
+  await click(less);
+  assert.equal(quantity.value, "");
+  assert(returnButton().disabled);
 });
 test("credit balance must match invoice identity and reconcile allocated money", () => {
   const bill = sale({
@@ -583,10 +631,8 @@ test("credit return blocks unverified allocation and requires evidence for money
   await fill(document.querySelector(".sale-return-line input[inputmode]"), "1");
   const fields = document.querySelectorAll(".sale-credit-return input");
   await fill(fields[0], "80");
-  await click(document.querySelector("fieldset>.sale-check input"));
   assert(returnButton().disabled);
   await fill(fields[1], "SYNTHETIC-REFUND");
-  await click(document.querySelector("fieldset>.sale-check input"));
   assert.equal(returnButton().disabled, false);
   await click(returnButton());
   assert.deepEqual(calls.find((c) => c[0] === "return")[1].settlement, {
@@ -607,7 +653,6 @@ test("uncertain return locks editing and recovers the identical retained payload
     }),
   );
   await fill(document.querySelector(".sale-return-line input[inputmode]"), "1");
-  await click(document.querySelector("fieldset>.sale-check input"));
   await click(returnButton());
   assert(document.querySelector("fieldset").disabled);
   const sent = calls.find((c) => c[0] === "return")[1];

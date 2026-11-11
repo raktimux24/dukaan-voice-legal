@@ -162,14 +162,14 @@ export function ProductStockEditor({
     <section
       className="product-editor"
       aria-label={t(
-        mode === "batch" ? "modal.product_detail.add_batch" : "adjust.title",
-        mode === "batch" ? "Receive stock" : "Adjust stock",
+        mode === "batch" ? "scanner.tab_stock" : "adjust.title",
+        mode === "batch" ? "Add stock" : "Adjust stock",
       )}
     >
       <h2>
         {t(
-          mode === "batch" ? "modal.product_detail.add_batch" : "adjust.title",
-          mode === "batch" ? "Receive stock" : "Adjust stock",
+          mode === "batch" ? "scanner.tab_stock" : "adjust.title",
+          mode === "batch" ? "Add stock" : "Adjust stock",
         )}
       </h2>
       <Notice error={error} />

@@ -9,6 +9,8 @@ export function VoiceSheet({title,closeLabel,onClose,children}:{title:string;clo
     const previousOverflow=document.body.style.overflow;
     document.body.style.overflow='hidden';
     element.showModal();
+    // showModal focuses the first control (Close). Prefer the sheet's main action when it marks one.
+    element.querySelector<HTMLElement>('[data-autofocus]')?.focus();
     return()=>{element.close();document.body.style.overflow=previousOverflow;};
   },[]);
   return <dialog ref={dialog} className="shop-voice-sheet" aria-labelledby="voice-command-title" aria-modal="true"
