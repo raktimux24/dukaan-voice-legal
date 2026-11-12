@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useShop } from "../context";
-import { Button, Card, Field, IllustratedEmpty, Notice, PageHeader, Pill, Spinner } from "../ui";
+import { Button, Card, EmptyState, Field, Notice, PageHeader, Pill, Skeleton, Spinner } from "../ui";
 import { ProductImage } from "../product-image";
 import { labeledL1 } from "../../../lib/shop/catalog";
 import { formatINR } from "../../../lib/shop/money";
@@ -202,7 +202,6 @@ function ProductsWorkspace() {
   return (
     <div className="shop-page products-workspace">
       <PageHeader
-        kicker={t("reports.stock.on_hand", "Stock")}
         title={t("products.title", "Products")}
         description={t(
           "productsweb.intro",
@@ -210,13 +209,6 @@ function ProductsWorkspace() {
         )}
         actions={
           <>
-            <Button
-              tone="quiet"
-              disabled={catalog.isFetching}
-              onClick={() => void catalog.refetch()}
-            >
-              {t("common.refresh", "Refresh")}
-            </Button>
             {perms.canEditProducts ? (
               <>
                 <Button tone="ghost" href="/shop/products/import">
@@ -438,8 +430,13 @@ function ProductsWorkspace() {
           </div>
         ) : null}
         <Notice error={catalog.error} />
+        {catalog.isError ? (
+          <Button tone="ghost" disabled={catalog.isFetching} onClick={() => void catalog.refetch()}>
+            {t("common.retry", "Try again")}
+          </Button>
+        ) : null}
         {catalog.isPending ? (
-          <Spinner label={t("web.gst.loading_products", "Loading products")} />
+          <Skeleton variant="row" count={5} label={t("web.gst.loading_products", "Loading products")} />
         ) : null}
         <div className="products-columns" aria-hidden="true">
           <span>{t("bill.item", "Item")}</span>
@@ -545,7 +542,7 @@ function ProductsWorkspace() {
           })}
         </div>
         {!catalog.isPending && !catalog.isError && !active.length && perms.canEditProducts ? (
-          <IllustratedEmpty
+          <EmptyState
             icon="package"
             title={t("home.empty_title", "No products yet")}
             body={t("home.empty_subtitle", "Add your first product to start tracking inventory")}
@@ -561,22 +558,28 @@ function ProductsWorkspace() {
             }
           />
         ) : !catalog.isPending && !catalog.isError && !rows.length ? (
-          <div className="products-empty">
-            <h3>{t("products.empty_filtered", "No products in this view.")}</h3>
-            <Button
-              tone="ghost"
-              onClick={() =>
-                change({ q: "", filter: "all", category: "all", sort: "name" })
-              }
-            >
-              {t("productsweb.reset", "Reset filters")}
-            </Button>
-            {!active.length && perms.canEditProducts ? (
-              <Button href="/shop/products/new">
-                {t("products.add", "Add product")}
-              </Button>
-            ) : null}
-          </div>
+          <EmptyState
+            className="products-empty"
+            icon="search"
+            title={t("products.empty_filtered", "No products in this view.")}
+            action={
+              <div className="shop-actions">
+                <Button
+                  tone="ghost"
+                  onClick={() =>
+                    change({ q: "", filter: "all", category: "all", sort: "name" })
+                  }
+                >
+                  {t("productsweb.reset", "Reset filters")}
+                </Button>
+                {!active.length && perms.canEditProducts ? (
+                  <Button href="/shop/products/new">
+                    {t("products.add", "Add product")}
+                  </Button>
+                ) : null}
+              </div>
+            }
+          />
         ) : null}
       </Card>
     </div>

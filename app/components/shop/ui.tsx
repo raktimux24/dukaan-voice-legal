@@ -356,9 +356,19 @@ export function NoAccess({ what }: { what: string }) {
   );
 }
 
+/**
+ * Loading placeholder: a short skeleton bar instead of "Loading…" text, so the
+ * layout does not jump. The label stays for screen readers. Built from spans so
+ * it is valid anywhere text is. Prefer `Skeleton` with a variant for lists.
+ */
 export function Spinner({ label = 'Loading' }: { label?: string }) {
   const display = useOptionalUiText();
-  return <p className="text-sm text-muted" role="status">{display(label)}…</p>;
+  return (
+    <span className="shop-skeleton is-line shop-spinner" role="status" aria-busy="true">
+      <span className="sr-only">{display(label)}…</span>
+      <span className="shop-skeleton-block" aria-hidden="true" />
+    </span>
+  );
 }
 
 /** Underline tabs for switching views of one page. Counts show as a small badge. */
@@ -461,14 +471,16 @@ export function EmptyState({
   title,
   body,
   action,
+  className,
 }: {
   icon?: GlyphName;
   title: ReactNode;
   body?: ReactNode;
   action?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="shop-emptystate">
+    <div className={cx('shop-emptystate', className)}>
       <span className="shop-emptystate-icon" aria-hidden="true"><Glyph name={icon} /></span>
       <p className="shop-emptystate-title">{title}</p>
       {body ? <p className="shop-emptystate-body">{body}</p> : null}

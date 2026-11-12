@@ -36,7 +36,7 @@ function Editor() {
   };
   const reload=()=>{if(w.dirty||w.pending)setConfirmReload(true);else void w.reload();};
   return <div className="shop-page branding-workspace">
-    <PageHeader kicker={translate('settings.title','Settings')} title={t('documents.title')} description={t('documents.help')} back={{href:'/shop/settings/payments?tab=bills',label:translate('pos_settings.title','Payments & bills')}} actions={perms.canManageShop?<Button tone="ghost" disabled={w.busy||reading||offline||w.meta.isFetching} onClick={reload}>{t('documents.reload')}</Button>:undefined}/>
+    <PageHeader title={t('documents.title')} description={t('documents.help')} back={{href:'/shop/settings/payments?tab=bills',label:translate('pos_settings.title','Payments & bills')}} actions={perms.canManageShop?<Button tone="ghost" disabled={w.busy||reading||offline||w.meta.isFetching} onClick={reload}>{t('documents.reload')}</Button>:undefined}/>
     {offline?<p role="status" className="shop-hint">{t('documents.online_help')}</p>:!perms.canManageShop?<p className="shop-hint">{t('documents.not_owner')}</p>:w.meta.isPending?<Spinner/>:<>
       {(w.error||w.meta.error)&&<p role="alert" className="branding-error">{t(documentErrorKey(w.error??w.meta.error))}</p>}
       {!w.meta.data?<Button disabled={w.busy} onClick={()=>void w.reload()}>{t('common.retry')}</Button>:<>

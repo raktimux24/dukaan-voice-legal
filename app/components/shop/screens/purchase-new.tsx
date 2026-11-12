@@ -215,7 +215,6 @@ function PurchaseNewContent() {
     <GstAccess>
       <div className="shop-page invoice-workspace invoice-compose">
         <PageHeader
-          kicker={poText("poweb.kicker","Purchasing")}
           title={text("Record supplier invoice")}
           back={step > 1 ? { href: "/shop/settings", label: text("Back"), onClick: () => { setStepNote(""); setStep((current) => (current === 3 ? 2 : 1)); } } : { href: "/shop/purchases", label: text("Recorded invoices") }}
           description={text(

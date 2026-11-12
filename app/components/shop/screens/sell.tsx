@@ -117,6 +117,13 @@ export function SellScreen() {
 
   const [ask, setAsk] = useState<'clear' | 'short' | null>(null);
   const [flash, setFlash] = useState<{ productId: string; name: string; seq: number } | null>(null);
+  // The last line taken off the bill, so it can be put back for a few seconds.
+  const [removed, setRemoved] = useState<{ line: CartLine; index: number } | null>(null);
+  useEffect(() => {
+    if (!removed) return;
+    const timer = window.setTimeout(() => setRemoved(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [removed]);
   const counterOpen = !!shopId && !cartApi.pending && perms.canSell;
   const sheetOpen = browseOpen || !!picker || !!priceFor || !!ask || cameraOn || usbOn;
   // A USB barcode gun types into whatever has focus: start every visit on the search box.
@@ -310,6 +317,19 @@ export function SellScreen() {
     if (!locked && shortfalls.length) { setAsk('short'); return; }
     router.push('/shop/sell/checkout');
   };
+  // Puts the removed line back where it was. Only the visible cart changes: the
+  // line is restored as it was, and nothing happens if the bill moved on.
+  const undoRemove = () => {
+    const last = removed;
+    setRemoved(null);
+    if (!last || locked) return;
+    const lines = cartApi.cart.lines;
+    if (lines.some(line => line.key === last.line.key || line.productId === last.line.productId)) return;
+    const next = [...lines];
+    next.splice(Math.min(last.index, next.length), 0, last.line);
+    cartApi.patch({ lines: next });
+    searchRef.current?.focus();
+  };
   const closeAsk = () => { setAsk(null); searchRef.current?.focus(); };
   const confirmAsk = () => {
     const kind = ask;
@@ -317,6 +337,7 @@ export function SellScreen() {
     if (kind === 'clear') {
       if (lineCount === 0 || locked) return;
       cartApi.clear();
+      setRemoved(null);
       searchRef.current?.focus();
     } else if (kind === 'short') router.push('/shop/sell/checkout');
   };
@@ -426,9 +447,10 @@ export function SellScreen() {
             :cartApi.cart.lines.map((line,index)=><BillLine key={line.key} line={line} disabled={locked} canEditPrice={perms.canSell}
               flash={flash&&flash.productId===line.productId&&cartApi.cart.lines.findIndex(row=>row.productId===line.productId)===index?flash.seq:0}
               shortfall={shortfalls.some(row=>row.key===line.key)} available={items.find(item=>item.productId===line.productId)?.quantity??line.available}
-              onQuantity={qty=>{if(locked)return;const result=cartApi.setQuantity(line.key,qty);if(result.capped)setNotice(t('pos.capped_toast','Only {{n}} {{unit}} of {{name}} in stock',{n:line.available??0,unit:t(`unit_picker.${line.unit}`,line.unit),name:line.name}))}}
-              onPrice={price=>{if(!locked)cartApi.setPrice(line.key,price)}} onRemove={()=>{if(!locked)cartApi.removeLine(line.key)}}/>) }
+              onQuantity={qty=>{if(locked)return;const result=cartApi.setQuantity(line.key,qty);if(r3(qty)<=0)setRemoved({line,index});if(result.capped)setNotice(t('pos.capped_toast','Only {{n}} {{unit}} of {{name}} in stock',{n:line.available??0,unit:t(`unit_picker.${line.unit}`,line.unit),name:line.name}))}}
+              onPrice={price=>{if(!locked)cartApi.setPrice(line.key,price)}} onRemove={()=>{if(locked)return;cartApi.removeLine(line.key);setRemoved({line,index})}}/>) }
           </div>
+          {removed&&!locked?<div className="sell-undo" role="status"><span>{t('sellweb.line_removed','Removed {{name}}',{name:removed.line.name})}</span><Button tone="ghost" size="sm" onClick={undoRemove}>{t('sellweb.undo','Undo')}</Button></div>:null}
           <p className="sr-only" aria-live="polite">{flash?t('sellweb.added','Added {{name}}',{name:flash.name}):''}</p>
           {suggestions.length&&!locked?<div className="sell-suggestions"><p>{t('modal.product_detail.bought_with','Often bought with')}</p><div className="pos-chips">{suggestions.map(nudge=><Chip key={nudge.id} onClick={()=>{const match=items.find(item=>item.productId===nudge.productId);if(match)choose(match)}}>{nudge.productId?<ProductImageById productId={nudge.productId} name={nudge.title} size={24}/>:null}{nudge.title}</Chip>)}</div></div>:null}
           {lineCount>0?<div className="sale-bill-actions"><Button tone="quiet" size="sm" onClick={openBrowse} disabled={locked}>＋ {t('sellweb.add_items','Add items')}</Button><div>
@@ -453,7 +475,7 @@ export function SellScreen() {
       </div></VoiceSheet>:null}
       {picker?<VoiceSheet title={t('sellweb.quantity','Choose quantity')} closeLabel={t('common.close','Close')} onClose={()=>{setPicker(null);searchRef.current?.focus();}}><QtyPicker key={picker.productId} item={picker.item} value={picker.value} onChange={value=>setPicker({...picker,value})} onAdd={commitPicker}/></VoiceSheet>:null}
       {ask?<VoiceSheet title={ask==='clear'?t('pos.clear_cart_title','Remove everything from the cart?'):t('pos.short_stock_title','Not enough stock')} closeLabel={t('common.close','Close')} onClose={closeAsk}><div className="sell-confirm">
-        <p>{ask==='clear'?t('sellweb.clear_body','{{n}} items will be removed from this bill.',{n:lineCount}):t('pos.short_stock_body','Stock on record is lower than the cart for: {{names}}. You can still charge — stock will show 0 until you adjust it.',{names:shortfalls.map(line=>line.name).join(', ')})}</p>
+        <p>{ask==='clear'?(lineCount===1?t('sellweb.clear_body_one','1 item will be removed from this bill.'):t('sellweb.clear_body','{{n}} items will be removed from this bill.',{n:lineCount})):t('pos.short_stock_body','Stock on record is lower than the cart for: {{names}}. You can still charge — stock will show 0 until you adjust it.',{names:shortfalls.map(line=>line.name).join(', ')})}</p>
         <div className="shop-actions"><Button tone={ask==='clear'?'danger':'primary'} onClick={confirmAsk}>{ask==='clear'?t('pos.clear_cart','Clear cart'):t('sellweb.charge_anyway','Charge anyway')}</Button><Button tone="ghost" onClick={closeAsk}>{t('sellweb.keep_editing','Keep editing')}</Button></div>
       </div></VoiceSheet>:null}
       {priceFor?<VoiceSheet title={t('pos.set_price_title','Set a selling price')} closeLabel={t('common.close','Close')} onClose={()=>{if(!priceBusy)setPriceFor(null)}}><form className="sell-price-form" onSubmit={event=>{event.preventDefault();void savePrice(priceFor)}}><div className="pos-picker-product"><ProductImage image={priceFor.product.media?.cover} name={priceFor.product.name}/><h3>{priceFor.product.name}</h3></div><Notice error={error}/><label>{t('sellweb.unit_price','Unit price')}<input className={inputClass} autoFocus inputMode="decimal" value={priceDraft[priceFor.productId]??''} onChange={event=>setPriceDraft({...priceDraft,[priceFor.productId]:event.target.value})}/></label><Button type="submit" disabled={priceBusy||sellAmount(priceDraft[priceFor.productId]??'')===null}>{t('pos.save_price_add','Save price & add')}</Button></form></VoiceSheet>:null}

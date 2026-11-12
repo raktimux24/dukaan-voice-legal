@@ -7,11 +7,13 @@ import { HomeNudge } from "../home-nudge";
 import { VoiceSheet } from "../voice-sheet";
 import {
   Button,
+  EmptyState,
   Field,
   NoAccess,
   Notice,
   PageHeader,
   PremiumLock,
+  Skeleton,
   Spinner,
   inputClass,
   isPremiumError,
@@ -125,31 +127,21 @@ function BuyWorkspace() {
   return (
     <div className="shop-page buy-workspace">
       <PageHeader
-        kicker={t("poweb.kicker", "Purchasing")}
         title={t("buy_list.title", "Buy list")}
         description={t(
           "buyweb.intro",
           "Plan the next restock. Keep orders and arrivals together.",
         )}
         actions={
-          <>
-            <Button
-              tone="ghost"
-              disabled={list.isFetching}
-              onClick={() => void refresh()}
-            >
-              {t("common.refresh", "Refresh")}
-            </Button>
-            <Button
-              disabled={offline}
-              onClick={() => {
-                setError(null);
-                setAdding(true);
-              }}
-            >
-              {t("buy_list.add_item", "Add item")} +
-            </Button>
-          </>
+          <Button
+            disabled={offline}
+            onClick={() => {
+              setError(null);
+              setAdding(true);
+            }}
+          >
+            {t("buy_list.add_item", "Add item")} +
+          </Button>
         }
       />
       <Notice error={!adding && !remove ? error : null} />
@@ -211,32 +203,30 @@ function BuyWorkspace() {
           </div>
           <Notice error={list.error} />
           {list.isLoading ? (
-            <Spinner />
+            <Skeleton variant="row" count={4} label={t("common.loading", "Loading")} />
           ) : list.isError ? (
             <Button onClick={() => void list.refetch()}>
               {t("common.retry", "Retry")}
             </Button>
           ) : items.length === 0 ? (
-            <div className="buy-empty">
-              <span aria-hidden="true">✓</span>
-              <h2>
-                {t(
-                  all.length ? "stockUI.no_items" : "buy_list.empty_title",
-                  all.length ? "No items" : "Your buy list is empty",
-                )}
-              </h2>
-              <p>
-                {t(
-                  all.length ? "buyweb.no_match" : "buyweb.empty",
-                  all.length
-                    ? "Try another filter or search."
-                    : "Add an item from your products, or note something new to buy.",
-                )}
-              </p>
-              <Button onClick={() => setAdding(true)} disabled={offline}>
-                {t("buy_list.add_item", "Add item")}
-              </Button>
-            </div>
+            <EmptyState
+              icon={all.length ? "search" : "check"}
+              title={t(
+                all.length ? "stockUI.no_items" : "buy_list.empty_title",
+                all.length ? "No items" : "Your buy list is empty",
+              )}
+              body={t(
+                all.length ? "buyweb.no_match" : "buyweb.empty",
+                all.length
+                  ? "Try another filter or search."
+                  : "Add an item from your products, or note something new to buy.",
+              )}
+              action={
+                <Button onClick={() => setAdding(true)} disabled={offline}>
+                  {t("buy_list.add_item", "Add item")}
+                </Button>
+              }
+            />
           ) : (
             <div className="buy-ledger">
               {items.map((item) => {
