@@ -105,6 +105,7 @@ export function PurchaseOrdersView({
   invoice,
   newProduct,
   initialBuyListId,
+  initialBuyListIds,
   initialBuyListName,
   initialSupplierId,
   openForm = false,
@@ -119,6 +120,8 @@ export function PurchaseOrdersView({
   invoice: (p: PurchaseOrder, receipt: string) => Promise<void> | void;
   newProduct: () => void;
   initialBuyListId?: string;
+  /** Several buy-list items handed over at once (S6); each becomes one line. */
+  initialBuyListIds?: string[];
   initialBuyListName?: string;
   initialSupplierId?: string;
   openForm?: boolean;
@@ -127,6 +130,19 @@ export function PurchaseOrdersView({
   onOpen: (id: string) => void;
 }) {
   const { api, shop, hideCost, prefs } = useShop();
+  // New copy has an English fallback until it is translated; t() returns the key when it has no text.
+  const tx = (
+    key: string,
+    fallback: string,
+    vars?: Record<string, string | number>,
+  ) => {
+    const text = t(key, vars);
+    if (text !== key) return text;
+    let out = fallback;
+    for (const [k, v] of Object.entries(vars ?? {}))
+      out = out.replaceAll("{{" + k + "}}", String(v));
+    return out;
+  };
   const p = w.order,
     options = w.options.data,
     blocked = w.busy || !!w.pending || !w.ready;
@@ -146,7 +162,8 @@ export function PurchaseOrdersView({
     [reason, setReason] = useState(""),
     [closing, setClosing] = useState(false),
     [cancelling, setCancelling] = useState(false),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [received, setReceived] = useState(false);
   const [query, setQuery] = useState(""),
     [status, setStatus] = useState("all"),
     [mapping, setMapping] = useState<Record<string, string>>({});
@@ -182,8 +199,13 @@ export function PurchaseOrdersView({
             ? ""
             : Number(i.product.purchasePrice).toFixed(2),
         quantity: i.quantity,
+        low: i.quantity <= (i.product.minStockLevel ?? 0),
       }))
-    : (options?.products ?? []).map((i) => ({ ...i, quantity: null }));
+    : (options?.products ?? []).map((i) => ({
+        ...i,
+        quantity: null as number | null,
+        low: false,
+      }));
   const unit = (v: string) =>
     unitLabel(v, (k, f) => {
       const x = t(k);
@@ -237,6 +259,7 @@ export function PurchaseOrdersView({
   }, [p?.id, p?.version]);
   useEffect(() => {
     setTab("details");
+    setReceived(false);
   }, [p?.id]);
   useEffect(() => {
     top.current?.scrollIntoView({ block: "start" });
@@ -244,34 +267,47 @@ export function PurchaseOrdersView({
   useEffect(() => {
     if (!editing && !receiving) w.setSearch("");
   }, [editing, receiving, w.setSearch]);
+  const buyLine = (
+    b: NonNullable<typeof options>["buyList"][number],
+    supplierId: string,
+  ): PoDraft["lines"][number] => ({
+    id: uuid(),
+    buyListItemId: b.id,
+    productId: b.productId ?? undefined,
+    name: b.name,
+    unit: b.unit ?? "",
+    quantity: poUnits(availableToOrder(b)),
+    price: suggestedPrice(options, supplierId, b.productId ?? undefined),
+  });
+  const handoffIds = (
+    initialBuyListIds?.length
+      ? initialBuyListIds
+      : initialBuyListId
+        ? [initialBuyListId]
+        : []
+  ).join(",");
   useEffect(() => {
-    if (initial.current || !initialBuyListId || !options) return;
-    const b = options.buyList.find((b) => b.id === initialBuyListId);
-    if (!b) {
-      if (initialBuyListName && w.search !== initialBuyListName)
+    if (initial.current || !handoffIds || !options) return;
+    const ids = handoffIds.split(",");
+    const found = ids.flatMap((id) => {
+      const b = options.buyList.find((b) => b.id === id);
+      return b ? [b] : [];
+    });
+    if (!found.length) {
+      if (
+        ids.length === 1 &&
+        initialBuyListName &&
+        w.search !== initialBuyListName
+      )
         w.setSearch(initialBuyListName);
       return;
     }
     initial.current = true;
     setDraft((old) => ({
       ...old,
-      lines: [
-        {
-          id: uuid(),
-          buyListItemId: b.id,
-          productId: b.productId ?? undefined,
-          name: b.name,
-          unit: b.unit ?? "",
-          quantity: poUnits(availableToOrder(b)),
-          price: suggestedPrice(
-            options,
-            old.supplierId,
-            b.productId ?? undefined,
-          ),
-        },
-      ],
+      lines: found.slice(0, 100).map((b) => buyLine(b, old.supplierId)),
     }));
-  }, [options, initialBuyListId, initialBuyListName, w.search]);
+  }, [options, handoffIds, initialBuyListName, w.search]);
   // Fill missing costs and replace only a catalog suggestion, never a price the user edited.
   useEffect(() => {
     if (!editing) return;
@@ -378,6 +414,7 @@ export function PurchaseOrdersView({
     );
     setReference("");
     setReviewed(false);
+    setReceived(false);
     setReceiving(true);
     setClosing(false);
     setMapping({});
@@ -417,8 +454,40 @@ export function PurchaseOrdersView({
       <strong>{name}</strong>
     </div>
   );
+  // S27: buy list first, then products that are low or out, then the rest (capped).
+  const searchText = w.search.trim().toLocaleLowerCase();
+  const buyRows = (options?.buyList ?? []).filter(
+    (b) =>
+      !d.lines.some((l) => l.buyListItemId === b.id) && availableToOrder(b) > 0,
+  );
+  const onBuyList = new Set(buyRows.map((b) => b.productId).filter(Boolean));
+  const matching = productOptions.filter(
+    (i) =>
+      !onBuyList.has(i.id) && i.name.toLocaleLowerCase().includes(searchText),
+  );
+  const lowRows = searchText ? [] : matching.filter((i) => i.low);
+  const restAll = searchText ? matching : matching.filter((i) => !i.low);
+  const restCap = searchText ? 50 : 20;
+  const hiddenProducts =
+    Math.max(0, lowRows.length - 30) + Math.max(0, restAll.length - restCap);
+  const pickerSections: [string, string, typeof productOptions][] = [
+    ["poweb.section_low", "Low or out of stock", lowRows.slice(0, 30)],
+    [
+      searchText ? "poweb.section_products" : "poweb.section_other",
+      searchText ? "Products" : "Other products",
+      restAll.slice(0, restCap),
+    ],
+  ];
   const rows = w.list.data?.items ?? [],
     shown = filterOrders(rows, status, query);
+  // S26: a shop with no orders yet sees only the empty state, not zeroed counters.
+  const firstEmpty =
+    !w.list.isPending && !w.list.error && !rows.length && w.offset === 0;
+  const paged = w.offset > 0 || !!w.list.data?.more;
+  const latestReceipt = p?.receipts.length
+    ? [...p.receipts].sort((a, b) => b.at.localeCompare(a.at))[0]
+    : null;
+  const latestAccepted = !!latestReceipt?.lines.some((l) => l.batchId);
   if (!w.allowed) return <p className="shop-notice">{t("po.online_role")}</p>;
   return (
     <div className="po-workspace" ref={top}>
@@ -541,77 +610,108 @@ export function PurchaseOrdersView({
                       </Button>
                     </div>
                   ) : null}
+                  {buyRows.length > 1 ? (
+                    <div className="po-add-all">
+                      <Button
+                        tone="ghost"
+                        disabled={blocked || d.lines.length >= 100}
+                        onClick={() => {
+                          patch({
+                            lines: [
+                              ...d.lines,
+                              ...buyRows
+                                .slice(0, 100 - d.lines.length)
+                                .map((b) => buyLine(b, d.supplierId)),
+                            ],
+                          });
+                          w.setSearch("");
+                        }}
+                      >
+                        {tx(
+                          "poweb.add_all_buy_list",
+                          "Add all {{count}} buy-list items",
+                          { count: buyRows.length },
+                        )}
+                      </Button>
+                      <small className="po-muted">
+                        {tx(
+                          "poweb.add_all_help",
+                          "Remove any you don't want from this supplier.",
+                        )}
+                      </small>
+                    </div>
+                  ) : null}
                   <div className="po-picker" aria-label={t("po.add_product")}>
-                    {(options?.buyList ?? [])
-                      .filter(
-                        (b) =>
-                          !d.lines.some((l) => l.buyListItemId === b.id) &&
-                          availableToOrder(b) > 0,
-                      )
-                      .map((b) => (
-                        <button
-                          type="button"
-                          key={b.id}
-                          disabled={blocked || d.lines.length >= 100}
-                          onClick={() => {
-                            patch({
-                              lines: [
-                                ...d.lines,
-                                {
-                                  id: uuid(),
-                                  buyListItemId: b.id,
-                                  productId: b.productId ?? undefined,
-                                  name: b.name,
-                                  unit: b.unit ?? "",
-                                  quantity: poUnits(availableToOrder(b)),
-                                  price: suggestedPrice(
-                                    options,
-                                    d.supplierId,
-                                    b.productId ?? undefined,
-                                  ),
-                                },
-                              ],
-                            });
-                            w.setSearch("");
-                          }}
-                        >
-                          {lineIdentity(b.productId ?? undefined, b.name)}
-                          <small>
-                            {t("poweb.buy_list")} ·{" "}
-                            {t("po.available", {
-                              qty: poUnits(availableToOrder(b)),
-                            })}{" "}
-                            {unit(b.unit ?? "")}
-                          </small>
-                          <span aria-hidden="true">+</span>
-                        </button>
-                      ))}
-                    {productOptions
-                      .filter((i) =>
-                        i.name
-                          .toLocaleLowerCase()
-                          .includes(w.search.trim().toLocaleLowerCase()),
-                      )
-                      .map((i) => (
-                        <button
-                          type="button"
-                          key={i.id}
-                          disabled={blocked || d.lines.length >= 100}
-                          onClick={() => addProduct(i)}
-                        >
-                          {lineIdentity(i.id, i.name)}
-                          <small>
-                            {i.quantity == null
-                              ? unit(i.unit)
-                              : t("poweb.on_hand", {
-                                  qty: poUnits(i.quantity),
-                                  unit: unit(i.unit),
-                                })}
-                          </small>
-                          <span aria-hidden="true">+</span>
-                        </button>
-                      ))}
+                    {buyRows.length ? (
+                      <p className="po-picker-head">
+                        {tx("poweb.section_buy_list", "On your buy list")}
+                      </p>
+                    ) : null}
+                    {buyRows.map((b) => (
+                      <button
+                        type="button"
+                        key={b.id}
+                        disabled={blocked || d.lines.length >= 100}
+                        onClick={() => {
+                          patch({
+                            lines: [...d.lines, buyLine(b, d.supplierId)],
+                          });
+                          w.setSearch("");
+                        }}
+                      >
+                        {lineIdentity(b.productId ?? undefined, b.name)}
+                        <small>
+                          {t("poweb.buy_list")} ·{" "}
+                          {t("po.available", {
+                            qty: poUnits(availableToOrder(b)),
+                          })}{" "}
+                          {unit(b.unit ?? "")}
+                        </small>
+                        <span aria-hidden="true">+</span>
+                      </button>
+                    ))}
+                    {pickerSections.map(([key, fallback, items]) =>
+                      items.length ? (
+                        <div className="po-picker-group" key={key}>
+                          <p className="po-picker-head">{tx(key, fallback)}</p>
+                          {items.map((i) => (
+                            <button
+                              type="button"
+                              key={i.id}
+                              disabled={blocked || d.lines.length >= 100}
+                              onClick={() => addProduct(i)}
+                            >
+                              {lineIdentity(i.id, i.name)}
+                              <small>
+                                {i.quantity == null
+                                  ? unit(i.unit)
+                                  : t("poweb.on_hand", {
+                                      qty: poUnits(i.quantity),
+                                      unit: unit(i.unit),
+                                    })}
+                              </small>
+                              <span aria-hidden="true">+</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null,
+                    )}
                   </div>
+                  {hiddenProducts > 0 ? (
+                    <p className="po-muted" role="status">
+                      {searchText
+                        ? tx(
+                            "poweb.more_matches",
+                            "{{count}} more products match. Keep typing to narrow the list.",
+                            { count: hiddenProducts },
+                          )
+                        : tx(
+                            "poweb.type_to_search",
+                            "Type a name to search {{count}} more products.",
+                            { count: hiddenProducts },
+                          )}
+                    </p>
+                  ) : null}
                   {options?.more ? (
                     <p className="po-muted">{t("po.refine_search")}</p>
                   ) : null}
@@ -792,6 +892,41 @@ export function PurchaseOrdersView({
               <strong>{savedTotal == null ? "—" : money(savedTotal)}</strong>
             </div>
           </div>
+          {received && latestReceipt ? (
+            <section className="po-received" role="status">
+              <h2>{tx("poweb.received_title", "Stock received")}</h2>
+              <p>
+                {latestAccepted
+                  ? tx(
+                      "poweb.received_body",
+                      "The accepted goods are now in stock. Next, record the supplier's invoice when you have it.",
+                    )
+                  : tx(
+                      "poweb.received_body_rejected",
+                      "Nothing was added to stock. Rejected goods are still due from the supplier.",
+                    )}
+              </p>
+              <div className="po-actions">
+                {latestAccepted ? (
+                  <Button
+                    disabled={blocked}
+                    onClick={() =>
+                      void Promise.resolve(invoice(p, latestReceipt.id)).catch(
+                        () => setMessage(t("po.invoice_unavailable")),
+                      )
+                    }
+                  >
+                    {t("po.record_invoice")} →
+                  </Button>
+                ) : null}
+                <Button tone="ghost" onClick={() => setReceived(false)}>
+                  {latestAccepted
+                    ? tx("poweb.later", "Later")
+                    : tx("poweb.dismiss", "OK")}
+                </Button>
+              </div>
+            </section>
+          ) : null}
           <nav className="po-tabs" aria-label={t("po.open")}>
             {["details", "actions", "history"].map((key) => (
               <button
@@ -1148,6 +1283,7 @@ export function PurchaseOrdersView({
                             if (ok) {
                               setReceiving(false);
                               setTab("history");
+                              setReceived(true);
                             }
                           })
                       }
@@ -1271,58 +1407,66 @@ export function PurchaseOrdersView({
         </>
       ) : (
         <>
-          <div className="po-overview">
-            <div>
-              <p className="shop-kicker">{t("poweb.this_page")}</p>
-              <strong>{rows.length}</strong>
-              <p>{t("po.title")}</p>
-            </div>
-            <div className="po-status-counts">
-              {orderStatuses.map((s) => (
-                <button
-                  type="button"
-                  key={s}
-                  aria-pressed={status === s}
-                  disabled={w.busy}
-                  onClick={() => setStatus(status === s ? "all" : s)}
+          {firstEmpty ? null : (
+            <>
+              <div className="po-overview">
+                <div>
+                  <p className="shop-kicker">{t("poweb.this_page")}</p>
+                  <strong>{rows.length}</strong>
+                  <p>{t("po.title")}</p>
+                </div>
+                <div className="po-status-counts">
+                  {orderStatuses.map((s) => (
+                    <button
+                      type="button"
+                      key={s}
+                      aria-pressed={status === s}
+                      disabled={w.busy}
+                      onClick={() => setStatus(status === s ? "all" : s)}
+                    >
+                      <span className={"po-status po-status--" + s}>
+                        {t("po.status." + s)}
+                      </span>
+                      <strong>
+                        {rows.filter((p) => p.status === s).length}
+                      </strong>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="po-list-tools">
+                <Input
+                  label={t("poweb.search_orders")}
+                  value={query}
+                  onChange={setQuery}
+                />
+                <Field localized label={t("poweb.status")}>
+                  <select
+                    className="shop-field"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  >
+                    <option value="all">{t("po.all_orders")}</option>
+                    {orderStatuses.map((s) => (
+                      <option key={s} value={s}>
+                        {t("po.status." + s)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Button
+                  tone="ghost"
+                  disabled={blocked}
+                  onClick={() => void w.list.refetch()}
                 >
-                  <span className={"po-status po-status--" + s}>
-                    {t("po.status." + s)}
-                  </span>
-                  <strong>{rows.filter((p) => p.status === s).length}</strong>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="po-list-tools">
-            <Input
-              label={t("poweb.search_orders")}
-              value={query}
-              onChange={setQuery}
-            />
-            <Field localized label={t("poweb.status")}>
-              <select
-                className="shop-field"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="all">{t("po.all_orders")}</option>
-                {orderStatuses.map((s) => (
-                  <option key={s} value={s}>
-                    {t("po.status." + s)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Button
-              tone="ghost"
-              disabled={blocked}
-              onClick={() => void w.list.refetch()}
-            >
-              {t("poweb.refresh")}
-            </Button>
-          </div>
-          <p className="po-muted">{t("poweb.page_help")}</p>
+                  {t("poweb.refresh")}
+                </Button>
+              </div>
+              {paged ? (
+                <p className="po-muted">{t("poweb.page_help")}</p>
+              ) : null}
+            </>
+          )}
           <div className="po-order-list">
             {shown.map((order) => (
               <button
@@ -1352,7 +1496,7 @@ export function PurchaseOrdersView({
                     : money(estimatedTotal(order.lines)!)}
                   <small>{t("poweb.estimate")}</small>
                 </span>
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true">›</span>
               </button>
             ))}
           </div>
@@ -1378,23 +1522,25 @@ export function PurchaseOrdersView({
               }
             />
           ) : null}
-          <div className="po-pagination">
-            <Button
-              tone="ghost"
-              disabled={blocked || w.offset === 0}
-              onClick={() => w.setOffset(Math.max(0, w.offset - 30))}
-            >
-              {t("po.previous")}
-            </Button>
-            <span>{Math.floor(w.offset / 30) + 1}</span>
-            <Button
-              tone="ghost"
-              disabled={blocked || !w.list.data?.more}
-              onClick={() => w.setOffset(w.offset + 30)}
-            >
-              {t("po.more")}
-            </Button>
-          </div>
+          {paged ? (
+            <div className="po-pagination">
+              <Button
+                tone="ghost"
+                disabled={blocked || w.offset === 0}
+                onClick={() => w.setOffset(Math.max(0, w.offset - 30))}
+              >
+                {t("po.previous")}
+              </Button>
+              <span>{Math.floor(w.offset / 30) + 1}</span>
+              <Button
+                tone="ghost"
+                disabled={blocked || !w.list.data?.more}
+                onClick={() => w.setOffset(w.offset + 30)}
+              >
+                {t("po.more")}
+              </Button>
+            </div>
+          ) : null}
           <details className="po-disclosure">
             <summary>{t("po.not_invoice")}</summary>
             <p>{t("po.intro")}</p>

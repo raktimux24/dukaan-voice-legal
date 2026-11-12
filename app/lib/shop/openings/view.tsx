@@ -52,6 +52,8 @@ export type OpeningUi = {
     current: number;
     disabled?: boolean;
     onSelect: (step: number) => void;
+    /** Why the last step (Review) can't be chosen from the step bar. */
+    lockedHint?: string;
   }>;
   Disclosure?: ComponentType<Children & {label: string}>;
   SavedSetup?: ComponentType<{
@@ -266,6 +268,13 @@ export function OpeningView({
   /** Step names carry a "2 · " prefix for plain lists; the progress bar already shows the position. */
   const stepName = (step: number) =>
     t("opening.step." + step).replace(/^\s*\d+\s*·\s*/, "");
+  // O1: new copy keeps an English fallback until translated (t returns the key when it has no text).
+  const reviewLockedHint = () => {
+    const text = t("openingweb.review_locked", { action: t("opening.review") });
+    return text !== "openingweb.review_locked"
+      ? text
+      : "Review opens when you tap “" + t("opening.review") + "” on step 4.";
+  };
   const stateTone = (state: string): Tone =>
     state === "complete" ? "success" : state === "draft" ? "neutral" : "accent";
   const nav = (view: typeof w.view) => {
@@ -657,6 +666,7 @@ export function OpeningView({
                   current={d.step}
                   disabled={blocked}
                   onSelect={goStep}
+                  lockedHint={d.step < 4 ? reviewLockedHint() : undefined}
                 />
               ) : (
                 <Box row>

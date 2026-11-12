@@ -68,3 +68,20 @@
 .shop-root .gst-action-success{border-left:2px solid var(--color-ok);padding:8px 12px;font-size:14px;color:var(--color-ink)}
 
 @media (prefers-reduced-motion: reduce){.shop-root .gst-month-card *,.shop-root [role=tablist] [role=tab]{transition:none}}
+
+/* Second pass (B1, C3, O1). */
+/* B1: Subscription leads with the plan; "Refresh status" is a quiet link, not the loudest button. */
+.shop-root .billing-dashboard .billing-plan-title{margin:0 0 12px;color:var(--color-ink,#f2efe9)}
+.shop-root .billing-dashboard .billing-plan-title.is-warning{color:#ffd08a}
+.shop-root .billing-dashboard .billing-refresh-row{margin-top:8px}
+.shop-root .billing-dashboard .billing-refresh-link{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:none;color:#ff9857;font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.shop-root .billing-dashboard .billing-refresh-link:disabled{color:var(--color-muted,#a0a0a8);text-decoration:none}
+
+/* C3: the store link is shown in full, with Copy / Share on WhatsApp / Open beside it. */
+.shop-root .commerce-store-url{margin:0;padding:10px 12px;border:1px solid var(--color-line,#34343e);border-radius:10px;background:var(--color-elevated,#24242c);font:500 15px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere;user-select:all}
+.shop-root .commerce-workspace .opening-actions{flex-wrap:wrap}
+.shop-root .commerce-workspace .opening-actions .shop-btn{min-height:44px}
+
+/* O1: say why step 5 can't be picked from the step bar. */
+.shop-root .opening-steps-hint{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--color-muted,#a0a0a8)}
+.shop-root .opening-steps button[aria-describedby]>span{border-style:dashed}

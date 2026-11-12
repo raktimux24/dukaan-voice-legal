@@ -30,6 +30,7 @@ export function PurchaseOrdersScreen({
         c.userId,
         compose,
         entry.get("buyListItemId"),
+        entry.get("buyListItemIds"),
         entry.get("supplierId"),
       ])}
       compose={compose}
@@ -63,7 +64,13 @@ function Editor({ compose }: { compose: boolean }) {
       void w.open(id);
     }
   }, [id, w.ready, w.allowed]);
-  const linked = !!params.get("buyListItemId") || !!params.get("supplierId");
+  const linked =
+    !!params.get("buyListItemId") ||
+    !!params.get("buyListItemIds") ||
+    !!params.get("supplierId");
+  // S26: with no orders yet, the empty state carries the only "New purchase order" button.
+  const noOrders =
+    !!w.list.data && !w.list.data.items.length && w.offset === 0;
   return (
     <div className="shop-page po-page">
       {!w.order ? (
@@ -77,7 +84,7 @@ function Editor({ compose }: { compose: boolean }) {
               : { href: "/shop/buy-list", label: t("buy_list.title") }
           }
           actions={
-            compose || !w.allowed ? undefined : (
+            compose || !w.allowed || noOrders ? undefined : (
               <Button href="/shop/purchase-orders/new">{t("po.new")}</Button>
             )
           }
@@ -88,6 +95,9 @@ function Editor({ compose }: { compose: boolean }) {
         t={t}
         uuid={() => crypto.randomUUID()}
         initialBuyListId={params.get("buyListItemId") ?? undefined}
+        initialBuyListIds={
+          params.get("buyListItemIds")?.split(",").filter(Boolean) ?? undefined
+        }
         initialBuyListName={params.get("buyListName") ?? undefined}
         initialSupplierId={params.get("supplierId") ?? undefined}
         openForm={(compose || linked) && !id}
