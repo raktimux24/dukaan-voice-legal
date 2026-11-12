@@ -321,7 +321,6 @@ export function ProductFormScreen({ productId, onCreated, onCancel }: { productI
       }}
     >
       <PageHeader
-        kicker={t('products.title', 'Catalog')}
         title={productId ? t('modal.add_product.title_edit', 'Edit product') : t('modal.add_product.title', 'Add product')}
         description={productId ? t('modal.add_product.edit_note', 'Stock and batch details are managed from the product page.') : t('productform.intro','Start with the product. Set its price and stock before saving.')}
         actions={<Button onClick={()=>void leaveGuard.leave(()=>{if(onCancel)onCancel();else router.push(productId?`/shop/products/${productId}`:'/shop/products');})} disabled={pending} tone="quiet" size="sm">{t('common.cancel', 'Cancel')}</Button>}

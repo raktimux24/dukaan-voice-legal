@@ -4,6 +4,7 @@ import {cashMoney as money} from "./format";
 import type { OpeningUi } from "../openings/view";
 import {
   cashDay,
+  isCashDay,
   CASH_METHODS,
   type CashAction,
   type Expense,
@@ -57,8 +58,35 @@ export type CashUi = OpeningUi & {
     meta: string;
     children?: React.ReactNode;
   }>;
+  /** A short coloured result or status, such as "₹120.00 short" or "Closed at 9:12 pm"; falls back to Text when a UI has none. */
+  Status?: ComponentType<{
+    label: string;
+    tone: "ok" | "warn" | "danger" | "neutral";
+    big?: boolean;
+    live?: boolean;
+  }>;
 };
-type T = (k: string, v?: Record<string, string | number>) => string;
+/** The optional third argument is the English text for a key the catalogs may not have yet. */
+type T = (k: string, v?: Record<string, string | number>, fallback?: string) => string;
+/** Notes offered by the cash counter, largest first. */
+const NOTES = [500, 200, 100, 50, 20, 10] as const;
+/** Adds up a note count in whole paise; null while any box holds something that is not a count. */
+export function countedCash(counts: Record<string, string>): string | null {
+  let paise = 0;
+  for (const note of NOTES) {
+    const n = (counts[note] ?? "").trim();
+    if (n && !/^\d{1,5}$/.test(n)) return null;
+    paise += Number(n || 0) * note * 100;
+  }
+  const coins = (counts.coins ?? "").trim();
+  if (coins && !/^\d{1,7}(\.\d{1,2})?$/.test(coins)) return null;
+  paise += Math.round(Number(coins || 0) * 100);
+  return (paise / 100).toFixed(2);
+}
+/** Moves a YYYY-MM-DD day by whole days without touching the time zone. */
+export function shiftCashDay(day: string, days: number) {
+  return new Date(Date.parse(day + "T00:00:00Z") + days * 86400000).toISOString().slice(0, 10);
+}
 
 const codes = [
   "invalid",
@@ -108,12 +136,16 @@ export function CashbookView({
   share: (file: NonNullable<CashResult["export"]>) => Promise<void>;
   onNavigate?: () => void;
 }) {
-  const { Box, Text, Button, Input, Check, Busy, Select, Totals,Tabs,Action,Entry,ExpenseForm } = ui,
+  const { Box, Text, Button, Input, Check, Busy, Select, Totals,Tabs,Action,Entry,ExpenseForm,Disclosure } = ui,
     Card = ui.ExpenseCard,
     Act = (props: { label: string; icon: "expense" | "cash" | "count" | "reopen" | "export" | "cancel"; onPress: () => void; disabled?: boolean; primary?: boolean }) =>
       Action ? <Action {...props} /> : <Button label={props.label} onPress={props.onPress} disabled={props.disabled} primary={props.primary} />,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("cashbook." + k, v),
+    say = (k: string, fallback: string, v?: Record<string, string | number>) => t(k, v, fallback),
+    Status = (props: { label: string; tone: "ok" | "warn" | "danger" | "neutral"; big?: boolean; live?: boolean }) =>
+      ui.Status ? <ui.Status {...props} /> : <Text tone={props.tone === "danger" ? "danger" : props.tone === "neutral" ? "muted" : "accent"} live={props.live}>{props.label}</Text>,
+    [notes, setNotes] = useState<Record<string, string>>({}),
     [tab, setTab] = useState<"cashbook" | "expenses">("cashbook"),
     [form, setForm] = useState(""),
     [selected, setSelected] = useState<string | null>(null),
@@ -135,6 +167,41 @@ export function CashbookView({
     [reverseId, setReverseId] = useState("");
   const d = w.data.data,
     displayLocale = language === "hinglish" ? "en-IN" : language + "-IN",
+    // One readable date style everywhere: "Thu, 12 Nov" (year only when it is not this year), times without seconds.
+    dayText = (day: string) =>
+      isCashDay(day)
+        ? new Date(day + "T00:00:00Z").toLocaleDateString(displayLocale, {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            ...(day.slice(0, 4) !== cashDay().slice(0, 4) ? { year: "numeric" as const } : {}),
+            timeZone: "UTC",
+          })
+        : day,
+    stamp = (iso: string) =>
+      new Date(iso).toLocaleString(displayLocale, {
+        day: "numeric",
+        month: "short",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "Asia/Kolkata",
+      }),
+    clock = (iso: string) =>
+      new Date(iso).toLocaleTimeString(displayLocale, {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: "Asia/Kolkata",
+      }),
+    // Short / extra / matches, worked out in whole paise for display only.
+    countResult = (diff: number) => {
+      const paise = Math.round(diff * 100),
+        amount = money((Math.abs(paise) / 100).toFixed(2));
+      return paise < 0
+        ? { label: say("cashbookweb.short", "{{amount}} short", { amount }), tone: "danger" as const }
+        : paise > 0
+          ? { label: say("cashbookweb.extra", "{{amount}} extra", { amount }), tone: "warn" as const }
+          : { label: say("cashbookweb.matches", "Cash matches"), tone: "ok" as const };
+    },
     s = d?.summary,
     p = d?.expenses.find((p) => p.id === selected),
     owner = d?.role === "OWNER",
@@ -161,6 +228,13 @@ export function CashbookView({
     setMethod("cash");
     setPayee("");
     setMessage("");
+    setNotes({});
+  };
+  const goDay = (day: string) => {
+    if (blocked) return;
+    w.clearError();
+    setMessage("");
+    w.setDay(day);
   };
   const run = async (a?: CashAction) => {
     const r = await w.run(a);
@@ -328,14 +402,27 @@ export function CashbookView({
             label={tr("date")}
             type="date"
             value={w.day}
-            onChange={(day) => {
-              if (blocked) return;
-              w.clearError();
-              setMessage("");
-              w.setDay(day);
-            }}
+            onChange={goDay}
             disabled={blocked}
           />
+          <Box row>
+            <Button
+              label={"← " + say("cashbookweb.prev_day", "Previous day")}
+              disabled={blocked || !isCashDay(w.day)}
+              onPress={() => goDay(shiftCashDay(w.day, -1))}
+            />
+            <Button
+              label={say("cashbookweb.today", "Today")}
+              disabled={blocked || w.day === cashDay()}
+              onPress={() => goDay(cashDay())}
+            />
+            <Button
+              label={say("cashbookweb.next_day", "Next day") + " →"}
+              disabled={blocked || !isCashDay(w.day) || w.day >= cashDay()}
+              onPress={() => goDay(shiftCashDay(w.day, 1))}
+            />
+          </Box>
+          {isCashDay(w.day) ? <Text heading>{dayText(w.day)}</Text> : null}
         </Box>
       ) : null}
       {d?.account ? (
@@ -659,6 +746,32 @@ export function CashbookView({
                   <Text heading>{tr("count")}</Text>
                   <Text tone="muted">{tr("count_help")}</Text>
                   <Text>{tr("closing") + ": " + money(s.closing)}</Text>
+                  {(() => {
+                    const counter = (
+                      <>
+                        <Text tone="muted">{say("cashbookweb.count_notes_help", "Type how many of each note you have. The total fills in for you.")}</Text>
+                        {[...NOTES.map(String), "coins"].map((k) => (
+                          <Input
+                            key={k}
+                            label={k === "coins" ? say("cashbookweb.coins", "Coins and other cash (₹)") : say("cashbookweb.notes_of", "₹{{value}} notes", { value: k })}
+                            type="decimal"
+                            value={notes[k] ?? ""}
+                            onChange={(v) => {
+                              const next = { ...notes, [k]: v };
+                              setNotes(next);
+                              const total = countedCash(next);
+                              if (total !== null) {
+                                setAmount(total);
+                                setReview(false);
+                              }
+                            }}
+                            disabled={blocked}
+                          />
+                        ))}
+                      </>
+                    );
+                    return Disclosure ? <Disclosure label={say("cashbookweb.count_notes", "Count notes and coins")}>{counter}</Disclosure> : <Box>{counter}</Box>;
+                  })()}
                   <Input
                     label={tr("counted_input")}
                     type="decimal"
@@ -670,10 +783,7 @@ export function CashbookView({
                     disabled={blocked}
                   />
                   {amount && Number.isFinite(Number(amount)) ? (
-                    <Text>
-                      {tr("difference") +
-                        ": " + money((Number(amount) - Number(s.closing)).toFixed(2))}
-                    </Text>
+                    <Status big live {...countResult(Number(amount) - Number(s.closing))} />
                   ) : null}
                   <Input
                     label={tr("close_reason")}
@@ -744,6 +854,14 @@ export function CashbookView({
             </>
           ) : tab === "cashbook" && s ? (
             <>
+              <Status
+                tone={s.status === "needs_review" ? "danger" : s.status === "closed" ? "ok" : "neutral"}
+                label={
+                  s.status === "closed" && s.close
+                    ? say("cashbookweb.closed_at", "Closed at {{time}}", { time: cashDay(s.close.at) === w.day ? clock(s.close.at) : stamp(s.close.at) })
+                    : tr("status." + s.status)
+                }
+              />
               <Totals
                 highlightLast
                 items={[
@@ -753,58 +871,56 @@ export function CashbookView({
                   ["closing", s.closing],
                 ].map(([k, v]) => ({ label: tr(k), value: money(v) }))}
               />
-              <Text tone="muted">
-                {tr("coverage_help", {
-                  date: new Date(s.coverageAt).toLocaleString(displayLocale, {
-                    timeZone: "Asia/Kolkata",
-                  }),
-                })}
-              </Text>
+              {Disclosure ? (
+                <Disclosure label={say("cashbookweb.coverage_link", "What this includes")}>
+                  <Text tone="muted">{tr("coverage_help", { date: stamp(s.coverageAt) })}</Text>
+                </Disclosure>
+              ) : (
+                <Text tone="muted">{tr("coverage_help", { date: stamp(s.coverageAt) })}</Text>
+              )}
               {s.openingChanged ? (
                 <Text tone="danger">{tr("opening_changed")}</Text>
               ) : null}
-              <Text tone={s.status === "needs_review" ? "danger" : "accent"}>
-                {tr("status") + ": " + tr("status." + s.status)}
-              </Text>
               {s.status === "needs_review" ? (
                 <Text tone="danger">{tr("late_help")}</Text>
               ) : null}
               {Number(s.closing) < 0 ? (
                 <Text tone="danger">{tr("negative")}</Text>
               ) : null}
-              <Box row>
-                <Act
-                  primary
-                  icon="expense"
-                  label={tr("add_expense")}
-                  disabled={blocked}
-                  onPress={() => reset("expense")}
-                />
-                {owner ? (
-                  <>
+              {(() => {
+                // Closing becomes the main action from 6 pm IST, or for an earlier day still left open.
+                const closeTime = owner && !s.close && (w.day < cashDay() || new Date(Date.now() + 19800000).getUTCHours() >= 18);
+                const count = owner ? (
+                  <Act
+                    primary={closeTime}
+                    icon={s.close ? "reopen" : "count"}
+                    label={tr(s.close ? "reopen" : "count")}
+                    disabled={blocked}
+                    onPress={() => reset(s.close ? "reopen" : "count")}
+                  />
+                ) : null;
+                return (
+                  <Box row>
+                    {closeTime ? count : null}
                     <Act
-                      icon="cash"
-                      label={tr("cash_tools")}
+                      primary={!closeTime}
+                      icon="expense"
+                      label={tr("add_expense")}
                       disabled={blocked}
-                      onPress={() => reset("cash")}
+                      onPress={() => reset("expense")}
                     />
-                    <Act
-                      icon={s.close ? "reopen" : "count"}
-                      label={tr(s.close ? "reopen" : "count")}
-                      disabled={blocked}
-                      onPress={() => reset(s.close ? "reopen" : "count")}
-                    />
-                  </>
-                ) : null}
-                <Act
-                  icon="export"
-                  label={tr("export")}
-                  disabled={blocked}
-                  onPress={() =>
-                    void run({ kind: "export", day: w.day, language })
-                  }
-                />
-              </Box>
+                    {owner ? (
+                      <Act
+                        icon="cash"
+                        label={tr("cash_tools")}
+                        disabled={blocked}
+                        onPress={() => reset("cash")}
+                      />
+                    ) : null}
+                    {closeTime ? null : count}
+                  </Box>
+                );
+              })()}
               {s.close ? (
                 <Box card>
                   <Text heading>{tr("close_saved")}</Text>
@@ -816,7 +932,8 @@ export function CashbookView({
                       ),
                     }))}
                   />
-                  <Text tone="muted">{s.close.reason}</Text>
+                  <Status {...countResult(Number(s.close.difference))} />
+                  {s.close.reason ? <Text tone="muted">{s.close.reason}</Text> : null}
                 </Box>
               ) : null}
               <Box card>
@@ -854,16 +971,14 @@ export function CashbookView({
                       <Text tone="muted">{tr("backfill")}</Text>
                     ) : cashDay(e.effectiveAt) !== cashDay(e.recordedAt) ? (
                       <Text tone="danger">
-                        {tr("late", { date: cashDay(e.effectiveAt) })}
+                        {tr("late", { date: dayText(cashDay(e.effectiveAt)) })}
                       </Text>
                     ) : null}
                     {e.reference ? <Text tone="muted">{e.reference}</Text> : null}
                     {e.note ? <Text tone="muted">{e.note}</Text> : null}
                   </>
                 );
-                const when = new Date(e.effectiveAt).toLocaleString(displayLocale, {
-                  timeZone: "Asia/Kolkata",
-                });
+                const when = stamp(e.effectiveAt);
                 const who = d.actors[e.actor] || tr("actor");
                 if (Entry)
                   return (
@@ -914,21 +1029,28 @@ export function CashbookView({
                         " · " +
                         (d.actors[e.actor] || tr("actor")) +
                         " · " +
-                        new Date(e.at).toLocaleString(displayLocale, {
-                          timeZone: "Asia/Kolkata",
-                        }) +
-                        " · " +
-                        e.reason}
+                        stamp(e.at) +
+                        (e.reason ? " · " + e.reason : "")}
                     </Text>
                   ))}
                 </>
               ) : null}
               <Text tone="muted">{tr("export_help")}</Text>
-              <Button
-                label={tr("refresh")}
-                onPress={() => void w.refresh()}
-                disabled={blocked}
-              />
+              <Box row>
+                <Act
+                  icon="export"
+                  label={tr("export")}
+                  disabled={blocked}
+                  onPress={() =>
+                    void run({ kind: "export", day: w.day, language })
+                  }
+                />
+                <Button
+                  label={tr("refresh")}
+                  onPress={() => void w.refresh()}
+                  disabled={blocked}
+                />
+              </Box>
             </>
           ) : tab === "expenses" ? (
             <>
@@ -942,7 +1064,7 @@ export function CashbookView({
                       onNavigate?.();
                     }}
                   />
-                  {Card ? <ExpenseCardView p={p} Card={Card} variant="hero" tr={tr} cat={cat} /> : <ExpenseCard p={p} ui={ui} tr={tr} cat={cat} />}
+                  {Card ? <ExpenseCardView p={p} Card={Card} variant="hero" tr={tr} cat={cat} day={dayText} /> : <ExpenseCard p={p} ui={ui} tr={tr} cat={cat} day={dayText} />}
                   {!p.cancelled ? (
                     <Box row>
                       {Number(p.due) > 0 ? (
@@ -989,13 +1111,13 @@ export function CashbookView({
                     );
                     if (Entry)
                       return (
-                        <Entry key={e.id} title={tr("method." + e.method)} amount={money("-" + e.amount)} direction={e.reversesId ? "in" : "out"} meta={e.date}>
+                        <Entry key={e.id} title={tr("method." + e.method)} amount={money("-" + e.amount)} direction={e.reversesId ? "in" : "out"} meta={dayText(e.date)}>
                           {extra}
                         </Entry>
                       );
                     return (
                       <Box card key={e.id}>
-                        <Text>{money(e.amount) + " · " + tr("method." + e.method) + " · " + e.date}</Text>
+                        <Text>{money(e.amount) + " · " + tr("method." + e.method) + " · " + dayText(e.date)}</Text>
                         {extra}
                       </Box>
                     );
@@ -1007,9 +1129,7 @@ export function CashbookView({
                         " · " +
                         (d.actors[e.actor] || tr("actor")) +
                         " · " +
-                        new Date(e.at).toLocaleString(displayLocale, {
-                          timeZone: "Asia/Kolkata",
-                        }) +
+                        stamp(e.at) +
                         (e.note ? " · " + e.note : "")}
                     </Text>
                   ))}
@@ -1028,10 +1148,10 @@ export function CashbookView({
                   ) : null}
                   {d.expenses.map((e) =>
                     Card ? (
-                      <ExpenseCardView key={e.id} p={e} Card={Card} variant="row" tr={tr} cat={cat} onPress={() => { setSelected(e.id); onNavigate?.(); }} disabled={blocked} />
+                      <ExpenseCardView key={e.id} p={e} Card={Card} variant="row" tr={tr} cat={cat} day={dayText} onPress={() => { setSelected(e.id); onNavigate?.(); }} disabled={blocked} />
                     ) : (
                       <Box card key={e.id}>
-                        <ExpenseCard p={e} ui={ui} tr={tr} cat={cat} />
+                        <ExpenseCard p={e} ui={ui} tr={tr} cat={cat} day={dayText} />
                         <Button
                           label={tr("expense_open")}
                           onPress={() => {
@@ -1085,7 +1205,7 @@ export function CashbookView({
     </Box>
   );
 }
-function ExpenseCardView({ p, Card, variant, tr, cat, onPress, disabled }: { p: Expense; Card: NonNullable<CashUi["ExpenseCard"]>; variant: "row" | "hero"; tr: T; cat: (id: string) => string; onPress?: () => void; disabled?: boolean }) {
+function ExpenseCardView({ p, Card, variant, tr, cat, day, onPress, disabled }: { p: Expense; Card: NonNullable<CashUi["ExpenseCard"]>; variant: "row" | "hero"; tr: T; cat: (id: string) => string; day: (d: string) => string; onPress?: () => void; disabled?: boolean }) {
   const status = p.cancelled ? "cancelled" : Number(p.paid) === 0 ? "unpaid" : Number(p.due) > 0 ? "part_paid" : "paid";
   return (
     <Card
@@ -1098,7 +1218,7 @@ function ExpenseCardView({ p, Card, variant, tr, cat, onPress, disabled }: { p: 
       due={money(p.due)}
       paidLabel={tr("paid")}
       dueLabel={tr("due")}
-      meta={[p.date, p.payee].filter(Boolean).join(" · ")}
+      meta={[day(p.date), p.payee].filter(Boolean).join(" · ")}
       note={[p.reference, p.note].filter(Boolean).join(" · ") || undefined}
       scheduled={p.date > cashDay() && !p.cancelled ? tr("scheduled") : undefined}
       onPress={onPress}
@@ -1111,11 +1231,13 @@ function ExpenseCard({
   ui,
   tr,
   cat,
+  day,
 }: {
   p: Expense;
   ui: CashUi;
   tr: T;
   cat: (id: string) => string;
+  day: (d: string) => string;
 }) {
   const { Text, Box } = ui;
   return (
@@ -1133,7 +1255,7 @@ function ExpenseCard({
                   : "paid"),
         )}
       </Text>
-      <Text>{p.date + (p.payee ? " · " + p.payee : "")}</Text>
+      <Text>{day(p.date) + (p.payee ? " · " + p.payee : "")}</Text>
       <Text>
         {tr("paid") + ": " + money(p.paid) + " · " + tr("due") + ": " + money(p.due)}
       </Text>

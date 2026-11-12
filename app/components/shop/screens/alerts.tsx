@@ -9,7 +9,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useShopDates } from '../use-shop-dates';
 import { formatQty,unitLabel } from '../../../lib/shop/units';
 import { useShop } from '../context';
-import { Button, Glyph, Notice, PageHeader, Pill, PremiumLock, Spinner, Tabs, isPremiumError } from '../ui';
+import { Button, EmptyState, Glyph, Notice, PageHeader, Pill, PremiumLock, Spinner, Tabs, isPremiumError } from '../ui';
 
 function alertTabLabel(id: string, fallback: string, t: (key: string, fallback: string) => string) {
   if (id === 'all') return t('home.filter_all', fallback);
@@ -134,7 +134,7 @@ function AlertsWorkspace() {
           isPremiumError(predictions.error) ? <PremiumLock feature="predictions" /> : (
             <section className="alert-group">
               <h2 className="timeline-day">{t('modal.alerts.section_ai','AI Insights')}</h2>{predictions.isPending?<Spinner/>:null}
-              {!predictions.isPending&&!predictions.error&&ai.length === 0 ? <p className="shop-list-empty">{uiText("No predictions yet.")}</p> : null}
+              {!predictions.isPending&&!predictions.error&&ai.length === 0 ? <EmptyState icon="alert" title={uiText("No predictions yet.")}/> : null}
               {ai.map((row) => (
                 <article key={row.id} className="alert-card">
                   <div>
@@ -154,10 +154,10 @@ function AlertsWorkspace() {
       ) : null}
 
       {alerts.isSuccess && tab === 'all' && stock.length === 0 && expiry.length === 0 && ai.length === 0 ? (
-        <p className="shop-list-empty">{uiText("Nothing needs attention.")}</p>
+        <EmptyState icon="check" title={uiText("Nothing needs attention.")}/>
       ) : null}
-      {alerts.isSuccess && tab === 'stock' && stock.length === 0 ? <p className="shop-list-empty">{uiText("Stock looks fine.")}</p> : null}
-      {alerts.isSuccess && tab === 'expiry' && expiry.length === 0 ? <p className="shop-list-empty">{uiText("Nothing is close to expiry.")}</p> : null}
+      {alerts.isSuccess && tab === 'stock' && stock.length === 0 ? <EmptyState icon="check" title={uiText("Stock looks fine.")}/> : null}
+      {alerts.isSuccess && tab === 'expiry' && expiry.length === 0 ? <EmptyState icon="check" title={uiText("Nothing is close to expiry.")}/> : null}
     </div>
   );
 }

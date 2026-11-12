@@ -459,7 +459,7 @@ test("share-offer prepares a reviewable draft without applying a selling price",
   assert(document.querySelector("[role=dialog]"));
   assert(document.body.textContent.includes("Synthetic draft for review"));
 });
-test("inventory scanning opens the matched product; helper refresh does not fetch restricted data", async (t) => {
+test("inventory scanning opens the matched product; a helper's Home never fetches restricted data", async (t) => {
   setup("HELPER");
   await mount(t);
   await act(async () => button("Find by barcode").click());
@@ -468,8 +468,8 @@ test("inventory scanning opens the matched product; helper refresh does not fetc
   assert(
     calls.some((c) => c[0] === "navigate" && c[1] === "/shop/products/p1"),
   );
-  await act(async () => button("Refresh").click());
-  await settle();
+  // Home has no Refresh button: its reads refresh every 30 s and on window focus.
+  assert(![...document.querySelectorAll("button")].some((b) => b.textContent === "Refresh"));
   assert(
     !calls.some(
       (c) => c[0] === "read" && ["summary", "brief", "nudges"].includes(c[1]),

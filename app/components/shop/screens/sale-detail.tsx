@@ -352,17 +352,6 @@ function SaleDetailWorkspace({ saleId }: { saleId: string }) {
         )}
         title={t("counter.bill_number", "", { number: identifier })}
         description={formatWhen(sale.soldAt)}
-        actions={
-          recorded ? null : (
-            <Button
-              tone="ghost"
-              disabled={saleQuery.isFetching || offline}
-              onClick={() => void refresh()}
-            >
-              {t("counter.refresh", "Refresh")}
-            </Button>
-          )
-        }
       />
       <Notice error={error} />
       {recorded ? (

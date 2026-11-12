@@ -18,12 +18,13 @@ const storage: OpeningStorage = {
   setItem: async (key, value) => window.localStorage.setItem(key, value),
   removeItem: async (key) => window.localStorage.removeItem(key),
 };
+const LockGlyph = () => <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>;
 export const openingWebUi: OpeningUi = {
   ProductPhoto:props=><ProductImageById {...props} size={36}/>,
   Tabs: ({items,value,onChange,disabled}) => <TabList className="shop-seg retail-section-tabs" items={items.map(item=>[item.key,item.label] as const)} value={value} disabled={disabled} onChange={onChange}/>,
   Disclosure: ({label,children}) => <details className="retail-details"><summary>{label}</summary><div>{children}</div></details>,
   SavedSetup: ({ status, details, onPress, disabled }) => <button type="button" className="opening-saved" onClick={onPress} disabled={disabled}><span><strong>{status}</strong><small>{details}</small></span><span aria-hidden="true">→</span></button>,
-  Steps: ({ labels, current, disabled, onSelect }) => <Card className="opening-stack"><h2 className="shop-section-title">{labels[current]}</h2><nav className="opening-steps" aria-label={labels[current]}>{labels.map((label, index) => <button type="button" key={label} aria-label={label} aria-current={index === current ? 'step' : undefined} disabled={disabled || index === 4} onClick={() => onSelect(index)}><span>{index + 1}</span><small>{label}</small></button>)}</nav></Card>,
+  Steps: ({ labels, current, disabled, onSelect, lockedHint }) => <Card className="opening-stack"><h2 className="shop-section-title">{labels[current]}</h2><nav className="opening-steps" aria-label={labels[current]}>{labels.map((label, index) => <button type="button" key={label} aria-label={label} aria-current={index === current ? 'step' : undefined} aria-describedby={index === 4 && lockedHint ? 'opening-review-locked' : undefined} title={index === 4 ? lockedHint : undefined} disabled={disabled || index === 4} onClick={() => onSelect(index)}><span>{index === 4 && lockedHint ? <LockGlyph /> : index + 1}</span><small>{label}</small></button>)}</nav>{lockedHint ? <p id="opening-review-locked" className="opening-steps-hint">{lockedHint}</p> : null}</Card>,
   Box: ({ children, card, row }) =>
     card ? (
       <Card className="opening-stack">{children}</Card>

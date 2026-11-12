@@ -56,23 +56,11 @@ function Record({ id }: { id: string }) {
           label: t("suppliers.title", "Suppliers"),
         }}
         actions={
-          <>
-            <Button
-              tone="ghost"
-              onClick={() => {
-                void q.refetch();
-                void orders.refetch();
-                if (identity?.inventorySupplierName) void list.refetch();
-              }}
-            >
-              {t("common.refresh", "Refresh")}
+          supplier && !editing ? (
+            <Button disabled={offline} onClick={() => setEditing(supplier)}>
+              {t("common.edit", "Edit")}
             </Button>
-            {supplier && !editing ? (
-              <Button disabled={offline} onClick={() => setEditing(supplier)}>
-                {t("common.edit", "Edit")}
-              </Button>
-            ) : null}
-          </>
+          ) : null
         }
       />
       <ReadState query={q}>
@@ -97,6 +85,17 @@ function Record({ id }: { id: string }) {
               </div>
             </div>
             <Notice error={orders.error ?? list.error} />
+            {orders.isError || list.isError ? (
+              <Button
+                tone="ghost"
+                onClick={() => {
+                  if (orders.isError) void orders.refetch();
+                  if (list.isError) void list.refetch();
+                }}
+              >
+                {t("common.retry", "Try again")}
+              </Button>
+            ) : null}
             <div className="supplier-record-metrics">
               <div>
                 <small>{t("directoryUI.receipts", "Inventory receipts")}</small>

@@ -16,9 +16,11 @@ export type AuditPage = {
   hasMore: boolean;
   limitedToDays?: number | null;
 };
+/** The optional third argument is the English text for a key the catalogs may not have yet. */
 export type ActivityText = (
   key: string,
   vars?: Record<string, string | number>,
+  fallback?: string,
 ) => string;
 export function activityFilter(value: string | null): ActivityFilter {
   return ACTIVITY_FILTERS.includes(value as ActivityFilter)
@@ -101,7 +103,16 @@ export function activityLabel(action: string, t: ActivityText) {
     estimate: "estimates.title",
     collection_followup: "followups.title",
     document_branding_updated: "documents.title",
+    gst_invoice_recovered: "badge.gst_invoice_recovered",
+    gst_device_reconciliation_required: "badge.gst_device_reconciliation_required",
+    purchase_settlement_recorded: "badge.purchase_settlement_recorded",
   };
+  // Opening-balance entries used to fall through to the generic "Record" label.
+  // Callers whose text helper ignores the English fallback get an empty string or the key back: keep "Record" for them.
+  if (!keys[type] && type.startsWith("opening_")) {
+    const opening = t("activityweb.opening", undefined, "Opening balances");
+    if (opening && opening !== "activityweb.opening") return opening;
+  }
   return t(keys[type] ?? "activityweb.record");
 }
 export function activitySource(method: string, t: ActivityText) {

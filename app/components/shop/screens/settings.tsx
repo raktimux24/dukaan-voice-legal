@@ -174,10 +174,7 @@ function SettingsWorkspace() {
     void run("preference", () => savePrefs(patch), "settingsweb.saved");
   const values = preferenceValues(prefs),
     disabled = !!busy || offline,
-    // Customers has its own place in the sidebar, and mobile does not list it under settings.
-    links = settingsLinks(perms, offline).filter(
-      (item) => item.href !== "/shop/customers",
-    ),
+    links = settingsLinks(perms, offline),
     imports = settingsImports(perms, offline);
   if (!shop || !isLoaded) return <Spinner />;
   const plan = !entitlement
@@ -222,7 +219,6 @@ function SettingsWorkspace() {
   return (
     <div className="shop-page settings-workspace">
       <PageHeader
-        kicker={t("settingsweb.kicker", "Make it yours")}
         title={t("settings.title", "Settings")}
         description={t(
           "settingsweb.intro",

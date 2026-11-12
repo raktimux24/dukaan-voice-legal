@@ -155,8 +155,7 @@ function HomeWorkspace() {
   const [demandBusy, setDemandBusy] = useState(false),
     [demandError, setDemandError] = useState<unknown>(null),
     [notedQuery, setNotedQuery] = useState("");
-  const [trialDismissed, setTrialDismissed] = useState(false),
-    [refreshing, setRefreshing] = useState(false);
+  const [trialDismissed, setTrialDismissed] = useState(false);
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -272,21 +271,6 @@ function HomeWorkspace() {
   );
   if (!shop) return <Spinner label={uiText("Loading shop")} />;
 
-  const refresh = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    const reads = [
-      stats,
-      catalog,
-      recent,
-      alerts,
-      ...(perms.canEditProducts ? [opening] : []),
-      ...(perms.canSeeReports ? [today, yesterday, brief, nudges] : []),
-      ...(debounced.length > 1 ? [search, demand] : []),
-    ];
-    await Promise.allSettled(reads.map((read) => read.refetch()));
-    if (alive.current) setRefreshing(false);
-  };
   const readError = (failed: boolean, retry: () => void) =>
     failed ? (
       <div className="home-read-error" role="alert">
@@ -425,17 +409,6 @@ function HomeWorkspace() {
               "Start a sale. Catch up on stock. Keep the day moving.",
             )}
           </p>
-        </div>
-        <div className="shop-actions">
-          <Button
-            tone="ghost"
-            disabled={refreshing || offline}
-            onClick={() => void refresh()}
-          >
-            {refreshing
-              ? t("homeweb.refreshing", "Refreshing…")
-              : t("homeweb.refresh", "Refresh")}
-          </Button>
         </div>
       </header>
       {isPremiumError(streak.error) || isPremiumError(moved.error) ? <PremiumLock feature="insights" /> : null}

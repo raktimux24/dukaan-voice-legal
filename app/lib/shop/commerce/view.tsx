@@ -29,9 +29,18 @@ export function CommerceView({
   openSale?: (saleId: string) => void;
   initialProductId?: string;
 }) {
-  const { Box, Text, Input, Check, Button, Busy,Tabs,Disclosure,Empty } = ui,
+  const { Box, Text, Input, Check, Button, Busy,Tabs,Empty } = ui,
     tr = (k: string, v?: Record<string, string | number>) =>
       t("commerce." + k, v),
+    // New copy keeps an English fallback until translated: t() returns the key when it has no text.
+    tx = (k: string, fallback: string, v?: Record<string, string | number>) => {
+      const text = t(k, v);
+      if (text !== k) return text;
+      let out = fallback;
+      for (const [name, value] of Object.entries(v ?? {}))
+        out = out.replaceAll("{{" + name + "}}", String(value));
+      return out;
+    },
     unitLabel = (unit: string) =>
       commerceUnit(unit) ? tr("unit." + commerceUnit(unit)) : unit,
     s = w.store.data?.store,
@@ -46,7 +55,9 @@ export function CommerceView({
     [dirty, setDirty] = useState(false),
     [notice, setNotice] = useState(""),
     [reason, setReason] = useState(""),
-    [localBusy, setLocalBusy] = useState(false),[linkCopied,setLinkCopied]=useState(false);
+    [localBusy, setLocalBusy] = useState(false),[linkCopied,setLinkCopied]=useState(false),
+    // C5: the reason is asked for only after choosing Reject or Cancel.
+    [ending, setEnding] = useState<"rejected" | "cancelled" | null>(null);
   useEffect(() => {
     if (s) {
       if (!dirty) setConfig(s.config);
@@ -57,6 +68,7 @@ export function CommerceView({
   }, [s?.id,s?.version,dirty]);
   useEffect(() => {
     setReason("");
+    setEnding(null);
   }, [p?.id, p?.version]);
   useEffect(() => {
     if (initialProductId && w.store.data?.items) {
@@ -84,6 +96,27 @@ export function CommerceView({
     },
     error =
       w.error || (w.orderQuery?.isError ? ((w.orderQuery.error as any)?.code ?? "commerce_failed") : "") || (w.store.error as any)?.code || (w.store.isError ? "commerce_failed" : "") || (w.orders.error as any)?.code || (w.orders.isError ? "commerce_failed" : "") || (w.store.isSuccess && !s ? "commerce_failed" : "");
+  // C5: one primary "next step" per order state; Reject and Cancel sit apart and ask for a reason.
+  const nextStates: OrderState[] = !p
+    ? []
+    : p.state === "requested"
+      ? ["accepted"]
+      : p.state === "expired"
+        ? ["accepted"]
+        : p.state === "accepted"
+          ? ["preparing"]
+          : p.state === "preparing"
+            ? ["ready"]
+            : p.state === "ready"
+              ? p.fulfilment === "delivery"
+                ? ["out_for_delivery", "fulfilled"]
+                : ["fulfilled"]
+              : p.state === "out_for_delivery"
+                ? ["fulfilled"]
+                : [];
+  const billable = !!p && ["ready", "out_for_delivery"].includes(p.state) && !p.saleId;
+  const primaryState = nextStates.find((state) => state !== "fulfilled" || !!p?.saleId);
+  const canEnd = !!p && !p.saleId && !["fulfilled", "cancelled", "rejected"].includes(p.state);
   if (!w.allowed) return <Text tone="danger">{tr("online_role")}</Text>;
   return (
     <Box>
@@ -151,10 +184,32 @@ export function CommerceView({
           <Box card>
             <Text heading>{s.published ? tr("published") : tr("draft")}</Text>
             <Text heading>{s.config.name}</Text>
-            <Text tone="muted">{tr("catalogue_link")} · {new URL(s.url).host}</Text>
-            {copyLink?<Button label={tr("copy_store_link")} onPress={()=>void task(async()=>{await copyLink(s.url);setLinkCopied(true)})} disabled={localBusy}/>:null}
+            {/* C3: the full link and the ways to share it come first. */}
+            <Text tone="muted">{tr("catalogue_link")}</Text>
+            <p className="commerce-store-url">{s.url}</p>
+            <Box row>
+              {copyLink?<Button label={tr("copy_store_link")} onPress={()=>void task(async()=>{await copyLink(s.url);setLinkCopied(true)})} disabled={localBusy}/>:null}
+              {s.published ? (
+                <Button
+                  primary
+                  label={tx("commerce.share_whatsapp", "Share on WhatsApp")}
+                  onPress={() =>
+                    void openUrl(
+                      "https://wa.me/?text=" +
+                        encodeURIComponent(s.config.name + "\n" + s.url),
+                    )
+                  }
+                />
+              ) : null}
+              {s.published ? (
+                <Button
+                  label={tr("open_store")}
+                  onPress={() => void openUrl(s.url)}
+                />
+              ) : null}
+            </Box>
             {linkCopied?<Text live>{tr("link_copied")}</Text>:null}
-            {Disclosure?<Disclosure label={tr("link_details")}><Text>{s.url}</Text></Disclosure>:null}
+            {!s.published ? <Text tone="muted">{tx("commerce.link_after_publish", "Customers can open this link after you publish the store.")}</Text> : null}
             <Text tone="muted">{tr("draft_help")}</Text>
           </Box>
           <Box card>
@@ -267,12 +322,6 @@ export function CommerceView({
                 }
               />
             </Box>
-          ) : null}
-          {s.published ? (
-            <Button
-              label={tr("open_store")}
-              onPress={() => void openUrl(s.url)}
-            />
           ) : null}
         </Box>
       ) : null}
@@ -427,82 +476,96 @@ export function CommerceView({
                   })}
                 </Text>
               ) : null}
-              {!p.saleId &&
-              !["fulfilled", "cancelled", "rejected"].includes(p.state) ? (
-                <Input
-                  label={tr("reason")}
-                  value={reason}
-                  onChange={setReason}
-                  disabled={blocked}
-                />
-              ) : null}
-              <Box row>
-                {(p.state === "requested"
-                  ? ["accepted", "rejected"]
-                  : p.state === "expired"
-                    ? ["accepted"]
-                    : p.state === "accepted"
-                      ? ["preparing"]
-                      : p.state === "preparing"
-                        ? ["ready"]
-                        : p.state === "ready"
-                          ? p.fulfilment === "delivery"
-                            ? ["out_for_delivery", "fulfilled"]
-                            : ["fulfilled"]
-                          : p.state === "out_for_delivery"
-                            ? ["fulfilled"]
-                            : []
-                ).map((state) => (
-                  <Button
-                    key={state}
-                    label={tr("action_" + state)}
-                    disabled={
-                      blocked ||
-                      (state === "fulfilled" && !p.saleId) ||
-                      (state === "rejected" && !reason.trim())
-                    }
-                    onPress={() =>
-                      void w.run({
-                        kind: "order",
-                        id: p.id,
-                        version: p.version,
-                        state: state as OrderState,
-                        note: reason,
-                      })
-                    }
+              {ending ? (
+                <Box card>
+                  <Text heading>{tr(ending === "rejected" ? "action_rejected" : "cancel")}</Text>
+                  <Input
+                    label={tr("reason")}
+                    value={reason}
+                    onChange={setReason}
+                    disabled={blocked}
                   />
-                ))}
-                {!p.saleId &&
-                !["fulfilled", "cancelled", "rejected"].includes(p.state) ? (
-                  <Button
-                    label={tr("cancel")}
-                    disabled={blocked || !reason.trim()}
-                    onPress={() =>
-                      void w.run({
-                        kind: "order",
-                        id: p.id,
-                        version: p.version,
-                        state: "cancelled",
-                        note: reason,
-                      })
-                    }
-                  />
-                ) : null}
-              </Box>
-              {["ready", "out_for_delivery"].includes(p.state) && !p.saleId ? (
-                <Button
-                  primary
-                  label={tr("bill_collect")}
-                  disabled={blocked}
-                  onPress={() =>
-                    void w
-                      .run({ kind: "bill", id: p.id, version: p.version })
-                      .then((r) => {
-                        if (r?.estimateId) bill(r.estimateId);
-                      })
-                  }
-                />
-              ) : null}
+                  <Box row>
+                    <Button
+                      primary
+                      label={tr(ending === "rejected" ? "action_rejected" : "cancel")}
+                      disabled={blocked || !reason.trim()}
+                      onPress={() =>
+                        void w.run({
+                          kind: "order",
+                          id: p.id,
+                          version: p.version,
+                          state: ending,
+                          note: reason,
+                        })
+                      }
+                    />
+                    <Button
+                      label={t("common.back")}
+                      disabled={blocked}
+                      onPress={() => {
+                        setEnding(null);
+                        setReason("");
+                      }}
+                    />
+                  </Box>
+                </Box>
+              ) : (
+                <>
+                  <Box row>
+                    {nextStates.map((state) => (
+                      <Button
+                        key={state}
+                        primary={state === primaryState}
+                        label={tr("action_" + state)}
+                        disabled={blocked || (state === "fulfilled" && !p.saleId)}
+                        onPress={() =>
+                          void w.run({
+                            kind: "order",
+                            id: p.id,
+                            version: p.version,
+                            state: state as OrderState,
+                            note: reason,
+                          })
+                        }
+                      />
+                    ))}
+                    {billable ? (
+                      <Button
+                        primary={!primaryState}
+                        label={tr("bill_collect")}
+                        disabled={blocked}
+                        onPress={() =>
+                          void w
+                            .run({ kind: "bill", id: p.id, version: p.version })
+                            .then((r) => {
+                              if (r?.estimateId) bill(r.estimateId);
+                            })
+                        }
+                      />
+                    ) : null}
+                  </Box>
+                  {nextStates.includes("fulfilled") && !p.saleId ? (
+                    <Text tone="muted">{tr("error.unpaid")}</Text>
+                  ) : null}
+                  {canEnd ? (
+                    <Box row>
+                      {p.state === "requested" ? (
+                        <Button
+                          label={tr("action_rejected")}
+                          disabled={blocked}
+                          onPress={() => setEnding("rejected")}
+                        />
+                      ) : null}
+                      <Button
+                        label={tr("cancel")}
+                        disabled={blocked}
+                        onPress={() => setEnding("cancelled")}
+                      />
+                    </Box>
+                  ) : null}
+                </>
+              )}
               {!p.saleId ? (
                 <Text tone="muted">{tr("bill_help")}</Text>
               ) : openSale ? (

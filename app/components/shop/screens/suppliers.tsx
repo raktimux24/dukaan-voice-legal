@@ -6,10 +6,12 @@ import Link from "next/link";
 import { useShop } from "../context";
 import {
   Button,
+  EmptyState,
   Field,
   NoAccess,
   Notice,
   PageHeader,
+  Skeleton,
   Spinner,
   inputClass,
 } from "../ui";
@@ -83,26 +85,20 @@ function Directory() {
   return (
     <div className="shop-page supplier-workspace">
       <PageHeader
-        kicker={t("poweb.kicker", "Purchasing")}
         title={t("suppliers.title", "Suppliers")}
         description={t(
           "supplierweb.intro",
           "Your suppliers, purchase records and last paid prices.",
         )}
         actions={
-          <>
-            <Button tone="ghost" onClick={refresh}>
-              {t("common.refresh", "Refresh")}
+          perms.canEditProducts ? (
+            <Button disabled={offline || adding} onClick={() => setAdding(true)}>
+              {t(
+                "purchase.add_supplier",
+                "Add supplier",
+              )}
             </Button>
-            {perms.canEditProducts ? (
-              <Button disabled={offline || adding} onClick={() => setAdding(true)}>
-                {t(
-                  "purchase.add_supplier",
-                  "Add supplier",
-                )}
-              </Button>
-            ) : null}
-          </>
+          ) : null
         }
       />
       {adding ? (
@@ -158,7 +154,14 @@ function Directory() {
       {tab === "list" ? (
         <>
           <Notice error={directory.error ?? list.error ?? orders.error} />
-          {directory.isLoading || list.isLoading ? <Spinner /> : null}
+          {directory.isError || list.isError || orders.isError ? (
+            <Button tone="ghost" onClick={refresh}>
+              {t("common.retry", "Try again")}
+            </Button>
+          ) : null}
+          {directory.isLoading || list.isLoading ? (
+            <Skeleton variant="row" count={4} label={t("common.loading", "Loading")} />
+          ) : null}
           <div className="supplier-ledger">
             {rows.saved.map((s) => {
               const receipt = receipts.find(
@@ -285,33 +288,36 @@ function Directory() {
           list.isSuccess &&
           !rows.saved.length &&
           !rows.history.length ? (
-            <div className="buy-empty">
-              <h2>{t("empty.suppliers_title", "No suppliers yet")}</h2>
-              <p>
-                {t(
-                  "suppliers.empty_subtitle",
-                  "Name a supplier when you add a batch and they show up here.",
-                )}
-              </p>
-            </div>
+            <EmptyState
+              icon="truck"
+              title={t("empty.suppliers_title", "No suppliers yet")}
+              body={t(
+                "suppliers.empty_subtitle",
+                "Name a supplier when you add a batch and they show up here.",
+              )}
+            />
           ) : null}
         </>
       ) : (
         <>
           <Notice error={compare.error} />
-          {compare.isLoading ? <Spinner /> : null}
+          {compare.isError ? (
+            <Button tone="ghost" onClick={() => void compare.refetch()}>
+              {t("common.retry", "Try again")}
+            </Button>
+          ) : null}
+          {compare.isLoading ? (
+            <Skeleton variant="row" count={3} label={t("common.loading", "Loading")} />
+          ) : null}
           {compare.isSuccess && !compared.length ? (
-            <div className="buy-empty">
-              <h2>
-                {t("suppliers.compare_empty_title", "No prices to compare yet")}
-              </h2>
-              <p>
-                {t(
-                  "suppliers.compare_empty_subtitle",
-                  "Buy the same product from different suppliers to compare prices.",
-                )}
-              </p>
-            </div>
+            <EmptyState
+              icon="search"
+              title={t("suppliers.compare_empty_title", "No prices to compare yet")}
+              body={t(
+                "suppliers.compare_empty_subtitle",
+                "Buy the same product from different suppliers to compare prices.",
+              )}
+            />
           ) : null}
           <div className="supplier-comparisons">
             {compared.map((row) => (

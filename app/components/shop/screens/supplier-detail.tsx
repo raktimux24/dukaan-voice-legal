@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ProductImageById } from "../product-image";
 import { SupplierEditor } from "../gst-supplier";
 import { useShop } from "../context";
-import { Button, NoAccess, Notice, PageHeader, Spinner } from "../ui";
+import { Button, NoAccess, Notice, PageHeader, Skeleton, Spinner } from "../ui";
 import { formatINR } from "../../../lib/shop/money";
 import { formatQty } from "../../../lib/shop/units";
 import { useShopDates } from "../use-shop-dates";
@@ -53,14 +53,14 @@ function History({ name }: { name: string }) {
         }}
         kicker={t("directoryUI.receipts", "Inventory receipts")}
         title={data?.name || name}
-        actions={
-          <Button tone="ghost" onClick={() => void detail.refetch()}>
-            {t("common.refresh", "Refresh")}
-          </Button>
-        }
       />
       <Notice error={detail.error} />
-      {detail.isLoading ? <Spinner /> : null}
+      {detail.isError ? (
+        <Button tone="ghost" onClick={() => void detail.refetch()}>
+          {t("common.retry", "Try again")}
+        </Button>
+      ) : null}
+      {detail.isLoading ? <Skeleton variant="card" label={t("common.loading", "Loading")} /> : null}
       {data ? (
         <>
           <div className="supplier-summary">

@@ -1,7 +1,7 @@
 /* Web app review fixes: shell area. New rules for this area go here, scoped under .shop-root. */
 
 /* ---- Skip link (S9) ---- */
-.shop-root .shop-skip { position: absolute; left: 12px; top: -100px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: #ff6b00; color: #1a1a1a; font-weight: 600; font-size: 14px; }
+.shop-root .shop-skip { position: absolute; left: 12px; top: -100px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--color-saffron, #ff6b00); color: #1a1a1a; font-weight: 600; font-size: 14px; }
 .shop-root .shop-skip:focus { top: 12px; }
 .shop-root .shop-main:focus { outline: none; }
 
@@ -41,7 +41,7 @@
 .shop-root .shop-tabbar { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #2a2a34; scrollbar-width: none; }
 .shop-root .shop-tabbar-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; color: #aaa8b0; font-size: 14px; font-weight: 500; white-space: nowrap; }
 .shop-root .shop-tabbar-tab:hover { color: #eaeae6; }
-.shop-root .shop-tabbar-tab.is-active { color: #ff8a33; border-color: #ff6b00; }
+.shop-root .shop-tabbar-tab.is-active { color: #ff8a33; border-color: var(--color-saffron, #ff6b00); }
 .shop-root .shop-tabbar-count { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: rgba(255, 107, 0, 0.14); color: #ffb27a; font-size: 12px; font-variant-numeric: tabular-nums; text-align: center; }
 .shop-root .shop-tabbar-count.is-zero { background: #1e1e26; color: #8a8a90; }
 .shop-root .shop-tabbar-tab:not(.is-active) .shop-tabbar-count:not(.is-zero) { background: #26262f; color: #d0ced4; }
@@ -73,6 +73,10 @@
 .shop-root .shop-skeleton.is-row .shop-skeleton-block { height: 64px; }
 .shop-root .shop-skeleton.is-card .shop-skeleton-block { height: 140px; border-radius: 12px; }
 @keyframes shop-skeleton { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+/* Spinner is now a one-line skeleton (F44, stock S36). It is built from spans, so it is block-level here. */
+.shop-root .shop-spinner { display: grid; width: 100%; max-width: 360px; padding-block: 6px; }
+.shop-root .shop-emptystate .shop-actions { justify-content: center; }
+.shop-root .shop-emptystate.products-empty { flex-wrap: nowrap; }
 
 /* ---- Voice (V1–V3) ---- */
 .shop-root .voice-intro { display: grid; gap: 6px; text-align: center; padding-top: 8px; }
