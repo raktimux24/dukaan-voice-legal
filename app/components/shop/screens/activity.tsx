@@ -90,8 +90,8 @@ export function ActivityScreen() {
 function ActivityWorkspace() {
   const { api, shop, userId, perms, prefs, premium, t, offline } = useShop(),
     params = useSearchParams();
-  const text = (key: string, vars?: Record<string, string | number>) =>
-    t(key, EN_FALLBACK[key] ?? "", vars);
+  const text = (key: string, vars?: Record<string, string | number>, fallback?: string) =>
+    t(key, fallback ?? EN_FALLBACK[key] ?? "", vars);
   const [filter, setFilter] = useState<ActivityFilter>(() =>
       activityFilter(params.get("filter")),
     ),
