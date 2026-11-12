@@ -166,6 +166,9 @@ Module._load = function (request, parent, isMain) {
         ),
       Pill: plain("span"),
       Spinner: ({ label }) => React.createElement("p", null, label),
+      Skeleton: ({ label }) => React.createElement("p", null, label),
+      EmptyState: ({ title, body, action }) =>
+        React.createElement("div", null, title, body, action),
       NoAccess: () => React.createElement("p", null, "No access"),
       PremiumLock: () => null,
       isDenied: (e) => e?.status === 403,

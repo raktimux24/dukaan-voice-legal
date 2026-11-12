@@ -41,6 +41,7 @@ import {
   Notice,
   PageHeader,
   PremiumLock,
+  Skeleton,
   Spinner,
   inputClass,
 } from "../ui";
@@ -817,9 +818,6 @@ function ReportsWorkspace() {
         )}
         actions={
           <>
-            <Button tone="ghost" disabled={active.isFetching} onClick={refresh}>
-              {t("common.refresh", "Refresh")}
-            </Button>
             {premium ? (
               <Button
                 disabled={
@@ -914,7 +912,7 @@ function ReportsWorkspace() {
         </p>
       ) : null}
       {active.isLoading ? (
-        <Spinner label={label("mobile.audit.loading_report")} />
+        <Skeleton variant="card" count={2} label={label("mobile.audit.loading_report")} />
       ) : active.isError ? (
         <div>
           <Notice error={active.error} />

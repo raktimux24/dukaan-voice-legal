@@ -6,7 +6,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ProductImageById } from "../product-image";
 import { useShop } from "../context";
-import { Button, NoAccess, Notice, PageHeader, Spinner } from "../ui";
+import { Button, EmptyState, NoAccess, Notice, PageHeader, Skeleton, Spinner } from "../ui";
 import { downloadText } from "../../../lib/shop/csv";
 import { formatTime, formatDay, formatWhen } from "../../../lib/shop/money";
 import { EN_FALLBACK } from "../../../lib/shop/en-fallback";
@@ -190,7 +190,6 @@ function ActivityWorkspace() {
   return (
     <div className="shop-page activity-workspace">
       <PageHeader
-        kicker={t("activityweb.journal", "Shop journal")}
         title={text("activity.title")}
         description={t(
           "activityweb.intro",
@@ -198,13 +197,6 @@ function ActivityWorkspace() {
         )}
         actions={
           <>
-            <Button
-              tone="ghost"
-              disabled={logs.isFetching}
-              onClick={() => void logs.refetch()}
-            >
-              {t("common.refresh", "Refresh")}
-            </Button>
             <Button
               tone="ghost"
               disabled={
@@ -284,7 +276,7 @@ function ActivityWorkspace() {
         </p>
       ) : null}
       {logs.isLoading ? (
-        <Spinner label={t("activityweb.loading", "Loading activity")} />
+        <Skeleton variant="row" count={4} label={t("activityweb.loading", "Loading activity")} />
       ) : null}
       {logs.isError && !logs.isFetchNextPageError ? (
         <div>
@@ -295,21 +287,21 @@ function ActivityWorkspace() {
         </div>
       ) : null}
       {logs.isSuccess && !rows.length ? (
-        <div className="activity-empty">
-          <span aria-hidden="true">↺</span>
-          <h2>{t("activityweb.empty", "No activity in this view")}</h2>
-          <p>
-            {t(
-              "activityweb.empty_hint",
-              "Try another filter, or refresh after your shop records a change.",
-            )}
-          </p>
-          {filter !== "all" ? (
-            <Button tone="quiet" onClick={() => setFilter("all")}>
-              {t("activityweb.show_all", "Show all activity")} →
-            </Button>
-          ) : null}
-        </div>
+        <EmptyState
+          icon="clipboard"
+          title={t("activityweb.empty", "No activity in this view")}
+          body={t(
+            "activityweb.empty_hint",
+            "Try another filter. New changes show up here on their own.",
+          )}
+          action={
+            filter !== "all" ? (
+              <Button tone="quiet" onClick={() => setFilter("all")}>
+                {t("activityweb.show_all", "Show all activity")} →
+              </Button>
+            ) : undefined
+          }
+        />
       ) : null}
       {(!logs.isError || logs.isFetchNextPageError) &&
         days.map((day) => (

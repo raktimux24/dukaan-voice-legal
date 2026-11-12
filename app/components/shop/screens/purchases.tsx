@@ -25,16 +25,14 @@ export function PurchasesScreen() {
   const q = useGstPages(["purchases", range, supplierId], cursor => api.gst.purchases(shop!.id, range!.from, range!.to, supplierId, cursor), !!range && allowed);
   const totals = useGstQuery(["purchase-totals", range], () => api.gst.reconciliation(shop!.id, range!.from, range!.to), !!range && allowed);
   const rows = q.data?.pages.flatMap(p => p.items) ?? [], filtered = filterInvoices(rows, search);
-  const refreshing = settings.isFetching || q.isFetching || totals.isFetching || suppliers.isFetching;
   const recordHref = access.writable && !offline ? `/shop/purchases/new${supplierId ? `?supplierId=${encodeURIComponent(supplierId)}` : ""}` : undefined;
   const exportHref = range && allowed ? `/shop/settings/gst/exports?kind=purchases&from=${period.dates.from}&through=${period.dates.through}` : undefined;
-  const refresh = () => { void settings.refetch(); if (allowed && range) { void q.refetch(); void totals.refetch(); void suppliers.refetch(); } };
   if (!perms.canSeeCost) return <NoAccess what={text("This role cannot view purchase costs.")} />;
   return <GstAccess><div className="shop-page invoice-workspace">
-    <PageHeader kicker={t("poweb.kicker", "Purchasing")} title={text("Supplier invoices")}
+    <PageHeader title={text("Supplier invoices")}
       back={{href:"/shop",label:text("Home")}}
       description={t("invoiceweb.intro", "Keep supplier bills, payments and purchase tax together.")}
-      actions={<><Button tone="ghost" disabled={offline || refreshing} onClick={refresh}>{text("Refresh records & totals")}</Button><Button href={recordHref} disabled={!recordHref}>{text("Record supplier invoice")}</Button></>} />
+      actions={<Button href={recordHref} disabled={!recordHref}>{text("Record supplier invoice")}</Button>} />
     <nav className="invoice-tabs" aria-label={text("Supplier invoices")}>
       <button type="button" aria-pressed={section === "invoices"} onClick={() => setSection("invoices")}>{text("Recorded invoices")}</button>
       <button type="button" aria-pressed={section === "reports"} onClick={() => setSection("reports")}>{t("invoiceweb.reports", "Reports & exports")}</button>

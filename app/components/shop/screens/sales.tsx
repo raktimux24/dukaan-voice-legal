@@ -29,9 +29,11 @@ import {
 import {
   Button,
   Card,
+  EmptyState,
   PageHeader,
   Pill,
   PremiumLock,
+  Skeleton,
   Spinner,
   isPremiumError,
 } from "../ui";
@@ -90,12 +92,6 @@ export function SalesScreen() {
     );
   const rows = sales.data?.pages.flatMap((p) => p.sales) ?? [],
     first = sales.data?.pages[0];
-  const refresh = () => {
-    setError(null);
-    void sales.refetch();
-    void summary.refetch();
-    void journal.refetch();
-  };
   const exportCsv = async () => {
     setError(null);
     setExporting(true);
@@ -124,80 +120,7 @@ export function SalesScreen() {
           "salesweb.intro",
           "Find a bill. Follow a payment. Keep every sale in view.",
         )}
-        actions={
-          <>
-            <Button
-              tone="ghost"
-              disabled={sales.isFetching || offline}
-              onClick={refresh}
-            >
-              {tr("refresh")}
-            </Button>
-            <Button href="/shop/sell">
-              {t("sale_complete.new_sale", "New sale")}{" "}
-              <span aria-hidden="true">＋</span>
-            </Button>
-          </>
-        }
       />
-      <section
-        className="sales-period"
-        aria-label={t("salesweb.overview", "Period overview")}
-      >
-        <div className="sales-period-heading">
-          <h2>{t("salesweb.overview", "Period overview")}</h2>
-          <span>
-            {filters.period === "custom"
-              ? filters.from + " — " + filters.to
-              : tr("period_" + filters.period)}
-          </span>
-        </div>
-        {ready && summary.isSuccess && !summary.isError ? (
-          <>
-            <dl className="sales-metrics">
-              <div className="is-leading">
-                <dt>{t("sales.summary.revenue", "Net sales")}</dt>
-                <dd>{formatINR(summary.data.revenue)}</dd>
-              </div>
-              <div>
-                <dt>{t("sales.summary.bills", "Bills")}</dt>
-                <dd>{summary.data.bills}</dd>
-              </div>
-              <div>
-                <dt>
-                  {t(
-                    "reports.sales.avg_before_returns",
-                    "Average bill before returns",
-                  )}
-                </dt>
-                <dd>{formatINR(summary.data.avgBill)}</dd>
-              </div>
-              <div>
-                <dt>{t("sales.summary.returned_value", "Returned value")}</dt>
-                <dd>{formatINR(summary.data.returns ?? 0)}</dd>
-              </div>
-            </dl>
-            <p className="shop-hint">
-              {t("reports.sales.average_help", "")}{" "}
-              {t(
-                "salesweb.period_scope",
-                "Period totals include all bills, before list filters.",
-              )}
-            </p>
-          </>
-        ) : !ready ? (
-          <p className="shop-hint">{tr("error.invalid_range")}</p>
-        ) : summary.isPending ? (
-          <Spinner label={t("common.loading", "Loading")} />
-        ) : (
-          <p role="status" className="shop-hint">
-            {t(
-              "salesweb.summary_unavailable",
-              "Period totals could not be loaded. Your bill list is below.",
-            )}
-          </p>
-        )}
-      </section>
       {draft.pending ? (
         <div className="sales-recovery" role="status">
           <p>{t("counter.pending_outcomes", "", { n: 1 })}</p>
@@ -271,7 +194,7 @@ export function SalesScreen() {
         {!ready ? (
           <p role="status">{tr("error.invalid_range")}</p>
         ) : sales.isPending ? (
-          <Spinner label={t("common.loading", "Loading")} />
+          <Skeleton variant="row" count={4} label={t("common.loading", "Loading")} />
         ) : null}
         <div className="sales-ledger-head" aria-hidden="true">
           <span>{t("bill.bill", "Bill")}</span>
@@ -347,59 +270,57 @@ export function SalesScreen() {
           ))}
         </div>
         {sales.isSuccess && !rows.length ? (
-          <div className="shop-empty-next">
-            <span className="sales-empty-mark" aria-hidden="true">
-              ≡
-            </span>
-            <h2 className="shop-section-title">
-              {t(
-                filters.q.trim() ||
-                  filters.status !== "all" ||
-                  filters.desk !== "all" ||
-                  filters.method !== "all"
-                  ? "counter.no_bills"
-                  : filters.period === "today"
-                    ? "mobile.observations.no_sales_today"
-                    : filters.period === "yesterday"
-                      ? "mobile.observations.no_sales_yesterday"
-                      : "counter.no_bills",
-                "",
-              )}
-            </h2>
-            <p className="shop-section-sub">
-              {t("mobile.observations.earlier_bills", "")}
-            </p>
-            {filters.q.trim() && filters.period !== "all" ? (
-              <Button
-                onClick={() => change({ period: "all", from: "", to: "" })}
-              >
-                {t("salesweb.search_all_dates", "Search all dates for “{{q}}”", {
-                  q: filters.q.trim(),
-                })}
-              </Button>
-            ) : null}
-            <Button
-              tone="ghost"
-              onClick={() =>
-                change({
-                  period: filters.period === "today" ? "yesterday" : "7d",
-                  from: "",
-                  to: "",
-                  q: "",
-                  status: "all",
-                  desk: "all",
-                  method: "all",
-                })
-              }
-            >
-              {t(
-                filters.period === "today"
-                  ? "mobile.observations.yesterday_bills"
-                  : "mobile.observations.recent_bills",
-                "",
-              )}
-            </Button>
-          </div>
+          <EmptyState
+            icon="receipt"
+            title={t(
+              filters.q.trim() ||
+                filters.status !== "all" ||
+                filters.desk !== "all" ||
+                filters.method !== "all"
+                ? "counter.no_bills"
+                : filters.period === "today"
+                  ? "mobile.observations.no_sales_today"
+                  : filters.period === "yesterday"
+                    ? "mobile.observations.no_sales_yesterday"
+                    : "counter.no_bills",
+              "",
+            )}
+            body={t("mobile.observations.earlier_bills", "")}
+            action={
+              <div className="shop-actions">
+                {filters.q.trim() && filters.period !== "all" ? (
+                  <Button
+                    onClick={() => change({ period: "all", from: "", to: "" })}
+                  >
+                    {t("salesweb.search_all_dates", "Search all dates for “{{q}}”", {
+                      q: filters.q.trim(),
+                    })}
+                  </Button>
+                ) : null}
+                <Button
+                  tone="ghost"
+                  onClick={() =>
+                    change({
+                      period: filters.period === "today" ? "yesterday" : "7d",
+                      from: "",
+                      to: "",
+                      q: "",
+                      status: "all",
+                      desk: "all",
+                      method: "all",
+                    })
+                  }
+                >
+                  {t(
+                    filters.period === "today"
+                      ? "mobile.observations.yesterday_bills"
+                      : "mobile.observations.recent_bills",
+                    "",
+                  )}
+                </Button>
+              </div>
+            }
+          />
         ) : null}
         <footer className="sales-register-footer">
           <p>{tr("snapshot_help")}</p>
@@ -424,6 +345,69 @@ export function SalesScreen() {
             </Button>
           ) : null}
         </footer>
+      </section>
+      <section
+        className="sales-period"
+        aria-label={t("salesweb.overview", "Period overview")}
+      >
+        <div className="sales-period-heading">
+          <h2>{t("salesweb.overview", "Period overview")}</h2>
+          <span>
+            {filters.period === "custom"
+              ? filters.from + " — " + filters.to
+              : tr("period_" + filters.period)}
+          </span>
+        </div>
+        {ready && summary.isSuccess && !summary.isError ? (
+          <>
+            <dl className="sales-metrics">
+              <div className="is-leading">
+                <dt>{t("sales.summary.revenue", "Net sales")}</dt>
+                <dd>{formatINR(summary.data.revenue)}</dd>
+              </div>
+              <div>
+                <dt>{t("sales.summary.bills", "Bills")}</dt>
+                <dd>{summary.data.bills}</dd>
+              </div>
+              <div>
+                <dt>
+                  {t(
+                    "reports.sales.avg_before_returns",
+                    "Average bill before returns",
+                  )}
+                </dt>
+                <dd>{formatINR(summary.data.avgBill)}</dd>
+              </div>
+              <div>
+                <dt>{t("sales.summary.returned_value", "Returned value")}</dt>
+                <dd>{formatINR(summary.data.returns ?? 0)}</dd>
+              </div>
+            </dl>
+            <p className="shop-hint">
+              {t("reports.sales.average_help", "")}{" "}
+              {t(
+                "salesweb.period_scope",
+                "Period totals include all bills, before list filters.",
+              )}
+            </p>
+          </>
+        ) : !ready ? (
+          <p className="shop-hint">{tr("error.invalid_range")}</p>
+        ) : summary.isPending ? (
+          <Skeleton variant="line" count={2} label={t("common.loading", "Loading")} />
+        ) : (
+          <div className="sales-period-error" role="status">
+            <p className="shop-hint">
+              {t(
+                "salesweb.summary_totals_unavailable",
+                "Period totals could not be loaded.",
+              )}
+            </p>
+            <Button tone="ghost" size="sm" onClick={() => void summary.refetch()}>
+              {t("common.retry", "Try again")}
+            </Button>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -270,13 +270,6 @@ function ProductDetailWorkspace({ productId }: { productId: string }) {
         }
         actions={
           <>
-            <Button
-              tone="ghost"
-              disabled={catalog.isFetching}
-              onClick={() => void refresh()}
-            >
-              {t("common.refresh", "Refresh")}
-            </Button>
             {perms.canEditProducts ? (
               <Button href={`/shop/products/${productId}/edit`} tone="ghost">
                 {t("common.edit", "Edit details")}

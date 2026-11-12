@@ -86,24 +86,10 @@ export function settingsLinks(
           },
         ] as SettingsLink[])
       : []),
-    ...(p.canManageCustomers
-      ? ([
-          {
-            href: "/shop/customers",
-            icon: "users",
-            key: "settings.customers_udhaar",
-            fallback: "Customers & udhaar",
-          },
-        ] as SettingsLink[])
-      : []),
+    // Customers and Cashbook are daily work with their own sidebar items, so
+    // they are not repeated here. Purchases and Online store stay, as on mobile.
     ...(p.canSeeReports
       ? ([
-          {
-            href: "/shop/cashbook",
-            icon: "wallet",
-            key: "cashbook.title",
-            fallback: "Expenses & cashbook",
-          },
           {
             href: "/shop/settings/gst",
             icon: "shield",

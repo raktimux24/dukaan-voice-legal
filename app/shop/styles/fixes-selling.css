@@ -66,7 +66,7 @@
 .shop-root .sale-success-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .shop-root .sale-success-actions .shop-btn { min-height: 44px; }
 .shop-root .sale-success-actions .shop-kbd { margin-left: 8px; }
-.shop-root .sale-success-actions .shop-btn:focus-visible { outline: 2px solid #ff9854; outline-offset: 3px; }
+.shop-root .sale-success-actions .shop-btn:focus-visible { outline: var(--focus-ring); outline-offset: 3px; }
 
 /* Returns: steppers and "All" (S28). */
 .shop-root .sale-return-stepper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
@@ -76,10 +76,17 @@
 }
 .shop-root .sale-return-stepper .sale-return-all { font-size: 13px; color: #ff9854; }
 .shop-root .sale-return-stepper button:disabled { opacity: 0.4; cursor: default; }
-.shop-root .sale-return-stepper button:focus-visible { outline: 2px solid #ff9854; outline-offset: 2px; }
+.shop-root .sale-return-stepper button:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
 
 /* Refunds: the reason shows on its own, without the raw request id (S33). */
 .shop-root .refund-reason { margin-top: 8px; font-size: 13px; color: #c5c2bd; }
 
 /* Customer search with no match (S16). */
 .shop-root .customer-no-match { display: grid; gap: 8px; justify-items: start; font-size: 13px; color: #c5c2bd; }
+
+/* Sell: undo for a removed bill line (S11). */
+.shop-root .sell-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding: 8px 8px 8px 14px; border: 1px solid #3a3a44; border-radius: 8px; background: #1b1b22; font-size: 14px; color: #d6d4da; }
+.shop-root .sell-undo .shop-btn { min-height: 44px; }
+
+/* Sales: the period overview sits under the register (S31); its error keeps a retry. */
+.shop-root .sales-period-error { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
