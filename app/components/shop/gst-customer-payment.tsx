@@ -10,13 +10,13 @@ import {validSavedCustomerPaymentShape} from '../../lib/shop/gst-core/financial-
 import {EN_FALLBACK} from '../../lib/shop/en-fallback';
 import {formatINR} from '../../lib/shop/money';
 
-/** Repayment form. Like the phone app: amount starts at the balance owed, Cash or UPI only, and a "received" message after saving. */
+/** Repayment form. Like the phone app: the balance owed shows as a hint in an empty amount box, Cash or UPI only, and a "received" message after saving. */
 export function GstCustomerPayment({customerId,balance,onRecorded}:{customerId:string;balance?:number;onRecorded?:()=>void}){
  const {api,shop,t,offline}=useShop(),action=useGstAction(),qc=useQueryClient();
  const label=(key:string,vars?:Record<string,string|number>)=>t(key,EN_FALLBACK[key],vars);
- // null means "not typed yet": the amount then follows the balance owed.
+ // The amount starts empty, as on the phone: one press must never record the whole balance.
  const [typed,setAmount]=useState<string|null>(null),[method,setMethod]=useState('cash'),[note,setNote]=useState(''),[amounts,setAmounts]=useState<Record<string,string>>({}),[done,setDone]=useState('');
- const owed=balance!=null&&balance>0?balance:0,amount=typed??(owed>0?owed.toFixed(2):'');
+ const owed=balance!=null&&balance>0?balance:0,amount=typed??'';
  const path=`/api/shops/${shop?.id}/customers/${customerId}/payments`;
  const journal=useGstQuery(['customer-payment-pending',customerId],async()=> (await retainedRequests(financialScope(shop!.id))).filter(row=>row.path===path&&row.state==='pending'),true,'always');
  const bills=useGstPages(['credit-invoices',customerId],cursor=>api.gst.creditInvoices(shop!.id,customerId,cursor));
@@ -47,7 +47,7 @@ export function GstCustomerPayment({customerId,balance,onRecorded}:{customerId:s
  {done&&!action.error?<p role="status" className="gst-action-success customer-payment-done">{done}</p>:null}
  <ReadState query={journal}>{pending?<p className="shop-hint">{label('customers.collection_pending')}</p>:null}
  <fieldset className="grid gap-3" disabled={offline||action.busy||!!pending||!journal.isSuccess}>
- <Field label={label('bill.amount')}><input className={inputClass} inputMode="decimal" value={amount} onChange={e=>{setAmount(e.target.value);setDone('');}}/></Field>
+ <Field label={label('bill.amount')}><input className={inputClass} inputMode="decimal" value={amount} placeholder={owed>0?owed.toFixed(2):'0'} onChange={e=>{setAmount(e.target.value);setDone('');}}/></Field>
  {after?<p className="customer-payment-after" aria-live="polite">{after}</p>:null}
  {owed>0&&amount!==owed.toFixed(2)?<Button tone="quiet" onClick={()=>{setAmount(owed.toFixed(2));setDone('');}}>{t('customerweb.full_amount','Full {{amount}}',{amount:formatINR(owed)})}</Button>:null}
  <div className="customer-payment-methods"><SegmentedControl label={label('checkout.payment_method')} options={methods} value={method} onChange={setMethod}/></div>

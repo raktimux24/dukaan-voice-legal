@@ -311,23 +311,23 @@ async function harness({
 test("helper and offline boundaries hide order details and actions", async () => {
   const h = await harness({ allowed: false });
   assert.match(document.body.textContent, /owner or manager access/);
-  assert.equal(h.button("Receive delivery"), undefined);
+  assert.equal(h.button("Receive stock"), undefined);
   assert.equal(document.querySelector(".po-detail-head"), null);
   await h.stop();
 });
 test("receipt review is required; over-receipt blocks submission and edits invalidate approval", async () => {
   const h = await harness();
-  await h.click(h.button("Receive delivery"));
-  assert.ok(h.button("Confirm delivery receipt").disabled);
+  await h.click(h.button("Receive stock"));
+  assert.ok(h.button("Confirm and add to stock").disabled);
   await h.fill("Accepted quantity now", "9");
   await act(async () => document.querySelector("input[type=checkbox]").click());
-  assert.ok(h.button("Confirm delivery receipt").disabled);
+  assert.ok(h.button("Confirm and add to stock").disabled);
   assert.match(document.body.textContent, /cannot exceed/);
   await h.fill("Accepted quantity now", "3");
   assert.equal(document.querySelector("input[type=checkbox]").checked, false);
   await act(async () => document.querySelector("input[type=checkbox]").click());
-  assert.equal(h.button("Confirm delivery receipt").disabled, false);
-  await h.click(h.button("Confirm delivery receipt"));
+  assert.equal(h.button("Confirm and add to stock").disabled, false);
+  await h.click(h.button("Confirm and add to stock"));
   assert.equal(h.calls[0].kind, "receive");
   assert.equal(h.calls[0].lines[0].quantity, "3");
   await h.stop();
@@ -342,7 +342,7 @@ test("draft cancellation requires a separate confirmation and pending recovery l
   await h.stop();
   const locked = await harness({ pending: { clientId: "saved" } });
   await locked.click(locked.button("Actions"));
-  assert.ok(locked.button("Receive delivery").disabled);
+  assert.ok(locked.button("Receive stock").disabled);
   assert.ok(locked.button("Share order").disabled);
   await locked.stop();
 });
