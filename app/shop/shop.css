@@ -3866,9 +3866,6 @@ a.shop-task:hover, button.shop-task:hover { border-color: rgba(255,107,0,.5); ba
 .billing-mark { display: grid; place-items: center; width: 76px; height: 92px; flex: 0 0 auto; font-size: 2.8rem; color: #ff9148; border: 1px solid #66492f; border-top: 3px solid #ff9148; transform: rotate(6deg); background: repeating-linear-gradient(transparent 0 20px, #ff914808 21px 22px); }
 .billing-dashboard p { line-height: 1.7; max-width: 78ch; }
 .billing-dashboard .muted { color: #b6b3b0; }
-.billing-grant { margin: 22px 0; border-left: 2px solid #ff9148; padding: 4px 0 4px 18px; }
-.billing-grant strong { color: #ffab70; }
-.billing-grant p { margin: 8px 0 0; color: #c2bfb8; }
 .billing-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0 0; border-top: 1px solid var(--billing-line); padding: 22px 0; }
 .billing-facts dt { color: #aaa7a6; font-size: .82em; margin-bottom: 8px; }
 .billing-facts dd { margin: 0; color: #ebe8e0; font-weight: 500; }

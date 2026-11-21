@@ -244,12 +244,11 @@ export function AccountDashboard({
   const isTrial = status === 'trialing';
   const actions = billingActions(error ? undefined : entitlement, isOwner, managementOnly);
   const canSubscribe = actions.subscribe, canManage = actions.manage, canCancel = actions.cancel;
-  const temporaryAccessOnly = entitlement?.temporaryPremium && !mandate && entitlement.status !== 'legacy_free' && !(entitlement.status === 'active' && entitlement.currentPeriodEnd && Date.parse(entitlement.currentPeriodEnd) > Date.now());
   const { badge, lead, warning } = describe(entitlement, t, a, date, b);
   // B1: the shop page leads with the plan, so name it even when there is no paid plan.
-  const planName = !entitlement ? '' : temporaryAccessOnly ? bx('plan_temporary', 'Premium (temporary)') : entitlement.plan ? planLabel(entitlement.plan, t)
+  const planName = !entitlement ? '' : entitlement.plan ? planLabel(entitlement.plan, t)
     : status === 'trialing' ? bx('plan_trial', 'Premium trial') : status === 'legacy_free' ? t.account.statusLegacyFree : bx('plan_free', 'Free');
-  const headline = temporaryAccessOnly ? b('temporary_title') : entitlement ? badge : error ? (selectedShop?.name ?? t.account.selectShop) : b('loading');
+  const headline = entitlement ? badge : error ? (selectedShop?.name ?? t.account.selectShop) : b('loading');
   const operationScope = useRef('');
   operationScope.current = `${user?.id ?? ''}:${selectedShopId}`;
   const startOperation = () => {
@@ -500,13 +499,12 @@ export function AccountDashboard({
           <div className="billing-status-heading"><div>
           {embedded ? <p className="billing-eyebrow">{b('current_access')}</p> : null}
           {embedded ? <h2 className={warning ? 'billing-plan-title is-warning' : 'billing-plan-title'}>{headline}</h2> : <>
-          <div className={warning ? 'status-badge warning' : 'status-badge'}>{temporaryAccessOnly ? b('temporary_title') : error && !entitlement ? '—' : badge}</div>
+          <div className={warning ? 'status-badge warning' : 'status-badge'}>{error && !entitlement ? '—' : badge}</div>
           <h2>{selectedShop?.name ?? t.account.selectShop}</h2></>}
           </div>{embedded ? <span className="billing-mark" aria-hidden="true">₹</span> : null}</div>
-          {entitlement?.temporaryPremium ? <div className="billing-grant" role="note">{temporaryAccessOnly ? null : <strong>{b('temporary_title')}</strong>}<p>{b('temporary_body')}</p>{mandate ? <p>{b('temporary_existing')}</p> : null}</div> : null}
           {entitlement?.billingSyncPending ? <p role="status">{b('sync_pending')}</p> : null}
           {entitlement?.cancellationPending ? <p role="status">{b('cancel_pending')}</p> : null}
-          {lead && !temporaryAccessOnly && !entitlement?.billingSyncPending && !entitlement?.cancellationPending ? <p className="muted">{managementOnly ? a.managementLead : lead}</p> : null}
+          {lead && !entitlement?.billingSyncPending && !entitlement?.cancellationPending ? <p className="muted">{managementOnly ? a.managementLead : lead}</p> : null}
           {embedded ? <div className="billing-refresh-row"><button className="billing-refresh-link" type="button" disabled={!!busy || loading} onClick={refreshBilling}>{busy === 'refresh' || loading ? b('loading') : refreshLabel}</button></div> : null}
           </div>
           {entitlement && embedded ? <dl className="billing-facts"><div><dt>{b('current_plan')}</dt><dd>{planName}</dd></div><div><dt>{b('payment_method')}</dt><dd>{b(mandate ? 'mandate' : 'no_mandate')}</dd></div></dl> : null}

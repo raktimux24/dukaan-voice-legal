@@ -1925,9 +1925,6 @@ export const EN_FALLBACK: Record<string, string> = {
   "activity.desc.added_batch_num": "Added batch of {{quantity}} to {{name}} ({{batchNumber}})",
 
   // ─── Subscription ───
-  "subscription.temporary_title": "Premium is free for now",
-  "subscription.temporary_body": "All shops have Premium access while we finish payment setup. No new subscription is needed for this temporary access.",
-  "subscription.temporary_existing": "This access grant does not cancel an existing payment mandate. Your existing billing details and management options appear below.",
   "subscription.section_title": "Subscription",
   "subscription.row_label": "Plan",
   "subscription.status.legacy_free": "Free Forever",
